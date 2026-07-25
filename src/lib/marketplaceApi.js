@@ -539,3 +539,23 @@ export const marketingApi = {
   },
 };
 
+
+// ── Phase 2: In-Portal Messaging API (Section 3) ───────────────────────────
+export const messagingApi = {
+  getConversations: () => request('/api/business-os/messages/conversations'),
+  startConversation: (recipientUserId) =>
+    request('/api/business-os/messages/conversations', { method: 'POST', body: JSON.stringify({ recipientUserId }) }),
+  getMessages: (conversationId) => request(`/api/business-os/messages/${conversationId}`),
+  sendMessage: (conversationId, content) =>
+    request(`/api/business-os/messages/${conversationId}/send`, { method: 'POST', body: JSON.stringify({ content }) }),
+};
+
+// ── Phase 2: In-Portal Messaging API (Section 3) ───────────────────────────
+export const messagingApi = {
+  getConversations: () => request('/api/business-os/messages/conversations'),
+  startConversation: (recipientUserId) =>
+    request('/api/business-os/messages/conversations', { method: 'POST', body: JSON.stringify({ recipientUserId }) }),
+  getMessages: (conversationId) => request(`/api/business-os/messages/${conversationId}`),
+  sendMessage: (conversationId, content) =>
+    request(`/api/business-os/messages/${conversationId}/send`, { method: 'POST', body: JSON.stringify({ content }) }),
+};
