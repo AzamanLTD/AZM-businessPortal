@@ -1,4 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
+import { generateInvoicePDF } from '@/lib/invoicePdf';
+import { useAuth } from '@/lib/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoices as invoicesApi, locations as locApi } from '@/lib/api';
 import { bookingOpsApi } from '@/lib/marketplaceApi';
@@ -25,6 +27,7 @@ const initials = (name) => (name || '?').trim().charAt(0).toUpperCase();
 // ════════════════════════════════════════════════════════════════════════════
 export default function Invoices() {
   const qc = useQueryClient();
+  const { bizProfile } = useAuth();
   const { toast } = useToast();
   const [tab, setTab] = useState('ALL');
   const [search, setSearch] = useState('');
@@ -371,6 +374,9 @@ export default function Invoices() {
                           <div className="flex items-center justify-end gap-2">
                             <Button variant="secondary" size="sm" onClick={() => setDetailId(inv.id)}>
                               <Eye className="w-3.5 h-3.5" /> View
+                            </Button>
+                            <Button variant="secondary" size="sm" onClick={() => generateInvoicePDF(inv, bizProfile)} title="Download PDF">
+                              <Receipt className="w-3.5 h-3.5" />
                             </Button>
                             {inv.status === 'DRAFT' && (
                               <Button
@@ -819,6 +825,7 @@ function CreateInvoiceModal({ onClose, onCreated }) {
 // ════════════════════════════════════════════════════════════════════════════
 // Invoice Detail Modal
 function InvoiceDetailModal({ invoiceId, onClose, onSend, onVoid, sending }) {
+  const { bizProfile } = useAuth();
   const { data, isLoading } = useQuery({
     queryKey: ['biz-invoice', invoiceId],
     queryFn: () => invoicesApi.get(invoiceId),
@@ -960,6 +967,9 @@ function InvoiceDetailModal({ invoiceId, onClose, onSend, onVoid, sending }) {
       )}
 
       <div className="flex gap-3 mt-4 pt-4 border-t border-[var(--az-border)]">
+        <Button variant="secondary" onClick={() => inv && generateInvoicePDF(inv, bizProfile)} className="flex-1" style={{ background: "var(--az-accent-subtle)", color: "var(--az-accent)" }}>
+          <Receipt className="w-4 h-4 mr-1" /> Download PDF
+        </Button>
         <Button variant="secondary" onClick={onClose} className="flex-1">Close</Button>
         {inv?.status === 'DRAFT' && (
           <Button onClick={() => onSend(inv.id)} loading={sending} className="flex-1 bg-[var(--az-info)] hover:opacity-95">
