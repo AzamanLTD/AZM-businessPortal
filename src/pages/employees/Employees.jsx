@@ -18,6 +18,7 @@ import {
   Textarea
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
+import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
 import {
   Users,
   UserPlus,
@@ -366,12 +367,16 @@ export default function Employees() {
       ) : filteredEmployees.length === 0 ? (
         <Empty
           icon={Users}
-          title="No employees found"
           description="Try adjusting your filters or search query."
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredEmployees.map((emp) => {
+        <div style={{ height: 'calc(100vh - 380px)', minHeight: '400px' }} className="rounded-2xl">
+        <VirtualizedGrid
+          items={filteredEmployees}
+          columnCount={3}
+          estimateRowHeight={220}
+          gap={24}
+          renderItem={(emp) => {
             const user = emp.user || {};
             const isSuspended = emp.status === 'SUSPENDED';
             const isTerminated = emp.status === 'TERMINATED';
@@ -490,7 +495,8 @@ export default function Employees() {
                 </div>
               </Card>
             );
-          })}
+          }}
+        />
         </div>
       )}
 

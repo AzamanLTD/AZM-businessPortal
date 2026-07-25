@@ -8,6 +8,7 @@ import {
   MessageSquare, Send, Check, Settings as SettingsIcon, AlertCircle, RefreshCw, X, Plus
 } from 'lucide-react';
 import { getSocket } from '@/lib/socket';
+import { VirtualizedList } from '@/components/ui/VirtualizedList';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const DEFAULT_QUICK_REPLIES = [
@@ -177,7 +178,7 @@ export default function Messages() {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+        <div className="flex-1 pr-1">
           {isLoadingInbox ? (
             Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="flex items-center gap-3 p-3 rounded-az-md border border-az-border/50 animate-pulse">
@@ -195,10 +196,14 @@ export default function Messages() {
               <p className="text-xs text-az-text-secondary mt-1">Your customer conversations will appear here.</p>
             </div>
           ) : (
-            conversations.map((conv) => {
-              const u = conv.user || conv;
-              const isSelected = selectedUser?.id === u.id;
-              return (
+            <VirtualizedList
+              items={conversations}
+              estimateSize={72}
+              overscan={5}
+              renderItem={(conv) => {
+                const u = conv.user || conv;
+                const isSelected = selectedUser?.id === u.id;
+                return (
                 <button
                   key={conv.id}
                   onClick={() => setSelectedUser(u)}
@@ -225,7 +230,8 @@ export default function Messages() {
                   )}
                 </button>
               );
-            })
+              }}
+            />
           )}
         </div>
       </GlassPanel>
@@ -315,7 +321,7 @@ export default function Messages() {
                       <X className="w-4 h-4" />
                     </button>
                   </div>
-                  <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                  <div className="flex-1 pr-1">
                     {quickReplies.map((reply, idx) => (
                       <div key={idx} className="flex items-center justify-between p-2 rounded bg-az-bg-alt border border-az-border/40 text-sm">
                         <span className="truncate flex-1 text-az-text-secondary">{reply}</span>
