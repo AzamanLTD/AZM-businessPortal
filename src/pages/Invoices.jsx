@@ -10,7 +10,7 @@ import { Widget, WidgetStat, WidgetRow } from '@/components/ui/Widget';
 import { fmtUSDC, fmt, formatDateTime, relativeTime, cn } from '@/lib/utils';
 import {
   Receipt, Plus, Search, X, Trash2, Eye, Send, Ban,
-  User, MapPin, Star, AlertCircle, Loader2, ChevronDown, ChevronUp, Check
+  User, MapPin, Star, AlertCircle, Loader2, ChevronDown, ChevronUp, Check, Repeat, RefreshCw, CalendarClock
 } from 'lucide-react';
 
 // ── Invoice status display config ───────────────────────────────────────────
@@ -20,7 +20,7 @@ const INVOICE_STATUS_META = {
   PAID:   { label: 'Paid',   color: 'var(--az-success)', bg: 'var(--az-success)' },
   VOID: { label: 'Void', color: 'var(--az-danger)', bg: 'var(--az-danger)' },
 };
-const TABS = ['ALL', 'DRAFT', 'SENT', 'PAID', 'VOID'];
+const TABS = ['ALL', 'DRAFT', 'SENT', 'PAID', 'VOID', 'RECURRING'];
 
 const initials = (name) => (name || '?').trim().charAt(0).toUpperCase();
 
@@ -129,7 +129,9 @@ export default function Invoices() {
   // Filter & Search
   const filtered = useMemo(() => {
     let list = all;
-    if (tab !== 'ALL') {
+    if (tab === 'RECURRING') {
+      list = list.filter(i => i.isRecurring);
+    } else if (tab !== 'ALL') {
       list = list.filter(i => i.status === tab);
     }
     if (search.trim()) {
@@ -409,6 +411,7 @@ export default function Invoices() {
       </div>
 
       {/* Create Modal */}
+      {tab === 'RECURRING' && <RecurringPanel />}
       {showCreate && (
         <CreateInvoiceModal
           onClose={() => setShowCreate(false)}
@@ -1174,6 +1177,137 @@ function TaxPresetsSection() {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+
+// ════════════════════════════════════════════════════════════════════════════
+// Recurring Invoice Panel (Phase 3)
+function RecurringPanel() {
+  const qc = useQueryClient();
+  const { toast } = useToast();
+
+  const { data: recurringData, isLoading } = useQuery({
+    queryKey: ['recurring-invoices'],
+    queryFn: () => bookingOpsApi.listRecurring(),
+  });
+
+  const enableMut = useMutation({
+    mutationFn: ({ invoiceId, interval }) => bookingOpsApi.enableRecurring(invoiceId, interval),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['recurring-invoices'] }); qc.invalidateQueries({ queryKey: ['biz-invoices'] }); toast.success('Recurring invoice enabled'); },
+    onError: (e) => toast.error(e.message || 'Failed to enable recurring'),
+  });
+
+  const disableMut = useMutation({
+    mutationFn: (invoiceId) => bookingOpsApi.disableRecurring(invoiceId),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['recurring-invoices'] }); qc.invalidateQueries({ queryKey: ['biz-invoices'] }); toast.success('Recurring disabled'); },
+    onError: (e) => toast.error(e.message || 'Failed to disable recurring'),
+  });
+
+  const processMut = useMutation({
+    mutationFn: () => bookingOpsApi.processRecurring(),
+    onSuccess: (data) => { qc.invalidateQueries({ queryKey: ['biz-invoices'] }); toast.success(data.generated ? `Generated ${data.generated} new invoice(s)` : 'No recurring invoices due'); },
+    onError: (e) => toast.error(e.message || 'Failed to process recurring'),
+  });
+
+  const recurring = recurringData?.invoices || [];
+
+  const INTERVAL_LABELS = {
+    DAILY: 'Every day',
+    WEEKLY: 'Every week',
+    MONTHLY: 'Every month',
+    QUARTERLY: 'Every quarter',
+    YEARLY: 'Every year',
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Repeat className="w-4 h-4 text-[var(--az-accent)]" />
+          <h2 className="text-sm font-semibold text-[var(--az-text)]">Recurring Invoice Templates</h2>
+          <span className="text-xs text-[var(--az-text-muted)]">({recurring.length})</span>
+        </div>
+        <Button size="sm" variant="secondary" onClick={() => processMut.mutate()} disabled={processMut.isPending}>
+          <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${processMut.isPending ? 'animate-spin' : ''}`} />
+          Process Due
+        </Button>
+      </div>
+
+      {isLoading ? (
+        <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20" />)}</div>
+      ) : recurring.length === 0 ? (
+        <Empty
+          icon={Repeat}
+          title="No recurring invoices"
+          description="Enable recurring on any paid/sent invoice to auto-generate copies on a schedule."
+        />
+      ) : (
+        <div className="space-y-2">
+          {recurring.map(inv => (
+            <Card key={inv.id} className="p-4 border-[var(--az-border)] bg-[var(--az-bg)]">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="w-10 h-10 rounded-lg bg-[var(--az-accent)]/15 flex items-center justify-center flex-shrink-0">
+                    <Repeat className="w-5 h-5 text-[var(--az-accent)]" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-[var(--az-text)] truncate">{inv.invoiceRef}</p>
+                    <p className="text-xs text-[var(--az-text-muted)] truncate">
+                      {inv.customer?.full_name || inv.customer?.email || `User #${inv.customerId}`}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <Badge color="blue">{INTERVAL_LABELS[inv.recurringInterval] || inv.recurringInterval}</Badge>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-[var(--az-text)]">{fmtUSDC(inv.billTotalUsdc)}</p>
+                    {inv.recurringNextDate && (
+                      <p className="text-xs text-[var(--az-text-muted)] flex items-center gap-1 justify-end">
+                        <CalendarClock className="w-3 h-3" />
+                        {new Date(inv.recurringNextDate).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => disableMut.mutate(inv.id)}
+                    disabled={disableMut.isPending}
+                  >
+                    Disable
+                  </Button>
+                </div>
+              </div>
+              {inv.lineItems?.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-[var(--az-border)]">
+                  <div className="text-xs text-[var(--az-text-muted)] space-y-1">
+                    {inv.lineItems.slice(0, 3).map(li => (
+                      <div key={li.id} className="flex justify-between">
+                        <span>{li.description} ×{li.quantity}</span>
+                        <span>{fmtUSDC(li.lineTotal)}</span>
+                      </div>
+                    ))}
+                    {inv.lineItems.length > 3 && <span className="text-[var(--az-text-muted)]">+ {inv.lineItems.length - 3} more items</span>}
+                  </div>
+                </div>
+              )}
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Info banner */}
+      <div className="rounded-xl bg-[var(--az-surface)] border border-[var(--az-border)] p-4">
+        <div className="flex items-start gap-3">
+          <CalendarClock className="w-4 h-4 text-[var(--az-text-muted)] mt-0.5 flex-shrink-0" />
+          <div className="text-xs text-[var(--az-text-muted)] space-y-1">
+            <p><strong className="text-[var(--az-text)]">How it works:</strong> Enable recurring on any SENT or PAID invoice. On the next scheduled date, a clone is created in DRAFT status with the same line items and tax lines.</p>
+            <p>Click <strong className="text-[var(--az-text)]">Process Due</strong> to manually generate any overdue recurring invoices. This also runs automatically via cron.</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

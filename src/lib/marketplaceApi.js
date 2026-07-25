@@ -532,6 +532,12 @@ export const bookingOpsApi = {
   // Invoice Stats
   invoiceStats: () => request('/api/business-os/invoices/stats'),
 
+  // Recurring Invoices (Phase 3)
+  listRecurring: () => request('/api/business-os/invoices/recurring'),
+  enableRecurring: (invoiceId, interval) => request(`/api/business-os/invoices/${invoiceId}/enable-recurring`, { method: 'POST', body: JSON.stringify({ interval }) }),
+  disableRecurring: (invoiceId) => request(`/api/business-os/invoices/${invoiceId}/disable-recurring`, { method: 'POST' }),
+  processRecurring: () => request('/api/business-os/invoices/process-recurring', { method: 'POST' }),
+
   // Booking Dashboard
   bookingDashboard: () => request('/api/business-os/booking/dashboard'),
 };
