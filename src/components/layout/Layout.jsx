@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -11,6 +11,7 @@ import NotificationBell from './NotificationBell';
 import { BusinessSelector } from './BusinessSelector';
 import { PhonePreview } from '../PhonePreview';
 import { CommandPalette } from '../CommandPalette';
+import { ProductTour, shouldShowTour } from "@/components/ui";
 import {
   LayoutDashboard,
   Bell,
@@ -138,7 +139,27 @@ export default function Layout() {
   }, [darkMode]);
   const [showPhonePreview, setShowPhonePreview] = useState(false);
   const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false);
+  const [tourRun, setTourRun] = useState(false);
+  const [tourName, setTourName] = useState(null);
   const location = useLocation();
+  // Auto-trigger tour for first-time users based on current page
+  useEffect(() => {
+    const path = location.pathname;
+    let name = null;
+    if (path === "/" || path === "/dashboard") name = "dashboard";
+    else if (path.startsWith("/orders")) name = "orders";
+    else if (path.startsWith("/employees")) name = "employees";
+    else if (path.startsWith("/finance") || path.startsWith("/invoices")) name = "finance";
+    else if (path.startsWith("/reservations")) name = "reservations";
+
+    if (name && shouldShowTour(name)) {
+      const timer = setTimeout(() => {
+        setTourName(name);
+        setTourRun(true);
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [location.pathname]);
   const navigate = useNavigate();
   const profileRef = useRef(null);
 
@@ -297,6 +318,7 @@ export default function Layout() {
       
       {/* Command Palette Mount */}
       <CommandPalette isOpen={cmdPaletteOpen} onClose={() => setCmdPaletteOpen(false)} />
+      <ProductTour tourName={tourName} run={tourRun} onClose={() => setTourRun(false)} />
 
       {/* ── Desktop Sidebar ── */}
       <motion.aside
@@ -323,7 +345,7 @@ export default function Layout() {
         </div>
 
         {/* Navigation area */}
-        <div className="flex-1 overflow-y-auto py-4 px-3 custom-scrollbar">
+        <div data-tour="sidebar-nav" className="flex-1 overflow-y-auto py-4 px-3 custom-scrollbar">
           <NavLinks />
         </div>
 
@@ -395,7 +417,7 @@ export default function Layout() {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto py-4 px-3 custom-scrollbar">
+              <div data-tour="sidebar-nav" className="flex-1 overflow-y-auto py-4 px-3 custom-scrollbar">
                 {/* Keep sidebar expanded for mobile drawer */}
                 <NavLinks onLinkClick={() => setMobileOpen(false)} />
               </div>
@@ -492,7 +514,7 @@ export default function Layout() {
             </button>
 
             {/* Notification Bell */}
-            <NotificationBell />
+            <div data-tour="notification-bell"><NotificationBell /></div>
 
             {/* User Profile Dropdown */}
             <div ref={profileRef} className="relative">

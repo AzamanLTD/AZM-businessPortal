@@ -585,6 +585,7 @@ export default function Dashboard() {
         variants={containerVariants}
         initial="hidden"
         animate="show"
+        data-tour="dashboard-stats"
         className="grid grid-cols-2 lg:grid-cols-4 gap-4"
       >
         <motion.div variants={itemVariants}>
@@ -648,7 +649,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── Revenue trend + Order funnel ──────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div data-tour="dashboard-charts" className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Revenue trend — Area chart */}
         <div className="lg:col-span-2">
           <GlassPanel className="p-6 h-full flex flex-col justify-between">

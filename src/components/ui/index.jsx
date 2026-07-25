@@ -245,3 +245,10 @@ export * from './Toast';
 export * from './Command';
 export * from './Separator';
 export * from './DropdownMenu';
+
+// ── Virtualization ──────────────────────────────────────────────────────────
+export { VirtualizedList } from './VirtualizedList';
+export { VirtualizedGrid } from './VirtualizedGrid';
+
+// ── Product Tour ─────────────────────────────────────────────────────────────
+export { ProductTour, shouldShowTour, markTourComplete } from './ProductTour';

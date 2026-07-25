@@ -292,7 +292,7 @@ export default function Employees() {
           </p>
         </div>
         {canCreate && (
-          <Button onClick={() => setIsAddOpen(true)}>
+          <Button data-tour="employees-add" onClick={() => setIsAddOpen(true)}>
             <UserPlus className="w-4 h-4" /> Add Employee
           </Button>
         )}
@@ -358,7 +358,7 @@ export default function Employees() {
 
       {/* Employee Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div data-tour="employees-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-48" />
           ))}

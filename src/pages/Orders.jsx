@@ -275,7 +275,7 @@ export default function Orders() {
       </div>
 
       {/* Filter and Bulk Action Controls */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 p-4 rounded-2xl border border-[var(--az-border)]" style={{ background: 'var(--az-card)' }}>
+      <div data-tour="orders-filter" className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 p-4 rounded-2xl border border-[var(--az-border)]" style={{ background: 'var(--az-card)' }}>
         <div className="flex flex-1 flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-[var(--az-text-muted)] absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -360,7 +360,7 @@ export default function Orders() {
         />
       ) : viewMode === 'kanban' ? (
         /* Kanban View */
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 items-start">
+        <div data-tour="orders-kanban" className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 items-start">
           {KANBAN_COLUMNS.map(column => {
             const columnOrders = filteredOrders.filter(o => o.status === column);
             const columnMeta = ORDER_STATUS_META[column] || { label: column, color: 'var(--az-accent)' };
