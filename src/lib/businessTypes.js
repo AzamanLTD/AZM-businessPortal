@@ -13,7 +13,7 @@ export const BUSINESS_TYPES = {
     icon: 'Bus',
     color: '#4f8ef7',
     category: 'LOGISTICS',
-    navItems: ['transit', 'reservations', 'manifests', 'seatMap', 'fleet', 'drivers', 'guests', 'finance'],
+    navItems: ['transit', 'reservations', 'manifests', 'seatMap', 'fleet', 'drivers', 'retailInventory', 'guests', 'finance'],
     description: 'Manage trips, seat maps, bookings, and passenger check-ins',
   },
   RESTAURANT: {
@@ -21,7 +21,7 @@ export const BUSINESS_TYPES = {
     icon: 'UtensilsCrossed',
     color: '#f59e0b',
     category: 'FOOD_BEVERAGE',
-    navItems: ['reservations', 'dineIn', 'kitchen', 'tables', 'inventory', 'employees', 'guests', 'marketing', 'finance'],
+    navItems: ['reservations', 'dineIn', 'kitchen', 'tables', 'inventory', 'retailInventory', 'employees', 'guests', 'marketing', 'finance'],
     description: 'Manage reservations, table availability, dine-in tabs, and guest check-ins',
   },
   HOTEL: {
@@ -101,6 +101,7 @@ export const MARKETPLACE_NAV = {
   showcase: { label: 'Showcase', icon: 'showcase', to: '/showcase' },
   seatMap: { label: 'Seat Map Editor', icon: 'seatMap', to: '/transit' },
   inventory: { label: 'Inventory', icon: 'Package', to: '/restaurant-inventory' },
+  retailInventory: { label: 'Retail Inventory', icon: 'ShoppingCart', to: '/retail-inventory' },
   guests: { label: 'Guests', icon: 'guests', to: '/guests' },
   
   // Hotel Ops

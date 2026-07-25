@@ -34,6 +34,7 @@ const TransitDrivers = lazy(() => import('@/pages/TransitDrivers'));
 const TransitManifests = lazy(() => import('@/pages/TransitManifests'));
 const TransitCargo = lazy(() => import('@/pages/TransitCargo'));
 const RestaurantInventory = lazy(() => import('@/pages/RestaurantInventory'));
+const RetailInventory = lazy(() => import('@/pages/RetailInventory'));
 const Messages = lazy(() => import('@/pages/Messages'));
 const Analytics = lazy(() => import('@/pages/Analytics'));
 const Developer = lazy(() => import('@/pages/settings/Developer'));
@@ -137,6 +138,7 @@ function AppRoutes() {
         <Route path="/transit-manifests" element={<TypeGuardedRoute types={['TRANSIT']}>{<TransitManifests />}</TypeGuardedRoute>} />
         <Route path="/transit-cargo" element={<TypeGuardedRoute types={['TRANSIT']}>{<TransitCargo />}</TypeGuardedRoute>} />
         <Route path="/restaurant-inventory" element={<TypeGuardedRoute types={['RESTAURANT', 'HOTEL']}>{<RestaurantInventory />}</TypeGuardedRoute>} />
+        <Route path="/retail-inventory" element={<RetailInventory />} />
         <Route path="/analytics"            element={<Analytics />} />
         <Route path="/pos" element={<TypeGuardedRoute types={['RESTAURANT', 'HOTEL']}>{<POS />}</TypeGuardedRoute>} />
         <Route path="/settings/developer"   element={<Developer />} />

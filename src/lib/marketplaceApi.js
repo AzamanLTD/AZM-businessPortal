@@ -473,6 +473,32 @@ export const inventoryApi = {
   deductForOrder: (orderId) => request(`/api/business-os/restaurant/inventory/deduct/${orderId}`, { method: 'POST' }),
 };
 
+
+// ── Phase 3 Retail: Suppliers, Purchase Orders, Stock Counts ────────────────
+export const retailApi = {
+  // Suppliers
+  listSuppliers: () => request('/api/business-os/retail/suppliers'),
+  createSupplier: (data) => request('/api/business-os/retail/suppliers', { method: 'POST', body: JSON.stringify(data) }),
+  updateSupplier: (id, data) => request(`/api/business-os/retail/suppliers/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  deleteSupplier: (id) => request(`/api/business-os/retail/suppliers/${id}`, { method: 'DELETE' }),
+
+  // Purchase Orders
+  listPurchaseOrders: () => request('/api/business-os/retail/purchase-orders'),
+  createPurchaseOrder: (data) => request('/api/business-os/retail/purchase-orders', { method: 'POST', body: JSON.stringify(data) }),
+  updatePurchaseOrder: (id, data) => request(`/api/business-os/retail/purchase-orders/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+
+  // Stock Counts
+  listStockCounts: () => request('/api/business-os/retail/stock-counts'),
+  createStockCount: (data) => request('/api/business-os/retail/stock-counts', { method: 'POST', body: JSON.stringify(data) }),
+  updateStockCountItem: (countId, itemId, data) => request(`/api/business-os/retail/stock-counts/${countId}/items/${itemId}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  reconcileStockCount: (id) => request(`/api/business-os/retail/stock-counts/${id}/reconcile`, { method: 'POST' }),
+
+  // Low Stock
+  lowStock: () => request('/api/business-os/retail/low-stock'),
+
+  // Product barcode/SKU update
+  updateProductBarcode: (productId, data) => request(`/api/business-os/retail/products/${productId}/barcode`, { method: 'PATCH', body: JSON.stringify(data) }),
+};
 export default marketplaceApi;
 
 
