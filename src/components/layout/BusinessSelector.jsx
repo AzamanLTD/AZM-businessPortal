@@ -9,10 +9,8 @@ export function BusinessSelector() {
   const [open, setOpen] = useState(false);
 
   // Group businesses by type
-  const EXCLUDED_NAMES = ['test portal biz', 'azaman', 'test chop bar', 'az-qa transit test co'];
   const grouped = useMemo(() => {
     const filtered = (adminBusinesses || []).filter(b => {
-      if (EXCLUDED_NAMES.some(n => b.businessName?.toLowerCase() === n.toLowerCase())) return false;
       return !search || b.businessName?.toLowerCase().includes(search.toLowerCase()) ||
         b.category?.toLowerCase().includes(search.toLowerCase());
     });
