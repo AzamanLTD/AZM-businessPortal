@@ -1,8 +1,9 @@
 // src/pages/StorefrontEditor.jsx
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { getTypeConfig, getWidgetDefaults } from '@/lib/businessTypes';
 import { useStorefront } from '@/hooks/useStorefront';
+import { useUndoRedo } from '@/hooks/useUndoRedo';
 import { GlassPanel } from '@/components/ui/GlassPanel';
 import { Badge } from '@/components/ui';
 import WidgetPalette from '@/components/storefront/WidgetPalette';
@@ -19,7 +20,7 @@ import StorefrontHealthScore from '@/components/storefront/StorefrontHealthScore
 import TemplateGallery from '@/components/storefront/TemplateGallery';
 import QrCodePanel from '@/components/QrCodePanel';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, History, Save, Rocket, AlertCircle, X, Layout, LayoutTemplate, QrCode, BarChart3, ExternalLink, Copy } from 'lucide-react';
+import { Eye, EyeOff, History, Save, Rocket, AlertCircle, X, Layout, LayoutTemplate, QrCode, BarChart3, ExternalLink, Copy, Undo2, Redo2 } from 'lucide-react';
 
 export default function StorefrontEditor() {
   const { bizProfile } = useAuth();
@@ -30,6 +31,8 @@ export default function StorefrontEditor() {
     saveDraft, publish, changeTheme, recordEvent, addTile, updateTile, removeTile, reorderTiles,
     applyTemplate, revertToVersion, setError,
   } = useStorefront(businessId);
+
+  const { pushSnapshot, undo, redo, canUndo, canRedo, clear: clearHistory } = useUndoRedo();
 
   const [selectedTileId, setSelectedTileId]       = useState(null);
   const [showPublishModal, setShowPublishModal]     = useState(false);
@@ -44,16 +47,44 @@ export default function StorefrontEditor() {
   const theme          = useMemo(() => themes.find(t => t.id === draft?.themeId) ?? null, [draft?.themeId, themes]);
   const bizType        = useMemo(() => bizProfile ? getTypeConfig(bizProfile).type : 'GENERAL', [bizProfile]);
 
+  // Wrapped mutations with undo/redo
+  const handleAddTile = useCallback((widgetType, defaultProps = {}) => {
+    if (draft) pushSnapshot(draft);
+    addTile(widgetType, defaultProps);
+  }, [draft, addTile, pushSnapshot]);
+
+  const handleUpdateTile = useCallback((tileId, newProps) => {
+    if (draft) pushSnapshot(draft);
+    updateTile(tileId, newProps);
+  }, [draft, updateTile, pushSnapshot]);
+
+  const handleRemoveTile = useCallback((tileId) => {
+    if (draft) pushSnapshot(draft);
+    removeTile(tileId);
+  }, [draft, removeTile, pushSnapshot]);
+
+  const handleReorderTiles = useCallback((newTiles) => {
+    if (draft) pushSnapshot(draft);
+    reorderTiles(newTiles);
+  }, [draft, reorderTiles, pushSnapshot]);
+
+  const handleChangeTheme = useCallback((themeId) => {
+    if (draft) pushSnapshot(draft);
+    changeTheme(themeId);
+  }, [draft, changeTheme, pushSnapshot]);
+
   const handleMagicLayout = useCallback((layoutJson, themeId) => {
+    if (draft) pushSnapshot(draft);
     if (themeId) changeTheme(themeId);
     saveDraft(layoutJson, themeId).catch(() => {});
-  }, [saveDraft, changeTheme]);
+  }, [saveDraft, changeTheme, draft, pushSnapshot]);
 
   const handleApplyTemplate = useCallback((layoutJson, themeId) => {
+    if (draft) pushSnapshot(draft);
     if (themeId) changeTheme(themeId);
     saveDraft(layoutJson, themeId).catch(() => {});
     setShowTemplates(false);
-  }, [saveDraft, changeTheme]);
+  }, [saveDraft, changeTheme, draft, pushSnapshot]);
 
   const isTileLocked = useCallback((widgetType) => {
     if (!eligibility) return false;
@@ -70,6 +101,21 @@ export default function StorefrontEditor() {
       </GlassPanel>
     </div>
   );
+
+  // Keyboard shortcuts: Ctrl+Z (undo), Ctrl+Shift+Z (redo)
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        if (canUndo) undo();
+      } else if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        if (canRedo) redo();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [canUndo, canRedo, undo, redo]);
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-[60vh]">
@@ -112,6 +158,20 @@ export default function StorefrontEditor() {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-all"
             style={{ color: 'var(--az-text)', borderColor: 'var(--az-border)' }}>
             <LayoutTemplate className="w-4 h-4" />Templates
+          </button>
+          <button onClick={() => { if (canUndo) undo(); }}
+            disabled={!canUndo}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-medium border transition-all disabled:opacity-30"
+            style={{ color: 'var(--az-text)', borderColor: 'var(--az-border)' }}
+            title="Undo (Ctrl+Z)">
+            <Undo2 className="w-4 h-4" />
+          </button>
+          <button onClick={() => { if (canRedo) redo(); }}
+            disabled={!canRedo}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-medium border transition-all disabled:opacity-30"
+            style={{ color: 'var(--az-text)', borderColor: 'var(--az-border)' }}
+            title="Redo (Ctrl+Shift+Z)">
+            <Redo2 className="w-4 h-4" />
           </button>
           <button onClick={() => setShowHistory(h => !h)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-all"
@@ -181,7 +241,7 @@ export default function StorefrontEditor() {
           </div>
           <WidgetPalette widgets={widgets} eligibility={eligibility} businessType={bizType} onAdd={(widgetType, defaultProps) => {
               const typeDefaults = getWidgetDefaults(widgetType, bizType);
-              addTile(widgetType, { ...defaultProps, ...typeDefaults });
+              handleAddTile(widgetType, { ...defaultProps, ...typeDefaults });
             }} isLocked={isTileLocked} />
         </div>
 
@@ -191,9 +251,9 @@ export default function StorefrontEditor() {
             tiles={draft?.layoutJson?.tiles || []}
             selectedTileId={selectedTileId}
             onSelectTile={setSelectedTileId}
-            onUpdateTile={updateTile}
-            onRemoveTile={removeTile}
-            onReorderTiles={reorderTiles}
+            onUpdateTile={handleUpdateTile}
+            onRemoveTile={handleRemoveTile}
+            onReorderTiles={handleReorderTiles}
             onOpenConfig={() => {}}
           >
             <StorefrontCanvas
@@ -220,7 +280,7 @@ export default function StorefrontEditor() {
           ) : (
             <div className="p-4 space-y-4">
               <StorefrontHealthScore draft={draft} businessType={bizType} />
-              <ThemePicker themes={themes} currentThemeId={draft?.themeId} eligibility={eligibility} onThemeChange={changeTheme} businessType={bizType} />
+              <ThemePicker themes={themes} currentThemeId={draft?.themeId} eligibility={eligibility} onThemeChange={handleChangeTheme} businessType={bizType} />
               <NitroUpsellBanner 
                 eligibility={eligibility} 
                 onStakeClick={(tier, currentStake) => recordEvent('nitro_upsell_clicked', {
