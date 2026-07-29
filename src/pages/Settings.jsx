@@ -15,7 +15,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
 import { Card, Button, Input, Textarea, Badge, Switch, Tabs } from '@/components/ui';
 import { KYB_STATUS_META } from '@/lib/utils';
-import { Building2, Save, Eye, BadgeCheck, QrCode, Wallet, ImagePlus, Palette, Shield, Bell, History, AlertTriangle, CheckCircle2, Users } from 'lucide-react';
+import { Building2, Save, Eye, BadgeCheck, QrCode, Wallet, ImagePlus, Palette, Shield, Bell, History, AlertTriangle, CheckCircle2, Users, Code2 } from 'lucide-react';
 import { uploadImageToCloudinary, isCloudinaryConfigured, validateImageFile } from '@/lib/cloudinary';
 import { toast } from 'sonner';
 import PublicProfilePreview from '@/components/PublicProfilePreview';
@@ -26,6 +26,7 @@ import ActivityLog from '@/pages/settings/ActivityLog';
 import DangerZone from '@/pages/settings/DangerZone';
 import TeamAccess from '@/pages/settings/TeamAccess';
 import BusinessMeta from '@/pages/settings/BusinessMeta';
+import Developer from '@/pages/settings/Developer';
 
 const CATEGORIES = [
   { value: 'LOGISTICS',          label: 'Transit & Transport' },
@@ -264,6 +265,7 @@ export default function Settings() {
     { label: 'Notifications', icon: Bell, content: <NotificationPrefs /> },
     { label: 'Activity Log', icon: History, content: <ActivityLog /> },
     { label: 'Danger Zone', icon: AlertTriangle, content: <DangerZone /> },
+    { label: 'Developer', icon: Code2, content: <Developer /> },
   ];
 
   return (

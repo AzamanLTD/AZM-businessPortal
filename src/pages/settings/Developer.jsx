@@ -127,9 +127,7 @@ function CreateKeyModal({ onClose, onCreate }) {
 function CreateWebhookModal({ onClose, onCreate }) {
   const [url, setUrl] = useState('');
   const [events, setEvents] = useState(['order.created']);
-  const [secret, setSecret] = useState(() => 'whsec_' + Array.from(crypto.getRandomValues(new Uint8Array(24))).map(b => b.toString(16).padStart(2, '0')).join(''));
   const [loading, setLoading] = useState(false);
-  const [showSecret, setShowSecret] = useState(false);
   const toggleEvent = (e) => setEvents(prev => prev.includes(e) ? prev.filter(x => x !== e) : [...prev, e]);
 
   const handleCreate = async () => {
@@ -137,7 +135,7 @@ function CreateWebhookModal({ onClose, onCreate }) {
     if (events.length === 0) { toast.error('Select at least one event'); return; }
     setLoading(true);
     try {
-      await onCreate({ url: url.trim(), events, secret });
+      await onCreate({ url: url.trim(), events });
       onClose();
     } catch (e) { toast.error(e.message); }
     finally { setLoading(false); }
@@ -159,18 +157,9 @@ function CreateWebhookModal({ onClose, onCreate }) {
               className="w-full bg-white border rounded-xl px-4 py-3 text-sm focus:outline-none"
               style={{ borderColor: 'var(--az-border)', color: 'var(--az-text)' }} />
           </div>
-          <div className="space-y-1">
-            <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--az-text-muted)' }}>Signing Secret</label>
-            <div className="flex items-center gap-2 bg-white border rounded-xl px-4 py-3" style={{ borderColor: 'var(--az-border)' }}>
-              <code className="flex-1 text-xs font-mono truncate" style={{ color: 'var(--az-text)' }}>
-                {showSecret ? secret : secret.slice(0, 12) + '••••••••••••••••'}
-              </code>
-              <button onClick={() => setShowSecret(v => !v)} style={{ color: 'var(--az-text-muted)' }}>
-                {showSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-              <CopyButton text={secret} />
-            </div>
-            <p className="text-xs" style={{ color: 'var(--az-text-muted)' }}>Use this to verify webhook signatures in your server</p>
+          <div className="rounded-xl p-3 border flex items-start gap-2" style={{ background: 'var(--az-info-subtle, #e0f2fe)', borderColor: 'var(--az-info, #0284c7)' }}>
+            <Shield className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: 'var(--az-info, #0284c7)' }} />
+            <p className="text-xs" style={{ color: 'var(--az-text-muted)' }}>A signing secret will be auto-generated. Use this to verify webhook signatures in your server</p>
           </div>
           <div className="space-y-2">
             <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--az-text-muted)' }}>Events</label>
@@ -333,11 +322,17 @@ export default function Developer() {
           </div>
         ) : (
           <div className="divide-y" style={{ borderColor: 'var(--az-border)' }}>
-            {webhooks.map(wh => (
+            {webhooks.map(wh => {
+              const deliveries = wh.deliveries || [];
+              const successCount = deliveries.filter(d => d.status === 'DELIVERED').length;
+              const failCount = deliveries.filter(d => d.status === 'FAILED').length;
+              const lastDelivery = deliveries[0]?.createdAt;
+              const isActive = wh.isActive !== false;
+              return (
               <div key={wh.id} className="px-6 py-4">
                 <div className="flex items-start gap-4">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: wh.status === 'active' ? 'var(--az-success-subtle)' : 'var(--az-danger-subtle)' }}>
-                    <Globe className="w-4 h-4" style={{ color: wh.status === 'active' ? 'var(--az-success)' : 'var(--az-danger)' }} />
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: isActive ? 'var(--az-success-subtle)' : 'var(--az-danger-subtle)' }}>
+                    <Globe className="w-4 h-4" style={{ color: isActive ? 'var(--az-success)' : 'var(--az-danger)' }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -346,19 +341,31 @@ export default function Developer() {
                         {wh.url}<ExternalLink className="w-3 h-3 flex-shrink-0" />
                       </a>
                       <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
-                        style={wh.status === 'active' ? { background: 'var(--az-success-subtle)', color: 'var(--az-success)' } : { background: 'var(--az-danger-subtle)', color: 'var(--az-danger)' }}>
-                        {wh.status}
+                        style={isActive ? { background: 'var(--az-success-subtle)', color: 'var(--az-success)' } : { background: 'var(--az-danger-subtle)', color: 'var(--az-danger)' }}>
+                        {isActive ? 'active' : 'paused'}
                       </span>
                     </div>
                     <div className="flex items-center gap-3 text-xs mb-2" style={{ color: 'var(--az-text-muted)' }}>
-                      <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-500" />{wh.successCount} delivered</span>
-                      {wh.failCount > 0 && <span className="flex items-center gap-1"><XCircle className="w-3 h-3" style={{ color: 'var(--az-danger)' }} />{wh.failCount} failed</span>}
-                      <span>Last: {wh.lastDelivery ? new Date(wh.lastDelivery).toLocaleString('en-GH', { dateStyle: 'short', timeStyle: 'short' }) : 'Never'}</span>
+                      <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-500" />{successCount} delivered</span>
+                      {failCount > 0 && <span className="flex items-center gap-1"><XCircle className="w-3 h-3" style={{ color: 'var(--az-danger)' }} />{failCount} failed</span>}
+                      <span>Last: {lastDelivery ? new Date(lastDelivery).toLocaleString('en-GH', { dateStyle: 'short', timeStyle: 'short' }) : 'Never'}</span>
                     </div>
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1 mb-2">
                       {wh.events.map(ev => (
                         <span key={ev} className="text-xs px-2 py-0.5 rounded-md font-mono" style={{ background: 'var(--az-bg)', border: '1px solid var(--az-border)', color: 'var(--az-text-secondary)' }}>{ev}</span>
                       ))}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => testWhMutation.mutate(wh.id)} disabled={testWhMutation.isPending}
+                        className="text-xs px-2.5 py-1 rounded-lg font-semibold border transition-all flex items-center gap-1"
+                        style={{ borderColor: 'var(--az-border)', color: 'var(--az-text-secondary)' }}>
+                        <Zap className="w-3 h-3" /> Send Test
+                      </button>
+                      <button onClick={() => rotateSecretMutation.mutate(wh.id)} disabled={rotateSecretMutation.isPending}
+                        className="text-xs px-2.5 py-1 rounded-lg font-semibold border transition-all flex items-center gap-1"
+                        style={{ borderColor: 'var(--az-border)', color: 'var(--az-text-secondary)' }}>
+                        <RefreshCw className="w-3 h-3" /> Rotate Secret
+                      </button>
                     </div>
                   </div>
                   <button onClick={() => deleteWebhook(wh.id)} className="p-1.5 rounded-lg transition-colors hover:bg-red-50 mt-0.5 flex-shrink-0" style={{ color: 'var(--az-danger)' }}>
@@ -366,7 +373,8 @@ export default function Developer() {
                   </button>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
