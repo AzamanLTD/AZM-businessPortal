@@ -9,7 +9,7 @@ import { useToast } from '@/components/ui/Toast';
 import { Widget, WidgetStat, WidgetRow } from '@/components/ui/Widget';
 import { fmtUSDC, fmt, formatDateTime, relativeTime, cn } from '@/lib/utils';
 import {
-  Receipt, Plus, Search, X, Trash2, Eye, Send, Ban,
+  Receipt, Plus, Search, X, Trash2, Eye, Send, Ban, Mail,
   User, MapPin, Star, AlertCircle, Loader2, ChevronDown, ChevronUp, Check, Repeat, RefreshCw, CalendarClock
 } from 'lucide-react';
 
@@ -61,6 +61,11 @@ export default function Invoices() {
     mutationFn: (id) => invoicesApi.send(id),
     onSuccess: () => {
       toast({ title: 'Invoice Sent', description: 'The invoice has been locked and sent to the customer.', variant: 'success' });
+  const emailMut = useMutation({
+    mutationFn: ({ id, email }) => invoicesApi.email(id, email),
+    onSuccess: (data) => toast({ title: 'Invoice Emailed', description: data.message || 'Invoice sent successfully.', variant: 'success' }),
+    onError: (e) => toast({ title: 'Error Emailing', description: e.message, variant: 'destructive' }),
+  });
       invalidate();
     },
     onError: (e) => toast({ title: 'Error Sending', description: e.message, variant: 'destructive' }),
@@ -387,6 +392,21 @@ export default function Invoices() {
                                 loading={sendMut.isPending && sendMut.variables === inv.id}
                               >
                                 <Send className="w-3.5 h-3.5" /> Send
+                              </Button>
+                            )}
+                            {(inv.status === 'SENT' || inv.status === 'DRAFT') && (
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => {
+                                  const email = prompt('Email address (leave blank to use customer\'s email):');
+                                  if (email === null) return;
+                                  emailMut.mutate({ id: inv.id, email: email || undefined });
+                                }}
+                                loading={emailMut.isPending && emailMut.variables?.id === inv.id}
+                                title="Email invoice"
+                              >
+                                <Mail className="w-3.5 h-3.5" />
                               </Button>
                             )}
                             {(inv.status === 'DRAFT' || inv.status === 'SENT') && (
