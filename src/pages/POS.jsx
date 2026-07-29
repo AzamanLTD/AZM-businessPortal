@@ -162,7 +162,7 @@ export default function POS() {
   const [completedOrder, setCompletedOrder] = useState(null);
   const [outboxCount, setOutboxCount] = useState(readOutbox().length);
   const [syncing, setSyncing] = useState(false);
-  const canRing = hasPermission('orders.create') || hasPermission('dinein.manage') || true;
+  const canRing = hasPermission('orders.create') || hasPermission('dinein.manage');
   const refreshOutbox = useCallback(() => setOutboxCount(readOutbox().length), []);
 
   const { data: productsData = [], isLoading: loadingProducts } = useQuery({
