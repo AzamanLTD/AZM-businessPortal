@@ -1258,7 +1258,7 @@ export default function Products() {
                   <button
                     type="button"
                     onClick={() => removeProductImage(idx)}
-                    className="absolute top-1 right-1 w-5 h-5 bg-[var(--az-danger)] rounded-full flex items-center justify-center text-white hover:scale-110 transition-transform"
+                    className="absolute top-1 right-1 w-5 h-5 bg-[var(--az-danger)] rounded-full flex items-center justify-center text-[var(--az-text)] hover:scale-110 transition-transform"
                   >
                     <X className="w-3 h-3" />
                   </button>

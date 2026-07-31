@@ -643,7 +643,7 @@ export default function Reservations() {
 
                             {/* Trust Rating Metric Indicator */}
                             {res.customerTrustScore !== undefined && (
-                              <div className="inline-flex items-center gap-1 text-[10px] font-semibold text-[var(--az-info)] px-2 py-0.5 rounded-full bg-blue-500/10">
+                              <div className="inline-flex items-center gap-1 text-[10px] font-semibold text-[var(--az-info)] px-2 py-0.5 rounded-full bg-[var(--az-info)]">
                                 Trust: {res.customerTrustScore}%
                               </div>
                             )}
@@ -714,7 +714,7 @@ export default function Reservations() {
                                 variant="primary"
                                 onClick={() => respondRescheduleMutation.mutate({ id: res.id, accept: true })}
                                 disabled={respondRescheduleMutation.isPending}
-                                className="px-2.5 py-1 text-[10px] bg-[var(--az-success)] text-white hover:bg-emerald-600 h-7"
+                                className="px-2.5 py-1 text-[10px] bg-[var(--az-success)] text-[var(--az-text)] hover:bg-emerald-600 h-7"
                               >
                                 Accept Prop
                               </Button>
@@ -854,7 +854,7 @@ export default function Reservations() {
                         "p-3 rounded-xl border flex flex-col gap-1.5 transition-all",
                         slot.isOpen 
                           ? "bg-[var(--az-bg)] border-[var(--az-border)]" 
-                          : "bg-red-500/5 border-red-500/15 opacity-60"
+                          : "bg-[var(--az-danger)]/5 border-red-500/15 opacity-60"
                       )}
                     >
                       <div className="flex justify-between items-center">
@@ -883,7 +883,7 @@ export default function Reservations() {
                 </div>
               )}
 
-              <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/10 flex gap-2">
+              <div className="p-3 rounded-xl bg-[var(--az-info)]/5 border border-blue-500/10 flex gap-2">
                 <Info className="w-4 h-4 text-[var(--az-info)] flex-shrink-0 mt-0.5" />
                 <p className="text-[10px] text-[var(--az-text-muted)] leading-normal">
                   This preview lets you audit what external customers see on the main marketplace scheduling feed.
@@ -919,7 +919,7 @@ export default function Reservations() {
               required
             />
 
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-500/5 border border-amber-500/10">
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--az-warning)]/5 border border-amber-500/10">
               <Info className="w-4 h-4 text-[var(--az-warning)] flex-shrink-0" />
               <p className="text-[11px] text-[var(--az-text-muted)]">
                 The customer will be notified, and the smart contract escrow balance will be fully refunded.
@@ -937,7 +937,7 @@ export default function Reservations() {
                 variant="primary"
                 onClick={() => cancelMutation.mutate({ id: cancelReservation.id, reason: cancelReason })}
                 disabled={cancelMutation.isPending || !cancelReason}
-                className="bg-[var(--az-danger)] text-white hover:bg-red-600"
+                className="bg-[var(--az-danger)] text-[var(--az-text)] hover:bg-red-600"
               >
                 Confirm Cancellation
               </Button>
@@ -1038,8 +1038,8 @@ export default function Reservations() {
                 <div className={cn(
                   "p-3 rounded-lg border flex flex-col gap-1 mt-1",
                   noShowReservation.customerTrustScore < 80 
-                    ? "bg-red-500/5 border-red-500/10" 
-                    : "bg-blue-500/5 border-blue-500/10"
+                    ? "bg-[var(--az-danger)]/5 border-red-500/10" 
+                    : "bg-[var(--az-info)]/5 border-blue-500/10"
                 )}>
                   <div className="flex items-center gap-1.5 text-xs font-semibold">
                     <Users className="w-3.5 h-3.5" />
@@ -1073,7 +1073,7 @@ export default function Reservations() {
                 variant="primary"
                 onClick={() => noShowMutation.mutate(noShowReservation.id)}
                 disabled={noShowMutation.isPending}
-                className="bg-[var(--az-danger)] text-white hover:bg-red-600"
+                className="bg-[var(--az-danger)] text-[var(--az-text)] hover:bg-red-600"
               >
                 Confirm Penalty Deduction
               </Button>

@@ -355,7 +355,7 @@ export default function HotelFrontDesk() {
                           size="sm"
                           disabled={actionPending}
                           onClick={() => handleCheckIn(guest.id)}
-                          className="px-3 py-1 bg-[var(--az-accent)] text-white hover:bg-[var(--az-accent)] opacity-90 hover:opacity-100 flex items-center gap-1 text-xs"
+                          className="px-3 py-1 bg-[var(--az-accent)] text-[var(--az-text)] hover:bg-[var(--az-accent)] opacity-90 hover:opacity-100 flex items-center gap-1 text-xs"
                         >
                           <LogIn size={12} /> Check In
                         </Button>
@@ -440,7 +440,7 @@ export default function HotelFrontDesk() {
                           size="sm"
                           disabled={actionPending}
                           onClick={() => openCheckoutConfirm(guest)}
-                          className="px-3 py-1 bg-[var(--az-warning)] text-white hover:bg-[var(--az-warning)] opacity-90 hover:opacity-100 flex items-center gap-1 text-xs"
+                          className="px-3 py-1 bg-[var(--az-warning)] text-[var(--az-text)] hover:bg-[var(--az-warning)] opacity-90 hover:opacity-100 flex items-center gap-1 text-xs"
                         >
                           <LogOut size={12} /> Check Out
                         </Button>
@@ -594,7 +594,7 @@ export default function HotelFrontDesk() {
                                           >
                                             <div
                                               style={{ backgroundColor: cellColor }}
-                                              className="h-9 rounded flex items-center justify-center text-[10px] font-bold text-white cursor-pointer hover:brightness-95 transition-all shadow-sm"
+                                              className="h-9 rounded flex items-center justify-center text-[10px] font-bold text-[var(--az-text)] cursor-pointer hover:brightness-95 transition-all shadow-sm"
                                             >
                                               {status.slice(0, 3)}
                                             </div>
@@ -611,7 +611,7 @@ export default function HotelFrontDesk() {
                                                 setWalkInOpen(true);
                                               }
                                             }}
-                                            className="h-9 rounded flex items-center justify-center text-[10px] font-bold text-white cursor-pointer hover:brightness-95 transition-all shadow-sm"
+                                            className="h-9 rounded flex items-center justify-center text-[10px] font-bold text-[var(--az-text)] cursor-pointer hover:brightness-95 transition-all shadow-sm"
                                             title={status === 'AVAILABLE' ? 'Click to Book for this date' : status}
                                           >
                                             {status.slice(0, 3)}
@@ -855,7 +855,7 @@ export default function HotelFrontDesk() {
               onClick={handleCheckOut}
               disabled={actionPending}
               loading={actionPending}
-              className="bg-[var(--az-warning)] hover:bg-[var(--az-warning)] text-white"
+              className="bg-[var(--az-warning)] hover:bg-[var(--az-warning)] text-[var(--az-text)]"
             >
               Confirm Checkout
             </Button>

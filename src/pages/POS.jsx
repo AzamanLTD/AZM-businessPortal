@@ -40,10 +40,10 @@ function ReceiptModal({ order, bizName, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <motion.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}
-        className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden">
-        <div style={{ background: 'var(--az-accent)' }} className="p-6 text-center text-white">
+        className="bg-[var(--az-surface-1)] rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden">
+        <div style={{ background: 'var(--az-accent)' }} className="p-6 text-center text-[var(--az-text)]">
           <div className="text-2xl font-bold">{bizName || 'AZM POS'}</div>
-          <div className="text-white/80 text-sm mt-1">{now}</div>
+          <div className="text-[var(--az-text)]/80 text-sm mt-1">{now}</div>
         </div>
         <div className="p-5 space-y-2">
           {order.items.map((item, i) => (
@@ -73,7 +73,7 @@ function ReceiptModal({ order, bizName, onClose }) {
           <button onClick={() => window.print()} className="flex-1 flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl py-3 text-sm font-semibold transition-colors">
             <Printer className="w-4 h-4" /> Print
           </button>
-          <button onClick={onClose} className="flex-1 flex items-center justify-center gap-2 text-white rounded-xl py-3 text-sm font-semibold transition-colors" style={{ background: 'var(--az-accent)' }}>
+          <button onClick={onClose} className="flex-1 flex items-center justify-center gap-2 text-[var(--az-text)] rounded-xl py-3 text-sm font-semibold transition-colors" style={{ background: 'var(--az-accent)' }}>
             <CheckCircle2 className="w-4 h-4" /> Done
           </button>
         </div>
@@ -123,7 +123,7 @@ function PaymentModal({ total, onClose, onConfirm, isLoading }) {
             <div className="space-y-2">
               <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--az-text-muted)' }}>{method === 'SPLIT' ? 'Cash Amount' : 'Cash Given'}</label>
               <input type="number" value={cashInput} onChange={e => setCashInput(e.target.value)} placeholder={cashRequired.toFixed(2)}
-                className="w-full bg-white border rounded-xl px-4 py-3 text-lg font-bold tabular-nums focus:outline-none" style={{ borderColor: 'var(--az-border)', color: 'var(--az-text)' }} />
+                className="w-full bg-[var(--az-surface-1)] border rounded-xl px-4 py-3 text-lg font-bold tabular-nums focus:outline-none" style={{ borderColor: 'var(--az-border)', color: 'var(--az-text)' }} />
               {change > 0 && (
                 <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2 text-sm flex justify-between">
                   <span className="text-green-700">Change</span><span className="font-bold text-green-700 tabular-nums">{fmt(change)}</span>
@@ -135,11 +135,11 @@ function PaymentModal({ total, onClose, onConfirm, isLoading }) {
             <div className="space-y-2">
               <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--az-text-muted)' }}>AZM Amount</label>
               <input type="number" value={azmInput} onChange={e => setAzmInput(e.target.value)} placeholder="0.00"
-                className="w-full bg-white border rounded-xl px-4 py-3 text-lg font-bold tabular-nums focus:outline-none" style={{ borderColor: 'var(--az-border)', color: 'var(--az-text)' }} />
+                className="w-full bg-[var(--az-surface-1)] border rounded-xl px-4 py-3 text-lg font-bold tabular-nums focus:outline-none" style={{ borderColor: 'var(--az-border)', color: 'var(--az-text)' }} />
             </div>
           )}
           <button onClick={() => onConfirm({ method, cashGiven: cashAmt, azmAmount: azmAmt })} disabled={!canConfirm || isLoading}
-            className="w-full py-4 text-white font-bold rounded-xl text-base transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm disabled:opacity-40"
+            className="w-full py-4 text-[var(--az-text)] font-bold rounded-xl text-base transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm disabled:opacity-40"
             style={{ background: 'var(--az-accent)' }}>
             {isLoading ? <RefreshCw className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
             Confirm Payment
@@ -252,7 +252,7 @@ export default function POS() {
           <div className="relative flex-1 max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--az-text-muted)' }} />
             <input value={searchQ} onChange={e => setSearchQ(e.target.value)} placeholder="Search items…"
-              className="w-full pl-9 pr-4 py-2.5 bg-white border rounded-xl text-sm focus:outline-none"
+              className="w-full pl-9 pr-4 py-2.5 bg-[var(--az-surface-1)] border rounded-xl text-sm focus:outline-none"
               style={{ borderColor: 'var(--az-border)', color: 'var(--az-text)' }} />
             {searchQ && <button onClick={() => setSearchQ('')} className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--az-text-muted)' }}><X className="w-3.5 h-3.5" /></button>}
           </div>
@@ -304,7 +304,7 @@ export default function POS() {
                   <motion.button key={product.id}
                     variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
                     onClick={() => addToCart(product)}
-                    className="group relative flex flex-col bg-white border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all active:scale-[0.97] text-left"
+                    className="group relative flex flex-col bg-[var(--az-surface-1)] border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all active:scale-[0.97] text-left"
                     style={{ borderColor: 'var(--az-border)' }}>
                     <div className="aspect-square relative overflow-hidden" style={{ background: 'var(--az-bg)' }}>
                       {product.imageUrl
@@ -312,7 +312,7 @@ export default function POS() {
                         : <div className="w-full h-full flex items-center justify-center"><Package className="w-10 h-10 opacity-20" style={{ color: 'var(--az-text-muted)' }} /></div>
                       }
                       {cartItem && (
-                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center shadow-md" style={{ background: 'var(--az-accent)' }}>
+                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full text-[var(--az-text)] text-xs font-bold flex items-center justify-center shadow-md" style={{ background: 'var(--az-accent)' }}>
                           {cartItem.qty}
                         </div>
                       )}
@@ -344,7 +344,7 @@ export default function POS() {
             <ShoppingCart className="w-5 h-5" style={{ color: 'var(--az-accent)' }} />
             <h2 className="font-bold" style={{ color: 'var(--az-text)' }}>Cart</h2>
             {cart.length > 0 && (
-              <span className="text-xs font-bold text-white px-2 py-0.5 rounded-full" style={{ background: 'var(--az-accent)' }}>
+              <span className="text-xs font-bold text-[var(--az-text)] px-2 py-0.5 rounded-full" style={{ background: 'var(--az-accent)' }}>
                 {cart.reduce((s, i) => s + i.qty, 0)}
               </span>
             )}
@@ -366,7 +366,7 @@ export default function POS() {
               </div>
             ) : cart.map(item => (
               <motion.div key={item.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-                className="flex items-center gap-3 bg-white border rounded-xl p-3" style={{ borderColor: 'var(--az-border)' }}>
+                className="flex items-center gap-3 bg-[var(--az-surface-1)] border rounded-xl p-3" style={{ borderColor: 'var(--az-border)' }}>
                 <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0" style={{ background: 'var(--az-bg)' }}>
                   {item.imageUrl
                     ? <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
@@ -395,7 +395,7 @@ export default function POS() {
         </div>
 
         {cart.length > 0 && (
-          <div className="p-5 border-t bg-white space-y-3" style={{ borderColor: 'var(--az-border)' }}>
+          <div className="p-5 border-t bg-[var(--az-surface-1)] space-y-3" style={{ borderColor: 'var(--az-border)' }}>
             <div className="space-y-1.5 text-sm">
               <div className="flex justify-between" style={{ color: 'var(--az-text-secondary)' }}>
                 <span>Subtotal</span><span className="tabular-nums">{fmt(subtotal)}</span>
@@ -408,7 +408,7 @@ export default function POS() {
               </div>
             </div>
             <button onClick={() => setShowPayment(true)} disabled={!canRing}
-              className="w-full py-4 text-white font-bold rounded-xl text-base transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm disabled:opacity-40"
+              className="w-full py-4 text-[var(--az-text)] font-bold rounded-xl text-base transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm disabled:opacity-40"
               style={{ background: 'var(--az-accent)' }}>
               <Zap className="w-5 h-5" /> Charge {fmt(total)}
             </button>

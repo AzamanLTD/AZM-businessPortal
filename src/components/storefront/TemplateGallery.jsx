@@ -276,7 +276,7 @@ function TemplateCard({ template, themes, widgets, onApply, isLocked }) {
         {locked && (
           <div className="absolute inset-0 flex items-center justify-center"
             style={{ background: 'rgba(0,0,0,0.4)' }}>
-            <span className="text-[10px] font-bold text-white px-2 py-1 rounded-full"
+            <span className="text-[10px] font-bold text-[var(--az-text)] px-2 py-1 rounded-full"
               style={{ background: accent }}>
               {template.tier.replace('NITRO_', '')} Required
             </span>

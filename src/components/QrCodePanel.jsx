@@ -22,7 +22,7 @@ export default function QrCodePanel({ label, url }) {
 
   return (
     <div className="flex items-center gap-4 p-4 bg-[#0a0a12] border border-[#1e1e2e] rounded-2xl">
-      <div className="bg-white p-2 rounded-xl flex-shrink-0">
+      <div className="bg-[var(--az-surface-1)] p-2 rounded-xl flex-shrink-0">
         <QRCodeCanvas
           id={canvasId}
           value={url}

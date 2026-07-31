@@ -106,7 +106,7 @@ function ConfigField({ fieldKey, schemaProp, value, onChange }) {
           className="relative w-10 h-5 rounded-full transition-colors"
           style={{ background: value ? 'var(--az-accent)' : 'var(--az-border)' }}
         >
-          <div className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform"
+          <div className="absolute top-0.5 w-4 h-4 rounded-full bg-[var(--az-surface-1)] transition-transform"
             style={{ transform: value ? 'translateX(20px)' : 'translateX(2px)' }} />
         </button>
       </div>

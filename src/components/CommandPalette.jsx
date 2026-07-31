@@ -220,21 +220,21 @@ export function CommandPalette({ isOpen, onClose }) {
                             onMouseEnter={() => setSelectedIndex(item.globalIndex)}
                             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-az-md text-left transition-all ${
                               isSelected 
-                                ? 'bg-az-accent text-white shadow-sm' 
+                                ? 'bg-az-accent text-[var(--az-text)] shadow-sm' 
                                 : 'text-az-text-secondary hover:bg-az-bg-alt hover:text-az-text'
                             }`}
                           >
-                            <Icon className={`w-4.5 h-4.5 flex-shrink-0 ${isSelected ? 'text-white' : 'text-az-text-secondary'}`} />
+                            <Icon className={`w-4.5 h-4.5 flex-shrink-0 ${isSelected ? 'text-[var(--az-text)]' : 'text-az-text-secondary'}`} />
                             <div className="flex-1 min-w-0">
                               <span className="text-sm font-medium block truncate">{item.label}</span>
                               {item.subtitle && (
-                                <span className={`text-xs block truncate ${isSelected ? 'text-white/80' : 'text-az-text-muted'}`}>
+                                <span className={`text-xs block truncate ${isSelected ? 'text-[var(--az-text)]/80' : 'text-az-text-muted'}`}>
                                   {item.subtitle}
                                 </span>
                               )}
                             </div>
                             {isSelected && (
-                              <ArrowRight className="w-4 h-4 text-white" />
+                              <ArrowRight className="w-4 h-4 text-[var(--az-text)]" />
                             )}
                           </button>
                         );

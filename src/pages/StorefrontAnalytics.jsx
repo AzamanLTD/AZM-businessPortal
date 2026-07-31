@@ -235,7 +235,7 @@ export default function StorefrontAnalytics() {
             )}
 
             {ctaData.length > 0 && (
-              <div className="bg-white border border-az-border rounded-az-lg shadow-az-card p-6">
+              <div className="bg-[var(--az-surface-1)] border border-az-border rounded-az-lg shadow-az-card p-6">
                 <h3 className="text-sm font-bold text-az-text mb-4">CTA Action Breakdown</h3>
                 <DonutChartCard
                   data={ctaData}
@@ -248,7 +248,7 @@ export default function StorefrontAnalytics() {
           {/* Traffic Sources + Summary Stats */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {trafficData.length > 0 && (
-              <div className="bg-white border border-az-border rounded-az-lg shadow-az-card p-6">
+              <div className="bg-[var(--az-surface-1)] border border-az-border rounded-az-lg shadow-az-card p-6">
                 <h3 className="text-sm font-bold text-az-text mb-4">Traffic Sources</h3>
                 <div className="space-y-2">
                   {trafficData.map(source => {
@@ -272,7 +272,7 @@ export default function StorefrontAnalytics() {
               </div>
             )}
 
-            <div className="bg-white border border-az-border rounded-az-lg shadow-az-card p-6">
+            <div className="bg-[var(--az-surface-1)] border border-az-border rounded-az-lg shadow-az-card p-6">
               <h3 className="text-sm font-bold text-az-text mb-4 flex items-center gap-2">
                 <TrendingUp className="w-4 h-4" style={{ color: 'var(--az-accent)' }} />
                 Event Summary

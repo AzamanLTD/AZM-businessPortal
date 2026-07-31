@@ -342,7 +342,7 @@ export default function Reviews() {
             <select
               value={sourceFilter}
               onChange={(e) => { setSourceFilter(e.target.value); setPage(0); }}
-              className="px-3 py-2 rounded-xl bg-[var(--az-black)] border border-[var(--az-border)] text-xs text-white outline-none cursor-pointer focus:border-[var(--az-accent)]"
+              className="px-3 py-2 rounded-xl bg-[var(--az-black)] border border-[var(--az-border)] text-xs text-[var(--az-text)] outline-none cursor-pointer focus:border-[var(--az-accent)]"
             >
               <option value="all">All Sources</option>
               <option value="order">Storefront Orders</option>
@@ -489,7 +489,7 @@ export default function Reviews() {
             <textarea
               rows={4}
               required
-              className="w-full px-4 py-3 rounded-xl bg-[var(--az-black)] border border-[var(--az-border)] text-sm outline-none focus:border-[var(--az-accent)] text-white"
+              className="w-full px-4 py-3 rounded-xl bg-[var(--az-black)] border border-[var(--az-border)] text-sm outline-none focus:border-[var(--az-accent)] text-[var(--az-text)]"
               placeholder="Draft your polite, helpful response publicly displayed to all guests..."
               value={responseText}
               onChange={(e) => setResponseText(e.target.value)}
@@ -524,7 +524,7 @@ export default function Reviews() {
             <textarea
               rows={4}
               required
-              className="w-full px-4 py-3 rounded-xl bg-[var(--az-black)] border border-[var(--az-border)] text-sm outline-none focus:border-[var(--az-accent)] text-white"
+              className="w-full px-4 py-3 rounded-xl bg-[var(--az-black)] border border-[var(--az-border)] text-sm outline-none focus:border-[var(--az-accent)] text-[var(--az-text)]"
               placeholder="e.g. Abusive behavior, completely fraudulent order claiming services were not delivered..."
               value={flagReason}
               onChange={(e) => setFlagReason(e.target.value)}
@@ -535,7 +535,7 @@ export default function Reviews() {
             <Button type="button" variant="secondary" onClick={() => setFlagModalOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" loading={submitting} className="bg-[var(--az-danger)] border-[var(--az-danger)] hover:bg-[var(--az-danger)]/90 text-white">
+            <Button type="submit" loading={submitting} className="bg-[var(--az-danger)] border-[var(--az-danger)] hover:bg-[var(--az-danger)]/90 text-[var(--az-text)]">
               Escalate to Admin
             </Button>
           </div>

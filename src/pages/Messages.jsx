@@ -155,11 +155,11 @@ export default function Messages() {
   if (isErrorInbox) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <AlertCircle className="w-12 h-12 text-red-500" />
+        <AlertCircle className="w-12 h-12 text-[var(--az-danger)]" />
         <h2 className="text-lg font-semibold text-az-text">Could not load messages</h2>
         <button 
           onClick={() => refetchInbox()} 
-          className="flex items-center gap-2 px-4 py-2 bg-az-accent text-white rounded-az-md font-semibold hover:brightness-110 transition-all"
+          className="flex items-center gap-2 px-4 py-2 bg-az-accent text-[var(--az-text)] rounded-az-md font-semibold hover:brightness-110 transition-all"
         >
           <RefreshCw className="w-4 h-4" /> Retry
         </button>
@@ -224,7 +224,7 @@ export default function Messages() {
                     <p className="text-xs text-az-text-secondary truncate mt-0.5">{conv.lastMessage || 'No message content'}</p>
                   </div>
                   {conv.unreadCount > 0 && (
-                    <span className="absolute right-3 bottom-3 w-5 h-5 rounded-full bg-az-accent text-white font-bold text-[10px] flex items-center justify-center shadow-sm">
+                    <span className="absolute right-3 bottom-3 w-5 h-5 rounded-full bg-az-accent text-[var(--az-text)] font-bold text-[10px] flex items-center justify-center shadow-sm">
                       {conv.unreadCount}
                     </span>
                   )}
@@ -272,7 +272,7 @@ export default function Messages() {
                 </div>
               ) : isErrorThread ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
-                  <AlertCircle className="w-8 h-8 text-red-500 mb-2" />
+                  <AlertCircle className="w-8 h-8 text-[var(--az-danger)] mb-2" />
                   <p className="text-sm text-az-text">Could not load messages.</p>
                   <button onClick={() => refetchThread()} className="text-xs text-az-accent underline mt-1">Try again</button>
                 </div>
@@ -291,11 +291,11 @@ export default function Messages() {
                     >
                       <div className={`max-w-[70%] p-3 rounded-az-lg text-sm relative group ${
                         isSentByMe 
-                          ? 'bg-az-accent text-white rounded-br-none shadow-sm' 
+                          ? 'bg-az-accent text-[var(--az-text)] rounded-br-none shadow-sm' 
                           : 'bg-az-surface border border-az-border text-az-text rounded-bl-none'
                       }`}>
                         <p className="leading-relaxed">{msg.text}</p>
-                        <div className={`text-[9px] mt-1 text-right ${isSentByMe ? 'text-white/70' : 'text-az-text-muted'}`}>
+                        <div className={`text-[9px] mt-1 text-right ${isSentByMe ? 'text-[var(--az-text)]/70' : 'text-az-text-muted'}`}>
                           {formatTime(msg.created_date || msg.createdAt)}
                         </div>
                       </div>
@@ -325,7 +325,7 @@ export default function Messages() {
                     {quickReplies.map((reply, idx) => (
                       <div key={idx} className="flex items-center justify-between p-2 rounded bg-az-bg-alt border border-az-border/40 text-sm">
                         <span className="truncate flex-1 text-az-text-secondary">{reply}</span>
-                        <button onClick={() => removeTemplate(idx)} className="text-red-500 hover:text-red-600 text-xs font-semibold ml-2">Delete</button>
+                        <button onClick={() => removeTemplate(idx)} className="text-[var(--az-danger)] hover:text-red-600 text-xs font-semibold ml-2">Delete</button>
                       </div>
                     ))}
                   </div>
@@ -336,7 +336,7 @@ export default function Messages() {
                       placeholder="Add custom template..."
                       className="flex-1 text-xs bg-az-bg-alt border border-az-border rounded px-2 py-1.5 outline-none text-az-text focus:border-az-accent"
                     />
-                    <button onClick={addTemplate} className="px-3 py-1.5 bg-az-accent text-white text-xs font-semibold rounded hover:brightness-110 transition-all">Add</button>
+                    <button onClick={addTemplate} className="px-3 py-1.5 bg-az-accent text-[var(--az-text)] text-xs font-semibold rounded hover:brightness-110 transition-all">Add</button>
                   </div>
                 </motion.div>
               )}
@@ -388,7 +388,7 @@ export default function Messages() {
                 <button 
                   onClick={handleSend}
                   disabled={sendMessageMutation.isLoading || !inputText.trim()}
-                  className="px-4 py-2 bg-az-accent text-white rounded-az-md font-semibold hover:brightness-110 transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center"
+                  className="px-4 py-2 bg-az-accent text-[var(--az-text)] rounded-az-md font-semibold hover:brightness-110 transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center"
                 >
                   <Send className="w-4 h-4" />
                 </button>

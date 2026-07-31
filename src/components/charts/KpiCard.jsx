@@ -20,7 +20,7 @@ export function KpiCard({ label, value, delta, deltaType = 'positive', sparkData
   const stringPrefix = typeof value === 'string' ? value.split(/[0-9]/)[0] : '';
 
   return (
-    <div className="bg-white border border-az-border rounded-2xl shadow-az-card p-6 flex flex-col justify-between transition-all duration-200">
+    <div className="bg-[var(--az-surface-1)] border border-az-border rounded-2xl shadow-az-card p-6 flex flex-col justify-between transition-all duration-200">
       <div>
         <div className="flex items-start justify-between mb-3">
           <div>

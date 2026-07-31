@@ -61,7 +61,7 @@ export function PhonePreview({ business, onClose }) {
           style={{ background: 'var(--az-accent)', touchAction: 'none' }}
           title="Show live preview"
         >
-          <Smartphone className="w-6 h-6 text-white" />
+          <Smartphone className="w-6 h-6 text-[var(--az-text)]" />
         </motion.button>
       ) : (
         <motion.div
@@ -88,14 +88,14 @@ export function PhonePreview({ business, onClose }) {
             </p>
             <button
               onClick={() => setMinimized(true)}
-              className="w-5 h-5 rounded-full flex items-center justify-center text-[var(--az-text-muted)] hover:text-white hover:bg-[var(--az-bg-alt)] flex-shrink-0"
+              className="w-5 h-5 rounded-full flex items-center justify-center text-[var(--az-text-muted)] hover:text-[var(--az-text)] hover:bg-[var(--az-bg-alt)] flex-shrink-0"
               aria-label="Minimize preview"
             >
               <Minus className="w-3 h-3" />
             </button>
             <button
               onClick={onClose}
-              className="w-5 h-5 rounded-full flex items-center justify-center text-[var(--az-text-muted)] hover:text-white hover:bg-[var(--az-bg-alt)] flex-shrink-0"
+              className="w-5 h-5 rounded-full flex items-center justify-center text-[var(--az-text-muted)] hover:text-[var(--az-text)] hover:bg-[var(--az-bg-alt)] flex-shrink-0"
               aria-label="Close preview"
             >
               <X className="w-3 h-3" />
@@ -158,7 +158,7 @@ export function PhonePreview({ business, onClose }) {
               <div className="absolute top-3 left-1/2 -translate-x-1/2 w-[120px] h-[35px] bg-black rounded-full z-50 flex items-center justify-end px-2.5">
                 {/* Camera lens */}
                 <div className="w-[11px] h-[11px] rounded-full bg-[#0a0a0a] border border-white/5 flex items-center justify-center">
-                  <div className="w-[4px] h-[4px] rounded-full bg-blue-500/20 blur-[1px]" />
+                  <div className="w-[4px] h-[4px] rounded-full bg-[var(--az-info)] blur-[1px]" />
                 </div>
               </div>
 
@@ -197,7 +197,7 @@ function ScreenForType({ typeConfig, business }) {
 
 function HeaderBlock({ typeConfig, business, subtitle }) {
   return (
-    <div className="w-full px-4 pt-3 pb-4 bg-white border-b border-black/5">
+    <div className="w-full px-4 pt-3 pb-4 bg-[var(--az-surface-1)] border-b border-black/5">
       <div className="flex items-center gap-3">
         <div
           className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm"
@@ -211,7 +211,7 @@ function HeaderBlock({ typeConfig, business, subtitle }) {
         </div>
       </div>
       <div className="flex items-center gap-1 mt-2 text-[12px] text-gray-500">
-        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+        <Star className="w-3.5 h-3.5 fill-amber-400 text-[var(--az-warning)]" />
         <span className="font-semibold text-gray-700">4.8</span>
         <span>· 210 reviews</span>
       </div>
@@ -225,7 +225,7 @@ function RestaurantScreen({ typeConfig, business }) {
       <HeaderBlock typeConfig={typeConfig} business={business} subtitle="Restaurant · Open now" />
       <div className="px-4 py-3 flex gap-2">
         {['Reserve a table', 'Order dine-in', 'Menu'].map((label, i) => (
-          <div key={label} className={`flex-1 rounded-xl py-2.5 text-center text-[12px] font-semibold ${i === 0 ? 'text-white' : 'bg-white border border-black/5 text-gray-700'}`}
+          <div key={label} className={`flex-1 rounded-xl py-2.5 text-center text-[12px] font-semibold ${i === 0 ? 'text-[var(--az-text)]' : 'bg-[var(--az-surface-1)] border border-black/5 text-gray-700'}`}
                style={i === 0 ? { backgroundColor: typeConfig.color } : {}}>
             {label}
           </div>
@@ -235,7 +235,7 @@ function RestaurantScreen({ typeConfig, business }) {
         <p className="text-[13px] font-bold text-gray-800 mb-2">Popular dishes</p>
         <div className="grid grid-cols-2 gap-3">
           {['Jollof Special', 'Grilled Tilapia', 'Waakye Bowl', 'Banku & Okro'].map((dish) => (
-            <div key={dish} className="bg-white rounded-2xl border border-black/5 shadow-sm overflow-hidden">
+            <div key={dish} className="bg-[var(--az-surface-1)] rounded-2xl border border-black/5 shadow-sm overflow-hidden">
               <div className="h-24 bg-gradient-to-br from-gray-100 to-gray-200" />
               <div className="p-2.5">
                 <p className="text-[12px] font-semibold text-gray-800 truncate">{dish}</p>
@@ -255,7 +255,7 @@ function HotelScreen({ typeConfig, business }) {
       <HeaderBlock typeConfig={typeConfig} business={business} subtitle="Hotel · 4 room types" />
       <div className="px-4 mt-3 space-y-3">
         {['Deluxe Room', 'Executive Suite', 'Standard Twin'].map((room, i) => (
-          <div key={room} className="bg-white rounded-2xl border border-black/5 shadow-sm flex overflow-hidden">
+          <div key={room} className="bg-[var(--az-surface-1)] rounded-2xl border border-black/5 shadow-sm flex overflow-hidden">
             <div className="w-28 h-24 bg-gradient-to-br from-gray-100 to-gray-200 flex-shrink-0" />
             <div className="p-3 flex-1 min-w-0">
               <p className="text-[13px] font-semibold text-gray-800 truncate">{room}</p>
@@ -282,7 +282,7 @@ function TransitScreen({ typeConfig, business }) {
           { from: 'Accra', to: 'Takoradi', time: '11:00 AM' },
           { from: 'Accra', to: 'Cape Coast', time: '2:15 PM' },
         ].map((trip) => (
-          <div key={trip.time} className="bg-white rounded-2xl border border-black/5 shadow-sm p-3 flex items-center gap-3">
+          <div key={trip.time} className="bg-[var(--az-surface-1)] rounded-2xl border border-black/5 shadow-sm p-3 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                  style={{ backgroundColor: `${typeConfig.color}18`, color: typeConfig.color }}>
               <Bus className="w-5 h-5" />
@@ -306,7 +306,7 @@ function RetailScreen({ typeConfig, business }) {
     <div className="pb-8">
       <HeaderBlock typeConfig={typeConfig} business={business} subtitle="Store · Ships same day" />
       <div className="px-4 py-3">
-        <div className="bg-white rounded-xl border border-black/5 flex items-center gap-2 px-3 py-2.5">
+        <div className="bg-[var(--az-surface-1)] rounded-xl border border-black/5 flex items-center gap-2 px-3 py-2.5">
           <Search className="w-4 h-4 text-gray-400" />
           <span className="text-[13px] text-gray-400">Search products</span>
         </div>
@@ -314,7 +314,7 @@ function RetailScreen({ typeConfig, business }) {
       <div className="px-4">
         <div className="grid grid-cols-2 gap-3">
           {['Product A', 'Product B', 'Product C', 'Product D'].map((p) => (
-            <div key={p} className="bg-white rounded-2xl border border-black/5 shadow-sm overflow-hidden">
+            <div key={p} className="bg-[var(--az-surface-1)] rounded-2xl border border-black/5 shadow-sm overflow-hidden">
               <div className="h-28 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                 <ShoppingBag className="w-7 h-7 text-gray-300" />
               </div>

@@ -197,7 +197,7 @@ export default function Locations() {
                 <div key={i} className='relative aspect-square rounded-xl overflow-hidden border border-[var(--az-border)]'>
                   <img src={url} alt="" className="w-full h-full object-cover" />
                   <button onClick={()=>setForm(f=>({...f,galleryUrls:f.galleryUrls.filter((_,j)=>j!==i)}))}
-                    className='absolute top-1 right-1 w-5 h-5 bg-[var(--az-danger)] rounded-full text-white text-[10px] font-bold flex items-center justify-center'>×</button>
+                    className='absolute top-1 right-1 w-5 h-5 bg-[var(--az-danger)] rounded-full text-[var(--az-text)] text-[10px] font-bold flex items-center justify-center'>×</button>
                 </div>
               ))}
               {form.galleryUrls.length < 10 && (

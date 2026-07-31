@@ -98,7 +98,7 @@ export default function Guests({ businessId }) {
         </GlassPanel>
 
         <GlassPanel className="p-4 border border-[var(--az-border)] rounded-2xl flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-500">
+          <div className="p-3 rounded-xl bg-[var(--az-success-subtle)] text-[var(--az-success)]">
             <RefreshCw className="w-5 h-5" />
           </div>
           <div>
@@ -108,7 +108,7 @@ export default function Guests({ businessId }) {
         </GlassPanel>
 
         <GlassPanel className="p-4 border border-[var(--az-border)] rounded-2xl flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-amber-500/10 text-amber-500">
+          <div className="p-3 rounded-xl bg-[var(--az-warning-subtle)] text-[var(--az-warning)]">
             <DollarSign className="w-5 h-5" />
           </div>
           <div>
@@ -118,7 +118,7 @@ export default function Guests({ businessId }) {
         </GlassPanel>
 
         <GlassPanel className="p-4 border border-[var(--az-border)] rounded-2xl flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-blue-500/10 text-blue-500">
+          <div className="p-3 rounded-xl bg-[var(--az-info)] text-[var(--az-info)]">
             <TrendingUp className="w-5 h-5" />
           </div>
           <div>
@@ -142,7 +142,7 @@ export default function Guests({ businessId }) {
             className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all ${
               activeSegment === seg.key
                 ? 'bg-[#6C4FD1]/15 text-[#6C4FD1] border-[#6C4FD1]'
-                : 'bg-white text-[var(--sn-text-muted)] border-[var(--az-border)] hover:bg-[var(--az-border)]/10'
+                : 'bg-[var(--az-surface-1)] text-[var(--sn-text-muted)] border-[var(--az-border)] hover:bg-[var(--az-border)]/10'
             }`}
           >
             {seg.label}
@@ -168,7 +168,7 @@ export default function Guests({ businessId }) {
             
             <div className="w-full md:w-48">
               <select
-                className="w-full px-4 py-2.5 rounded-xl bg-white border border-[var(--az-border)] text-[var(--az-text)] text-sm outline-none focus:border-[#6C4FD1]"
+                className="w-full px-4 py-2.5 rounded-xl bg-[var(--az-surface-1)] border border-[var(--az-border)] text-[var(--az-text)] text-sm outline-none focus:border-[#6C4FD1]"
                 value={sourceFilter}
                 onChange={(e) => setSourceFilter(e.target.value)}
               >
@@ -214,7 +214,7 @@ export default function Guests({ businessId }) {
                       >
                         <td className="p-4 flex items-center gap-3">
                           <div
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xs"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--az-text)] font-bold text-xs"
                             style={{ backgroundColor: getInitialsColor(guest.fullName) }}
                           >
                             {guest.fullName?.[0] || '?'}
@@ -236,7 +236,7 @@ export default function Guests({ businessId }) {
                         <td className="p-4 font-mono font-semibold">{(guest.totalSpentUsdc || 0).toFixed(2)} USDC</td>
                         <td className="p-4">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                            guest.trustLevel === 'EXCELLENT' ? 'text-emerald-500 bg-emerald-50' : 'text-blue-500 bg-blue-50'
+                            guest.trustLevel === 'EXCELLENT' ? 'text-[var(--az-success)] bg-emerald-50' : 'text-[var(--az-info)] bg-blue-50'
                           }`}>
                             {guest.trustLevel}
                           </span>
@@ -302,7 +302,7 @@ export default function Guests({ businessId }) {
           onClick={() => setSelectedGuest(null)}
         >
           <div
-            className="bg-white max-w-md w-full h-full p-6 space-y-6 flex flex-col shadow-2xl overflow-y-auto animate-slide-in"
+            className="bg-[var(--az-surface-1)] max-w-md w-full h-full p-6 space-y-6 flex flex-col shadow-2xl overflow-y-auto animate-slide-in"
             onClick={(e) => e.stopPropagation()}
             style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}
           >
@@ -339,13 +339,13 @@ export default function Guests({ businessId }) {
                   ]}>
                     <defs>
                       <linearGradient id="colorSpend" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#6C4FD1" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="#6C4FD1" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="var(--az-accent)" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="var(--az-accent)" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                     <XAxis dataKey="name" fontSize={10} tickLine={false} />
                     <Tooltip />
-                    <Area type="monotone" dataKey="spend" stroke="#6C4FD1" fillOpacity={1} fill="url(#colorSpend)" />
+                    <Area type="monotone" dataKey="spend" stroke="var(--az-accent)" fillOpacity={1} fill="url(#colorSpend)" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -380,7 +380,7 @@ export default function Guests({ businessId }) {
               />
             </div>
 
-            <Button onClick={() => setSelectedGuest(null)} className="w-full bg-[#6C4FD1] text-white hover:bg-[#5b42b1]">
+            <Button onClick={() => setSelectedGuest(null)} className="w-full bg-[#6C4FD1] text-[var(--az-text)] hover:bg-[#5b42b1]">
               Close Directory Profile
             </Button>
           </div>

@@ -93,7 +93,7 @@ export default function Finance() {
                 onClick={() => setRange(r.key)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                   range === r.key
-                    ? 'bg-[var(--az-accent)] text-white'
+                    ? 'bg-[var(--az-accent)] text-[var(--az-text)]'
                     : 'text-[var(--az-text-muted)] hover:text-[var(--az-text)]'
                 }`}
               >
@@ -545,7 +545,7 @@ function ExpensesTab({ canManage }) {
             onClick={() => setFilter('ALL')}
             className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
               filter === 'ALL'
-                ? 'bg-[var(--az-accent)] text-white'
+                ? 'bg-[var(--az-accent)] text-[var(--az-text)]'
                 : 'bg-[var(--az-surface)] text-[var(--az-text-muted)] border border-[var(--az-border)] hover:text-[var(--az-text)]'
             }`}
           >
@@ -557,7 +557,7 @@ function ExpensesTab({ canManage }) {
               onClick={() => setFilter(key)}
               className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                 filter === key
-                  ? 'text-white'
+                  ? 'text-[var(--az-text)]'
                   : 'bg-[var(--az-surface)] text-[var(--az-text-muted)] border border-[var(--az-border)] hover:text-[var(--az-text)]'
               }`}
               style={filter === key ? { background: b.color } : {}}

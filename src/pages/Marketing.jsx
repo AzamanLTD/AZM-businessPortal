@@ -662,7 +662,7 @@ export default function Marketing() {
                         {bizProfile?.businessName?.charAt(0) || 'A'}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-black text-white truncate">{bizProfile?.businessName || 'Azaman Partner'}</p>
+                        <p className="text-xs font-black text-[var(--az-text)] truncate">{bizProfile?.businessName || 'Azaman Partner'}</p>
                         <p className="text-[10px] text-[var(--az-text-muted)] flex items-center gap-1">
                           Sponsored <Sparkles className="w-2.5 h-2.5 text-[var(--az-accent)]" />
                         </p>
@@ -683,7 +683,7 @@ export default function Marketing() {
                       </Badge>
                     </div>
 
-                    <h5 className="text-sm font-extrabold text-white mb-1">{adForm.title || 'Your Eye-Catching Campaign Title'}</h5>
+                    <h5 className="text-sm font-extrabold text-[var(--az-text)] mb-1">{adForm.title || 'Your Eye-Catching Campaign Title'}</h5>
                     <p className="text-xs text-[var(--az-text-muted)] line-clamp-3 mb-4 leading-relaxed">
                       {adForm.body || 'Pitch details here. Highlight your new seasonal menu, high-luxury suite offer, discount scope, or VIP events.'}
                     </p>
@@ -805,13 +805,13 @@ export default function Marketing() {
                     <div className="p-4 rounded-xl bg-[var(--az-black)] border border-[var(--az-border)] flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div
-                          className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm text-white"
+                          className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm text-[var(--az-text)]"
                           style={{ backgroundColor: accentColor }}
                         >
                           {bizProfile?.businessName?.charAt(0) || 'B'}
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-white">{bizProfile?.businessName || 'Your Business'}</p>
+                          <p className="text-sm font-bold text-[var(--az-text)]">{bizProfile?.businessName || 'Your Business'}</p>
                           <p className="text-[10px] text-[var(--az-text-muted)]">Marketplace View</p>
                         </div>
                       </div>

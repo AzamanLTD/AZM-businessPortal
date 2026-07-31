@@ -30,7 +30,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex bg-white text-az-text">
+    <div className="min-h-screen flex bg-[var(--az-surface-1)] text-az-text">
 
       {/* Left panel — branding */}
       <div
@@ -114,7 +114,7 @@ export default function Login() {
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   autoComplete="current-password"
-                  className="w-full px-4 py-3 pr-10 rounded-xl bg-white border border-az-border text-az-text text-sm placeholder:text-az-text-muted outline-none focus:border-az-accent focus:ring-1 focus:ring-az-accent transition-colors"
+                  className="w-full px-4 py-3 pr-10 rounded-xl bg-[var(--az-surface-1)] border border-az-border text-az-text text-sm placeholder:text-az-text-muted outline-none focus:border-az-accent focus:ring-1 focus:ring-az-accent transition-colors"
                 />
                 <button
                   type="button"

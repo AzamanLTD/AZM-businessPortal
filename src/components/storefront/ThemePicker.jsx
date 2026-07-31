@@ -63,7 +63,7 @@ export default function ThemePicker({ themes, currentThemeId, eligibility, onThe
                 ? <div className="absolute top-2 right-2"><Lock className="w-3 h-3" style={{ color: 'var(--az-text-muted)' }} /></div>
                 : isActive
                   ? <div className="absolute top-2 right-2 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: 'var(--az-accent)' }}>
-                      <Check className="w-2.5 h-2.5 text-white" />
+                      <Check className="w-2.5 h-2.5 text-[var(--az-text)]" />
                     </div>
                   : null
               }

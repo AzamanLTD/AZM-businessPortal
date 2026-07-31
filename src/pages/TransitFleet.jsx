@@ -544,7 +544,7 @@ export default function TransitFleet() {
             {/* Grid rows */}
             <div className="grid gap-2.5" style={{ gridTemplateColumns: `repeat(${seatCols}, minmax(0, 1fr))` }}>
               {seatGrid.map((seat, index) => {
-                let cellColorClass = 'border-[var(--az-border)] hover:border-[var(--az-accent)] text-white';
+                let cellColorClass = 'border-[var(--az-border)] hover:border-[var(--az-accent)] text-[var(--az-text)]';
                 let cellBg = 'bg-black/20';
                 
                 if (seat.type === 'WINDOW') {

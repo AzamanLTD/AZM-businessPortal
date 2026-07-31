@@ -435,7 +435,7 @@ export default function TransitTrips() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {templates.map(t => (
                 <div key={t.id} className="p-3.5 rounded-xl bg-[var(--az-surface)] border border-[var(--az-border)] relative group">
-                  <button onClick={() => handleDeleteTemplate(t.id)} className="absolute top-3.5 right-3.5 p-1 rounded hover:bg-red-500/10 text-[var(--az-text-muted)] hover:text-[var(--az-danger)] transition-colors">
+                  <button onClick={() => handleDeleteTemplate(t.id)} className="absolute top-3.5 right-3.5 p-1 rounded hover:bg-[var(--az-danger-subtle)] text-[var(--az-text-muted)] hover:text-[var(--az-danger)] transition-colors">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                   <p className="font-bold text-xs text-[var(--az-text)]">{t.name}</p>
@@ -445,7 +445,7 @@ export default function TransitTrips() {
                     <span className="text-[var(--az-success)] font-bold">${t.typicalFareUsdc} USDC</span>
                   </div>
                   <div className="mt-2 text-[10px] text-[var(--az-text-muted)]">
-                    <span className="font-bold block text-[8px] uppercase tracking-wider text-purple-400">Scheduled times:</span>
+                    <span className="font-bold block text-[8px] uppercase tracking-wider text-[var(--az-accent)]">Scheduled times:</span>
                     <span className="font-mono">{t.departureTimes || '—'}</span>
                   </div>
                 </div>
@@ -478,7 +478,7 @@ export default function TransitTrips() {
       <Modal open={!!modal} onClose={closeModal} title={modal === 'create' ? 'Schedule New Run' : 'Edit Scheduled Run'}>
         <form onSubmit={handleSubmit} className="space-y-4">
           {formError && (
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-[var(--az-danger)] text-xs text-[var(--az-danger)]">
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--az-danger-subtle)] border border-[var(--az-danger)] text-xs text-[var(--az-danger)]">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               <span>{formError}</span>
             </div>
@@ -612,7 +612,7 @@ export default function TransitTrips() {
       {/* Modal - Cancellation Refund Preview & Confirmation */}
       <Modal open={cancelPreviewOpen} onClose={() => setCancelPreviewOpen(false)} title="Confirm Trip Cancellation & Refunds">
         <div className="space-y-4 text-xs">
-          <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 flex items-start gap-2">
+          <div className="p-3 bg-[var(--az-danger-subtle)] border border-red-500/30 rounded-xl text-[var(--az-danger)] flex items-start gap-2">
             <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-bold">Irreversible Action Warning</p>
@@ -636,7 +636,7 @@ export default function TransitTrips() {
 
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="secondary" onClick={() => { setCancelPreviewOpen(false); setSelectedTripToCancel(null); }}>Keep Trip Active</Button>
-            <Button variant="danger" className="bg-[var(--az-danger)] text-white hover:bg-red-700" onClick={confirmTripCancellation}>Confirm Cancellation</Button>
+            <Button variant="danger" className="bg-[var(--az-danger)] text-[var(--az-text)] hover:bg-red-700" onClick={confirmTripCancellation}>Confirm Cancellation</Button>
           </div>
         </div>
       </Modal>

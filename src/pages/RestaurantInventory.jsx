@@ -398,7 +398,7 @@ export default function RestaurantInventory() {
                       </button>
                       <button
                         onClick={() => quick86Mutation.mutate(item)}
-                        className="px-2 py-1 bg-[rgba(239,68,68,0.1)] hover:bg-[var(--az-danger)] text-[var(--az-danger)] hover:text-white rounded-lg text-xs font-semibold transition-colors border border-[rgba(239,68,68,0.2)]"
+                        className="px-2 py-1 bg-[rgba(239,68,68,0.1)] hover:bg-[var(--az-danger)] text-[var(--az-danger)] hover:text-[var(--az-text)] rounded-lg text-xs font-semibold transition-colors border border-[rgba(239,68,68,0.2)]"
                         title="Mark item out of stock (86 menu)"
                       >
                         86 Item

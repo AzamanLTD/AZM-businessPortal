@@ -211,7 +211,7 @@ export default function NotificationBell() {
       >
         <Bell className="w-4 h-4 text-[var(--az-text-muted)]" />
         {unread > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-[var(--az-danger)] text-[10px] font-bold text-white flex items-center justify-center leading-none animate-pulse">
+          <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-[var(--az-danger)] text-[10px] font-bold text-[var(--az-text)] flex items-center justify-center leading-none animate-pulse">
             {unread > 99 ? '99+' : unread}
           </span>
         )}

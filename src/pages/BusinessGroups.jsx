@@ -72,7 +72,7 @@ export default function BusinessGroups() {
           Business Groups let you manage multiple brands side-by-side with consolidated revenue, headcount, and performance data.
           This view becomes available once you have more than one business registered under your account.
         </p>
-        <div className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white" style={{ background: 'var(--az-accent)' }}>
+        <div className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-[var(--az-text)]" style={{ background: 'var(--az-accent)' }}>
           <Plus className="w-4 h-4" /> Register another business to get started
         </div>
       </div>
@@ -92,7 +92,7 @@ export default function BusinessGroups() {
         </p>
         <button
           onClick={() => refetch()}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-[var(--az-text)] transition-opacity hover:opacity-90"
           style={{ background: 'var(--az-accent)' }}
         >
           <RefreshCw className="w-4 h-4" /> Retry
@@ -196,7 +196,7 @@ export default function BusinessGroups() {
                   style={hoveredBiz === biz.id ? { background: 'var(--az-bg)' } : {}}
                   onClick={() => isAdmin && biz.id && selectBusiness && selectBusiness(biz.id)}
                 >
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-xs font-bold"
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-[var(--az-text)] text-xs font-bold"
                     style={{ background: color }}>
                     {(biz.name || 'B').charAt(0)}
                   </div>

@@ -827,7 +827,7 @@ export default function HotelHousekeeping() {
                     <div className="flex gap-2 justify-end">
                       <Button
                         onClick={() => handleInspection(selectedTask.id, false)}
-                        className="bg-[var(--az-danger)] text-white hover:bg-red-600 border-none px-4 py-2"
+                        className="bg-[var(--az-danger)] text-[var(--az-text)] hover:bg-red-600 border-none px-4 py-2"
                       >
                         Fail Inspection
                       </Button>
@@ -935,7 +935,7 @@ export default function HotelHousekeeping() {
             <div>
               <label className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider block mb-1">Custom Checklist Items</label>
               <textarea
-                className="w-full p-3 text-sm bg-[var(--az-black)] border border-[var(--az-border)] rounded-xl outline-none focus:border-[var(--az-accent)] text-white"
+                className="w-full p-3 text-sm bg-[var(--az-black)] border border-[var(--az-border)] rounded-xl outline-none focus:border-[var(--az-accent)] text-[var(--az-text)]"
                 rows={3}
                 placeholder="Item 1&#10;Item 2&#10;Item 3"
                 value={createForm.customChecklist}

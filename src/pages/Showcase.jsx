@@ -504,7 +504,7 @@ export default function Showcase() {
                   >
                     {/* Version icon */}
                     <div className="flex flex-col items-center">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${idx === 0 ? 'text-white' : 'text-[var(--az-text-muted)]'}`}
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${idx === 0 ? 'text-[var(--az-text)]' : 'text-[var(--az-text-muted)]'}`}
                         style={{ background: idx === 0 ? 'var(--az-accent)' : 'var(--az-bg-alt)' }}>
                         {idx === 0 ? <CheckCircle className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
                       </div>

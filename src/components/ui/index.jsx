@@ -37,10 +37,10 @@ export function Badge({ children, variant = 'primary', color, bg, className }) {
 export function Button({ children, variant = 'primary', size = 'md', loading, disabled, className, ...props }) {
   const base = 'inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed select-none';
   const variants = {
-    primary:   'bg-[var(--az-accent)] text-white hover:bg-[var(--az-accent-hover)] active:scale-[0.98] shadow-sm',
-    secondary: 'bg-white border border-[var(--az-border)] text-[var(--az-text)] hover:bg-[var(--az-bg-alt)] hover:border-[var(--az-border-strong)]',
+    primary:   'bg-[var(--az-accent)] text-[var(--az-text)] hover:bg-[var(--az-accent-hover)] active:scale-[0.98] shadow-sm',
+    secondary: 'bg-[var(--az-surface-1)] border border-[var(--az-border)] text-[var(--az-text)] hover:bg-[var(--az-bg-alt)] hover:border-[var(--az-border-strong)]',
     ghost:     'text-[var(--az-text-muted)] hover:bg-[var(--az-bg-alt)] hover:text-[var(--az-text)]',
-    danger:    'bg-[var(--az-danger-subtle)] border border-[var(--az-danger)] text-[var(--az-danger)] hover:bg-[var(--az-danger)] hover:text-white',
+    danger:    'bg-[var(--az-danger-subtle)] border border-[var(--az-danger)] text-[var(--az-danger)] hover:bg-[var(--az-danger)] hover:text-[var(--az-text)]',
     outline:   'border border-[var(--az-border)] text-[var(--az-text-muted)] hover:border-[var(--az-accent)] hover:text-[var(--az-accent)]',
   };
   const sizes = {

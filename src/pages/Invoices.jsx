@@ -867,7 +867,7 @@ function CreateInvoiceModal({ onClose, onCreated }) {
         <Button onClick={handleCreate} loading={createMut.isPending} className="flex-1 bg-[var(--az-surface)] text-[var(--az-text)] border border-[var(--az-border)] hover:bg-[var(--az-border)]">
           Save as Draft
         </Button>
-        <Button onClick={handleSend} loading={sendMut.isPending} className="flex-1 bg-[var(--az-info)] text-white hover:opacity-90">
+        <Button onClick={handleSend} loading={sendMut.isPending} className="flex-1 bg-[var(--az-info)] text-[var(--az-text)] hover:opacity-90">
           <Send className="w-4 h-4 mr-1" /> Create &amp; Send
         </Button>
       </div>
