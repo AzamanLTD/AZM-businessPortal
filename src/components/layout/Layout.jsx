@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useLocation, Outlet, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { pageVariants } from '@/lib/motion';
 import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
 import { KYB_STATUS_META } from '@/lib/utils';
@@ -12,6 +13,7 @@ import { BusinessSelector } from './BusinessSelector';
 import { PhonePreview } from '../PhonePreview';
 import { CommandPalette } from '../CommandPalette';
 import { ProductTour, shouldShowTour } from "@/components/ui";
+import { BusinessThemeToggle } from "@/components/ui/ThemeToggle";
 import {
   LayoutDashboard,
   Bell,
@@ -324,7 +326,8 @@ export default function Layout() {
       <motion.aside
         animate={{ width: sidebarExpanded ? 240 : 64 }}
         transition={{ type: 'spring', stiffness: 300, damping: 32 }}
-        className="hidden md:flex flex-col flex-shrink-0 border-r border-az-border bg-white relative z-20 h-full overflow-hidden"
+        className="hidden md:flex flex-col flex-shrink-0 border-r border-az-border relative z-20 h-full overflow-hidden"
+        style={{ background: "var(--az-surface-1)" }}
       >
         {/* Logo area */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-az-border flex-shrink-0">
@@ -400,7 +403,8 @@ export default function Layout() {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed inset-y-0 left-0 w-[280px] bg-white border-r border-az-border z-40 md:hidden flex flex-col h-full shadow-lg"
+              className="fixed inset-y-0 left-0 w-[280px] border-r border-az-border z-40 md:hidden flex flex-col h-full shadow-lg"
+              style={{ background: "var(--az-surface-1)" }}
             >
               <div className="h-16 flex items-center justify-between px-4 border-b border-az-border flex-shrink-0">
                 <Link to="/" onClick={() => setMobileOpen(false)} className="flex items-center gap-2">
@@ -503,15 +507,7 @@ export default function Layout() {
             )}
 
             {/* Dark mode toggle */}
-            <button
-              onClick={() => setDarkMode(v => !v)}
-              className="w-9 h-9 rounded-full border flex items-center justify-center transition-colors hover:bg-az-bg-alt"
-              style={{ borderColor: 'var(--az-border)', color: 'var(--az-text-muted)' }}
-              aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-              title={darkMode ? 'Light mode' : 'Dark mode'}
-            >
-              {darkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
+            <BusinessThemeToggle isDark={darkMode} onToggle={() => setDarkMode(v => !v)} />
 
             {/* Notification Bell */}
             <div data-tour="notification-bell"><NotificationBell /></div>
@@ -574,7 +570,17 @@ export default function Layout() {
 
         {/* ── Content Area ── */}
         <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-az-bg">
-          <Outlet />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
 
