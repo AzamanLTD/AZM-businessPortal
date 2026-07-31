@@ -11,8 +11,8 @@
 @layer base {
   :root {
     /* ── Light Mode (DEFAULT) ── */
-    --az-bg:            #F7F5F2;
-    --az-bg-alt:        #FBFAF8;
+    --az-bg:            #F5F6F8;
+    --az-bg-alt:        #FAFBFC;
 
     /* 5-level surface elevation system */
     --az-surface-1:   #FFFFFF;
@@ -84,6 +84,12 @@
     --az-teal-soft:      rgba(61, 116, 219, 0.1);
     --az-accent-grad:    linear-gradient(135deg, var(--az-success) 0%, var(--az-info) 100%);
 
+    /* Sentry-inspired depth shadows */
+    --az-shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
+    --az-shadow-sm: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+    --az-shadow-md: 0 4px 6px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.04);
+    --az-shadow-lg: 0 10px 15px rgba(0,0,0,0.07), 0 4px 6px rgba(0,0,0,0.04);
+
     /* Layout */
     --sidebar-width:     240px;
     --sidebar-width-collapsed: 64px;
@@ -130,6 +136,10 @@
     --az-border-strong:  rgba(255, 255, 255, 0.14);
     --az-border-bright:  rgba(255, 255, 255, 0.18);
     --az-border-focus:   rgba(124, 92, 250, 0.5);
+    --az-shadow-xs: 0 1px 2px rgba(0,0,0,0.35);
+    --az-shadow-sm: 0 1px 3px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.30);
+    --az-shadow-md: 0 4px 6px rgba(0,0,0,0.45), 0 2px 4px rgba(0,0,0,0.30);
+    --az-shadow-lg: 0 10px 15px rgba(0,0,0,0.55), 0 4px 6px rgba(0,0,0,0.35);
 
     --az-text:           #F5F5F6;
     --az-text-primary:   var(--az-text);
