@@ -4,7 +4,6 @@ import { Bell, CheckCheck, ShoppingBag, Wallet, AlertTriangle, CheckCircle2, XCi
 import { notifications as notifApi } from '@/lib/api';
 import { cn, relativeTime } from '@/lib/utils';
 
-const POLL_MS = 30_000;
 
 // Visual treatment per BizNotifType.
 const TYPE_META = {
@@ -74,22 +73,33 @@ export default function NotificationBell() {
   }, []);
 
   useEffect(() => {
+    // Initial load (once, on mount)
     refreshCount();
-    const id = setInterval(refreshCount, POLL_MS);
+    if (open) refreshFeed();
 
+    // Real-time updates via socket — no more 30s polling
     const sock = window.__azSocket;
+    if (!sock?.on) return;
+
     const onNudge = () => { refreshCount(); if (open) refreshFeed(); };
-    if (sock?.on) {
-      sock.on('biz_notification', onNudge);
-      sock.on('biz_notifications_updated', onNudge);
-    }
+    const onNewNotif = (notification) => {
+      // Optimistic insert at top of feed
+      setItems(prev => [notification, ...prev].slice(0, 30));
+      setUnread(prev => prev + 1);
+    };
+
+    sock.on('biz_notification', onNudge);
+    sock.on('biz_notifications_updated', onNudge);
+    sock.on('biz_notification:new', onNewNotif);
+    sock.on('order:new', onNudge);
+    sock.on('review:new', onNudge);
 
     return () => {
-      clearInterval(id);
-      if (sock?.off) {
-        sock.off('biz_notification', onNudge);
-        sock.off('biz_notifications_updated', onNudge);
-      }
+      sock.off('biz_notification', onNudge);
+      sock.off('biz_notifications_updated', onNudge);
+      sock.off('biz_notification:new', onNewNotif);
+      sock.off('order:new', onNudge);
+      sock.off('review:new', onNudge);
     };
   }, [refreshCount, refreshFeed, open]);
 
