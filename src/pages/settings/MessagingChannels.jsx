@@ -223,7 +223,7 @@ export default function MessagingChannels() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--az-text-muted)' }}>WhatsApp Business Number</label>
-              <div className="flex items-center gap-2 bg-white border rounded-xl px-4 py-3" style={{ borderColor: 'var(--az-border)' }}>
+              <div className="flex items-center gap-2 bg-[var(--az-surface-1)] border rounded-xl px-4 py-3" style={{ borderColor: 'var(--az-border)' }}>
                 <Phone className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--az-text-muted)' }} />
                 <input value={waNumber} onChange={e => setWaNumber(e.target.value)} placeholder="+233 20 000 0000"
                   className="flex-1 text-sm bg-transparent focus:outline-none" style={{ color: 'var(--az-text)' }} />
@@ -231,7 +231,7 @@ export default function MessagingChannels() {
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--az-text-muted)' }}>API Key / Access Token</label>
-              <div className="flex items-center gap-2 bg-white border rounded-xl px-4 py-3" style={{ borderColor: 'var(--az-border)' }}>
+              <div className="flex items-center gap-2 bg-[var(--az-surface-1)] border rounded-xl px-4 py-3" style={{ borderColor: 'var(--az-border)' }}>
                 <input value={waApiKey} onChange={e => setWaApiKey(e.target.value)} type={showWaKey ? 'text' : 'password'} placeholder="••••••••••••••••"
                   className="flex-1 text-sm bg-transparent focus:outline-none font-mono" style={{ color: 'var(--az-text)' }} />
                 <button onClick={() => setShowWaKey(v => !v)} style={{ color: 'var(--az-text-muted)' }}>
@@ -279,11 +279,11 @@ export default function MessagingChannels() {
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--az-text-muted)' }}>Sender ID / From Name</label>
               <input value={smsSenderId} onChange={e => setSmsSenderId(e.target.value)} placeholder="AzamanBiz"
-                className="w-full bg-white border rounded-xl px-4 py-3 text-sm focus:outline-none" style={{ borderColor: 'var(--az-border)', color: 'var(--az-text)' }} />
+                className="w-full bg-[var(--az-surface-1)] border rounded-xl px-4 py-3 text-sm focus:outline-none" style={{ borderColor: 'var(--az-border)', color: 'var(--az-text)' }} />
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--az-text-muted)' }}>API Key</label>
-              <div className="flex items-center gap-2 bg-white border rounded-xl px-4 py-3" style={{ borderColor: 'var(--az-border)' }}>
+              <div className="flex items-center gap-2 bg-[var(--az-surface-1)] border rounded-xl px-4 py-3" style={{ borderColor: 'var(--az-border)' }}>
                 <input value={smsApiKey} onChange={e => setSmsApiKey(e.target.value)} type={showSmsKey ? 'text' : 'password'} placeholder="••••••••••••••••"
                   className="flex-1 text-sm bg-transparent focus:outline-none font-mono" style={{ color: 'var(--az-text)' }} />
                 <button onClick={() => setShowSmsKey(v => !v)} style={{ color: 'var(--az-text-muted)' }}>
@@ -308,7 +308,7 @@ export default function MessagingChannels() {
           <h3 className="font-bold" style={{ color: 'var(--az-text)' }}>Test Message</h3>
           <div className="flex gap-3">
             <input value={testNumber} onChange={e => setTestNumber(e.target.value)} placeholder="+233 20 000 0000"
-              className="flex-1 bg-white border rounded-xl px-4 py-2.5 text-sm focus:outline-none" style={{ borderColor: 'var(--az-border)', color: 'var(--az-text)' }} />
+              className="flex-1 bg-[var(--az-surface-1)] border rounded-xl px-4 py-2.5 text-sm focus:outline-none" style={{ borderColor: 'var(--az-border)', color: 'var(--az-text)' }} />
             <button onClick={handleTestSend} disabled={testing}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
               style={{ background: 'var(--az-accent)' }}>

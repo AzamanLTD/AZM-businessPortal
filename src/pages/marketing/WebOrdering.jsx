@@ -149,7 +149,7 @@ export default function WebOrdering() {
                 <button onClick={() => setEnabled(v => !v)}
                   className="relative w-12 h-6 rounded-full transition-colors"
                   style={{ background: enabled ? 'var(--az-success)' : 'var(--az-border-strong)' }}>
-                  <span className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"
+                  <span className="absolute top-0.5 left-0.5 w-5 h-5 bg-[var(--az-surface-1)] rounded-full shadow transition-transform"
                     style={{ transform: enabled ? 'translateX(24px)' : 'translateX(0)' }} />
                 </button>
               </div>
@@ -241,12 +241,12 @@ export default function WebOrdering() {
               <h3 className="font-bold" style={{ color: 'var(--az-text)' }}>Mobile Preview</h3>
               <div className="flex justify-center">
                 <div className="rounded-[36px] border-8 overflow-hidden shadow-2xl" style={{ borderColor: '#111', width: 280 }}>
-                  <div className="bg-white" style={{ minHeight: 500 }}>
+                  <div className="bg-[var(--az-surface-1)]" style={{ minHeight: 500 }}>
                     <div className="h-28 flex items-end pb-4 px-4 text-white"
                       style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}99)` }}>
                       {bizProfile?.logoUrl
                         ? <img src={bizProfile.logoUrl} alt="" className="w-10 h-10 rounded-xl mr-3 border-2 border-white/40 object-cover" />
-                        : <div className="w-10 h-10 rounded-xl mr-3 bg-white/20 flex items-center justify-center text-white font-bold">{(bizProfile?.businessName || 'B').charAt(0)}</div>
+                        : <div className="w-10 h-10 rounded-xl mr-3 bg-[var(--az-surface-1)]/20 flex items-center justify-center text-white font-bold">{(bizProfile?.businessName || 'B').charAt(0)}</div>
                       }
                       <div>
                         <p className="font-bold leading-tight">{bizProfile?.businessName || 'Your Business'}</p>

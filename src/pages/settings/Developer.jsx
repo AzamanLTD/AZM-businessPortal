@@ -85,7 +85,7 @@ function CreateKeyModal({ onClose, onCreate }) {
           <div className="space-y-2">
             <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--az-text-muted)' }}>Key Name</label>
             <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. My Integration"
-              className="w-full bg-white border rounded-xl px-4 py-3 text-sm focus:outline-none"
+              className="w-full bg-[var(--az-surface-1)] border rounded-xl px-4 py-3 text-sm focus:outline-none"
               style={{ borderColor: 'var(--az-border)', color: 'var(--az-text)' }} />
           </div>
           <div className="space-y-2">
@@ -154,7 +154,7 @@ function CreateWebhookModal({ onClose, onCreate }) {
           <div className="space-y-1">
             <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--az-text-muted)' }}>Endpoint URL</label>
             <input value={url} onChange={e => setUrl(e.target.value)} placeholder="https://yourapp.com/webhooks/azaman"
-              className="w-full bg-white border rounded-xl px-4 py-3 text-sm focus:outline-none"
+              className="w-full bg-[var(--az-surface-1)] border rounded-xl px-4 py-3 text-sm focus:outline-none"
               style={{ borderColor: 'var(--az-border)', color: 'var(--az-text)' }} />
           </div>
           <div className="rounded-xl p-3 border flex items-start gap-2" style={{ background: 'var(--az-info-subtle, #e0f2fe)', borderColor: 'var(--az-info, #0284c7)' }}>
@@ -239,7 +239,7 @@ export default function Developer() {
               <Shield className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: 'var(--az-success)' }} />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold" style={{ color: 'var(--az-success)' }}>Copy your new API key — it won't be shown again</p>
-                <div className="mt-2 flex items-center gap-2 bg-white rounded-lg px-3 py-2 border" style={{ borderColor: 'var(--az-success)' }}>
+                <div className="mt-2 flex items-center gap-2 bg-[var(--az-surface-1)] rounded-lg px-3 py-2 border" style={{ borderColor: 'var(--az-success)' }}>
                   <code className="flex-1 text-xs font-mono truncate" style={{ color: 'var(--az-text)' }}>{newKey}</code>
                   <CopyButton text={newKey} />
                 </div>
