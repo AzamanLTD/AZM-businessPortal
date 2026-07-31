@@ -3,7 +3,7 @@
  * Extracted from api.js so marketplaceApi.js can reuse the same auth logic.
  */
 
-const BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://azaman-backend-9d3u.onrender.com' : 'http://localhost:3000');
+const BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://azm-backend.onrender.com' : 'http://localhost:3000');
 
 export async function request(path, options = {}) {
   const token = localStorage.getItem('biz_token');

@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { generateInvoicePDF } from '@/lib/invoicePdf';
 
-const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://azaman-backend-9d3u.onrender.com' : 'http://localhost:3000');
+const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://azm-backend.onrender.com' : 'http://localhost:3000');
 
 // Server-side PDF download (direct file, no print dialog)
 async function downloadServerPdf(invoiceId, invoiceRef) {
