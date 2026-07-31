@@ -1,5 +1,32 @@
 import { useMemo, useState, useEffect } from 'react';
 import { generateInvoicePDF } from '@/lib/invoicePdf';
+
+const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://azaman-backend-9d3u.onrender.com' : 'http://localhost:3000');
+
+// Server-side PDF download (direct file, no print dialog)
+async function downloadServerPdf(invoiceId, invoiceRef) {
+  try {
+    const token = localStorage.getItem('azaman_token');
+    const res = await fetch(`${API_BASE}/api/business-os/invoices/${invoiceId}/pdf`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error('PDF download failed');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${invoiceRef}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error('Server PDF failed, falling back to print:', err);
+    // Fallback to client-side print-to-PDF
+    return false;
+  }
+  return true;
+}
 import { useAuth } from '@/lib/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoices as invoicesApi, locations as locApi } from '@/lib/api';
@@ -382,7 +409,10 @@ export default function Invoices() {
                             <Button variant="secondary" size="sm" onClick={() => setDetailId(inv.id)}>
                               <Eye className="w-3.5 h-3.5" /> View
                             </Button>
-                            <Button variant="secondary" size="sm" onClick={() => generateInvoicePDF(inv, bizProfile)} title="Download PDF">
+                            <Button variant="secondary" size="sm" onClick={async () => {
+                              const ok = await downloadServerPdf(inv.id, inv.invoiceRef);
+                              if (!ok) generateInvoicePDF(inv, bizProfile);
+                            }} title="Download PDF">
                               <Receipt className="w-3.5 h-3.5" />
                             </Button>
                             {inv.status === 'DRAFT' && (
@@ -990,7 +1020,11 @@ function InvoiceDetailModal({ invoiceId, onClose, onSend, onVoid, sending }) {
       )}
 
       <div className="flex gap-3 mt-4 pt-4 border-t border-[var(--az-border)]">
-        <Button variant="secondary" onClick={() => inv && generateInvoicePDF(inv, bizProfile)} className="flex-1" style={{ background: "var(--az-accent-subtle)", color: "var(--az-accent)" }}>
+        <Button variant="secondary" onClick={async () => {
+          if (!inv) return;
+          const ok = await downloadServerPdf(inv.id, inv.invoiceRef);
+          if (!ok) generateInvoicePDF(inv, bizProfile);
+        }} className="flex-1" style={{ background: "var(--az-accent-subtle)", color: "var(--az-accent)" }}>
           <Receipt className="w-4 h-4 mr-1" /> Download PDF
         </Button>
         <Button variant="secondary" onClick={onClose} className="flex-1">Close</Button>
