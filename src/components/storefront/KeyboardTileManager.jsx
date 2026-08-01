@@ -103,16 +103,16 @@ export default function KeyboardTileManager({
     <div ref={containerRef} className="outline-none focus:ring-2 focus:ring-az-accent/20 rounded-xl">
       {selectedTileId && (
         <div className="mb-3 px-3 py-2 rounded-xl text-xs flex items-center gap-2 flex-wrap"
-          style={{ background: 'var(--az-accent-subtle)', color: 'var(--az-text-secondary)' }}>
-          <kbd className="px-1.5 py-0.5 rounded bg-az-surface-solid text-az-text font-mono text-xs">Tab</kbd>
+          style={{ background: 'var(--f-surface-sunken)', color: 'var(--f-text-2)' }}>
+          <kbd className="px-1.5 py-0.5 rounded bg-surface-raised text-ink font-mono text-xs">Tab</kbd>
           <span>navigate</span>
-          <kbd className="px-1.5 py-0.5 rounded bg-az-surface-solid text-az-text font-mono text-xs">↑↓</kbd>
+          <kbd className="px-1.5 py-0.5 rounded bg-surface-raised text-ink font-mono text-xs">↑↓</kbd>
           <span>move</span>
-          <kbd className="px-1.5 py-0.5 rounded bg-az-surface-solid text-az-text font-mono text-xs">Shift+←→</kbd>
+          <kbd className="px-1.5 py-0.5 rounded bg-surface-raised text-ink font-mono text-xs">Shift+←→</kbd>
           <span>resize</span>
-          <kbd className="px-1.5 py-0.5 rounded bg-az-surface-solid text-az-text font-mono text-xs">Del</kbd>
+          <kbd className="px-1.5 py-0.5 rounded bg-surface-raised text-ink font-mono text-xs">Del</kbd>
           <span>remove</span>
-          <kbd className="px-1.5 py-0.5 rounded bg-az-surface-solid text-az-text font-mono text-xs">Esc</kbd>
+          <kbd className="px-1.5 py-0.5 rounded bg-surface-raised text-ink font-mono text-xs">Esc</kbd>
           <span>deselect</span>
         </div>
       )}

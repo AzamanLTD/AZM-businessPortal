@@ -11,7 +11,7 @@ export function Tabs({ tabs, defaultIndex = 0, onChange, className }) {
 
   return (
     <div className={className}>
-      <div className="flex gap-1 p-1 rounded-xl border border-[var(--az-border)] bg-[var(--az-surface)]">
+      <div className="flex gap-1 p-1 rounded-xl border border-[var(--f-line)] bg-[var(--f-surface)]">
         {tabs.map((tab, i) => (
           <button
             key={i}
@@ -19,8 +19,8 @@ export function Tabs({ tabs, defaultIndex = 0, onChange, className }) {
             className={cn(
               'flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150',
               active === i
-                ? 'bg-[var(--az-accent-subtle)] text-[var(--az-accent)] border border-[var(--az-accent)]'
-                : 'text-[var(--az-text-muted)] hover:text-[var(--az-text-muted)] hover:bg-[var(--az-bg-alt)]'
+                ? 'bg-[var(--f-surface-sunken)] text-[var(--f-tint-color)] border border-[var(--f-tint-color)]'
+                : 'text-[var(--f-text-3)] hover:text-[var(--f-text-3)] hover:bg-[var(--f-surface-sunken)]'
             )}
           >
             {tab.icon && <tab.icon className="w-4 h-4 inline mr-1.5" />}
@@ -28,7 +28,7 @@ export function Tabs({ tabs, defaultIndex = 0, onChange, className }) {
             {tab.count !== undefined && (
               <span className={cn(
                 'ml-1.5 text-xs px-1.5 py-0.5 rounded-full',
-                active === i ? 'bg-[var(--az-accent)] text-[var(--az-bg)]' : 'bg-[var(--az-border)] text-[var(--az-text-muted)]'
+                active === i ? 'bg-[var(--f-tint-color)] text-[var(--f-bg)]' : 'bg-[var(--f-line)] text-[var(--f-text-3)]'
               )}>
                 {tab.count}
               </span>

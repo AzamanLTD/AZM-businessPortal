@@ -42,7 +42,7 @@ import {
 
 // ── Invoice status display config ───────────────────────────────────────────
 const INVOICE_STATUS_META = {
-  DRAFT:  { label: 'Draft',  color: 'var(--f-text-3)', bg: '#7b7b9a1a' },
+  DRAFT:  { label: 'Draft',  color: 'var(--f-text-3)', bg: 'var(--f-surface-sunken)' },
   SENT:   { label: 'Sent',   color: 'var(--f-info)', bg: 'var(--f-info)' },
   PAID:   { label: 'Paid',   color: 'var(--f-ok)', bg: 'var(--f-ok)' },
   VOID: { label: 'Void', color: 'var(--f-bad)', bg: 'var(--f-bad)' },
@@ -269,7 +269,7 @@ export default function Invoices() {
 
       {/* Bulk Operations Bar */}
       {selectedIds.length > 0 && (
-        <div className="flex items-center justify-between p-3 bg-[#4f8ef71a] border border-[var(--f-info)] rounded-xl ">
+        <div className="flex items-center justify-between p-3 bg-[var(--f-info-bg)] border border-[var(--f-info)] rounded-xl ">
           <span className="text-sm font-semibold text-[var(--f-info)]">
             {selectedIds.length} invoice{selectedIds.length > 1 ? 's' : ''} selected
           </span>
@@ -542,11 +542,11 @@ function CustomerLookup({ customer, onSelect, onClear }) {
 
   if (customer) {
     return (
-      <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--f-surface)] border border-[#00d97e30]">
+      <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--f-surface)] border border-[var(--f-ok)]">
         {customer.profilePictureUrl ? (
           <img src={customer.profilePictureUrl} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-[var(--f-info)] border border-[#4f8ef730] flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-full bg-[var(--f-info)] border border-[var(--f-info)] flex items-center justify-center flex-shrink-0">
             <span className="text-sm font-bold text-[var(--f-info)]">{initials(customer.username)}</span>
           </div>
         )}
@@ -903,7 +903,7 @@ function InvoiceDetailModal({ invoiceId, onClose, onSend, onVoid, sending }) {
 
           {/* Cancellation Reason if Voided */}
           {inv.voidReason && (
-            <div className="p-3 rounded-xl bg-[#ff4a4a1a] border border-[var(--f-bad)]">
+            <div className="p-3 rounded-xl bg-[var(--f-bad-bg)] border border-[var(--f-bad)]">
               <p className="text-xs font-semibold text-[var(--f-bad)] mb-1 uppercase tracking-wide">Cancellation Reason</p>
               <p className="text-sm text-[var(--f-text)]">{inv.voidReason}</p>
             </div>
@@ -917,7 +917,7 @@ function InvoiceDetailModal({ invoiceId, onClose, onSend, onVoid, sending }) {
                 {inv.customer?.profilePictureUrl ? (
                   <img src={inv.customer.profilePictureUrl} alt="" className="w-8 h-8 rounded-full object-cover" />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-[var(--f-info)] border border-[#4f8ef730] flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-[var(--f-info)] border border-[var(--f-info)] flex items-center justify-center">
                     <span className="text-xs font-bold text-[var(--f-info)]">{initials(inv.customer?.username)}</span>
                   </div>
                 )}
@@ -1206,7 +1206,7 @@ function TaxPresetsSection() {
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm font-bold text-[var(--f-text)]">{p.name}</span>
                   {p.isDefault && (
-                    <span className="text-[10px] bg-[#4f8ef71a] text-[var(--f-info)] px-1.5 py-0.5 rounded-full font-semibold">Default</span>
+                    <span className="text-[10px] bg-[var(--f-info-bg)] text-[var(--f-info)] px-1.5 py-0.5 rounded-full font-semibold">Default</span>
                   )}
                 </div>
                 <div className="text-xs text-[var(--f-text-3)] f-mono mt-0.5">
@@ -1219,7 +1219,7 @@ function TaxPresetsSection() {
                 </Button>
                 <button
                   onClick={() => { if (confirm(`Delete preset "${p.name}"?`)) deleteMut.mutate(p.id); }}
-                  className="p-1.5 rounded-lg text-[var(--f-text-3)]:text-[var(--f-bad)]:bg-[#ff4a4a10] transition-all"
+                  className="p-1.5 rounded-lg text-[var(--f-text-3)]:text-[var(--f-bad)]:bg-[var(--f-bad-bg)] transition-all"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>

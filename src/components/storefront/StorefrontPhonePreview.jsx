@@ -398,7 +398,7 @@ function getNavTabs(businessType) {
 
 export default function StorefrontPhonePreview({ draft, theme, widgets, business, businessType }) {
   const tokens  = theme?.tokenSet || {};
-  const accent  = tokens.accent    || 'var(--az-accent)';
+  const accent  = tokens.accent    || 'var(--f-tint-color)';
   const bg      = tokens.background || '#ffffff';
   const surface = tokens.surface    || '#f8f8f8';
   const textPrimary = tokens.textPrimary || '#111111';
@@ -423,12 +423,12 @@ export default function StorefrontPhonePreview({ draft, theme, widgets, business
       {/* Panel header */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1.5">
-          <Smartphone className="w-3 h-3" style={{ color: 'var(--az-text-muted)' }} />
-          <span className="text-xs font-semibold" style={{ color: 'var(--az-text-muted)' }}>Live Preview</span>
+          <Smartphone className="w-3 h-3" style={{ color: 'var(--f-text-3)' }} />
+          <span className="text-xs font-semibold" style={{ color: 'var(--f-text-3)' }}>Live Preview</span>
         </div>
         {theme && (
           <span className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-            style={{ background: 'var(--az-accent-subtle)', color: 'var(--az-accent)' }}>
+            style={{ background: 'var(--f-surface-sunken)', color: 'var(--f-tint-color)' }}>
             {theme.name}
           </span>
         )}
@@ -437,7 +437,7 @@ export default function StorefrontPhonePreview({ draft, theme, widgets, business
       {/* Phone frame */}
       <div
         className="rounded-[28px] border-4 overflow-hidden shadow-2xl mx-auto"
-        style={{ borderColor: 'var(--az-surface-solid)', width: 220, background: bg }}
+        style={{ borderColor: 'var(--f-surface-raised)', width: 220, background: bg }}
       >
         {/* Status bar */}
         <div className="flex justify-between items-center px-4 py-1.5 text-[10px]"

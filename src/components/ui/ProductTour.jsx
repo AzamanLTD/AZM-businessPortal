@@ -92,14 +92,14 @@ export function ProductTour({ tourName, run, onClose }) {
       locale={{ back: 'Back', close: 'Close', last: 'Finish', next: 'Next', skip: 'Skip' }}
       styles={{
         options: {
-          primaryColor: 'var(--az-accent, #6366f1)',
+          primaryColor: 'var(--f-tint-color)',
           zIndex: 9999,
         },
         tooltip: {
           borderRadius: '12px',
-          background: 'var(--az-bg-alt, #1e1e2e)',
-          color: 'var(--az-text, #e0e0e0)',
-          border: '1px solid var(--az-border, #333)',
+          background: 'var(--f-surface-sunken)',
+          color: 'var(--f-text)',
+          border: '1px solid var(--f-line)',
         },
         tooltipContainer: { textAlign: 'left' },
         buttonNext: { borderRadius: '8px' },

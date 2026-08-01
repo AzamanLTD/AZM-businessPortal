@@ -1,12 +1,12 @@
 import { ResponsiveContainer, BarChart as RBarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
 export function BarChartCard({ title, data, xKey, bars = [{ key, label, color }], height = 240, formatY, layout = 'horizontal' }) {
-  const gridColor = 'var(--az-border)';
-  const axisColor = 'var(--az-text-muted)';
+  const gridColor = 'var(--f-line)';
+  const axisColor = 'var(--f-text-3)';
 
   return (
-    <div className="bg-az-surface backdrop-blur-glass border border-az-border rounded-az-lg shadow-az-card p-6">
-      {title && <h3 className="text-sm font-bold text-az-text mb-4">{title}</h3>}
+    <div className="bg-surface backdrop-blur-sm border border-line rounded-lg shadow-sm p-6">
+      {title && <h3 className="text-sm font-bold text-ink mb-4">{title}</h3>}
       <ResponsiveContainer width="100%" height={height}>
         <RBarChart data={data} layout={layout} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.4} vertical={layout === 'vertical'} horizontal={layout === 'horizontal'} />
@@ -23,12 +23,12 @@ export function BarChartCard({ title, data, xKey, bars = [{ key, label, color }]
           )}
           <Tooltip
             contentStyle={{
-              background: 'var(--az-surface-solid)', border: '1px solid var(--az-border)', borderRadius: '6px',
-              fontSize: '12px', color: 'var(--az-text)',
+              background: 'var(--f-surface-raised)', border: '1px solid var(--f-line)', borderRadius: '6px',
+              fontSize: '12px', color: 'var(--f-text)',
             }}
           />
           {bars.map(bar => (
-            <Bar key={bar.key} dataKey={bar.key} name={bar.label} fill={bar.color || 'var(--az-accent)'} radius={[6, 6, 0, 0]} />
+            <Bar key={bar.key} dataKey={bar.key} name={bar.label} fill={bar.color || 'var(--f-tint-color)'} radius={[6, 6, 0, 0]} />
           ))}
         </RBarChart>
       </ResponsiveContainer>

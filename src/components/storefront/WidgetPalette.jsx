@@ -106,10 +106,10 @@ export default function WidgetPalette({ widgets, eligibility, onAdd, isLocked, b
     return (
       <div className="p-4">
         <div className="flex items-center gap-2 mb-4">
-          <Layers className="w-4 h-4" style={{ color: 'var(--az-text-muted)' }} />
-          <h2 className="text-sm font-bold uppercase tracking-wider" style={{ color: 'var(--az-text)' }}>Widgets</h2>
+          <Layers className="w-4 h-4" style={{ color: 'var(--f-text-3)' }} />
+          <h2 className="text-sm font-bold uppercase tracking-wider" style={{ color: 'var(--f-text)' }}>Widgets</h2>
         </div>
-        <p className="text-xs" style={{ color: 'var(--az-text-muted)' }}>No widgets available</p>
+        <p className="text-xs" style={{ color: 'var(--f-text-3)' }}>No widgets available</p>
       </div>
     );
   }
@@ -124,8 +124,8 @@ export default function WidgetPalette({ widgets, eligibility, onAdd, isLocked, b
   return (
     <div className="p-4 space-y-4">
       <div className="flex items-center gap-2 mb-2">
-        <Layers className="w-4 h-4" style={{ color: 'var(--az-text-muted)' }} />
-        <h2 className="text-sm font-bold uppercase tracking-wider" style={{ color: 'var(--az-text)' }}>Widgets</h2>
+        <Layers className="w-4 h-4" style={{ color: 'var(--f-text-3)' }} />
+        <h2 className="text-sm font-bold uppercase tracking-wider" style={{ color: 'var(--f-text)' }}>Widgets</h2>
       </div>
 
       {categories.map(cat => {
@@ -133,7 +133,7 @@ export default function WidgetPalette({ widgets, eligibility, onAdd, isLocked, b
         if (!catWidgets.length) return null;
         return (
           <div key={cat}>
-            <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--az-text-muted)' }}>
+            <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--f-text-3)' }}>
               {cat}
             </p>
             <div className="space-y-1.5">
@@ -151,25 +151,23 @@ export default function WidgetPalette({ widgets, eligibility, onAdd, isLocked, b
                       locked && 'opacity-50 cursor-not-allowed'
                     )}
                     style={{
-                      background: 'var(--az-surface)',
-                      borderColor: 'var(--az-border)',
+                      background: 'var(--f-surface)',
+                      borderColor: 'var(--f-line)',
                     }}
-                    onMouseEnter={e => { if (!locked) e.currentTarget.style.borderColor = 'var(--az-border-strong)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--az-border)'; }}
                   >
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                      style={{ background: 'var(--az-accent-subtle)' }}>
+                      style={{ background: 'var(--f-surface-sunken)' }}>
                       {locked
-                        ? <Lock className="w-4 h-4" style={{ color: 'var(--az-text-muted)' }} />
-                        : <Plus className="w-4 h-4" style={{ color: 'var(--az-accent)' }} />
+                        ? <Lock className="w-4 h-4" style={{ color: 'var(--f-text-3)' }} />
+                        : <Plus className="w-4 h-4" style={{ color: 'var(--f-tint-color)' }} />
                       }
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold truncate" style={{ color: 'var(--az-text)' }}>
+                      <p className="text-sm font-semibold truncate" style={{ color: 'var(--f-text)' }}>
                         {widget.displayName || widget.widgetType}
                       </p>
                       {subtitle && (
-                        <p className="text-[11px] truncate" style={{ color: 'var(--az-text-muted)' }}>
+                        <p className="text-[11px] truncate" style={{ color: 'var(--f-text-3)' }}>
                           {subtitle}
                         </p>
                       )}

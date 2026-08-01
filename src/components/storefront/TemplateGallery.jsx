@@ -255,9 +255,7 @@ function TemplateCard({ template, themes, widgets, onApply, isLocked }) {
 
   return (
     <div className="rounded-xl overflow-hidden border transition-all"
-      style={{ borderColor: 'var(--az-border)', background: 'var(--az-surface)' }}
-      onMouseEnter={e => { if (!locked) e.currentTarget.style.borderColor = 'var(--az-border-strong)'; }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--az-border)'; }}
+      style={{ borderColor: 'var(--f-line)', background: 'var(--f-surface)' }}
     >
       {/* Mini Preview */}
       <div className="h-24 overflow-hidden relative" style={{ background: bg }}>
@@ -276,7 +274,7 @@ function TemplateCard({ template, themes, widgets, onApply, isLocked }) {
         {locked && (
           <div className="absolute inset-0 flex items-center justify-center"
             style={{ background: 'rgba(0,0,0,0.4)' }}>
-            <span className="text-[10px] font-bold text-[var(--az-text)] px-2 py-1 rounded-full"
+            <span className="text-[10px] font-bold text-[var(--f-text)] px-2 py-1 rounded-full"
               style={{ background: accent }}>
               {template.tier.replace('NITRO_', '')} Required
             </span>
@@ -287,7 +285,7 @@ function TemplateCard({ template, themes, widgets, onApply, isLocked }) {
       {/* Template Info */}
       <div className="p-3">
         <div className="flex items-center justify-between mb-1">
-          <p className="text-sm font-bold" style={{ color: 'var(--az-text)' }}>{template.name}</p>
+          <p className="text-sm font-bold" style={{ color: 'var(--f-text)' }}>{template.name}</p>
           {template.tier === 'FREE' ? (
             <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold"
               style={{ background: 'rgba(31, 163, 122, 0.15)', color: '#1FA37A' }}>
@@ -295,18 +293,18 @@ function TemplateCard({ template, themes, widgets, onApply, isLocked }) {
             </span>
           ) : (
             <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold"
-              style={{ background: 'var(--az-accent-subtle)', color: 'var(--az-accent)' }}>
+              style={{ background: 'var(--f-surface-sunken)', color: 'var(--f-tint-color)' }}>
               {template.tier.replace('NITRO_', '')}
             </span>
           )}
         </div>
-        <p className="text-[11px] mb-2" style={{ color: 'var(--az-text-muted)' }}>{template.description}</p>
+        <p className="text-[11px] mb-2" style={{ color: 'var(--f-text-3)' }}>{template.description}</p>
 
         {/* Tags */}
         <div className="flex flex-wrap gap-1 mb-2.5">
           {template.tags.map(tag => (
             <span key={tag} className="text-[9px] px-1.5 py-0.5 rounded-md font-medium"
-              style={{ background: 'var(--az-bg-alt)', color: 'var(--az-text-muted)' }}>
+              style={{ background: 'var(--f-surface-sunken)', color: 'var(--f-text-3)' }}>
               {tag}
             </span>
           ))}
@@ -316,8 +314,8 @@ function TemplateCard({ template, themes, widgets, onApply, isLocked }) {
         <button onClick={handleApply} disabled={locked}
           className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all disabled:opacity-50"
           style={{
-            background: locked ? 'var(--az-bg-alt)' : accent,
-            color: locked ? 'var(--az-text-muted)' : '#fff',
+            background: locked ? 'var(--f-surface-sunken)' : accent,
+            color: locked ? 'var(--f-text-3)' : '#fff',
           }}>
           {locked ? 'Upgrade Required' : 'Apply Template'}
           {!locked && <ArrowRight className="w-3 h-3" />}
@@ -357,22 +355,22 @@ export default function TemplateGallery({ businessType, widgets, themes, eligibi
       onClick={onClose}>
       <GlassPanel className="max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: 'var(--az-border)' }}>
+        <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: 'var(--f-line)' }}>
           <div className="flex items-center gap-2">
-            <LayoutTemplate className="w-5 h-5" style={{ color: 'var(--az-accent)' }} />
-            <h2 className="text-base font-bold" style={{ color: 'var(--az-text)' }}>Template Gallery</h2>
+            <LayoutTemplate className="w-5 h-5" style={{ color: 'var(--f-tint-color)' }} />
+            <h2 className="text-base font-bold" style={{ color: 'var(--f-text)' }}>Template Gallery</h2>
           </div>
-          <button onClick={onClose} className="text-sm" style={{ color: 'var(--az-text-muted)' }}>Close</button>
+          <button onClick={onClose} className="text-sm" style={{ color: 'var(--f-text-3)' }}>Close</button>
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex gap-1.5 px-4 py-2.5 border-b overflow-x-auto" style={{ borderColor: 'var(--az-border)' }}>
+        <div className="flex gap-1.5 px-4 py-2.5 border-b overflow-x-auto" style={{ borderColor: 'var(--f-line)' }}>
           {allTypes.map(type => (
             <button key={type} onClick={() => setFilter(type)}
               className="px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all"
               style={{
-                background: filter === type ? 'var(--az-accent)' : 'var(--az-bg-alt)',
-                color: filter === type ? '#fff' : 'var(--az-text-muted)',
+                background: filter === type ? 'var(--f-tint-color)' : 'var(--f-surface-sunken)',
+                color: filter === type ? '#fff' : 'var(--f-text-3)',
               }}>
               {type === 'ALL' ? 'All Templates' : type.charAt(0) + type.slice(1).toLowerCase()}
             </button>
@@ -383,9 +381,9 @@ export default function TemplateGallery({ businessType, widgets, themes, eligibi
         <div className="flex-1 overflow-y-auto p-4">
           {filter === 'ALL' && businessType && (
             <div className="mb-3 p-2.5 rounded-lg flex items-center gap-2"
-              style={{ background: 'var(--az-accent-subtle)' }}>
-              <Sparkles className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--az-accent)' }} />
-              <p className="text-xs" style={{ color: 'var(--az-text-secondary)' }}>
+              style={{ background: 'var(--f-surface-sunken)' }}>
+              <Sparkles className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--f-tint-color)' }} />
+              <p className="text-xs" style={{ color: 'var(--f-text-2)' }}>
                 Showing templates for your business type first. Use Magic Layout for an instant optimized setup.
               </p>
             </div>

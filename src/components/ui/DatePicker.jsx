@@ -19,27 +19,27 @@ export function DatePicker({ value, onChange, label, placeholder = 'Select date'
 
   return (
     <div className={cn('relative', className)}>
-      {label && <label className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider mb-1.5 block">{label}</label>}
+      {label && <label className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider mb-1.5 block">{label}</label>}
       <button
         onClick={() => setOpen(!open)}
-        className="w-full px-4 py-3 rounded-xl bg-[var(--az-surface)] border border-[var(--az-border)] text-[var(--az-text)] text-sm flex items-center gap-2 hover:border-[var(--az-accent)] transition-colors"
+        className="w-full px-4 py-3 rounded-xl bg-[var(--f-surface)] border border-[var(--f-line)] text-[var(--f-text)] text-sm flex items-center gap-2 hover:border-[var(--f-tint-color)] transition-colors"
       >
-        <Calendar className="w-4 h-4 text-[var(--az-text-muted)]" />
+        <Calendar className="w-4 h-4 text-[var(--f-text-3)]" />
         {value ? new Date(value).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : placeholder}
       </button>
       {open && (
-        <div className="absolute z-50 mt-2 p-4 rounded-xl border border-[var(--az-border)] shadow-2xl" style={{ background: 'var(--az-surface)' }}>
+        <div className="absolute z-50 mt-2 p-4 rounded-xl border border-[var(--f-line)] shadow-2xl" style={{ background: 'var(--f-surface)' }}>
           <div className="flex items-center justify-between mb-4">
-            <button onClick={() => setViewDate(new Date(year, month - 1, 1))} className="p-1 rounded-lg hover:bg-[var(--az-bg-alt)] text-[var(--az-text-muted)]">
+            <button onClick={() => setViewDate(new Date(year, month - 1, 1))} className="p-1 rounded-lg hover:bg-[var(--f-surface-sunken)] text-[var(--f-text-3)]">
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <span className="text-sm font-semibold text-[var(--az-text)]">{months[month]} {year}</span>
-            <button onClick={() => setViewDate(new Date(year, month + 1, 1))} className="p-1 rounded-lg hover:bg-[var(--az-bg-alt)] text-[var(--az-text-muted)]">
+            <span className="text-sm font-semibold text-[var(--f-text)]">{months[month]} {year}</span>
+            <button onClick={() => setViewDate(new Date(year, month + 1, 1))} className="p-1 rounded-lg hover:bg-[var(--f-surface-sunken)] text-[var(--f-text-3)]">
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
           <div className="grid grid-cols-7 gap-1 mb-2">
-            {days.map(d => <span key={d} className="text-[10px] text-center text-[var(--az-text-muted)] font-medium">{d}</span>)}
+            {days.map(d => <span key={d} className="text-[10px] text-center text-[var(--f-text-3)] font-medium">{d}</span>)}
           </div>
           <div className="grid grid-cols-7 gap-1">
             {Array.from({ length: firstDay }).map((_, i) => <span key={`e${i}`} />)}
@@ -54,10 +54,10 @@ export function DatePicker({ value, onChange, label, placeholder = 'Select date'
                   className={cn(
                     'w-8 h-8 rounded-lg text-xs font-medium transition-colors',
                     isSelected
-                      ? 'bg-[var(--az-accent)] text-[var(--az-bg)]'
+                      ? 'bg-[var(--f-tint-color)] text-[var(--f-bg)]'
                       : isToday
-                        ? 'bg-[var(--az-accent-subtle)] text-[var(--az-accent)] border border-[var(--az-accent)]'
-                        : 'text-[var(--az-text-muted)] hover:bg-[var(--az-bg-alt)]'
+                        ? 'bg-[var(--f-surface-sunken)] text-[var(--f-tint-color)] border border-[var(--f-tint-color)]'
+                        : 'text-[var(--f-text-3)] hover:bg-[var(--f-surface-sunken)]'
                   )}
                 >
                   {i + 1}

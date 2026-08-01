@@ -714,7 +714,7 @@ export default function Reservations() {
                                 variant="primary"
                                 onClick={() => respondRescheduleMutation.mutate({ id: res.id, accept: true })}
                                 disabled={respondRescheduleMutation.isPending}
-                                className="px-2.5 py-1 text-[10px] bg-[var(--f-ok)] text-[var(--f-text)]:bg-emerald-600 h-7"
+                                className="px-2.5 py-1 text-[10px] bg-[var(--f-ok)] text-[var(--f-text)]:bg-ok h-7"
                               >
                                 Accept Prop
                               </Button>

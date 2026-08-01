@@ -48,14 +48,14 @@ function ReceiptModal({ order, bizName, onClose }) {
         <div className="p-5 space-y-2">
           {order.items.map((item, i) => (
             <div key={i} className="flex justify-between text-sm">
-              <span className="text-gray-700">{item.qty}× {item.name}</span>
+              <span className="text-ink-2">{item.qty}× {item.name}</span>
               <span className="font-semibold tabular-nums">{fmt(item.price * item.qty)}</span>
             </div>
           ))}
           <div className="border-t border-gray-200 my-2 pt-2 flex justify-between font-bold text-base">
             <span>Total</span><span className="tabular-nums" style={{ color: 'var(--f-tint-color)' }}>{fmt(order.total)}</span>
           </div>
-          <div className="flex justify-between text-sm text-gray-500">
+          <div className="flex justify-between text-sm text-ink-3">
             <span>Payment</span><span className="font-medium capitalize">{order.paymentMethod || 'cash'}</span>
           </div>
           {order.cashGiven > 0 && order.cashGiven >= order.total && (
@@ -64,13 +64,13 @@ function ReceiptModal({ order, bizName, onClose }) {
             </div>
           )}
           {order.offline && (
-            <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-2 text-xs text-amber-700 text-center">
+            <div className="mt-3 bg-warn-bg border border-warn rounded-lg p-2 text-xs text-warn text-center">
               ⚠️ Offline sale — will sync when connection restores
             </div>
           )}
         </div>
         <div className="px-5 pb-5 flex gap-2">
-          <button onClick={() => window.print()} className="flex-1 flex items-center justify-center gap-2 bg-gray-100:bg-gray-200 text-gray-700 rounded-xl py-3 text-sm font-semibold transition-colors">
+          <button onClick={() => window.print()} className="flex-1 flex items-center justify-center gap-2 bg-surface-sunken:bg-surface-sunken text-ink-2 rounded-xl py-3 text-sm font-semibold transition-colors">
             <Printer className="w-4 h-4" /> Print
           </button>
           <button onClick={onClose} className="flex-1 flex items-center justify-center gap-2 text-[var(--f-text)] rounded-xl py-3 text-sm font-semibold transition-colors" style={{ background: 'var(--f-tint-color)' }}>
@@ -113,7 +113,7 @@ function PaymentModal({ total, onClose, onConfirm, isLoading }) {
           <div className="grid grid-cols-3 gap-2">
             {METHODS.map(m => (
               <button key={m.id} onClick={() => setMethod(m.id)}
-                className={cn('flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-xs font-semibold transition-all', method === m.id ? 'border-current' : 'border-gray-200 text-gray-400:border-gray-300')}
+                className={cn('flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-xs font-semibold transition-all', method === m.id ? 'border-current' : 'border-gray-200 text-ink-3:border-gray-300')}
                 style={method === m.id ? { borderColor: 'var(--f-tint-color)', color: 'var(--f-tint-color)', background: 'var(--az-accent-subtle)' } : {}}>
                 <m.icon className="w-5 h-5" />{m.label}
               </button>
@@ -125,8 +125,8 @@ function PaymentModal({ total, onClose, onConfirm, isLoading }) {
               <input type="number" value={cashInput} onChange={e => setCashInput(e.target.value)} placeholder={cashRequired.toFixed(2)}
                 className="w-full bg-[var(--az-surface-1)] border rounded-xl px-4 py-3 text-lg font-bold tabular-nums focus:outline-none" style={{ borderColor: 'var(--f-line)', color: 'var(--f-text)' }} />
               {change > 0 && (
-                <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2 text-sm flex justify-between">
-                  <span className="text-green-700">Change</span><span className="font-bold text-green-700 tabular-nums">{fmt(change)}</span>
+                <div className="bg-ok-bg border border-ok rounded-lg px-3 py-2 text-sm flex justify-between">
+                  <span className="text-ok">Change</span><span className="font-bold text-ok tabular-nums">{fmt(change)}</span>
                 </div>
               )}
             </div>
@@ -256,12 +256,12 @@ export default function POS() {
               style={{ borderColor: 'var(--f-line)', color: 'var(--f-text)' }} />
             {searchQ && <button onClick={() => setSearchQ('')} className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--f-text-3)' }}><X className="w-3.5 h-3.5" /></button>}
           </div>
-          <div className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border', online ? 'bg-green-50 text-green-700 border-green-200' : 'bg-amber-50 text-amber-700 border-amber-200')}>
+          <div className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border', online ? 'bg-ok-bg text-ok border-ok' : 'bg-warn-bg text-warn border-warn')}>
             {online ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
             {online ? (syncing ? 'Syncing…' : 'Online') : 'Offline'}
           </div>
           {outboxCount > 0 && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-warn-bg text-warn border border-warn">
               <Clock className="w-3.5 h-3.5" />{outboxCount} queued
             </div>
           )}
@@ -378,7 +378,7 @@ export default function POS() {
                   <p className="text-xs tabular-nums" style={{ color: 'var(--f-text-3)' }}>{fmt(item.price)}</p>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <button onClick={() => updateQty(item.id, -1)} className="w-7 h-7 rounded-lg border flex items-center justify-center transition-colors:bg-red-50:border-red-200"
+                  <button onClick={() => updateQty(item.id, -1)} className="w-7 h-7 rounded-lg border flex items-center justify-center transition-colors:bg-bad-bg:border-bad"
                     style={{ background: 'var(--f-bg)', borderColor: 'var(--f-line)', color: 'var(--f-text-2)' }}>
                     <Minus className="w-3 h-3" />
                   </button>
@@ -413,7 +413,7 @@ export default function POS() {
               <Zap className="w-5 h-5" /> Charge {fmt(total)}
             </button>
             {!online && (
-              <p className="text-xs text-center flex items-center justify-center gap-1 text-amber-600">
+              <p className="text-xs text-center flex items-center justify-center gap-1 text-warn">
                 <WifiOff className="w-3 h-3" /> Order will be queued offline
               </p>
             )}

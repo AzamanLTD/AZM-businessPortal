@@ -207,7 +207,7 @@ export default function CheckIn() {
           <div className="space-y-4">
             {/* Customer info */}
             <div className="flex items-center gap-3 p-4 rounded-xl bg-[var(--f-ink-900)] border border-[var(--f-line)]">
-              <div className="w-12 h-12 rounded-full bg-[var(--f-info)] border border-[#4f8ef730] flex items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-[var(--f-info)] border border-[var(--f-info)] flex items-center justify-center">
                 <span className="text-sm font-bold text-[var(--f-info)]">
                   {(searchResults.customerName || searchResults.azamanId || '?').charAt(0).toUpperCase()}
                 </span>
