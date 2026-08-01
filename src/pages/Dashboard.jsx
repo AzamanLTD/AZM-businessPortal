@@ -268,10 +268,10 @@ export default function Dashboard() {
       {/* Employee KPIs */}
       <motion.div variants={ContainerV} initial="hidden" animate="show"
                   className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-        <ItemV><KpiCard label="Total Employees" value={employeeStatsLoading ? '—' : String(employeeStats.totalEmployees)} delta={employeeStats.totalEmployees > 0 ? `${employeeStats.totalEmployees} active` : 'No employees yet'} icon={Users} /></ItemV>
-        <ItemV><KpiCard label="Active Shifts" value={employeeStatsLoading ? '—' : String(employeeStats.activeShifts)} delta={employeeStats.activeShifts > 0 ? 'On duty' : 'None'} deltaTone={employeeStats.activeShifts > 0 ? 'up' : 'flat'} icon={Clock} /></ItemV>
-        <ItemV><KpiCard label="Time Off Requests" value={employeeStatsLoading ? '—' : String(employeeStats.pendingTimeOff)} delta={employeeStats.pendingTimeOff > 0 ? 'Pending' : 'All clear'} deltaTone={employeeStats.pendingTimeOff > 0 ? 'down' : 'up'} icon={CalendarCheck} /></ItemV>
-        <ItemV><KpiCard label="Monthly Payroll" value={employeeStatsLoading ? '—' : `${Number(employeeStats.monthlyPayroll).toLocaleString()} USDC`} delta="This month" icon={DollarSign} /></ItemV>
+        <motion.div variants={ItemV}><KpiCard label="Total Employees" value={employeeStatsLoading ? '—' : String(employeeStats.totalEmployees)} delta={employeeStats.totalEmployees > 0 ? `${employeeStats.totalEmployees} active` : 'No employees yet'} icon={Users} /></motion.div>
+        <motion.div variants={ItemV}><KpiCard label="Active Shifts" value={employeeStatsLoading ? '—' : String(employeeStats.activeShifts)} delta={employeeStats.activeShifts > 0 ? 'On duty' : 'None'} deltaTone={employeeStats.activeShifts > 0 ? 'up' : 'flat'} icon={Clock} /></motion.div>
+        <motion.div variants={ItemV}><KpiCard label="Time Off Requests" value={employeeStatsLoading ? '—' : String(employeeStats.pendingTimeOff)} delta={employeeStats.pendingTimeOff > 0 ? 'Pending' : 'All clear'} deltaTone={employeeStats.pendingTimeOff > 0 ? 'down' : 'up'} icon={CalendarCheck} /></motion.div>
+        <motion.div variants={ItemV}><KpiCard label="Monthly Payroll" value={employeeStatsLoading ? '—' : `${Number(employeeStats.monthlyPayroll).toLocaleString()} USDC`} delta="This month" icon={DollarSign} /></motion.div>
       </motion.div>
 
       {/* Quick action cards by type */}
@@ -313,10 +313,10 @@ export default function Dashboard() {
       {/* Core KPIs */}
       <motion.div variants={ContainerV} initial="hidden" animate="show"
                   className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-        <ItemV><KpiCard label="Total Orders" value={fmt(stats.totalOrders || 0, 0)} delta="All time" icon={ShoppingBag} /></ItemV>
-        <ItemV><KpiCard label="Revenue" value={fmtUSDC(stats.totalRevenue || 0)} delta="Completed" icon={TrendingUp} /></ItemV>
-        <ItemV><KpiCard label="Pending" value={fmt(stats.pendingOrders || 0, 0)} delta="Awaiting action" icon={Clock} /></ItemV>
-        <ItemV><KpiCard label="Completed" value={fmt(stats.completedOrders || 0, 0)} delta="All time" icon={CheckCircle2} /></ItemV>
+        <motion.div variants={ItemV}><KpiCard label="Total Orders" value={fmt(stats.totalOrders || 0, 0)} delta="All time" icon={ShoppingBag} /></motion.div>
+        <motion.div variants={ItemV}><KpiCard label="Revenue" value={fmtUSDC(stats.totalRevenue || 0)} delta="Completed" icon={TrendingUp} /></motion.div>
+        <motion.div variants={ItemV}><KpiCard label="Pending" value={fmt(stats.pendingOrders || 0, 0)} delta="Awaiting action" icon={Clock} /></motion.div>
+        <motion.div variants={ItemV}><KpiCard label="Completed" value={fmt(stats.completedOrders || 0, 0)} delta="All time" icon={CheckCircle2} /></motion.div>
       </motion.div>
 
       {/* Type-specific KPIs */}
