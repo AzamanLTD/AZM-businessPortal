@@ -1,6 +1,6 @@
-import { useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { QueryClient, keepPreviousData } from '@tanstack/react-query';
 
-export const queryClient = new (await import('@tanstack/react-query')).QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 30_000,

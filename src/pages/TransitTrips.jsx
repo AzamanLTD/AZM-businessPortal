@@ -413,7 +413,7 @@ export default function TransitTrips() {
 
       {/* Collapsible Route Templates Section */}
       {templatesExpanded && (
-        <Card className="border-[var(--f-tint-color)]/20 bg-black/20 space-y-4">
+        <Card className="border-[var(--f-tint-color)]/20 bg-surface-sunken space-y-4">
           <div className="flex items-center justify-between border-b border-[var(--f-line)] pb-3">
             <div className="flex items-center gap-2">
               <Route className="w-4 h-4 text-[var(--f-tint-color)]" />
@@ -620,7 +620,7 @@ export default function TransitTrips() {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl border border-[var(--f-line)] bg-black/20 space-y-3">
+          <div className="p-4 rounded-xl border border-[var(--f-line)] bg-surface-sunken space-y-3">
             <p className="font-semibold text-xs border-b border-[var(--f-line)] pb-2 uppercase tracking-wide">Cancellation Impact Breakdown</p>
             <div className="flex justify-between">
               <span>Affected Bookings Count</span>

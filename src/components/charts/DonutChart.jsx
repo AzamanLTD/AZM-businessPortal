@@ -2,7 +2,7 @@ import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 
 export function DonutChartCard({ title, data, height = 240, colors = ['var(--f-tint-color)', 'var(--f-ok)', 'var(--f-warn)', 'var(--f-info)'] }) {
   return (
-    <div className="bg-surface backdrop-blur-sm border border-line rounded-lg shadow-sm p-6">
+    <div className="bg-surface border border-line rounded-lg shadow-sm p-6">
       {title && <h3 className="text-sm font-bold text-ink mb-4">{title}</h3>}
       <div className="flex items-center gap-4">
         <ResponsiveContainer width="50%" height={height}>

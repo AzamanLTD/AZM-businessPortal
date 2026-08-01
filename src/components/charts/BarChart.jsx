@@ -5,7 +5,7 @@ export function BarChartCard({ title, data, xKey, bars = [{ key, label, color }]
   const axisColor = 'var(--f-text-3)';
 
   return (
-    <div className="bg-surface backdrop-blur-sm border border-line rounded-lg shadow-sm p-6">
+    <div className="bg-surface border border-line rounded-lg shadow-sm p-6">
       {title && <h3 className="text-sm font-bold text-ink mb-4">{title}</h3>}
       <ResponsiveContainer width="100%" height={height}>
         <RBarChart data={data} layout={layout} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>

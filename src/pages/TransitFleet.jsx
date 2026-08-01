@@ -340,7 +340,7 @@ export default function TransitFleet() {
                     </div>
 
                     {v.imageUrl && (
-                      <div className="w-full h-28 rounded-xl overflow-hidden mb-4 bg-black/40">
+                      <div className="w-full h-28 rounded-xl overflow-hidden mb-4 bg-surface-sunken">
                         <img src={v.imageUrl} alt={v.model} className="w-full h-full object-cover" />
                       </div>
                     )}
@@ -394,7 +394,7 @@ export default function TransitFleet() {
             ) : (
               <div className="space-y-3">
                 {maintenance.map(m => (
-                  <div key={m.id} className="p-3 rounded-xl bg-black/20 border border-[var(--f-line)] space-y-2">
+                  <div key={m.id} className="p-3 rounded-xl bg-surface-sunken border border-[var(--f-line)] space-y-2">
                     <div className="flex items-center justify-between text-xs">
                       <span className="font-bold text-[var(--f-info)]">{m.vehicle?.licensePlate || 'Plate Unknown'}</span>
                       <Tag variant="neutral">{m.type}</Tag>
@@ -529,13 +529,13 @@ export default function TransitFleet() {
               <span>AISLE Seat</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-3.5 h-3.5 rounded border border-dashed border-[var(--f-line)] bg-black/40" />
+              <div className="w-3.5 h-3.5 rounded border border-dashed border-[var(--f-line)] bg-surface-sunken" />
               <span>NONE (Empty space / walkway)</span>
             </div>
           </div>
 
           {/* Grid visual container */}
-          <div className="rounded-2xl border border-[var(--f-line)] p-5 max-w-sm mx-auto bg-black/40">
+          <div className="rounded-2xl border border-[var(--f-line)] p-5 max-w-sm mx-auto bg-surface-sunken">
             <div className="flex justify-between items-center mb-4 pb-2 border-b border-[var(--f-line)] text-xs font-bold text-[var(--f-text-3)]">
               <span>FRONT (WINDSHIELD)</span>
               <span>DRIVER</span>
@@ -545,7 +545,7 @@ export default function TransitFleet() {
             <div className="grid gap-2.5" style={{ gridTemplateColumns: `repeat(${seatCols}, minmax(0, 1fr))` }}>
               {seatGrid.map((seat, index) => {
                 let cellColorClass = 'border-[var(--f-line)]:border-[var(--f-tint-color)] text-[var(--f-text)]';
-                let cellBg = 'bg-black/20';
+                let cellBg = 'bg-surface-sunken';
                 
                 if (seat.type === 'WINDOW') {
                   cellBg = 'bg-[var(--f-tint-color)]/10';

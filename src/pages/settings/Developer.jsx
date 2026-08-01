@@ -73,7 +73,7 @@ function CreateKeyModal({ onClose, onCreate }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center f-scrim p-4">
       <motion.div initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
         className="rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
         style={{ background: 'var(--f-surface-sunken)', border: '1px solid var(--f-line)' }}>
@@ -142,7 +142,7 @@ function CreateWebhookModal({ onClose, onCreate }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center f-scrim p-4">
       <motion.div initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
         className="rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
         style={{ background: 'var(--f-surface-sunken)', border: '1px solid var(--f-line)' }}>
