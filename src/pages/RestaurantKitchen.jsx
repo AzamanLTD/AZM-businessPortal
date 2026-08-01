@@ -29,21 +29,21 @@ import {
 // Static configs
 const DEFAULT_STATIONS = ['GRILL', 'FRY', 'SAUTE', 'COLD', 'BAR', 'EXPEDITE'];
 const STATION_COLORS = {
-  GRILL: 'var(--az-danger)',
-  FRY: 'var(--az-warning)',
-  SAUTE: 'var(--az-info)',
-  COLD: 'var(--az-accent)',
-  BAR: 'var(--az-accent)',
-  EXPEDITE: 'var(--az-success)',
-  DESSERT: 'var(--az-accent)'
+  GRILL: 'var(--f-bad)',
+  FRY: 'var(--f-warn)',
+  SAUTE: 'var(--f-info)',
+  COLD: 'var(--f-tint-color)',
+  BAR: 'var(--f-tint-color)',
+  EXPEDITE: 'var(--f-ok)',
+  DESSERT: 'var(--f-tint-color)'
 };
 
 const ORDER_STATUS_COLORS = {
-  NEW: 'var(--az-info)',
-  PREPARING: 'var(--az-warning)',
-  READY: 'var(--az-success)',
-  SERVED: 'var(--az-text-muted)',
-  CANCELLED: 'var(--az-danger)'
+  NEW: 'var(--f-info)',
+  PREPARING: 'var(--f-warn)',
+  READY: 'var(--f-ok)',
+  SERVED: 'var(--f-text-3)',
+  CANCELLED: 'var(--f-bad)'
 };
 
 // Simple visual components for the interactive styles
@@ -60,8 +60,8 @@ const PulseAlert = () => (
       100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
     }
     @keyframes glow-rush {
-      0%, 100% { border-color: var(--az-danger); filter: drop-shadow(0 0 2px var(--az-danger)); }
-      50% { border-color: var(--az-accent); filter: drop-shadow(0 0 8px var(--az-accent)); }
+      0%, 100% { border-color: var(--f-bad); filter: drop-shadow(0 0 2px var(--f-bad)); }
+      50% { border-color: var(--f-tint-color); filter: drop-shadow(0 0 8px var(--f-tint-color)); }
     }
     .kds-card-rush {
       animation: glow-rush 2s infinite ease-in-out;
@@ -172,14 +172,14 @@ function TicketTimer({ sentAt, prepTimeMinutes = 15, onThresholdReached }) {
     lastState.current = { isWarning, isOvertime };
   }, [isWarning, isOvertime, onThresholdReached]);
 
-  let statusColor = 'var(--az-success)';
+  let statusColor = 'var(--f-ok)';
   let pulseClass = '';
 
   if (isOvertime) {
-    statusColor = 'var(--az-danger)';
+    statusColor = 'var(--f-bad)';
     pulseClass = 'pulse-red';
   } else if (isWarning) {
-    statusColor = 'var(--az-warning)';
+    statusColor = 'var(--f-warn)';
     pulseClass = 'pulse-amber';
   }
 
@@ -389,10 +389,10 @@ export default function RestaurantKitchen() {
 
   if (!canView) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center" style={{ color: 'var(--az-text)' }}>
-        <Ban className="w-16 h-16 text-[var(--az-danger)] mb-4" />
+      <div className="flex flex-col items-center justify-center py-20 text-center" style={{ color: 'var(--f-text)' }}>
+        <Ban className="w-16 h-16 text-[var(--f-bad)] mb-4" />
         <h2 className="text-xl font-bold">Access Denied</h2>
-        <p className="text-sm text-[var(--az-text-muted)] mt-1 max-w-sm">
+        <p className="text-sm text-[var(--f-text-3)] mt-1 max-w-sm">
           You do not have the required permissions (`kitchen.view`) to access the Kitchen Display System.
         </p>
       </div>
@@ -400,18 +400,18 @@ export default function RestaurantKitchen() {
   }
 
   return (
-    <div className={`space-y-6 ${isKioskMode ? 'kds-kiosk p-4 bg-[var(--az-bg)] min-h-screen' : ''}`} style={{ color: 'var(--az-text)' }}>
+    <div className={`space-y-6 ${isKioskMode ? 'kds-kiosk p-4 bg-[var(--f-bg)] min-h-screen' : ''}`} style={{ color: 'var(--f-text)' }}>
       <PulseAlert />
 
       {/* HEADER SECTION */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <ChefHat className="w-6 h-6 text-[var(--az-accent)]" />
+            <ChefHat className="w-6 h-6 text-[var(--f-tint-color)]" />
             <h1 className="text-2xl font-bold tracking-tight">Kitchen Display System (KDS)</h1>
             {isFetching && <Spinner size="sm" />}
           </div>
-          <p className="text-sm text-[var(--az-text-muted)] mt-0.5">
+          <p className="text-sm text-[var(--f-text-3)] mt-0.5">
             Realtime operations hub, item-level bumping, and ticket pacing controls.
           </p>
         </div>
@@ -423,7 +423,7 @@ export default function RestaurantKitchen() {
             placeholder="Search tickets, tables, items..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="px-3 py-1.5 rounded-lg text-xs bg-[var(--az-surface)] border border-[var(--az-border)] focus:outline-none focus:border-[var(--az-accent)] text-[var(--az-text)] placeholder-[var(--az-text-muted)]"
+            className="px-3 py-1.5 rounded-lg text-xs bg-[var(--f-surface)] border border-[var(--f-line)] focus:outline-none focus:border-[var(--f-tint-color)] text-[var(--f-text)] placeholder-[var(--f-text-3)]"
           />
 
           <Button
@@ -432,7 +432,7 @@ export default function RestaurantKitchen() {
             onClick={() => setSoundEnabled(!soundEnabled)}
             title={soundEnabled ? 'Mute Alerts' : 'Unmute Alerts'}
           >
-            {soundEnabled ? <Volume2 className="w-4 h-4 text-[var(--az-accent)]" /> : <VolumeX className="w-4 h-4 text-[var(--az-text-muted)]" />}
+            {soundEnabled ? <Volume2 className="w-4 h-4 text-[var(--f-tint-color)]" /> : <VolumeX className="w-4 h-4 text-[var(--f-text-3)]" />}
           </Button>
 
           <Button
@@ -460,64 +460,64 @@ export default function RestaurantKitchen() {
 
       {/* STATS BAR */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="flex items-center justify-between p-4 bg-[var(--az-surface)] border border-[var(--az-border)] rounded-2xl">
+        <Card className="flex items-center justify-between p-4 bg-[var(--f-surface)] border border-[var(--f-line)] rounded-2xl">
           <div>
-            <span className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider block">Average Ticket Pace</span>
-            <span className="text-xl font-bold block mt-1 font-mono text-[var(--az-accent)]">{stats.avgTicketTime || 0}m</span>
+            <span className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider block">Average Ticket Pace</span>
+            <span className="text-xl font-bold block mt-1 font-mono text-[var(--f-tint-color)]">{stats.avgTicketTime || 0}m</span>
           </div>
-          <TrendingUp className="w-8 h-8 text-[var(--az-accent)] opacity-30" />
+          <TrendingUp className="w-8 h-8 text-[var(--f-tint-color)] opacity-30" />
         </Card>
 
-        <Card className="flex items-center justify-between p-4 bg-[var(--az-surface)] border border-[var(--az-border)] rounded-2xl">
+        <Card className="flex items-center justify-between p-4 bg-[var(--f-surface)] border border-[var(--f-line)] rounded-2xl">
           <div>
-            <span className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider block">Tickets in Queue</span>
-            <span className="text-xl font-bold block mt-1 font-mono text-[var(--az-warning)]">
+            <span className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider block">Tickets in Queue</span>
+            <span className="text-xl font-bold block mt-1 font-mono text-[var(--f-warn)]">
               {Object.values(stats.queueCount || {}).reduce((a, b) => a + b, 0)} Active
             </span>
           </div>
-          <ListOrdered className="w-8 h-8 text-[var(--az-warning)] opacity-30" />
+          <ListOrdered className="w-8 h-8 text-[var(--f-warn)] opacity-30" />
         </Card>
 
-        <Card className="flex items-center justify-between p-4 bg-[var(--az-surface)] border border-[var(--az-border)] rounded-2xl">
+        <Card className="flex items-center justify-between p-4 bg-[var(--f-surface)] border border-[var(--f-line)] rounded-2xl">
           <div>
-            <span className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider block">Longest Wait Ticket</span>
-            <span className="text-xl font-bold block mt-1 font-mono text-[var(--az-danger)]">{stats.longestWait || 0}m</span>
+            <span className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider block">Longest Wait Ticket</span>
+            <span className="text-xl font-bold block mt-1 font-mono text-[var(--f-bad)]">{stats.longestWait || 0}m</span>
           </div>
-          <Hourglass className="w-8 h-8 text-[var(--az-danger)] opacity-30" />
+          <Hourglass className="w-8 h-8 text-[var(--f-bad)] opacity-30" />
         </Card>
 
-        <Card className="p-4 bg-[var(--az-surface)] border border-[var(--az-border)] rounded-2xl">
-          <span className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider block mb-2">Station Loadout</span>
+        <Card className="p-4 bg-[var(--f-surface)] border border-[var(--f-line)] rounded-2xl">
+          <span className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider block mb-2">Station Loadout</span>
           <div className="flex flex-wrap gap-1.5 max-h-[48px] overflow-y-auto">
             {Object.entries(stats.queueCount || {}).map(([st, count]) => (
-              <Badge key={st} color={STATION_COLORS[st] || 'var(--az-text-muted)'} className="text-[10px] font-mono">
+              <Tag key={st} color={STATION_COLORS[st] || 'var(--f-text-3)'} className="text-[10px] font-mono">
                 {st}: {count}
-              </Badge>
+              </Tag>
             ))}
           </div>
         </Card>
       </div>
 
       {/* FILTER & STATION CONFIG TABS */}
-      <div className="border-b border-[var(--az-border)] pb-4 flex flex-col gap-4">
+      <div className="border-b border-[var(--f-line)] pb-4 flex flex-col gap-4">
         {/* TABS SELECTOR */}
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex border border-[var(--az-border)] rounded-xl overflow-hidden p-1 bg-[var(--az-bg)]">
+          <div className="flex border border-[var(--f-line)] rounded-xl overflow-hidden p-1 bg-[var(--f-bg)]">
             <button
               onClick={() => setActiveTab('active')}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === 'active' ? 'bg-[var(--az-accent)] text-black' : 'text-[var(--az-text-muted)] hover:text-[var(--az-text)]'}`}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === 'active' ? 'bg-[var(--f-tint-color)] text-black' : 'text-[var(--f-text-3)]:text-[var(--f-text)]'}`}
             >
               Active Kitchen Queue
             </button>
             <button
               onClick={() => setActiveTab('served')}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === 'served' ? 'bg-[var(--az-accent)] text-black' : 'text-[var(--az-text-muted)] hover:text-[var(--az-text)]'}`}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === 'served' ? 'bg-[var(--f-tint-color)] text-black' : 'text-[var(--f-text-3)]:text-[var(--f-text)]'}`}
             >
               Completed / Served Lane
             </button>
             <button
               onClick={() => setActiveTab('all')}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === 'all' ? 'bg-[var(--az-accent)] text-black' : 'text-[var(--az-text-muted)] hover:text-[var(--az-text)]'}`}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === 'all' ? 'bg-[var(--f-tint-color)] text-black' : 'text-[var(--f-text-3)]:text-[var(--f-text)]'}`}
             >
               All Tickets (History)
             </button>
@@ -530,37 +530,37 @@ export default function RestaurantKitchen() {
               placeholder="New station name..."
               value={newStationName}
               onChange={(e) => setNewStationName(e.target.value)}
-              className="px-3 py-1.5 rounded-lg text-xs bg-[var(--az-surface)] border border-[var(--az-border)] focus:outline-none focus:border-[var(--az-accent)] text-[var(--az-text)] uppercase"
+              className="px-3 py-1.5 rounded-lg text-xs bg-[var(--f-surface)] border border-[var(--f-line)] focus:outline-none focus:border-[var(--f-tint-color)] text-[var(--f-text)] uppercase"
             />
             <Button size="sm" type="submit" variant="outline" className="h-[32px] gap-1">
-              <Sparkles className="w-3 h-3 text-[var(--az-accent)]" /> Add Station
+              <Sparkles className="w-3 h-3 text-[var(--f-tint-color)]" /> Add Station
             </Button>
           </form>
         </div>
 
         {/* STATION FILTER SELECTION BAR */}
         <div className="flex flex-wrap gap-1.5 items-center">
-          <span className="text-xs font-semibold text-[var(--az-text-muted)] mr-2 uppercase tracking-wider">Stations:</span>
+          <span className="text-xs font-semibold text-[var(--f-text-3)] mr-2 uppercase tracking-wider">Stations:</span>
           <button
             onClick={() => setSelectedStation('ALL')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${selectedStation === 'ALL' ? 'bg-[var(--az-accent)] text-black border-transparent' : 'border-[var(--az-border)] text-[var(--az-text-muted)] hover:text-[var(--az-text)]'}`}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${selectedStation === 'ALL' ? 'bg-[var(--f-tint-color)] text-black border-transparent' : 'border-[var(--f-line)] text-[var(--f-text-3)]:text-[var(--f-text)]'}`}
           >
             ALL STATIONS
           </button>
           {customStations.map(st => {
             const hasActiveOrders = orders.some(o => o.station === st || o.items?.some(it => it.station === st));
             return (
-              <div key={st} className="inline-flex items-center gap-0.5 border border-[var(--az-border)] rounded-xl overflow-hidden bg-[var(--az-surface)]">
+              <div key={st} className="inline-flex items-center gap-0.5 border border-[var(--f-line)] rounded-xl overflow-hidden bg-[var(--f-surface)]">
                 <button
                   onClick={() => setSelectedStation(st)}
                   className={`px-3 py-1.5 text-xs font-bold transition-all`}
-                  style={selectedStation === st ? { background: STATION_COLORS[st] || 'var(--az-accent)', color: '#000' } : { color: STATION_COLORS[st] || 'var(--az-text)' }}
+                  style={selectedStation === st ? { background: STATION_COLORS[st] || 'var(--f-tint-color)', color: '#000' } : { color: STATION_COLORS[st] || 'var(--f-text)' }}
                 >
                   {st} {hasActiveOrders && '•'}
                 </button>
                 <button
                   onClick={() => handleRemoveStation(st)}
-                  className="px-1.5 py-1.5 text-[10px] text-[var(--az-text-muted)] hover:text-[var(--az-danger)] hover:bg-[var(--az-border)] border-l border-[var(--az-border)]"
+                  className="px-1.5 py-1.5 text-[10px] text-[var(--f-text-3)]:text-[var(--f-bad)]:bg-[var(--f-line)] border-l border-[var(--f-line)]"
                   title={`Remove ${st}`}
                 >
                   ✕
@@ -575,16 +575,16 @@ export default function RestaurantKitchen() {
       {isLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[...Array(8)].map((_, idx) => (
-            <Skeleton key={idx} className="h-64 rounded-2xl" />
+            <Skel key={idx} className="h-64 rounded-2xl" />
           ))}
         </div>
       )}
 
       {isError && (
-        <div className="flex flex-col items-center justify-center py-12 bg-[var(--az-surface)] border border-[var(--az-border)] rounded-2xl text-center">
-          <AlertTriangle className="w-12 h-12 text-[var(--az-danger)] mb-3" />
+        <div className="flex flex-col items-center justify-center py-12 bg-[var(--f-surface)] border border-[var(--f-line)] rounded-2xl text-center">
+          <AlertTriangle className="w-12 h-12 text-[var(--f-bad)] mb-3" />
           <p className="text-base font-bold">Failed to sync kitchen queue</p>
-          <p className="text-sm text-[var(--az-text-muted)] mt-1 mb-4">{error?.message || 'Error occurred while fetching orders'}</p>
+          <p className="text-sm text-[var(--f-text-3)] mt-1 mb-4">{error?.message || 'Error occurred while fetching orders'}</p>
           <Button onClick={refetch}>Retry Connection</Button>
         </div>
       )}
@@ -612,36 +612,36 @@ export default function RestaurantKitchen() {
             return (
               <Card
                 key={order._id || order.id}
-                className={`flex flex-col justify-between overflow-hidden relative border border-[var(--az-border)] rounded-2xl ${
+                className={`flex flex-col justify-between overflow-hidden relative border border-[var(--f-line)] rounded-2xl ${
                   isRush ? 'kds-card-rush' : ''
                 }`}
                 style={{
-                  background: 'var(--az-surface)',
+                  background: 'var(--f-surface)',
                   minHeight: '280px'
                 }}
               >
                 {/* RUSH BANNER OVERLAY */}
                 {isRush && (
-                  <div className="bg-[var(--az-danger)] text-black text-[10px] font-black tracking-widest text-center py-1 uppercase select-none">
+                  <div className="bg-[var(--f-bad)] text-black text-[10px] font-black tracking-widest text-center py-1 uppercase select-none">
                     ⚠️ RUSH TICKET ⚠️
                   </div>
                 )}
 
                 {/* TICKET HEADER */}
-                <div className="p-4 border-b border-[var(--az-border)] flex items-start justify-between gap-2">
+                <div className="p-4 border-b border-[var(--f-line)] flex items-start justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <span className="text-sm font-black font-mono bg-[var(--az-border)] px-2 py-0.5 rounded-md text-[var(--az-text)]">
+                      <span className="text-sm font-black font-mono bg-[var(--f-line)] px-2 py-0.5 rounded-md text-[var(--f-text)]">
                         #{order.ticketNumber || 'EXP'}
                       </span>
                       <span className="text-base font-bold">Table {order.tableNumber || 'BAR'}</span>
                     </div>
                     <div className="flex flex-wrap items-center gap-1 mt-1">
-                      <span className="text-xs text-[var(--az-text-muted)]">Server: {order.serverName || 'Guest'}</span>
+                      <span className="text-xs text-[var(--f-text-3)]">Server: {order.serverName || 'Guest'}</span>
                       {order.station && (
-                        <Badge color={STATION_COLORS[order.station] || 'var(--az-text-muted)'} className="text-[10px]">
+                        <Tag color={STATION_COLORS[order.station] || 'var(--f-text-3)'} className="text-[10px]">
                           {order.station}
-                        </Badge>
+                        </Tag>
                       )}
                     </div>
                   </div>
@@ -653,15 +653,15 @@ export default function RestaurantKitchen() {
                       prepTimeMinutes={order.prepTimeMinutes || 15}
                       onThresholdReached={handleThresholdReached}
                     />
-                    <Badge color={ORDER_STATUS_COLORS[order.status]} className="text-[9px] uppercase">
+                    <Tag color={ORDER_STATUS_COLORS[order.status]} className="text-[9px] uppercase">
                       {order.status}
-                    </Badge>
+                    </Tag>
                   </div>
                 </div>
 
                 {/* ALLERGIES ALERTS */}
                 {hasAllergies && (
-                  <div className="bg-red-600 bg-opacity-20 border-y border-red-500/30 px-4 py-1.5 flex items-center gap-2 text-xs text-[var(--az-danger)] font-black uppercase tracking-wide animate-pulse">
+                  <div className="bg-red-600 bg-opacity-20 border-y border-red-500/30 px-4 py-1.5 flex items-center gap-2 text-xs text-[var(--f-bad)] font-black uppercase tracking-wide animate-pulse">
                     <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                     <span>ALLERGY ALERT: {order.allergyAlerts.join(', ')}</span>
                   </div>
@@ -669,13 +669,13 @@ export default function RestaurantKitchen() {
 
                 {/* SPECIAL INSTRUCTIONS */}
                 {order.specialInstructions && (
-                  <div className="bg-[var(--az-bg)] px-4 py-1.5 border-b border-[var(--az-border)] text-xs font-semibold text-[var(--az-warning)] italic">
+                  <div className="bg-[var(--f-bg)] px-4 py-1.5 border-b border-[var(--f-line)] text-xs font-semibold text-[var(--f-warn)] italic">
                     💡 "{order.specialInstructions}"
                   </div>
                 )}
 
                 {/* DISHES LIST */}
-                <div className="flex-1 p-4 space-y-3 divide-y divide-[var(--az-border)] max-h-[300px] overflow-y-auto">
+                <div className="flex-1 p-4 space-y-3 divide-y divide-[var(--f-line)] max-h-[300px] overflow-y-auto">
                   {order.items?.map((item, index) => {
                     const isItemReady = ['READY', 'SERVED'].includes(item.status);
                     const isItemPreparing = item.status === 'PREPARING';
@@ -689,12 +689,12 @@ export default function RestaurantKitchen() {
                       >
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-base font-bold font-mono text-[var(--az-accent)]">
+                            <span className="text-base font-bold font-mono text-[var(--f-tint-color)]">
                               {item.quantity}×
                             </span>
                             <span
                               className={`text-sm font-bold ${
-                                isItemReady ? 'line-through text-[var(--az-text-muted)]' : 'text-[var(--az-text)]'
+                                isItemReady ? 'line-through text-[var(--f-text-3)]' : 'text-[var(--f-text)]'
                               }`}
                             >
                               {item.name}
@@ -703,7 +703,7 @@ export default function RestaurantKitchen() {
                               <span
                                 className="text-[9px] font-mono font-bold px-1 py-0.2 rounded"
                                 style={{
-                                  color: STATION_COLORS[item.station] || 'var(--az-text-muted)',
+                                  color: STATION_COLORS[item.station] || 'var(--f-text-3)',
                                   background: `${STATION_COLORS[item.station]}15`
                                 }}
                               >
@@ -718,7 +718,7 @@ export default function RestaurantKitchen() {
                               {item.modifiers.map((mod, modIdx) => (
                                 <span
                                   key={modIdx}
-                                  className="text-[10px] font-semibold bg-[var(--az-bg)] border border-[var(--az-border)] px-1.5 py-0.5 rounded text-[var(--az-text-muted)]"
+                                  className="text-[10px] font-semibold bg-[var(--f-bg)] border border-[var(--f-line)] px-1.5 py-0.5 rounded text-[var(--f-text-3)]"
                                 >
                                   + {mod}
                                 </span>
@@ -734,10 +734,10 @@ export default function RestaurantKitchen() {
                               onClick={() => handleToggleItemStatus(order._id || order.id, item)}
                               className={`p-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1 transition-all ${
                                 isItemReady
-                                  ? 'bg-[var(--az-success)] text-black border-transparent'
+                                  ? 'bg-[var(--f-ok)] text-black border-transparent'
                                   : isItemPreparing
-                                  ? 'bg-[var(--az-warning)] text-black border-transparent'
-                                  : 'bg-[var(--az-surface)] text-[var(--az-text-muted)] border-[var(--az-border)] hover:border-[var(--az-accent)]'
+                                  ? 'bg-[var(--f-warn)] text-black border-transparent'
+                                  : 'bg-[var(--f-surface)] text-[var(--f-text-3)] border-[var(--f-line)]:border-[var(--f-tint-color)]'
                               }`}
                               title={`Change Status (Current: ${item.status || 'NEW'})`}
                             >
@@ -754,7 +754,7 @@ export default function RestaurantKitchen() {
                             {/* 86 Toggle */}
                             <button
                               onClick={() => handleToggle86(item.name)}
-                              className="p-1 rounded bg-[var(--az-bg)] hover:bg-[var(--az-danger)] hover:text-black border border-[var(--az-border)] text-[var(--az-text-muted)] text-[10px]"
+                              className="p-1 rounded bg-[var(--f-bg)]:bg-[var(--f-bad)]:text-black border border-[var(--f-line)] text-[var(--f-text-3)] text-[10px]"
                               title="Toggle 86'ed (Out of Stock)"
                             >
                               86
@@ -767,11 +767,11 @@ export default function RestaurantKitchen() {
                 </div>
 
                 {/* BOTTOM ACTION FOOTER */}
-                <div className="p-4 bg-[var(--az-bg)] border-t border-[var(--az-border)] flex items-center justify-between gap-2">
+                <div className="p-4 bg-[var(--f-bg)] border-t border-[var(--f-line)] flex items-center justify-between gap-2">
                   {/* Chef Assignment Selector */}
                   <div className="flex items-center gap-1">
                     <select
-                      className="text-[10px] font-semibold bg-[var(--az-surface)] border border-[var(--az-border)] rounded-md py-1 px-1.5 outline-none max-w-[110px]"
+                      className="text-[10px] font-semibold bg-[var(--f-surface)] border border-[var(--f-line)] rounded-md py-1 px-1.5 outline-none max-w-[110px]"
                       value={order.employeeId || ''}
                       onChange={(e) => {
                         if (!canManage) {
@@ -797,10 +797,9 @@ export default function RestaurantKitchen() {
                       size="sm"
                       variant={allItemsDone ? 'primary' : 'outline'}
                       className={`gap-1.5 text-xs py-1.5 font-bold transition-all ${
-                        allItemsDone ? 'pulse-amber bg-[var(--az-success)] text-black' : ''
+                        allItemsDone ? 'pulse-amber bg-[var(--f-ok)] text-black' : ''
                       }`}
                       onClick={() => bumpMutation.mutate(order._id || order.id)}
-                      loading={bumpMutation.isPending}
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       {allItemsDone ? 'Expo Serve (Ready)' : 'Bump Ticket'}
@@ -810,9 +809,9 @@ export default function RestaurantKitchen() {
 
                 {/* Visual completion tracker bar */}
                 {totalItems > 0 && (
-                  <div className="w-full bg-[var(--az-border)] h-1.5 overflow-hidden">
+                  <div className="w-full bg-[var(--f-line)] h-1.5 overflow-hidden">
                     <div
-                      className="bg-[var(--az-success)] h-full transition-all duration-300"
+                      className="bg-[var(--f-ok)] h-full transition-all duration-300"
                       style={{ width: `${(completedItems / totalItems) * 100}%` }}
                     />
                   </div>

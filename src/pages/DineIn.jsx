@@ -276,24 +276,24 @@ export default function DineIn() {
 
   if (!canView) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-6 bg-[var(--az-bg)]">
-        <AlertCircle className="w-12 h-12 text-[var(--az-danger)] mb-4" />
-        <h2 className="text-lg font-bold text-[var(--az-text)]">Permission Denied</h2>
-        <p className="text-sm text-[var(--az-text-muted)] mt-1">You do not have permission to view or manage dine-in tabs.</p>
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-6 bg-[var(--f-bg)]">
+        <AlertCircle className="w-12 h-12 text-[var(--f-bad)] mb-4" />
+        <h2 className="text-lg font-bold text-[var(--f-text)]">Permission Denied</h2>
+        <p className="text-sm text-[var(--f-text-3)] mt-1">You do not have permission to view or manage dine-in tabs.</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto px-4 md:px-6 py-6 text-[var(--az-text)]">
+    <div className="space-y-6 max-w-7xl mx-auto px-4 md:px-6 py-6 text-[var(--f-text)]">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[var(--az-text)] flex items-center gap-2">
-            <Utensils className="w-6 h-6 text-[var(--az-accent)]" />
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--f-text)] flex items-center gap-2">
+            <Utensils className="w-6 h-6 text-[var(--f-tint-color)]" />
             Dine-In Operations Dashboard
           </h1>
-          <p className="text-sm text-[var(--az-text-muted)]">
+          <p className="text-sm text-[var(--f-text-3)]">
             Open server tabs, register customer tables, dispatch kitchen tickets, and split bills seamlessly.
           </p>
         </div>
@@ -314,15 +314,15 @@ export default function DineIn() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Side: Server Active Tabs List */}
         <div className="lg:col-span-1 space-y-4">
-          <h3 className="text-sm font-bold text-[var(--az-text-muted)] uppercase tracking-wider flex items-center justify-between">
+          <h3 className="text-sm font-bold text-[var(--f-text-3)] uppercase tracking-wider flex items-center justify-between">
             <span>Running Tables & Tabs ({openTabs?.length || 0})</span>
-            {tabsLoading && <span className="text-xs text-[var(--az-accent)] animate-pulse">refreshing...</span>}
+            {tabsLoading && <span className="text-xs text-[var(--f-tint-color)] animate-pulse">refreshing...</span>}
           </h3>
 
           {tabsLoading && !openTabs ? (
             <div className="space-y-3">
-              <Skeleton className="h-20 w-full" />
-              <Skeleton className="h-20 w-full" />
+              <Skel className="h-20 w-full" />
+              <Skel className="h-20 w-full" />
             </div>
           ) : (openTabs || []).length === 0 ? (
             <Empty
@@ -343,31 +343,31 @@ export default function DineIn() {
                     onClick={() => setSelectedTabId(tab.id)}
                     className={`cursor-pointer transition-all border p-4 ${
                       selectedTabId === tab.id
-                        ? 'border-[var(--az-accent)] bg-[rgba(168,85,247,0.02)]'
-                        : 'bg-[var(--az-surface)] border-[var(--az-border)] hover:border-[var(--az-accent)]/40'
+                        ? 'border-[var(--f-tint-color)] bg-[rgba(168,85,247,0.02)]'
+                        : 'bg-[var(--f-surface)] border-[var(--f-line)]:border-[var(--f-tint-color)]/40'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-base text-[var(--az-text)]">
+                          <span className="font-bold text-base text-[var(--f-text)]">
                             Table {tab.tableId || 'Bar'}
                           </span>
-                          <Badge color={isOpen ? 'var(--az-accent)' : 'var(--az-warning)'}>
+                          <Tag color={isOpen ? 'var(--f-tint-color)' : 'var(--f-warn)'}>
                             {tab.status}
-                          </Badge>
+                          </Tag>
                         </div>
-                        <p className="text-xs text-[var(--az-text-muted)] mt-1 flex items-center gap-1">
+                        <p className="text-xs text-[var(--f-text-3)] mt-1 flex items-center gap-1">
                           <User className="w-3 h-3" />
                           {tab.customerName || tab.customerId || 'Guest'}
                         </p>
                       </div>
-                      <span className="text-sm font-bold text-[var(--az-success)] az-mono">
+                      <span className="text-sm font-bold text-[var(--f-ok)] f-mono">
                         GHS {sub.toFixed(2)}
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-[var(--az-border)] text-xs text-[var(--az-text-muted)]">
+                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-[var(--f-line)] text-xs text-[var(--f-text-3)]">
                       <span className="flex items-center gap-1">
                         <Utensils className="w-3.5 h-3.5" />
                         {itemsCount} {itemsCount === 1 ? 'item' : 'items'}
@@ -388,20 +388,20 @@ export default function DineIn() {
         <div className="lg:col-span-2 space-y-4">
           {selectedTabId ? (
             detailLoading ? (
-              <Card className="p-8 text-center bg-[var(--az-surface)] border-[var(--az-border)]">
-                <p className="text-sm text-[var(--az-text-muted)] animate-pulse">Loading active tab details...</p>
+              <Card className="p-8 text-center bg-[var(--f-surface)] border-[var(--f-line)]">
+                <p className="text-sm text-[var(--f-text-3)] animate-pulse">Loading active tab details...</p>
               </Card>
             ) : activeTabDetails ? (
               <div className="space-y-6">
                 {/* Tab Header Detail Card */}
-                <Card className="bg-[var(--az-surface)] border-[var(--az-border)] p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <Card className="bg-[var(--f-surface)] border-[var(--f-line)] p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="text-lg font-bold">Table {activeTabDetails.tableId || 'Bar'} Tab Details</h3>
-                      <Badge color="var(--az-accent)">{activeTabDetails.status}</Badge>
+                      <Tag variant="neutral">{activeTabDetails.status}</Tag>
                     </div>
-                    <p className="text-xs text-[var(--az-text-muted)] mt-1">
-                      Customer AZM ID: <strong className="text-[var(--az-text)]">{activeTabDetails.customerId}</strong>
+                    <p className="text-xs text-[var(--f-text-3)] mt-1">
+                      Customer AZM ID: <strong className="text-[var(--f-text)]">{activeTabDetails.customerId}</strong>
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -412,9 +412,9 @@ export default function DineIn() {
                         const items = activeTabDetails.items || [];
                         sendToKitchenMutation.mutate({ tabId: selectedTabId, items });
                       }}
-                      className="border-[var(--az-border)] text-xs flex items-center gap-1"
+                      className="border-[var(--f-line)] text-xs flex items-center gap-1"
                     >
-                      <Send className="w-3.5 h-3.5 text-[var(--az-info)]" />
+                      <Send className="w-3.5 h-3.5 text-[var(--f-info)]" />
                       Send to Kitchen
                     </Button>
                     <Button
@@ -429,9 +429,9 @@ export default function DineIn() {
                         setItemAssignments(assignments);
                         setIsSplitOpen(true);
                       }}
-                      className="border-[var(--az-border)] text-xs flex items-center gap-1"
+                      className="border-[var(--f-line)] text-xs flex items-center gap-1"
                     >
-                      <Users className="w-3.5 h-3.5 text-[var(--az-accent)]" />
+                      <Users className="w-3.5 h-3.5 text-[var(--f-tint-color)]" />
                       Split Bill
                     </Button>
                   </div>
@@ -440,20 +440,20 @@ export default function DineIn() {
                 {/* Sub-grid: Menu Products Catalog vs. Active Items running list */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Left sub-column: Menu Catalogue */}
-                  <Card className="bg-[var(--az-surface)] border-[var(--az-border)] p-4 space-y-3">
-                    <h4 className="font-semibold text-sm text-[var(--az-text-muted)] uppercase tracking-wider">
+                  <Card className="bg-[var(--f-surface)] border-[var(--f-line)] p-4 space-y-3">
+                    <h4 className="font-semibold text-sm text-[var(--f-text-3)] uppercase tracking-wider">
                       Add Menu Products
                     </h4>
 
                     {productsLoading ? (
-                      <p className="text-xs text-center text-[var(--az-text-muted)] animate-pulse">Loading products...</p>
+                      <p className="text-xs text-center text-[var(--f-text-3)] animate-pulse">Loading products...</p>
                     ) : (
-                      <div className="divide-y divide-[var(--az-border)] max-h-[350px] overflow-y-auto scrollbar-thin">
+                      <div className="divide-y divide-[var(--f-line)] max-h-[350px] overflow-y-auto scrollbar-thin">
                         {(productsData || []).map((product) => (
                           <div key={product.id} className="py-2.5 flex items-center justify-between gap-2">
                             <div>
                               <p className="font-semibold text-sm">{product.name}</p>
-                              <p className="text-xs text-[var(--az-text-muted)]">GHS {parseFloat(product.priceUsdc).toFixed(2)}</p>
+                              <p className="text-xs text-[var(--f-text-3)]">GHS {parseFloat(product.priceUsdc).toFixed(2)}</p>
                             </div>
                             <Button
                               variant="secondary"
@@ -462,7 +462,7 @@ export default function DineIn() {
                                 setActiveItemConfig(product);
                                 setItemModifierForm({ notes: '', quantity: 1 });
                               }}
-                              className="w-8 h-8 rounded-lg p-0 border-[var(--az-border)]"
+                              className="w-8 h-8 rounded-lg p-0 border-[var(--f-line)]"
                             >
                               <Plus className="w-4 h-4" />
                             </Button>
@@ -473,16 +473,16 @@ export default function DineIn() {
                   </Card>
 
                   {/* Right sub-column: Running Items lists */}
-                  <Card className="bg-[var(--az-surface)] border-[var(--az-border)] p-4 flex flex-col justify-between">
+                  <Card className="bg-[var(--f-surface)] border-[var(--f-line)] p-4 flex flex-col justify-between">
                     <div>
-                      <h4 className="font-semibold text-sm text-[var(--az-text-muted)] uppercase tracking-wider mb-3">
+                      <h4 className="font-semibold text-sm text-[var(--f-text-3)] uppercase tracking-wider mb-3">
                         Running Bill Items
                       </h4>
 
                       {(!activeTabDetails.items || activeTabDetails.items.length === 0) ? (
-                        <p className="text-xs text-center text-[var(--az-text-muted)] py-6 italic">No items logged yet.</p>
+                        <p className="text-xs text-center text-[var(--f-text-3)] py-6 italic">No items logged yet.</p>
                       ) : (
-                        <div className="divide-y divide-[var(--az-border)] max-h-[280px] overflow-y-auto scrollbar-thin mb-4">
+                        <div className="divide-y divide-[var(--f-line)] max-h-[280px] overflow-y-auto scrollbar-thin mb-4">
                           {activeTabDetails.items.map((item) => {
                             const unitPrice = parseFloat(item.unitPriceUsdc) || 0;
                             const lineTotal = parseFloat(item.lineTotalUsdc || (unitPrice * item.quantity)) || 0;
@@ -490,12 +490,12 @@ export default function DineIn() {
                             return (
                               <div key={item.id} className="py-2.5 flex items-center justify-between text-xs">
                                 <div>
-                                  <p className="font-semibold text-[var(--az-text)]">{item.name}</p>
-                                  <p className="text-[10px] text-[var(--az-text-muted)]">
+                                  <p className="font-semibold text-[var(--f-text)]">{item.name}</p>
+                                  <p className="text-[10px] text-[var(--f-text-3)]">
                                     {item.quantity}x @ GHS {unitPrice.toFixed(2)}
                                   </p>
                                 </div>
-                                <span className="font-semibold text-[var(--az-text)]">
+                                <span className="font-semibold text-[var(--f-text)]">
                                   GHS {lineTotal.toFixed(2)}
                                 </span>
                               </div>
@@ -506,32 +506,32 @@ export default function DineIn() {
                     </div>
 
                     {/* Subtotal preview panel */}
-                    <div className="border-t border-[var(--az-border)] pt-3 space-y-2">
-                      <div className="flex justify-between text-xs text-[var(--az-text-muted)]">
+                    <div className="border-t border-[var(--f-line)] pt-3 space-y-2">
+                      <div className="flex justify-between text-xs text-[var(--f-text-3)]">
                         <span>Running Subtotal</span>
-                        <span className="font-semibold text-[var(--az-text)]">
+                        <span className="font-semibold text-[var(--f-text)]">
                           GHS {parseFloat(activeTabDetails.subtotalUsdc || 0).toFixed(2)}
                         </span>
                       </div>
                       {activeTabDetails.status?.toUpperCase() === 'BILLING' && (
                         <>
-                          <div className="flex justify-between text-xs text-[var(--az-text-muted)]">
+                          <div className="flex justify-between text-xs text-[var(--f-text-3)]">
                             <span>Tax Total</span>
-                            <span className="font-semibold text-[var(--az-text)]">
+                            <span className="font-semibold text-[var(--f-text)]">
                               GHS {parseFloat(activeTabDetails.taxTotalUsdc || 0).toFixed(2)}
                             </span>
                           </div>
-                          <div className="flex justify-between text-xs text-[var(--az-text-muted)]">
+                          <div className="flex justify-between text-xs text-[var(--f-text-3)]">
                             <span>Service Tip</span>
-                            <span className="font-semibold text-[var(--az-text)]">
+                            <span className="font-semibold text-[var(--f-text)]">
                               GHS {parseFloat(activeTabDetails.tipUsdc || 0).toFixed(2)}
                             </span>
                           </div>
                         </>
                       )}
-                      <div className="flex justify-between text-sm font-bold border-t border-[var(--az-border)] pt-2">
+                      <div className="flex justify-between text-sm font-bold border-t border-[var(--f-line)] pt-2">
                         <span>Total Due</span>
-                        <span className="text-[var(--az-success)]">
+                        <span className="text-[var(--f-ok)]">
                           GHS {parseFloat(activeTabDetails.grandTotalUsdc || activeTabDetails.subtotalUsdc || 0).toFixed(2)}
                         </span>
                       </div>
@@ -557,7 +557,7 @@ export default function DineIn() {
                               variant="primary"
                               size="sm"
                               onClick={() => closeTabMutation.mutate(selectedTabId)}
-                              className="w-full bg-[var(--az-success)] hover:bg-[#00c870] flex items-center justify-center gap-1.5 h-10"
+                              className="w-full bg-[var(--f-ok)]:bg-[#00c870] flex items-center justify-center gap-1.5 h-10"
                             >
                               <CheckCircle className="w-4 h-4" />
                               Confirm & Pay Tab
@@ -571,10 +571,10 @@ export default function DineIn() {
               </div>
             ) : null
           ) : (
-            <Card className="p-12 text-center border-dashed border-[var(--az-border)]">
-              <Utensils className="w-12 h-12 text-[var(--az-accent)] mx-auto mb-4 opacity-40" />
+            <Card className="p-12 text-center border-dashed border-[var(--f-line)]">
+              <Utensils className="w-12 h-12 text-[var(--f-tint-color)] mx-auto mb-4 opacity-40" />
               <h3 className="text-lg font-bold mb-1">No Active Tab Selected</h3>
-              <p className="text-sm text-[var(--az-text-muted)] max-w-sm mx-auto">
+              <p className="text-sm text-[var(--f-text-3)] max-w-sm mx-auto">
                 Select a running table tab from the left sidebar to add menu orders, request billing statements, split totals, or confirm payments.
               </p>
             </Card>
@@ -588,12 +588,12 @@ export default function DineIn() {
       <Modal open={isNewTabOpen} onClose={() => setIsNewTabOpen(false)} title="Open Dine-In Tab">
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider">
+            <label className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">
               Search AZM Guest Account
             </label>
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--az-text-muted)]" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--f-text-3)]" />
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -610,18 +610,18 @@ export default function DineIn() {
 
           {/* Search Results */}
           {guestResults.length > 0 && (
-            <div className="max-h-[180px] overflow-y-auto divide-y divide-[var(--az-border)] bg-[var(--az-black)] border border-[var(--az-border)] rounded-xl">
+            <div className="max-h-[180px] overflow-y-auto divide-y divide-[var(--f-line)] bg-[var(--f-ink-900)] border border-[var(--f-line)] rounded-xl">
               {guestResults.map((guest) => (
                 <div
                   key={guest.id || guest.azamanId}
                   onClick={() => setNewTabCustomer(guest)}
                   className={`p-3 flex items-center justify-between text-xs cursor-pointer transition-colors ${
-                    newTabCustomer?.id === guest.id ? 'bg-[rgba(168,85,247,0.1)] text-[var(--az-accent)]' : 'hover:bg-[var(--az-border)]/40'
+                    newTabCustomer?.id === guest.id ? 'bg-[rgba(168,85,247,0.1)] text-[var(--f-tint-color)]' : 'hover:bg-[var(--f-line)]/40'
                   }`}
                 >
                   <div>
-                    <p className="font-bold text-[var(--az-text)]">{guest.name || guest.fullname}</p>
-                    <p className="text-[10px] text-[var(--az-text-muted)]">{guest.azamanId || guest.handle}</p>
+                    <p className="font-bold text-[var(--f-text)]">{guest.name || guest.fullname}</p>
+                    <p className="text-[10px] text-[var(--f-text-3)]">{guest.azamanId || guest.handle}</p>
                   </div>
                   {newTabCustomer?.id === guest.id && <UserCheck className="w-4 h-4" />}
                 </div>
@@ -631,15 +631,15 @@ export default function DineIn() {
 
           {newTabCustomer && (
             <div className="p-3 bg-[rgba(16,185,129,0.03)] border border-[rgba(16,185,129,0.15)] rounded-xl flex items-center gap-2">
-              <UserCheck className="w-5 h-5 text-[var(--az-success)]" />
+              <UserCheck className="w-5 h-5 text-[var(--f-ok)]" />
               <div className="text-xs">
-                <p className="font-semibold text-[var(--az-text)]">Selected: {newTabCustomer.name || newTabCustomer.fullname}</p>
-                <p className="text-[var(--az-text-muted)]">Verified Azaman ID: {newTabCustomer.azamanId || newTabCustomer.id}</p>
+                <p className="font-semibold text-[var(--f-text)]">Selected: {newTabCustomer.name || newTabCustomer.fullname}</p>
+                <p className="text-[var(--f-text-3)]">Verified Azaman ID: {newTabCustomer.azamanId || newTabCustomer.id}</p>
               </div>
             </div>
           )}
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-[var(--az-border)]">
+          <div className="flex justify-end gap-2 pt-2 border-t border-[var(--f-line)]">
             <Button variant="secondary" type="button" onClick={() => setIsNewTabOpen(false)}>
               Cancel
             </Button>
@@ -647,7 +647,6 @@ export default function DineIn() {
               variant="primary"
               type="button"
               disabled={!newTabCustomer}
-              loading={openTabMutation.isPending}
               onClick={handleOpenTabSubmit}
             >
               Open Active Tab
@@ -660,9 +659,9 @@ export default function DineIn() {
       <Modal open={!!activeItemConfig} onClose={() => setActiveItemConfig(null)} title="Configure Item Order">
         {activeItemConfig && (
           <div className="space-y-4">
-            <div className="p-3 bg-[var(--az-black)] rounded-xl border border-[var(--az-border)]">
+            <div className="p-3 bg-[var(--f-ink-900)] rounded-xl border border-[var(--f-line)]">
               <h4 className="font-bold text-base">{activeItemConfig.name}</h4>
-              <p className="text-xs text-[var(--az-text-muted)] mt-1">GHS {parseFloat(activeItemConfig.priceUsdc).toFixed(2)} per unit</p>
+              <p className="text-xs text-[var(--f-text-3)] mt-1">GHS {parseFloat(activeItemConfig.priceUsdc).toFixed(2)} per unit</p>
             </div>
 
             <div className="grid grid-cols-1 gap-3">
@@ -682,14 +681,13 @@ export default function DineIn() {
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-[var(--az-border)]">
+            <div className="flex justify-end gap-2 pt-2 border-t border-[var(--f-line)]">
               <Button variant="secondary" type="button" onClick={() => setActiveItemConfig(null)}>
                 Cancel
               </Button>
               <Button
                 variant="primary"
                 type="button"
-                loading={addItemMutation.isPending}
                 onClick={() => handleAddItemSubmit(activeItemConfig)}
               >
                 Add to Bill
@@ -703,16 +701,16 @@ export default function DineIn() {
       <Modal open={isBillingOpen} onClose={() => setIsBillingOpen(false)} title="Finalize Bill Settings">
         {activeTabDetails && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3 bg-[var(--az-black)] p-3 rounded-xl border border-[var(--az-border)]">
+            <div className="grid grid-cols-2 gap-3 bg-[var(--f-ink-900)] p-3 rounded-xl border border-[var(--f-line)]">
               <div>
-                <span className="text-xs text-[var(--az-text-muted)]">Subtotal</span>
-                <p className="font-bold text-base text-[var(--az-text)] mt-0.5">
+                <span className="text-xs text-[var(--f-text-3)]">Subtotal</span>
+                <p className="font-bold text-base text-[var(--f-text)] mt-0.5">
                   GHS {parseFloat(activeTabDetails.subtotalUsdc || 0).toFixed(2)}
                 </p>
               </div>
               <div>
-                <span className="text-xs text-[var(--az-text-muted)]">Open Server ID</span>
-                <p className="font-mono text-xs text-[var(--az-text)] truncate mt-1">
+                <span className="text-xs text-[var(--f-text-3)]">Open Server ID</span>
+                <p className="font-mono text-xs text-[var(--f-text)] truncate mt-1">
                   {activeTabDetails.customerId}
                 </p>
               </div>
@@ -735,14 +733,13 @@ export default function DineIn() {
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-[var(--az-border)]">
+            <div className="flex justify-end gap-2 pt-2 border-t border-[var(--f-line)]">
               <Button variant="secondary" type="button" onClick={() => setIsBillingOpen(false)}>
                 Cancel
               </Button>
               <Button
                 variant="primary"
                 type="button"
-                loading={finalizeTabMutation.isPending}
                 onClick={triggerFinalize}
               >
                 Finalize Tab
@@ -756,13 +753,13 @@ export default function DineIn() {
       <Modal open={isSplitOpen} onClose={() => setIsSplitOpen(false)} title="Bill Splits Manager" className="max-w-2xl">
         {activeTabDetails && (
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--az-border)] pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--f-line)] pb-3">
               <div className="flex gap-2">
                 <Button
                   variant={splitType === 'even' ? 'primary' : 'secondary'}
                   size="sm"
                   onClick={() => setSplitType('even')}
-                  className="text-xs h-9 border-[var(--az-border)]"
+                  className="text-xs h-9 border-[var(--f-line)]"
                 >
                   Split Evenly
                 </Button>
@@ -770,13 +767,13 @@ export default function DineIn() {
                   variant={splitType === 'item' ? 'primary' : 'secondary'}
                   size="sm"
                   onClick={() => setSplitType('item')}
-                  className="text-xs h-9 border-[var(--az-border)]"
+                  className="text-xs h-9 border-[var(--f-line)]"
                 >
                   Split by Item
                 </Button>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-[var(--az-text-muted)] font-semibold">Portions:</span>
+                <span className="text-xs text-[var(--f-text-3)] font-semibold">Portions:</span>
                 <Input
                   type="number"
                   min="2"
@@ -791,15 +788,15 @@ export default function DineIn() {
             {/* Split Type: Item Assignments */}
             {splitType === 'item' && (
               <div className="space-y-4 max-h-[220px] overflow-y-auto scrollbar-thin">
-                <span className="text-xs font-bold text-[var(--az-text-muted)] uppercase tracking-wider block">
+                <span className="text-xs font-bold text-[var(--f-text-3)] uppercase tracking-wider block">
                   Assign Items to Guests
                 </span>
                 <div className="space-y-2">
                   {(activeTabDetails.items || []).map((item) => (
-                    <div key={item.id} className="flex items-center justify-between text-xs bg-[var(--az-black)] p-2.5 rounded-xl border border-[var(--az-border)]">
+                    <div key={item.id} className="flex items-center justify-between text-xs bg-[var(--f-ink-900)] p-2.5 rounded-xl border border-[var(--f-line)]">
                       <div>
                         <p className="font-semibold">{item.name}</p>
-                        <p className="text-[10px] text-[var(--az-text-muted)]">
+                        <p className="text-[10px] text-[var(--f-text-3)]">
                           {item.quantity}x @ GHS {(parseFloat(item.unitPriceUsdc) || 0).toFixed(2)}
                         </p>
                       </div>
@@ -822,19 +819,19 @@ export default function DineIn() {
             )}
 
             {/* Live Splits Portion Summary */}
-            <div className="space-y-3 pt-3 border-t border-[var(--az-border)]">
-              <span className="text-xs font-bold text-[var(--az-text-muted)] uppercase tracking-wider block">
+            <div className="space-y-3 pt-3 border-t border-[var(--f-line)]">
+              <span className="text-xs font-bold text-[var(--f-text-3)] uppercase tracking-wider block">
                 Calculated Portions Preview
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {calculateSplits().map((split) => (
-                  <div key={split.guestNum} className="bg-[var(--az-black)] p-3 rounded-xl border border-[var(--az-border)] flex flex-col justify-between">
+                  <div key={split.guestNum} className="bg-[var(--f-ink-900)] p-3 rounded-xl border border-[var(--f-line)] flex flex-col justify-between">
                     <div>
-                      <div className="flex items-center justify-between gap-2 border-b border-[var(--az-border)] pb-1.5 mb-1.5">
-                        <span className="font-bold text-xs text-[var(--az-accent)]">Portion {split.guestNum}</span>
-                        <span className="text-xs font-bold text-[var(--az-success)]">GHS {split.total.toFixed(2)}</span>
+                      <div className="flex items-center justify-between gap-2 border-b border-[var(--f-line)] pb-1.5 mb-1.5">
+                        <span className="font-bold text-xs text-[var(--f-tint-color)]">Portion {split.guestNum}</span>
+                        <span className="text-xs font-bold text-[var(--f-ok)]">GHS {split.total.toFixed(2)}</span>
                       </div>
-                      <div className="text-[10px] text-[var(--az-text-muted)] space-y-0.5">
+                      <div className="text-[10px] text-[var(--f-text-3)] space-y-0.5">
                         {split.items.map((line, idx) => (
                           <p key={idx} className="truncate">{line}</p>
                         ))}
@@ -848,7 +845,7 @@ export default function DineIn() {
                           description: `Amount: GHS ${split.total.toFixed(2)}. Sent copy to table printer.`,
                         });
                       }}
-                      className="w-full h-8 text-[10px] border-[var(--az-border)] mt-3 flex items-center justify-center gap-1"
+                      className="w-full h-8 text-[10px] border-[var(--f-line)] mt-3 flex items-center justify-center gap-1"
                     >
                       <Printer className="w-3 h-3" />
                       Print Bill portion
@@ -858,7 +855,7 @@ export default function DineIn() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-[var(--az-border)]">
+            <div className="flex justify-end gap-2 pt-2 border-t border-[var(--f-line)]">
               <Button variant="secondary" type="button" onClick={() => setIsSplitOpen(false)}>
                 Close Splitter
               </Button>

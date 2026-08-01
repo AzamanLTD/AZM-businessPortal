@@ -33,7 +33,7 @@ import { invoices as invoicesApi, locations as locApi } from '@/lib/api';
 import { bookingOpsApi } from '@/lib/marketplaceApi';
 import { Card, Badge, Button, Input, Textarea, Select, Empty, Skeleton, Modal, Tabs, Progress } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { Widget, WidgetStat, WidgetRow } from '@/components/ui/Widget';
+// Widget replaced by KpiCard/Card
 import { fmtUSDC, fmt, formatDateTime, relativeTime, cn } from '@/lib/utils';
 import {
   Receipt, Plus, Search, X, Trash2, Eye, Send, Ban, Mail,
@@ -42,10 +42,10 @@ import {
 
 // ── Invoice status display config ───────────────────────────────────────────
 const INVOICE_STATUS_META = {
-  DRAFT:  { label: 'Draft',  color: 'var(--az-text-muted)', bg: '#7b7b9a1a' },
-  SENT:   { label: 'Sent',   color: 'var(--az-info)', bg: 'var(--az-info)' },
-  PAID:   { label: 'Paid',   color: 'var(--az-success)', bg: 'var(--az-success)' },
-  VOID: { label: 'Void', color: 'var(--az-danger)', bg: 'var(--az-danger)' },
+  DRAFT:  { label: 'Draft',  color: 'var(--f-text-3)', bg: '#7b7b9a1a' },
+  SENT:   { label: 'Sent',   color: 'var(--f-info)', bg: 'var(--f-info)' },
+  PAID:   { label: 'Paid',   color: 'var(--f-ok)', bg: 'var(--f-ok)' },
+  VOID: { label: 'Void', color: 'var(--f-bad)', bg: 'var(--f-bad)' },
 };
 const TABS = ['ALL', 'DRAFT', 'SENT', 'PAID', 'VOID', 'RECURRING'];
 
@@ -198,18 +198,18 @@ export default function Invoices() {
   const selectedSentsCount = all.filter(i => selectedIds.includes(i.id) && i.status === 'SENT').length;
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6 animate-fade-in text-[var(--az-text)]">
+    <div className="p-6 max-w-6xl mx-auto space-y-6  text-[var(--f-text)]">
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-xl font-bold text-[var(--az-text)]">Invoices</h1>
-          <p className="text-sm text-[var(--az-text-muted)] mt-1">Create, send, and track business invoices in real-time.</p>
+          <h1 className="text-xl font-bold text-[var(--f-text)]">Invoices</h1>
+          <p className="text-sm text-[var(--f-text-3)] mt-1">Create, send, and track business invoices in real-time.</p>
         </div>
         <div className="flex gap-2">
           <Button onClick={() => setTaxSectionOpen(prev => !prev)} variant="secondary" className="flex items-center gap-1.5">
             Tax Presets {taxSectionOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </Button>
-          <Button onClick={() => setShowCreate(true)} className="bg-[var(--az-info)] hover:opacity-90">
+          <Button onClick={() => setShowCreate(true)} className="bg-[var(--f-info)]:opacity-90">
             <Plus className="w-4 h-4" /> New Invoice
           </Button>
         </div>
@@ -219,41 +219,41 @@ export default function Invoices() {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {isLoadingStats ? (
           Array.from({ length: 5 }).map((_, i) => (
-            <Card key={i} className="p-4 bg-[var(--az-bg)] border-[var(--az-border)]">
-              <Skeleton className="h-4 w-16 mb-2" />
-              <Skeleton className="h-6 w-24" />
+            <Card key={i} className="p-4 bg-[var(--f-bg)] border-[var(--f-line)]">
+              <Skel className="h-4 w-16 mb-2" />
+              <Skel className="h-6 w-24" />
             </Card>
           ))
         ) : (
           <>
-            <Card className="p-4 bg-[var(--az-bg)] border-[var(--az-border)] flex flex-col justify-between">
-              <span className="text-xs text-[var(--az-text-muted)] font-semibold uppercase tracking-wider">Drafts</span>
+            <Card className="p-4 bg-[var(--f-bg)] border-[var(--f-line)] flex flex-col justify-between">
+              <span className="text-xs text-[var(--f-text-3)] font-semibold uppercase tracking-wider">Drafts</span>
               <div className="flex items-baseline justify-between mt-2">
-                <span className="text-2xl font-bold az-mono text-[var(--az-text-muted)]">{statsData?.draftCount || 0}</span>
+                <span className="text-2xl font-bold f-mono text-[var(--f-text-3)]">{statsData?.draftCount || 0}</span>
               </div>
             </Card>
-            <Card className="p-4 bg-[var(--az-bg)] border-[var(--az-border)] flex flex-col justify-between">
-              <span className="text-xs text-[var(--az-info)] font-semibold uppercase tracking-wider">Sent</span>
+            <Card className="p-4 bg-[var(--f-bg)] border-[var(--f-line)] flex flex-col justify-between">
+              <span className="text-xs text-[var(--f-info)] font-semibold uppercase tracking-wider">Sent</span>
               <div className="flex items-baseline justify-between mt-2">
-                <span className="text-2xl font-bold az-mono text-[var(--az-info)]">{statsData?.sentCount || 0}</span>
+                <span className="text-2xl font-bold f-mono text-[var(--f-info)]">{statsData?.sentCount || 0}</span>
               </div>
             </Card>
-            <Card className="p-4 bg-[var(--az-bg)] border-[var(--az-border)] flex flex-col justify-between">
-              <span className="text-xs text-[var(--az-success)] font-semibold uppercase tracking-wider">Paid</span>
+            <Card className="p-4 bg-[var(--f-bg)] border-[var(--f-line)] flex flex-col justify-between">
+              <span className="text-xs text-[var(--f-ok)] font-semibold uppercase tracking-wider">Paid</span>
               <div className="flex items-baseline justify-between mt-2">
-                <span className="text-2xl font-bold az-mono text-[var(--az-success)]">{statsData?.paidCount || 0}</span>
+                <span className="text-2xl font-bold f-mono text-[var(--f-ok)]">{statsData?.paidCount || 0}</span>
               </div>
             </Card>
-            <Card className="p-4 bg-[var(--az-bg)] border-[var(--az-border)] flex flex-col justify-between">
-              <span className="text-xs text-[var(--az-danger)] font-semibold uppercase tracking-wider">Voided</span>
+            <Card className="p-4 bg-[var(--f-bg)] border-[var(--f-line)] flex flex-col justify-between">
+              <span className="text-xs text-[var(--f-bad)] font-semibold uppercase tracking-wider">Voided</span>
               <div className="flex items-baseline justify-between mt-2">
-                <span className="text-2xl font-bold az-mono text-[var(--az-danger)]">{statsData?.voidedCount || 0}</span>
+                <span className="text-2xl font-bold f-mono text-[var(--f-bad)]">{statsData?.voidedCount || 0}</span>
               </div>
             </Card>
-            <Card className="p-4 bg-[var(--az-bg)] border-[var(--az-border)] flex flex-col justify-between col-span-2 md:col-span-1">
-              <span className="text-xs text-[var(--az-accent)] font-semibold uppercase tracking-wider">Total Revenue</span>
+            <Card className="p-4 bg-[var(--f-bg)] border-[var(--f-line)] flex flex-col justify-between col-span-2 md:col-span-1">
+              <span className="text-xs text-[var(--f-tint-color)] font-semibold uppercase tracking-wider">Total Revenue</span>
               <div className="flex items-baseline justify-between mt-2">
-                <span className="text-xl font-bold az-mono text-[var(--az-accent)]">{fmtUSDC(statsData?.totalRevenueUsdc || 0)}</span>
+                <span className="text-xl font-bold f-mono text-[var(--f-tint-color)]">{fmtUSDC(statsData?.totalRevenueUsdc || 0)}</span>
               </div>
             </Card>
           </>
@@ -262,25 +262,25 @@ export default function Invoices() {
 
       {/* Tax Presets Collapsible Section */}
       {taxSectionOpen && (
-        <Card className="p-4 bg-[var(--az-bg)] border-[var(--az-border)]">
+        <Card className="p-4 bg-[var(--f-bg)] border-[var(--f-line)]">
           <TaxPresetsSection />
         </Card>
       )}
 
       {/* Bulk Operations Bar */}
       {selectedIds.length > 0 && (
-        <div className="flex items-center justify-between p-3 bg-[#4f8ef71a] border border-[var(--az-info)] rounded-xl animate-fade-in">
-          <span className="text-sm font-semibold text-[var(--az-info)]">
+        <div className="flex items-center justify-between p-3 bg-[#4f8ef71a] border border-[var(--f-info)] rounded-xl ">
+          <span className="text-sm font-semibold text-[var(--f-info)]">
             {selectedIds.length} invoice{selectedIds.length > 1 ? 's' : ''} selected
           </span>
           <div className="flex gap-2">
             {selectedDraftsCount > 0 && (
-              <Button size="sm" onClick={handleBulkSend} loading={isBulkProcessing}>
+              <Button size="sm" onClick={handleBulkSend}>
                 <Send className="w-3.5 h-3.5 mr-1" /> Send Selected Drafts ({selectedDraftsCount})
               </Button>
             )}
             {selectedSentsCount > 0 && (
-              <Button size="sm" variant="danger" onClick={handleBulkVoid} loading={isBulkProcessing}>
+              <Button size="sm" variant="danger" onClick={handleBulkVoid}>
                 <Ban className="w-3.5 h-3.5 mr-1" /> Void Selected Sent ({selectedSentsCount})
               </Button>
             )}
@@ -295,7 +295,7 @@ export default function Invoices() {
       <div className="space-y-4">
         {/* Search & Tabs */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex flex-wrap gap-1 border-b border-[var(--az-border)] w-full md:w-auto">
+          <div className="flex flex-wrap gap-1 border-b border-[var(--f-line)] w-full md:w-auto">
             {TABS.map(t => (
               <button
                 key={t}
@@ -303,8 +303,8 @@ export default function Invoices() {
                 className={cn(
                   "px-4 py-2 text-sm font-semibold border-b-2 -mb-px transition-colors",
                   tab === t
-                    ? "border-[var(--az-accent)] text-[var(--az-accent)]"
-                    : "border-transparent text-[var(--az-text-muted)] hover:text-[var(--az-text)]"
+                    ? "border-[var(--f-tint-color)] text-[var(--f-tint-color)]"
+                    : "border-transparent text-[var(--f-text-3)]:text-[var(--f-text)]"
                 )}
               >
                 {t === 'ALL' ? 'All' : INVOICE_STATUS_META[t]?.label || t}
@@ -313,12 +313,12 @@ export default function Invoices() {
           </div>
 
           <div className="relative w-full md:w-72">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-[var(--az-text-muted)]" />
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-[var(--f-text-3)]" />
             <Input
               placeholder="Search by reference, name..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="pl-9 bg-[var(--az-bg)] border-[var(--az-border)]"
+              className="pl-9 bg-[var(--f-bg)] border-[var(--f-line)]"
             />
           </div>
         </div>
@@ -326,10 +326,10 @@ export default function Invoices() {
         {/* List View */}
         {isLoading ? (
           <div className="space-y-3">
-            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16" />)}
+            {Array.from({ length: 4 }).map((_, i) => <Skel key={i} className="h-16" />)}
           </div>
         ) : error ? (
-          <div className="p-8 text-center text-[var(--az-danger)] flex flex-col items-center gap-2">
+          <div className="p-8 text-center text-[var(--f-bad)] flex flex-col items-center gap-2">
             <AlertCircle className="w-8 h-8" />
             <p>Failed to load invoices: {error.message}</p>
           </div>
@@ -341,17 +341,17 @@ export default function Invoices() {
             action={tab === 'ALL' ? <Button onClick={() => setShowCreate(true)}><Plus className="w-4 h-4" /> New Invoice</Button> : null}
           />
         ) : (
-          <Card className="p-0 overflow-hidden border-[var(--az-border)] bg-[var(--az-bg)]">
+          <Card className="p-0 overflow-hidden border-[var(--f-line)] bg-[var(--f-bg)]">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-[var(--az-border)] bg-[var(--az-surface)] text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider">
+                  <tr className="border-b border-[var(--f-line)] bg-[var(--f-surface)] text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">
                     <th className="py-3 px-4 w-10">
                       <input
                         type="checkbox"
                         checked={filtered.length > 0 && selectedIds.length === filtered.length}
                         onChange={e => handleSelectAll(e.target.checked)}
-                        className="rounded bg-[var(--az-bg)] border-[var(--az-border)] focus:ring-0"
+                        className="rounded bg-[var(--f-bg)] border-[var(--f-line)] focus:ring-0"
                       />
                     </th>
                     <th className="py-3 px-4">Ref / Customer</th>
@@ -361,7 +361,7 @@ export default function Invoices() {
                     <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[var(--az-border)]">
+                <tbody className="divide-y divide-[var(--f-line)]">
                   {filtered.map(inv => {
                     const isVoided = inv.status === 'VOID' || inv.status === 'VOIDED';
                     const meta = INVOICE_STATUS_META[inv.status] || INVOICE_STATUS_META.DRAFT;
@@ -371,8 +371,8 @@ export default function Invoices() {
                       <tr
                         key={inv.id}
                         className={cn(
-                          "hover:bg-[var(--az-surface)] transition-colors text-sm",
-                          isVoided && "opacity-65 line-through decoration-[var(--az-danger)] decoration-1"
+                          "hover:bg-[var(--f-surface)] transition-colors text-sm",
+                          isVoided && "opacity-65 line-through decoration-[var(--f-bad)] decoration-1"
                         )}
                       >
                         <td className="py-3 px-4">
@@ -380,28 +380,28 @@ export default function Invoices() {
                             type="checkbox"
                             checked={isSelected}
                             onChange={e => handleSelectOne(inv.id, e.target.checked)}
-                            className="rounded bg-[var(--az-bg)] border-[var(--az-border)] focus:ring-0"
+                            className="rounded bg-[var(--f-bg)] border-[var(--f-line)] focus:ring-0"
                           />
                         </td>
                         <td className="py-3 px-4">
-                          <div className="font-bold text-[var(--az-text)] az-mono">{inv.invoiceRef}</div>
-                          <div className="text-xs text-[var(--az-text-muted)] mt-0.5">
+                          <div className="font-bold text-[var(--f-text)] f-mono">{inv.invoiceRef}</div>
+                          <div className="text-xs text-[var(--f-text-3)] mt-0.5">
                             {inv.customer?.username || 'Unknown Customer'} ({inv.customer?.azamanId})
                           </div>
                         </td>
                         <td className="py-3 px-4">
-                          <Badge color={meta.color} bg={meta.bg}>{meta.label}</Badge>
+                          <Tag color={meta.color} bg={meta.bg}>{meta.label}</Tag>
                         </td>
-                        <td className="py-3 px-4 text-right font-bold az-mono">
+                        <td className="py-3 px-4 text-right font-bold f-mono">
                           {fmtUSDC(inv.billTotalUsdc)}
                         </td>
-                        <td className="py-3 px-4 text-xs text-[var(--az-text-muted)]">
+                        <td className="py-3 px-4 text-xs text-[var(--f-text-3)]">
                           <div>Created: {formatDateTime(inv.createdAt)}</div>
                           {inv.status === 'PAID' && inv.paidAt && (
-                            <div className="text-[var(--az-success)] font-semibold">Paid: {formatDateTime(inv.paidAt)}</div>
+                            <div className="text-[var(--f-ok)] font-semibold">Paid: {formatDateTime(inv.paidAt)}</div>
                           )}
                           {inv.status === 'SENT' && inv.sentAt && (
-                            <div className="text-[var(--az-info)]">Sent: {formatDateTime(inv.sentAt)}</div>
+                            <div className="text-[var(--f-info)]">Sent: {formatDateTime(inv.sentAt)}</div>
                           )}
                         </td>
                         <td className="py-3 px-4 text-right">
@@ -419,7 +419,6 @@ export default function Invoices() {
                               <Button
                                 size="sm"
                                 onClick={() => sendMut.mutate(inv.id)}
-                                loading={sendMut.isPending && sendMut.variables === inv.id}
                               >
                                 <Send className="w-3.5 h-3.5" /> Send
                               </Button>
@@ -433,7 +432,6 @@ export default function Invoices() {
                                   if (email === null) return;
                                   emailMut.mutate({ id: inv.id, email: email || undefined });
                                 }}
-                                loading={emailMut.isPending && emailMut.variables?.id === inv.id}
                                 title="Email invoice"
                               >
                                 <Mail className="w-3.5 h-3.5" />
@@ -493,23 +491,22 @@ export default function Invoices() {
           className="max-w-md"
         >
           <div className="space-y-4">
-            <p className="text-sm text-[var(--az-text-muted)]">
+            <p className="text-sm text-[var(--f-text-3)]">
               Are you sure you want to void this invoice? Enter a cancellation reason below. This action cannot be undone.
             </p>
             <Textarea
               placeholder="Reason for cancellation..."
               value={voidReason}
               onChange={e => setVoidReason(e.target.value)}
-              className="bg-[var(--az-bg)] border-[var(--az-border)]"
+              className="bg-[var(--f-bg)] border-[var(--f-line)]"
             />
-            <div className="flex gap-3 justify-end pt-2 border-t border-[var(--az-border)]">
+            <div className="flex gap-3 justify-end pt-2 border-t border-[var(--f-line)]">
               <Button variant="secondary" onClick={() => { setShowVoidReason(null); setVoidReason(''); }}>
                 Cancel
               </Button>
               <Button
                 variant="danger"
                 disabled={!voidReason.trim()}
-                loading={voidMut.isPending}
                 onClick={() => voidMut.mutate({ id: showVoidReason, reason: voidReason.trim() })}
               >
                 Confirm Void
@@ -545,19 +542,19 @@ function CustomerLookup({ customer, onSelect, onClear }) {
 
   if (customer) {
     return (
-      <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--az-surface)] border border-[#00d97e30]">
+      <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--f-surface)] border border-[#00d97e30]">
         {customer.profilePictureUrl ? (
           <img src={customer.profilePictureUrl} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-[var(--az-info)] border border-[#4f8ef730] flex items-center justify-center flex-shrink-0">
-            <span className="text-sm font-bold text-[var(--az-info)]">{initials(customer.username)}</span>
+          <div className="w-10 h-10 rounded-full bg-[var(--f-info)] border border-[#4f8ef730] flex items-center justify-center flex-shrink-0">
+            <span className="text-sm font-bold text-[var(--f-info)]">{initials(customer.username)}</span>
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-[var(--az-text)] truncate">{customer.username}</p>
-          <p className="text-xs text-[var(--az-text-muted)] az-mono truncate">{customer.azamanId}</p>
+          <p className="text-sm font-semibold text-[var(--f-text)] truncate">{customer.username}</p>
+          <p className="text-xs text-[var(--f-text-3)] f-mono truncate">{customer.azamanId}</p>
         </div>
-        <button onClick={onClear} className="p-1.5 rounded-lg hover:bg-[var(--az-border)] text-[var(--az-text-muted)] hover:text-[var(--az-text)] transition-colors">
+        <button onClick={onClear} className="p-1.5 rounded-lg:bg-[var(--f-line)] text-[var(--f-text-3)]:text-[var(--f-text)] transition-colors">
           <X className="w-4 h-4" />
         </button>
       </div>
@@ -572,10 +569,10 @@ function CustomerLookup({ customer, onSelect, onClear }) {
           value={azamanId}
           onChange={e => setAzamanId(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') submit(); }}
-          className="bg-[var(--az-bg)] border-[var(--az-border)]"
+          className="bg-[var(--f-bg)] border-[var(--f-line)]"
         />
       </div>
-      <Button onClick={submit} loading={lookupMut.isPending} className="flex-shrink-0">
+      <Button onClick={submit} className="flex-shrink-0">
         <Search className="w-4 h-4" /> Find
       </Button>
     </div>
@@ -718,17 +715,17 @@ function CreateInvoiceModal({ onClose, onCreated }) {
   };
 
   return (
-    <Modal open onClose={onClose} title="New Invoice" className="max-w-2xl text-[var(--az-text)]">
+    <Modal open onClose={onClose} title="New Invoice" className="max-w-2xl text-[var(--f-text)]">
       <div className="space-y-5 max-h-[70vh] overflow-y-auto pr-1">
         {/* Step 1 — customer */}
         <div className="space-y-2">
-          <p className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wide">Customer Lookup</p>
+          <p className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wide">Customer Lookup</p>
           <CustomerLookup customer={customer} onSelect={setCustomer} onClear={() => setCustomer(null)} />
         </div>
 
         {/* Step 2 — line items */}
         <div className="space-y-2">
-          <p className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wide">Line Items</p>
+          <p className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wide">Line Items</p>
           <div className="space-y-2">
             {lineItems.map((it, i) => (
               <div key={i} className="flex items-end gap-2">
@@ -736,23 +733,23 @@ function CreateInvoiceModal({ onClose, onCreated }) {
                   <input
                     type="text" maxLength={200} placeholder="Description"
                     value={it.description} onChange={e => setLine(i, 'description', e.target.value)}
-                    className="w-full bg-[var(--az-bg)] border border-[var(--az-border)] rounded-lg px-3 py-2 text-sm text-[var(--az-text)] placeholder:text-[var(--az-text-muted)] outline-none focus:border-[var(--az-accent)]"
+                    className="w-full bg-[var(--f-bg)] border border-[var(--f-line)] rounded-lg px-3 py-2 text-sm text-[var(--f-text)] placeholder:text-[var(--f-text-3)] outline-none focus:border-[var(--f-tint-color)]"
                   />
                 </div>
                 <input
                   type="number" min="1" step="1" placeholder="Qty"
                   value={it.quantity} onChange={e => setLine(i, 'quantity', e.target.value)}
-                  className="w-16 bg-[var(--az-bg)] border border-[var(--az-border)] rounded-lg px-2 py-2 text-sm text-[var(--az-text)] text-center outline-none focus:border-[var(--az-accent)]"
+                  className="w-16 bg-[var(--f-bg)] border border-[var(--f-line)] rounded-lg px-2 py-2 text-sm text-[var(--f-text)] text-center outline-none focus:border-[var(--f-tint-color)]"
                 />
                 <input
                   type="number" min="0" step="0.01" placeholder="Price"
                   value={it.unitPrice} onChange={e => setLine(i, 'unitPrice', e.target.value)}
-                  className="w-24 bg-[var(--az-bg)] border border-[var(--az-border)] rounded-lg px-2 py-2 text-sm text-[var(--az-text)] text-right outline-none focus:border-[var(--az-accent)]"
+                  className="w-24 bg-[var(--f-bg)] border border-[var(--f-line)] rounded-lg px-2 py-2 text-sm text-[var(--f-text)] text-right outline-none focus:border-[var(--f-tint-color)]"
                 />
-                <div className="w-24 text-right text-sm font-semibold text-[var(--az-text)] az-mono py-2">{fmtUSDC(lineTotals[i])}</div>
+                <div className="w-24 text-right text-sm font-semibold text-[var(--f-text)] f-mono py-2">{fmtUSDC(lineTotals[i])}</div>
                 <button
                   onClick={() => removeLine(i)} disabled={lineItems.length === 1}
-                  className="p-2 rounded-lg text-[var(--az-text-muted)] hover:text-[var(--az-danger)] disabled:opacity-30 transition-colors"
+                  className="p-2 rounded-lg text-[var(--f-text-3)]:text-[var(--f-bad)] disabled:opacity-30 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -760,21 +757,21 @@ function CreateInvoiceModal({ onClose, onCreated }) {
             ))}
           </div>
           <div className="flex items-center justify-between">
-            <button onClick={addLine} className="flex items-center gap-1.5 text-xs font-semibold text-[var(--az-accent)] hover:opacity-80 transition-colors">
+            <button onClick={addLine} className="flex items-center gap-1.5 text-xs font-semibold text-[var(--f-tint-color)]:opacity-80 transition-colors">
               <Plus className="w-3.5 h-3.5" /> Add Item
             </button>
-            <span className="text-xs text-[var(--az-text-muted)]">Subtotal: <span className="font-bold text-[var(--az-text)] az-mono">{fmtUSDC(subtotal)}</span></span>
+            <span className="text-xs text-[var(--f-text-3)]">Subtotal: <span className="font-bold text-[var(--f-text)] f-mono">{fmtUSDC(subtotal)}</span></span>
           </div>
         </div>
 
         {/* Tax lines */}
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <p className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wide">Taxes &amp; Charges</p>
+            <p className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wide">Taxes &amp; Charges</p>
             {presets.length > 0 && (
               <select
                 onChange={e => { addTaxPreset(e.target.value); e.target.value = ''; }}
-                className="bg-[var(--az-surface)] border border-[var(--az-border)] rounded-lg px-2 py-1 text-xs text-[var(--az-text-muted)] outline-none cursor-pointer"
+                className="bg-[var(--f-surface)] border border-[var(--f-line)] rounded-lg px-2 py-1 text-xs text-[var(--f-text-3)] outline-none cursor-pointer"
               >
                 <option value="">Apply Tax Preset...</option>
                 {presets.map(p => (
@@ -790,11 +787,11 @@ function CreateInvoiceModal({ onClose, onCreated }) {
               <input
                 type="text" maxLength={100} placeholder="e.g. VAT"
                 value={t.name} onChange={e => setTax(i, 'name', e.target.value)}
-                className="flex-1 bg-[var(--az-bg)] border border-[var(--az-border)] rounded-lg px-3 py-2 text-sm text-[var(--az-text)] placeholder:text-[var(--az-text-muted)] outline-none focus:border-[var(--az-accent)]"
+                className="flex-1 bg-[var(--f-bg)] border border-[var(--f-line)] rounded-lg px-3 py-2 text-sm text-[var(--f-text)] placeholder:text-[var(--f-text-3)] outline-none focus:border-[var(--f-tint-color)]"
               />
               <select
                 value={t.type} onChange={e => setTax(i, 'type', e.target.value)}
-                className="bg-[var(--az-bg)] border border-[var(--az-border)] rounded-lg px-2 py-2 text-sm text-[var(--az-text)] outline-none focus:border-[var(--az-accent)] cursor-pointer"
+                className="bg-[var(--f-bg)] border border-[var(--f-line)] rounded-lg px-2 py-2 text-sm text-[var(--f-text)] outline-none focus:border-[var(--f-tint-color)] cursor-pointer"
               >
                 <option value="PERCENTAGE">%</option>
                 <option value="FLAT">Flat</option>
@@ -802,19 +799,19 @@ function CreateInvoiceModal({ onClose, onCreated }) {
               <input
                 type="number" min="0" step="0.01" placeholder="Value"
                 value={t.value} onChange={e => setTax(i, 'value', e.target.value)}
-                className="w-24 bg-[var(--az-bg)] border border-[var(--az-border)] rounded-lg px-2 py-2 text-sm text-[var(--az-text)] text-right outline-none focus:border-[var(--az-accent)]"
+                className="w-24 bg-[var(--f-bg)] border border-[var(--f-line)] rounded-lg px-2 py-2 text-sm text-[var(--f-text)] text-right outline-none focus:border-[var(--f-tint-color)]"
               />
-              <div className="w-24 text-right text-sm font-semibold text-[var(--az-text)] az-mono py-2">{fmtUSDC(taxComputed[i])}</div>
-              <button onClick={() => removeTax(i)} className="p-2 rounded-lg text-[var(--az-text-muted)] hover:text-[var(--az-danger)] transition-colors">
+              <div className="w-24 text-right text-sm font-semibold text-[var(--f-text)] f-mono py-2">{fmtUSDC(taxComputed[i])}</div>
+              <button onClick={() => removeTax(i)} className="p-2 rounded-lg text-[var(--f-text-3)]:text-[var(--f-bad)] transition-colors">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
           ))}
           <div className="flex items-center justify-between">
-            <button onClick={addTax} className="flex items-center gap-1.5 text-xs font-semibold text-[var(--az-accent)] hover:opacity-80 transition-colors">
+            <button onClick={addTax} className="flex items-center gap-1.5 text-xs font-semibold text-[var(--f-tint-color)]:opacity-80 transition-colors">
               <Plus className="w-3.5 h-3.5" /> Add Manual Tax
             </button>
-            {taxTotal > 0 && <span className="text-xs text-[var(--az-text-muted)]">Tax total: <span className="font-bold text-[var(--az-text)] az-mono">{fmtUSDC(taxTotal)}</span></span>}
+            {taxTotal > 0 && <span className="text-xs text-[var(--f-text-3)]">Tax total: <span className="font-bold text-[var(--f-text)] f-mono">{fmtUSDC(taxTotal)}</span></span>}
           </div>
         </div>
 
@@ -840,34 +837,34 @@ function CreateInvoiceModal({ onClose, onCreated }) {
           placeholder="A note shown to the customer on this invoice..."
           value={businessNote}
           onChange={e => setBusinessNote(e.target.value)}
-          className="bg-[var(--az-bg)] border-[var(--az-border)]"
+          className="bg-[var(--f-bg)] border-[var(--f-line)]"
         />
 
         {/* Live Preview / Totals Summary */}
-        <div className="p-4 rounded-xl bg-[var(--az-surface)] border border-[var(--az-border)] space-y-2">
+        <div className="p-4 rounded-xl bg-[var(--f-surface)] border border-[var(--f-line)] space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-[var(--az-text-muted)]">Subtotal</span>
-            <span className="text-[var(--az-text)] az-mono">{fmtUSDC(subtotal)}</span>
+            <span className="text-[var(--f-text-3)]">Subtotal</span>
+            <span className="text-[var(--f-text)] f-mono">{fmtUSDC(subtotal)}</span>
           </div>
           {taxLines.map((t, i) => (t.name || t.value) ? (
-            <div key={i} className="flex justify-between text-sm animate-fade-in">
-              <span className="text-[var(--az-text-muted)]">{t.name || 'Tax'}{t.type === 'PERCENTAGE' && t.value ? ` (${t.value}%)` : ''}</span>
-              <span className="text-[var(--az-text)] az-mono">{fmtUSDC(taxComputed[i])}</span>
+            <div key={i} className="flex justify-between text-sm ">
+              <span className="text-[var(--f-text-3)]">{t.name || 'Tax'}{t.type === 'PERCENTAGE' && t.value ? ` (${t.value}%)` : ''}</span>
+              <span className="text-[var(--f-text)] f-mono">{fmtUSDC(taxComputed[i])}</span>
             </div>
           ) : null)}
-          <div className="flex justify-between pt-2 border-t border-[var(--az-border)]">
-            <span className="text-sm font-bold text-[var(--az-text)]">Total Preview</span>
-            <span className="text-sm font-bold text-[var(--az-info)] az-mono">{fmtUSDC(billTotal)}</span>
+          <div className="flex justify-between pt-2 border-t border-[var(--f-line)]">
+            <span className="text-sm font-bold text-[var(--f-text)]">Total Preview</span>
+            <span className="text-sm font-bold text-[var(--f-info)] f-mono">{fmtUSDC(billTotal)}</span>
           </div>
         </div>
       </div>
 
-      <div className="flex gap-3 mt-4 pt-4 border-t border-[var(--az-border)]">
+      <div className="flex gap-3 mt-4 pt-4 border-t border-[var(--f-line)]">
         <Button variant="secondary" onClick={onClose} className="flex-1">Cancel</Button>
-        <Button onClick={handleCreate} loading={createMut.isPending} className="flex-1 bg-[var(--az-surface)] text-[var(--az-text)] border border-[var(--az-border)] hover:bg-[var(--az-border)]">
+        <Button onClick={handleCreate} className="flex-1 bg-[var(--f-surface)] text-[var(--f-text)] border border-[var(--f-line)]:bg-[var(--f-line)]">
           Save as Draft
         </Button>
-        <Button onClick={handleSend} loading={sendMut.isPending} className="flex-1 bg-[var(--az-info)] text-[var(--az-text)] hover:opacity-90">
+        <Button onClick={handleSend} className="flex-1 bg-[var(--f-info)] text-[var(--f-text)]:opacity-90">
           <Send className="w-4 h-4 mr-1" /> Create &amp; Send
         </Button>
       </div>
@@ -888,148 +885,148 @@ function InvoiceDetailModal({ invoiceId, onClose, onSend, onVoid, sending }) {
   const meta = inv ? (INVOICE_STATUS_META[inv.status] || INVOICE_STATUS_META.DRAFT) : INVOICE_STATUS_META.DRAFT;
 
   return (
-    <Modal open onClose={onClose} title={inv ? inv.invoiceRef : 'Invoice Details'} className="max-w-2xl text-[var(--az-text)]">
+    <Modal open onClose={onClose} title={inv ? inv.invoiceRef : 'Invoice Details'} className="max-w-2xl text-[var(--f-text)]">
       {isLoading || !inv ? (
-        <div className="space-y-3"><Skeleton className="h-24" /><Skeleton className="h-32" /></div>
+        <div className="space-y-3"><Skel className="h-24" /><Skel className="h-32" /></div>
       ) : (
         <div className="space-y-5 max-h-[70vh] overflow-y-auto pr-1">
           {/* Header */}
           <div className="flex items-center justify-between">
-            <Badge color={meta.color} bg={meta.bg} className="text-sm px-3 py-1">{meta.label}</Badge>
-            <div className="text-right text-xs text-[var(--az-text-muted)]">
+            <Tag color={meta.color} bg={meta.bg} className="text-sm px-3 py-1">{meta.label}</Tag>
+            <div className="text-right text-xs text-[var(--f-text-3)]">
               {inv.paidAt && <p>Paid {formatDateTime(inv.paidAt)}</p>}
               {inv.sentAt && !inv.paidAt && <p>Sent {formatDateTime(inv.sentAt)}</p>}
-              {inv.voidedAt && <p className="text-[var(--az-danger)] font-semibold">Voided {formatDateTime(inv.voidedAt)}</p>}
+              {inv.voidedAt && <p className="text-[var(--f-bad)] font-semibold">Voided {formatDateTime(inv.voidedAt)}</p>}
               {!inv.sentAt && !inv.paidAt && !inv.voidedAt && <p>Created {formatDateTime(inv.createdAt)}</p>}
             </div>
           </div>
 
           {/* Cancellation Reason if Voided */}
           {inv.voidReason && (
-            <div className="p-3 rounded-xl bg-[#ff4a4a1a] border border-[var(--az-danger)]">
-              <p className="text-xs font-semibold text-[var(--az-danger)] mb-1 uppercase tracking-wide">Cancellation Reason</p>
-              <p className="text-sm text-[var(--az-text)]">{inv.voidReason}</p>
+            <div className="p-3 rounded-xl bg-[#ff4a4a1a] border border-[var(--f-bad)]">
+              <p className="text-xs font-semibold text-[var(--f-bad)] mb-1 uppercase tracking-wide">Cancellation Reason</p>
+              <p className="text-sm text-[var(--f-text)]">{inv.voidReason}</p>
             </div>
           )}
 
           {/* Customer + location */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="p-3 rounded-xl bg-[var(--az-surface)] border border-[var(--az-border)]">
-              <p className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider mb-2 flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> Customer</p>
+            <div className="p-3 rounded-xl bg-[var(--f-surface)] border border-[var(--f-line)]">
+              <p className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider mb-2 flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> Customer</p>
               <div className="flex items-center gap-2.5">
                 {inv.customer?.profilePictureUrl ? (
                   <img src={inv.customer.profilePictureUrl} alt="" className="w-8 h-8 rounded-full object-cover" />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-[var(--az-info)] border border-[#4f8ef730] flex items-center justify-center">
-                    <span className="text-xs font-bold text-[var(--az-info)]">{initials(inv.customer?.username)}</span>
+                  <div className="w-8 h-8 rounded-full bg-[var(--f-info)] border border-[#4f8ef730] flex items-center justify-center">
+                    <span className="text-xs font-bold text-[var(--f-info)]">{initials(inv.customer?.username)}</span>
                   </div>
                 )}
                 <div>
-                  <p className="text-sm font-semibold text-[var(--az-text)] truncate">{inv.customer?.username || 'Customer'}</p>
-                  <p className="text-xs text-[var(--az-text-muted)] az-mono">{inv.customer?.azamanId}</p>
+                  <p className="text-sm font-semibold text-[var(--f-text)] truncate">{inv.customer?.username || 'Customer'}</p>
+                  <p className="text-xs text-[var(--f-text-3)] f-mono">{inv.customer?.azamanId}</p>
                 </div>
               </div>
             </div>
             {(inv.location || inv.table) && (
-              <div className="p-3 rounded-xl bg-[var(--az-surface)] border border-[var(--az-border)]">
-                <p className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider mb-2 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Location</p>
-                {inv.location && <p className="text-sm text-[var(--az-text)]">{inv.location.label}</p>}
-                {inv.location?.address && <p className="text-xs text-[var(--az-text-muted)] mt-0.5">{inv.location.address}</p>}
-                {inv.table && <p className="text-xs text-[var(--az-text-muted)] mt-1">Table: {inv.table.label}</p>}
+              <div className="p-3 rounded-xl bg-[var(--f-surface)] border border-[var(--f-line)]">
+                <p className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider mb-2 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Location</p>
+                {inv.location && <p className="text-sm text-[var(--f-text)]">{inv.location.label}</p>}
+                {inv.location?.address && <p className="text-xs text-[var(--f-text-3)] mt-0.5">{inv.location.address}</p>}
+                {inv.table && <p className="text-xs text-[var(--f-text-3)] mt-1">Table: {inv.table.label}</p>}
               </div>
             )}
           </div>
 
           {/* Line items */}
-          <div className="rounded-xl border border-[var(--az-border)] overflow-hidden">
-            <div className="grid grid-cols-12 gap-2 px-4 py-2 bg-[var(--az-surface)] text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider">
+          <div className="rounded-xl border border-[var(--f-line)] overflow-hidden">
+            <div className="grid grid-cols-12 gap-2 px-4 py-2 bg-[var(--f-surface)] text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">
               <span className="col-span-6">Item</span>
               <span className="col-span-2 text-center">Qty</span>
               <span className="col-span-2 text-right">Price</span>
               <span className="col-span-2 text-right">Total</span>
             </div>
-            <div className="divide-y divide-[var(--az-border)] bg-[var(--az-bg)]">
+            <div className="divide-y divide-[var(--f-line)] bg-[var(--f-bg)]">
               {(inv.lineItems || []).map(li => (
                 <div key={li.id} className="grid grid-cols-12 gap-2 px-4 py-2.5 text-sm">
-                  <span className="col-span-6 text-[var(--az-text)] truncate">{li.description}</span>
-                  <span className="col-span-2 text-center text-[var(--az-text-muted)] az-mono">{li.quantity}</span>
-                  <span className="col-span-2 text-right text-[var(--az-text-muted)] az-mono">{fmtUSDC(li.unitPrice)}</span>
-                  <span className="col-span-2 text-right text-[var(--az-text)] az-mono">{fmtUSDC(li.lineTotal)}</span>
+                  <span className="col-span-6 text-[var(--f-text)] truncate">{li.description}</span>
+                  <span className="col-span-2 text-center text-[var(--f-text-3)] f-mono">{li.quantity}</span>
+                  <span className="col-span-2 text-right text-[var(--f-text-3)] f-mono">{fmtUSDC(li.unitPrice)}</span>
+                  <span className="col-span-2 text-right text-[var(--f-text)] f-mono">{fmtUSDC(li.lineTotal)}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Summary */}
-          <div className="space-y-2 bg-[var(--az-surface)] p-4 rounded-xl border border-[var(--az-border)]">
+          <div className="space-y-2 bg-[var(--f-surface)] p-4 rounded-xl border border-[var(--f-line)]">
             <div className="flex justify-between text-sm">
-              <span className="text-[var(--az-text-muted)]">Subtotal</span>
-              <span className="text-[var(--az-text)] az-mono">{fmtUSDC(inv.subtotalUsdc)}</span>
+              <span className="text-[var(--f-text-3)]">Subtotal</span>
+              <span className="text-[var(--f-text)] f-mono">{fmtUSDC(inv.subtotalUsdc)}</span>
             </div>
             {(inv.taxLines || []).map(t => (
               <div key={t.id} className="flex justify-between text-sm">
-                <span className="text-[var(--az-text-muted)]">{t.name}{t.type === 'PERCENTAGE' ? ` (${fmt(t.value, 0)}%)` : ''}</span>
-                <span className="text-[var(--az-text)] az-mono">{fmtUSDC(t.computedAmount)}</span>
+                <span className="text-[var(--f-text-3)]">{t.name}{t.type === 'PERCENTAGE' ? ` (${fmt(t.value, 0)}%)` : ''}</span>
+                <span className="text-[var(--f-text)] f-mono">{fmtUSDC(t.computedAmount)}</span>
               </div>
             ))}
             {inv.status === 'PAID' && Number(inv.tipUsdc) > 0 && (
               <div className="flex justify-between text-sm">
-                <span className="text-[var(--az-text-muted)]">Tip</span>
-                <span className="text-[var(--az-text)] az-mono">{fmtUSDC(inv.tipUsdc)}</span>
+                <span className="text-[var(--f-text-3)]">Tip</span>
+                <span className="text-[var(--f-text)] f-mono">{fmtUSDC(inv.tipUsdc)}</span>
               </div>
             )}
             {inv.status === 'PAID' && Number(inv.feeUsdc) > 0 && (
               <div className="flex justify-between text-sm">
-                <span className="text-[var(--az-text-muted)]">Platform fee</span>
-                <span className="text-[var(--az-text-muted)] az-mono">{fmtUSDC(inv.feeUsdc)}</span>
+                <span className="text-[var(--f-text-3)]">Platform fee</span>
+                <span className="text-[var(--f-text-3)] f-mono">{fmtUSDC(inv.feeUsdc)}</span>
               </div>
             )}
-            <div className="flex justify-between pt-2 border-t border-[var(--az-border)]">
-              <span className="text-sm font-bold text-[var(--az-text)]">{inv.status === 'PAID' ? 'Total Paid' : 'Bill Total'}</span>
-              <span className="text-sm font-bold text-[var(--az-accent)] az-mono">{fmtUSDC(inv.status === 'PAID' && inv.customerPaidUsdc != null ? inv.customerPaidUsdc : inv.billTotalUsdc)}</span>
+            <div className="flex justify-between pt-2 border-t border-[var(--f-line)]">
+              <span className="text-sm font-bold text-[var(--f-text)]">{inv.status === 'PAID' ? 'Total Paid' : 'Bill Total'}</span>
+              <span className="text-sm font-bold text-[var(--f-tint-color)] f-mono">{fmtUSDC(inv.status === 'PAID' && inv.customerPaidUsdc != null ? inv.customerPaidUsdc : inv.billTotalUsdc)}</span>
             </div>
           </div>
 
           {/* Notes */}
           {inv.businessNote && (
-            <div className="p-3 rounded-xl bg-[var(--az-surface)] border border-[var(--az-border)]">
-              <p className="text-xs font-semibold text-[var(--az-text-muted)] mb-1">Your Note</p>
-              <p className="text-sm text-[var(--az-text-muted)]">{inv.businessNote}</p>
+            <div className="p-3 rounded-xl bg-[var(--f-surface)] border border-[var(--f-line)]">
+              <p className="text-xs font-semibold text-[var(--f-text-3)] mb-1">Your Note</p>
+              <p className="text-sm text-[var(--f-text-3)]">{inv.businessNote}</p>
             </div>
           )}
           {inv.customerNote && (
-            <div className="p-3 rounded-xl bg-[var(--az-surface)] border border-[var(--az-border)]">
-              <p className="text-xs font-semibold text-[var(--az-text-muted)] mb-1">Customer Note</p>
-              <p className="text-sm text-[var(--az-text-muted)]">{inv.customerNote}</p>
+            <div className="p-3 rounded-xl bg-[var(--f-surface)] border border-[var(--f-line)]">
+              <p className="text-xs font-semibold text-[var(--f-text-3)] mb-1">Customer Note</p>
+              <p className="text-sm text-[var(--f-text-3)]">{inv.customerNote}</p>
             </div>
           )}
 
           {/* Review */}
           {inv.review && (
-            <div className="p-3 rounded-xl bg-[var(--az-warning)] bg-opacity-10 border border-[var(--az-warning)] border-opacity-30">
-              <p className="text-xs font-semibold text-[var(--az-warning)] mb-1.5">Customer Review</p>
+            <div className="p-3 rounded-xl bg-[var(--f-warn)] bg-opacity-10 border border-[var(--f-warn)] border-opacity-30">
+              <p className="text-xs font-semibold text-[var(--f-warn)] mb-1.5">Customer Review</p>
               <div className="flex items-center gap-1 mb-1">
                 {[1,2,3,4,5].map(n => (
-                  <Star key={n} className="w-4 h-4" fill={n <= inv.review.rating ? 'var(--az-warning)' : 'none'} style={{ color: n <= inv.review.rating ? 'var(--az-warning)' : 'var(--az-text-muted)' }} />
+                  <Star key={n} className="w-4 h-4" fill={n <= inv.review.rating ? 'var(--f-warn)' : 'none'} style={{ color: n <= inv.review.rating ? 'var(--f-warn)' : 'var(--f-text-3)' }} />
                 ))}
               </div>
-              {inv.review.comment && <p className="text-sm text-[var(--az-text-muted)]">{inv.review.comment}</p>}
+              {inv.review.comment && <p className="text-sm text-[var(--f-text-3)]">{inv.review.comment}</p>}
             </div>
           )}
         </div>
       )}
 
-      <div className="flex gap-3 mt-4 pt-4 border-t border-[var(--az-border)]">
+      <div className="flex gap-3 mt-4 pt-4 border-t border-[var(--f-line)]">
         <Button variant="secondary" onClick={async () => {
           if (!inv) return;
           const ok = await downloadServerPdf(inv.id, inv.invoiceRef);
           if (!ok) generateInvoicePDF(inv, bizProfile);
-        }} className="flex-1" style={{ background: "var(--az-accent-subtle)", color: "var(--az-accent)" }}>
+        }} className="flex-1" style={{ background: "var(--az-accent-subtle)", color: "var(--f-tint-color)" }}>
           <Receipt className="w-4 h-4 mr-1" /> Download PDF
         </Button>
         <Button variant="secondary" onClick={onClose} className="flex-1">Close</Button>
         {inv?.status === 'DRAFT' && (
-          <Button onClick={() => onSend(inv.id)} loading={sending} className="flex-1 bg-[var(--az-info)] hover:opacity-95">
+          <Button onClick={() => onSend(inv.id)} className="flex-1 bg-[var(--f-info)]:opacity-95">
             <Send className="w-4 h-4 mr-1" /> Send Invoice
           </Button>
         )}
@@ -1138,8 +1135,8 @@ function TaxPresetsSection() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between border-b border-[var(--az-border)] pb-2">
-        <h3 className="text-sm font-bold text-[var(--az-text)] uppercase tracking-wide">Saved Tax Presets</h3>
+      <div className="flex items-center justify-between border-b border-[var(--f-line)] pb-2">
+        <h3 className="text-sm font-bold text-[var(--f-text)] uppercase tracking-wide">Saved Tax Presets</h3>
         {!showForm && (
           <Button size="sm" onClick={() => setShowForm(true)} className="flex items-center gap-1">
             <Plus className="w-3.5 h-3.5" /> Add Preset
@@ -1148,8 +1145,8 @@ function TaxPresetsSection() {
       </div>
 
       {showForm && (
-        <div className="p-4 bg-[var(--az-surface)] border border-[var(--az-border)] rounded-xl space-y-3 animate-fade-in">
-          <p className="text-xs font-semibold text-[var(--az-accent)] uppercase tracking-wide">
+        <div className="p-4 bg-[var(--f-surface)] border border-[var(--f-line)] rounded-xl space-y-3 ">
+          <p className="text-xs font-semibold text-[var(--f-tint-color)] uppercase tracking-wide">
             {editingPreset ? 'Edit Tax Preset' : 'New Tax Preset'}
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1158,7 +1155,7 @@ function TaxPresetsSection() {
               label="Tax Name"
               value={name}
               onChange={e => setName(e.target.value)}
-              className="bg-[var(--az-bg)] border-[var(--az-border)]"
+              className="bg-[var(--f-bg)] border-[var(--f-line)]"
             />
             <Select
               label="Type"
@@ -1175,7 +1172,7 @@ function TaxPresetsSection() {
               label="Value"
               value={value}
               onChange={e => setValue(e.target.value)}
-              className="bg-[var(--az-bg)] border-[var(--az-border)]"
+              className="bg-[var(--f-bg)] border-[var(--f-line)]"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -1184,35 +1181,35 @@ function TaxPresetsSection() {
               id="isDefault"
               checked={isDefault}
               onChange={e => setIsDefault(e.target.checked)}
-              className="rounded bg-[var(--az-bg)] border-[var(--az-border)] text-[var(--az-accent)] focus:ring-0 cursor-pointer"
+              className="rounded bg-[var(--f-bg)] border-[var(--f-line)] text-[var(--f-tint-color)] focus:ring-0 cursor-pointer"
             />
-            <label htmlFor="isDefault" className="text-xs text-[var(--az-text-muted)] cursor-pointer select-none">
+            <label htmlFor="isDefault" className="text-xs text-[var(--f-text-3)] cursor-pointer select-none">
               Set as default on all new invoices
             </label>
           </div>
           <div className="flex gap-2 justify-end">
             <Button size="sm" variant="secondary" onClick={resetForm}>Cancel</Button>
-            <Button size="sm" onClick={handleSave} loading={createMut.isPending || updateMut.isPending}>Save Preset</Button>
+            <Button size="sm" onClick={handleSave}>Save Preset</Button>
           </div>
         </div>
       )}
 
       {isLoading ? (
-        <Skeleton className="h-20" />
+        <Skel className="h-20" />
       ) : presets.length === 0 ? (
-        <p className="text-xs text-[var(--az-text-muted)] italic">No saved tax presets yet. Create one to apply it easily to new invoices.</p>
+        <p className="text-xs text-[var(--f-text-3)] italic">No saved tax presets yet. Create one to apply it easily to new invoices.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {presets.map(p => (
-            <div key={p.id} className="p-3 rounded-xl bg-[var(--az-surface)] border border-[var(--az-border)] flex items-center justify-between">
+            <div key={p.id} className="p-3 rounded-xl bg-[var(--f-surface)] border border-[var(--f-line)] flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-bold text-[var(--az-text)]">{p.name}</span>
+                  <span className="text-sm font-bold text-[var(--f-text)]">{p.name}</span>
                   {p.isDefault && (
-                    <span className="text-[10px] bg-[#4f8ef71a] text-[var(--az-info)] px-1.5 py-0.5 rounded-full font-semibold">Default</span>
+                    <span className="text-[10px] bg-[#4f8ef71a] text-[var(--f-info)] px-1.5 py-0.5 rounded-full font-semibold">Default</span>
                   )}
                 </div>
-                <div className="text-xs text-[var(--az-text-muted)] az-mono mt-0.5">
+                <div className="text-xs text-[var(--f-text-3)] f-mono mt-0.5">
                   {p.type === 'PERCENTAGE' ? `${p.value}%` : fmtUSDC(p.value)}
                 </div>
               </div>
@@ -1222,7 +1219,7 @@ function TaxPresetsSection() {
                 </Button>
                 <button
                   onClick={() => { if (confirm(`Delete preset "${p.name}"?`)) deleteMut.mutate(p.id); }}
-                  className="p-1.5 rounded-lg text-[var(--az-text-muted)] hover:text-[var(--az-danger)] hover:bg-[#ff4a4a10] transition-all"
+                  className="p-1.5 rounded-lg text-[var(--f-text-3)]:text-[var(--f-bad)]:bg-[#ff4a4a10] transition-all"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -1279,9 +1276,9 @@ function RecurringPanel() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Repeat className="w-4 h-4 text-[var(--az-accent)]" />
-          <h2 className="text-sm font-semibold text-[var(--az-text)]">Recurring Invoice Templates</h2>
-          <span className="text-xs text-[var(--az-text-muted)]">({recurring.length})</span>
+          <Repeat className="w-4 h-4 text-[var(--f-tint-color)]" />
+          <h2 className="text-sm font-semibold text-[var(--f-text)]">Recurring Invoice Templates</h2>
+          <span className="text-xs text-[var(--f-text-3)]">({recurring.length})</span>
         </div>
         <Button size="sm" variant="secondary" onClick={() => processMut.mutate()} disabled={processMut.isPending}>
           <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${processMut.isPending ? 'animate-spin' : ''}`} />
@@ -1290,7 +1287,7 @@ function RecurringPanel() {
       </div>
 
       {isLoading ? (
-        <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20" />)}</div>
+        <div className="space-y-3">{Array.from({ length: 3 }).map((_, i) => <Skel key={i} className="h-20" />)}</div>
       ) : recurring.length === 0 ? (
         <Empty
           icon={Repeat}
@@ -1300,25 +1297,25 @@ function RecurringPanel() {
       ) : (
         <div className="space-y-2">
           {recurring.map(inv => (
-            <Card key={inv.id} className="p-4 border-[var(--az-border)] bg-[var(--az-bg)]">
+            <Card key={inv.id} className="p-4 border-[var(--f-line)] bg-[var(--f-bg)]">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className="w-10 h-10 rounded-lg bg-[var(--az-accent)]/15 flex items-center justify-center flex-shrink-0">
-                    <Repeat className="w-5 h-5 text-[var(--az-accent)]" />
+                  <div className="w-10 h-10 rounded-lg bg-[var(--f-tint-color)]/15 flex items-center justify-center flex-shrink-0">
+                    <Repeat className="w-5 h-5 text-[var(--f-tint-color)]" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-[var(--az-text)] truncate">{inv.invoiceRef}</p>
-                    <p className="text-xs text-[var(--az-text-muted)] truncate">
+                    <p className="text-sm font-semibold text-[var(--f-text)] truncate">{inv.invoiceRef}</p>
+                    <p className="text-xs text-[var(--f-text-3)] truncate">
                       {inv.customer?.full_name || inv.customer?.email || `User #${inv.customerId}`}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
-                  <Badge color="blue">{INTERVAL_LABELS[inv.recurringInterval] || inv.recurringInterval}</Badge>
+                  <Tag variant="info">{INTERVAL_LABELS[inv.recurringInterval] || inv.recurringInterval}</Tag>
                   <div className="text-right">
-                    <p className="text-sm font-bold text-[var(--az-text)]">{fmtUSDC(inv.billTotalUsdc)}</p>
+                    <p className="text-sm font-bold text-[var(--f-text)]">{fmtUSDC(inv.billTotalUsdc)}</p>
                     {inv.recurringNextDate && (
-                      <p className="text-xs text-[var(--az-text-muted)] flex items-center gap-1 justify-end">
+                      <p className="text-xs text-[var(--f-text-3)] flex items-center gap-1 justify-end">
                         <CalendarClock className="w-3 h-3" />
                         {new Date(inv.recurringNextDate).toLocaleDateString()}
                       </p>
@@ -1335,15 +1332,15 @@ function RecurringPanel() {
                 </div>
               </div>
               {inv.lineItems?.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-[var(--az-border)]">
-                  <div className="text-xs text-[var(--az-text-muted)] space-y-1">
+                <div className="mt-3 pt-3 border-t border-[var(--f-line)]">
+                  <div className="text-xs text-[var(--f-text-3)] space-y-1">
                     {inv.lineItems.slice(0, 3).map(li => (
                       <div key={li.id} className="flex justify-between">
                         <span>{li.description} ×{li.quantity}</span>
                         <span>{fmtUSDC(li.lineTotal)}</span>
                       </div>
                     ))}
-                    {inv.lineItems.length > 3 && <span className="text-[var(--az-text-muted)]">+ {inv.lineItems.length - 3} more items</span>}
+                    {inv.lineItems.length > 3 && <span className="text-[var(--f-text-3)]">+ {inv.lineItems.length - 3} more items</span>}
                   </div>
                 </div>
               )}
@@ -1353,12 +1350,12 @@ function RecurringPanel() {
       )}
 
       {/* Info banner */}
-      <div className="rounded-xl bg-[var(--az-surface)] border border-[var(--az-border)] p-4">
+      <div className="rounded-xl bg-[var(--f-surface)] border border-[var(--f-line)] p-4">
         <div className="flex items-start gap-3">
-          <CalendarClock className="w-4 h-4 text-[var(--az-text-muted)] mt-0.5 flex-shrink-0" />
-          <div className="text-xs text-[var(--az-text-muted)] space-y-1">
-            <p><strong className="text-[var(--az-text)]">How it works:</strong> Enable recurring on any SENT or PAID invoice. On the next scheduled date, a clone is created in DRAFT status with the same line items and tax lines.</p>
-            <p>Click <strong className="text-[var(--az-text)]">Process Due</strong> to manually generate any overdue recurring invoices. This also runs automatically via cron.</p>
+          <CalendarClock className="w-4 h-4 text-[var(--f-text-3)] mt-0.5 flex-shrink-0" />
+          <div className="text-xs text-[var(--f-text-3)] space-y-1">
+            <p><strong className="text-[var(--f-text)]">How it works:</strong> Enable recurring on any SENT or PAID invoice. On the next scheduled date, a clone is created in DRAFT status with the same line items and tax lines.</p>
+            <p>Click <strong className="text-[var(--f-text)]">Process Due</strong> to manually generate any overdue recurring invoices. This also runs automatically via cron.</p>
           </div>
         </div>
       </div>

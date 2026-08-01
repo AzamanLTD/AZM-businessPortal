@@ -10,7 +10,7 @@ import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/AuthContext';
-import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Card } from '@/components/forge';
 import { orders as ordersApi, analytics as analyticsApi } from '@/lib/api';
 import { fmtUSDC, fmt, cn } from '@/lib/utils';
 import {
@@ -109,15 +109,15 @@ function computeChurnRisk(customers, orders) {
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 function Sk({ className = '' }) {
-  return <div className={`animate-pulse bg-az-border rounded ${className}`} />;
+  return <div className={`animate-pulse bg-line rounded ${className}`} />;
 }
 
 // ── Custom tooltip ─────────────────────────────────────────────────────────────
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-az-surface-solid border border-az-border rounded-xl px-3 py-2 shadow-az-card text-xs">
-      <p className="text-az-text-muted mb-1">{label}</p>
+    <div className="bg-surface-raised border border-line rounded-xl px-3 py-2 shadow-sm text-xs">
+      <p className="text-ink-3 mb-1">{label}</p>
       {payload.map((p, i) => (
         <p key={i} style={{ color: p.color }} className="font-semibold">{p.name}: {p.value}</p>
       ))}
@@ -179,48 +179,48 @@ export default function Analytics() {
         <motion.div variants={item}>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-az-text">Analytics</h1>
-              <p className="text-sm text-az-text-muted mt-0.5">Demand forecasting, reorder alerts, and customer insights</p>
+              <h1 className="text-2xl font-bold text-ink">Analytics</h1>
+              <p className="text-sm text-ink-3 mt-0.5">Demand forecasting, reorder alerts, and customer insights</p>
             </div>
-            <div className="flex items-center gap-2 text-xs text-az-text-muted bg-az-accent-subtle border border-az-accent-border rounded-az-md px-3 py-2">
-              <Lightbulb className="w-3.5 h-3.5 text-az-accent" />
-              <span>All insights show their reasoning — hover <Info className="w-3 h-3 inline" /> for details</span>
+            <div className="flex items-center gap-2 text-xs text-ink-3 bg-surface-sunken border border-line-strong rounded-md px-3 py-2">
+              <Lightbulb className="w-3.5 h-3.5 text-tint" />
+              <span>All insights show their reasoning — <Info className="w-3 h-3 inline" /> for details</span>
             </div>
           </div>
         </motion.div>
 
         {/* KPI row */}
         <motion.div variants={item} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {ordersLoading ? [1,2,3,4].map(i => <GlassPanel key={i} className="p-5"><Sk className="h-4 w-20 mb-2" /><Sk className="h-8 w-28" /></GlassPanel>) : [
+          {ordersLoading ? [1,2,3,4].map(i => <Card key={i} className="p-5"><Sk className="h-4 w-20 mb-2" /><Sk className="h-8 w-28" /></Card>) : [
             { label: '30-day Revenue', value: fmtUSDC(totalRevenue30), delta: revDelta, icon: TrendingUp },
             { label: '30-day Orders',  value: fmt(totalOrders30, 0),    delta: null, icon: ShoppingBag },
             { label: 'Avg Order/Day',  value: fmt(totalOrders30 / 30, 1), delta: null, icon: BarChart2 },
             { label: 'Churn Risks',    value: fmt(churnList.length, 0), delta: null, icon: Users, alert: churnList.length > 0 },
           ].map(({ label, value, delta, icon: Icon, alert }) => (
-            <GlassPanel key={label} className="p-5">
+            <Card key={label} className="p-5">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs text-az-text-muted font-medium">{label}</p>
-                <div className={`w-7 h-7 rounded-az-sm flex items-center justify-center ${alert ? 'bg-az-danger-subtle' : 'bg-az-accent-subtle'}`}>
-                  <Icon className={`w-3.5 h-3.5 ${alert ? 'text-az-danger' : 'text-az-accent'}`} />
+                <p className="text-xs text-ink-3 font-medium">{label}</p>
+                <div className={`w-7 h-7 rounded-sm flex items-center justify-center ${alert ? 'bg-bad-bg' : 'bg-surface-sunken'}`}>
+                  <Icon className={`w-3.5 h-3.5 ${alert ? 'text-bad' : 'text-tint'}`} />
                 </div>
               </div>
-              <p className="text-2xl font-bold text-az-text font-mono">{value}</p>
+              <p className="text-2xl font-bold text-ink font-mono">{value}</p>
               {delta != null && (
-                <p className={`text-xs mt-1 font-medium ${delta >= 0 ? 'text-az-success' : 'text-az-danger'}`}>
+                <p className={`text-xs mt-1 font-medium ${delta >= 0 ? 'text-ok' : 'text-bad'}`}>
                   {delta >= 0 ? '▲' : '▼'} {Math.abs(delta).toFixed(1)}% vs prior 15d
                 </p>
               )}
-            </GlassPanel>
+            </Card>
           ))}
         </motion.div>
 
         {/* Revenue trend */}
         <motion.div variants={item}>
-          <GlassPanel className="p-6">
+          <Card className="p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h3 className="text-sm font-bold text-az-text">Revenue Trend — Last 30 Days</h3>
-                <p className="text-xs text-az-text-muted mt-0.5">Completed orders only</p>
+                <h3 className="text-sm font-bold text-ink">Revenue Trend — Last 30 Days</h3>
+                <p className="text-xs text-ink-3 mt-0.5">Completed orders only</p>
               </div>
             </div>
             {ordersLoading ? <Sk className="h-48 w-full" /> : (
@@ -228,86 +228,86 @@ export default function Analytics() {
                 <AreaChart data={revenueData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--az-accent)" stopOpacity={0.2} />
-                      <stop offset="100%" stopColor="var(--az-accent)" stopOpacity={0} />
+                      <stop offset="0%" stopColor="var(--f-tint-color)" stopOpacity={0.2} />
+                      <stop offset="100%" stopColor="var(--f-tint-color)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid stroke="var(--az-border)" strokeOpacity={0.4} vertical={false} strokeDasharray="3 3" />
-                  <XAxis dataKey="date" tick={{ fill: 'var(--az-text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} interval={6} />
-                  <YAxis tick={{ fill: 'var(--az-text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={v => v > 0 ? `$${(v/1).toFixed(0)}` : '0'} />
+                  <CartesianGrid stroke="var(--f-line)" strokeOpacity={0.4} vertical={false} strokeDasharray="3 3" />
+                  <XAxis dataKey="date" tick={{ fill: 'var(--f-text-3)', fontSize: 10 }} tickLine={false} axisLine={false} interval={6} />
+                  <YAxis tick={{ fill: 'var(--f-text-3)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={v => v > 0 ? `$${(v/1).toFixed(0)}` : '0'} />
                   <Tooltip content={<ChartTooltip />} />
-                  <Area type="monotone" dataKey="revenue" stroke="var(--az-accent)" strokeWidth={2} fill="url(#revGrad)" dot={false} name="Revenue" />
+                  <Area type="monotone" dataKey="revenue" stroke="var(--f-tint-color)" strokeWidth={2} fill="url(#revGrad)" dot={false} name="Revenue" />
                 </AreaChart>
               </ResponsiveContainer>
             )}
-          </GlassPanel>
+          </Card>
         </motion.div>
 
         {/* Demand forecast + Day of week */}
         <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* 7-day forecast */}
-          <GlassPanel className="p-6">
+          <Card className="p-6">
             <div className="flex items-center justify-between mb-1">
               <div>
-                <h3 className="text-sm font-bold text-az-text">7-Day Demand Forecast</h3>
-                <p className="text-xs text-az-text-muted mt-0.5">Weighted moving average + day-of-week seasonality</p>
+                <h3 className="text-sm font-bold text-ink">7-Day Demand Forecast</h3>
+                <p className="text-xs text-ink-3 mt-0.5">Weighted moving average + day-of-week seasonality</p>
               </div>
-              <div className="flex items-center gap-1.5 text-[11px] text-az-text-muted bg-az-accent-subtle rounded-az-sm px-2 py-1">
-                <Info className="w-3 h-3 text-az-accent" />
+              <div className="flex items-center gap-1.5 text-[11px] text-ink-3 bg-surface-sunken rounded-sm px-2 py-1">
+                <Info className="w-3 h-3 text-tint" />
                 Based on last 4 weeks
               </div>
             </div>
             <div className="mt-4 space-y-2">
               {forecast.map((f, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <span className="text-[11px] text-az-text-muted w-28 shrink-0">{f.date}</span>
-                  <div className="flex-1 h-2 bg-az-border rounded-full overflow-hidden">
+                  <span className="text-[11px] text-ink-3 w-28 shrink-0">{f.date}</span>
+                  <div className="flex-1 h-2 bg-line rounded-full overflow-hidden">
                     <motion.div
                       className="h-full rounded-full"
-                      style={{ background: 'var(--az-accent)' }}
+                      style={{ background: 'var(--f-tint-color)' }}
                       initial={{ width: 0 }}
                       animate={{ width: `${Math.min(100, (f.forecast / Math.max(...forecast.map(x => x.forecast), 1)) * 100)}%` }}
                       transition={{ delay: i * 0.07, duration: 0.5, ease: 'easeOut' }}
                     />
                   </div>
-                  <span className="text-xs font-semibold text-az-text w-10 text-right">{f.forecast}</span>
+                  <span className="text-xs font-semibold text-ink w-10 text-right">{f.forecast}</span>
                 </div>
               ))}
             </div>
-          </GlassPanel>
+          </Card>
 
           {/* Day of week profile */}
-          <GlassPanel className="p-6">
+          <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-sm font-bold text-az-text">Busiest Days</h3>
-                <p className="text-xs text-az-text-muted mt-0.5">Average orders by day of week</p>
+                <h3 className="text-sm font-bold text-ink">Busiest Days</h3>
+                <p className="text-xs text-ink-3 mt-0.5">Average orders by day of week</p>
               </div>
             </div>
             {ordersLoading ? <Sk className="h-36 w-full" /> : (
               <ResponsiveContainer width="100%" height={150}>
                 <BarChart data={dowProfile} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                  <CartesianGrid stroke="var(--az-border)" strokeOpacity={0.4} vertical={false} strokeDasharray="3 3" />
-                  <XAxis dataKey="day" tick={{ fill: 'var(--az-text-muted)', fontSize: 11 }} tickLine={false} axisLine={false} />
-                  <YAxis tick={{ fill: 'var(--az-text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} />
+                  <CartesianGrid stroke="var(--f-line)" strokeOpacity={0.4} vertical={false} strokeDasharray="3 3" />
+                  <XAxis dataKey="day" tick={{ fill: 'var(--f-text-3)', fontSize: 11 }} tickLine={false} axisLine={false} />
+                  <YAxis tick={{ fill: 'var(--f-text-3)', fontSize: 10 }} tickLine={false} axisLine={false} />
                   <Tooltip content={<ChartTooltip />} />
-                  <Bar dataKey="orders" fill="var(--az-accent)" radius={[4, 4, 0, 0]} name="Orders" />
+                  <Bar dataKey="orders" fill="var(--f-tint-color)" radius={[4, 4, 0, 0]} name="Orders" />
                 </BarChart>
               </ResponsiveContainer>
             )}
-          </GlassPanel>
+          </Card>
         </motion.div>
 
         {/* Churn risk */}
         <motion.div variants={item}>
-          <GlassPanel className="p-6">
+          <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-sm font-bold text-az-text">Customer Churn Risk</h3>
-                <p className="text-xs text-az-text-muted mt-0.5">Customers overdue vs their usual visit frequency</p>
+                <h3 className="text-sm font-bold text-ink">Customer Churn Risk</h3>
+                <p className="text-xs text-ink-3 mt-0.5">Customers overdue vs their usual visit frequency</p>
               </div>
-              <div className="flex items-center gap-1.5 text-[11px] text-az-text-muted bg-az-accent-subtle rounded-az-sm px-2 py-1">
-                <Info className="w-3 h-3 text-az-accent" />
+              <div className="flex items-center gap-1.5 text-[11px] text-ink-3 bg-surface-sunken rounded-sm px-2 py-1">
+                <Info className="w-3 h-3 text-tint" />
                 Based on order history
               </div>
             </div>
@@ -316,22 +316,22 @@ export default function Analytics() {
             ) : churnList.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <Users className="w-8 h-8 text-az-border mb-2" />
-                <p className="text-sm text-az-text-secondary">No churn risks detected</p>
-                <p className="text-xs text-az-text-muted mt-1">Your regular customers are still active</p>
+                <p className="text-sm text-ink-2">No churn risks detected</p>
+                <p className="text-xs text-ink-3 mt-1">Your regular customers are still active</p>
               </div>
             ) : (
               <div className="space-y-1.5">
                 {churnList.map((c, i) => {
                   const risk = c.churnScore > 3 ? 'high' : c.churnScore > 2 ? 'medium' : 'low';
-                  const riskColor = risk === 'high' ? 'var(--az-danger)' : risk === 'medium' ? 'var(--az-warning)' : 'var(--az-info)';
+                  const riskColor = risk === 'high' ? 'var(--f-bad)' : risk === 'medium' ? 'var(--f-warn)' : 'var(--f-info)';
                   return (
-                    <div key={c.uid} className="flex items-center gap-3 p-3 rounded-az-md border border-az-border hover:bg-az-accent-subtle transition-colors">
-                      <div className="w-8 h-8 rounded-full bg-az-accent-subtle flex items-center justify-center text-az-accent font-bold text-xs flex-shrink-0">
+                    <div key={c.uid} className="flex items-center gap-3 p-3 rounded-md border border-line:bg-surface-sunken transition-colors">
+                      <div className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center text-tint font-bold text-xs flex-shrink-0">
                         {c.name.slice(0,2).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-az-text">{c.name}</p>
-                        <p className="text-[11px] text-az-text-muted">
+                        <p className="text-xs font-semibold text-ink">{c.name}</p>
+                        <p className="text-[11px] text-ink-3">
                           {c.totalOrders} orders · last seen {c.daysSinceLast}d ago · avg gap {c.avgGap}d
                         </p>
                       </div>
@@ -339,23 +339,23 @@ export default function Analytics() {
                         <span className="text-[11px] font-bold px-2 py-0.5 rounded-az-pill" style={{ background: `${riskColor}18`, color: riskColor }}>
                           {risk} risk
                         </span>
-                        <span className="text-[11px] text-az-text-muted">{fmtUSDC(c.totalSpend)} LTV</span>
+                        <span className="text-[11px] text-ink-3">{fmtUSDC(c.totalSpend)} LTV</span>
                       </div>
                     </div>
                   );
                 })}
               </div>
             )}
-          </GlassPanel>
+          </Card>
         </motion.div>
 
         {/* ── Comparative View: This Week vs Last Week ──────────────────────── */}
         <motion.div variants={item}>
-          <GlassPanel className="p-6">
+          <Card className="p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h3 className="text-sm font-bold text-az-text">Comparative Performance</h3>
-                <p className="text-xs text-az-text-muted mt-0.5">This week vs last week · This month vs last month</p>
+                <h3 className="text-sm font-bold text-ink">Comparative Performance</h3>
+                <p className="text-xs text-ink-3 mt-0.5">This week vs last week · This month vs last month</p>
               </div>
             </div>
             {(() => {
@@ -392,37 +392,37 @@ export default function Analytics() {
                     const wDelta = pct(m.thisW, m.lastW);
                     const mDelta = pct(m.thisM, m.lastM);
                     return (
-                      <div key={m.label} className="p-4 rounded-az-md border border-az-border bg-az-surface">
-                        <p className="text-xs font-semibold text-az-text-muted uppercase tracking-wider mb-3">{m.label}</p>
+                      <div key={m.label} className="p-4 rounded-md border border-line bg-surface">
+                        <p className="text-xs font-semibold text-ink-3 uppercase tracking-wider mb-3">{m.label}</p>
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="text-[11px] text-az-text-muted">This week</span>
-                            <span className="text-sm font-bold text-az-text font-mono">{m.fmt(m.thisW)}</span>
+                            <span className="text-[11px] text-ink-3">This week</span>
+                            <span className="text-sm font-bold text-ink font-mono">{m.fmt(m.thisW)}</span>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-[11px] text-az-text-muted">Last week</span>
-                            <span className="text-xs text-az-text-muted font-mono">{m.fmt(m.lastW)}</span>
+                            <span className="text-[11px] text-ink-3">Last week</span>
+                            <span className="text-xs text-ink-3 font-mono">{m.fmt(m.lastW)}</span>
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <span className={`text-[11px] font-medium ${wDelta >= 0 ? 'text-az-success' : 'text-az-danger'}`}>
+                            <span className={`text-[11px] font-medium ${wDelta >= 0 ? 'text-ok' : 'text-bad'}`}>
                               {wDelta >= 0 ? '▲' : '▼'} {Math.abs(wDelta).toFixed(1)}%
                             </span>
-                            <span className="text-[11px] text-az-text-muted">vs last week</span>
+                            <span className="text-[11px] text-ink-3">vs last week</span>
                           </div>
-                          <div className="border-t border-az-border pt-2 mt-2 space-y-2">
+                          <div className="border-t border-line pt-2 mt-2 space-y-2">
                             <div className="flex items-center justify-between">
-                              <span className="text-[11px] text-az-text-muted">This month</span>
-                              <span className="text-sm font-bold text-az-text font-mono">{m.fmt(m.thisM)}</span>
+                              <span className="text-[11px] text-ink-3">This month</span>
+                              <span className="text-sm font-bold text-ink font-mono">{m.fmt(m.thisM)}</span>
                             </div>
                             <div className="flex items-center justify-between">
-                              <span className="text-[11px] text-az-text-muted">Last month</span>
-                              <span className="text-xs text-az-text-muted font-mono">{m.fmt(m.lastM)}</span>
+                              <span className="text-[11px] text-ink-3">Last month</span>
+                              <span className="text-xs text-ink-3 font-mono">{m.fmt(m.lastM)}</span>
                             </div>
                             <div className="flex items-center gap-1.5">
-                              <span className={`text-[11px] font-medium ${mDelta >= 0 ? 'text-az-success' : 'text-az-danger'}`}>
+                              <span className={`text-[11px] font-medium ${mDelta >= 0 ? 'text-ok' : 'text-bad'}`}>
                                 {mDelta >= 0 ? '▲' : '▼'} {Math.abs(mDelta).toFixed(1)}%
                               </span>
-                              <span className="text-[11px] text-az-text-muted">vs last month</span>
+                              <span className="text-[11px] text-ink-3">vs last month</span>
                             </div>
                           </div>
                         </div>
@@ -432,16 +432,16 @@ export default function Analytics() {
                 </div>
               );
             })()}
-          </GlassPanel>
+          </Card>
         </motion.div>
 
         {/* ── Top Items by Volume ───────────────────────────────────────────── */}
         <motion.div variants={item}>
-          <GlassPanel className="p-6">
+          <Card className="p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h3 className="text-sm font-bold text-az-text">Top Products by Volume</h3>
-                <p className="text-xs text-az-text-muted mt-0.5">Best-selling items from completed orders</p>
+                <h3 className="text-sm font-bold text-ink">Top Products by Volume</h3>
+                <p className="text-xs text-ink-3 mt-0.5">Best-selling items from completed orders</p>
               </div>
             </div>
             {(() => {
@@ -459,20 +459,20 @@ export default function Analytics() {
               const maxCount = Math.max(...top.map(t => t.count), 1);
 
               if (top.length === 0) {
-                return <p className="text-sm text-az-text-muted text-center py-8">No completed orders yet to rank products.</p>;
+                return <p className="text-sm text-ink-3 text-center py-8">No completed orders yet to rank products.</p>;
               }
               return (
                 <div className="space-y-2">
                   {top.map((t, i) => (
-                    <div key={t.name} className="flex items-center gap-3 p-3 rounded-az-md border border-az-border hover:bg-az-surface-solid transition-colors">
-                      <span className="text-lg font-bold text-az-text-muted w-6 text-center flex-shrink-0">{i + 1}</span>
+                    <div key={t.name} className="flex items-center gap-3 p-3 rounded-md border border-line:bg-surface-raised transition-colors">
+                      <span className="text-lg font-bold text-ink-3 w-6 text-center flex-shrink-0">{i + 1}</span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-az-text truncate">{t.name}</p>
+                        <p className="text-xs font-semibold text-ink truncate">{t.name}</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <div className="flex-1 h-1.5 bg-az-border rounded-full overflow-hidden">
-                            <div className="h-full rounded-full" style={{ width: `${(t.count / maxCount) * 100}%`, background: 'var(--az-accent)' }} />
+                          <div className="flex-1 h-1.5 bg-line rounded-full overflow-hidden">
+                            <div className="h-full rounded-full" style={{ width: `${(t.count / maxCount) * 100}%`, background: 'var(--f-tint-color)' }} />
                           </div>
-                          <span className="text-[11px] text-az-text-muted flex-shrink-0">{t.count} orders · {fmtUSDC(t.revenue)}</span>
+                          <span className="text-[11px] text-ink-3 flex-shrink-0">{t.count} orders · {fmtUSDC(t.revenue)}</span>
                         </div>
                       </div>
                     </div>
@@ -480,7 +480,7 @@ export default function Analytics() {
                 </div>
               );
             })()}
-          </GlassPanel>
+          </Card>
         </motion.div>
 
       </motion.div>

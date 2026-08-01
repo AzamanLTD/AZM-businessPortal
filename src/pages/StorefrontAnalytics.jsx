@@ -4,7 +4,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { storefrontApi } from '@/services/storefrontApi';
 import { AreaChartCard, BarChartCard, DonutChartCard, KpiCard } from '@/components/charts';
-import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Card } from '@/components/forge';
 import { Eye, MousePointerClick, Users, Target, BarChart3, TrendingUp, Loader2, AlertCircle, BarChart2, ShoppingBag, ExternalLink } from 'lucide-react';
 
 const TIME_RANGES = [
@@ -106,8 +106,8 @@ export default function StorefrontAnalytics() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3" style={{ color: 'var(--az-accent)' }} />
-          <p className="text-sm" style={{ color: 'var(--az-text-muted)' }}>Loading storefront analytics…</p>
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-3" style={{ color: 'var(--f-tint-color)' }} />
+          <p className="text-sm" style={{ color: 'var(--f-text-3)' }}>Loading storefront analytics…</p>
         </div>
       </div>
     );
@@ -116,15 +116,15 @@ export default function StorefrontAnalytics() {
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <GlassPanel className="p-8 text-center max-w-md">
-          <AlertCircle className="w-10 h-10 mx-auto mb-3" style={{ color: 'var(--az-danger)' }} />
-          <p className="font-semibold" style={{ color: 'var(--az-text)' }}>Failed to load analytics</p>
-          <p className="text-sm mt-1" style={{ color: 'var(--az-text-muted)' }}>{error}</p>
+        <Card className="p-8 text-center max-w-md">
+          <AlertCircle className="w-10 h-10 mx-auto mb-3" style={{ color: 'var(--f-bad)' }} />
+          <p className="font-semibold" style={{ color: 'var(--f-text)' }}>Failed to load analytics</p>
+          <p className="text-sm mt-1" style={{ color: 'var(--f-text-3)' }}>{error}</p>
           <button onClick={() => setDays(d => d)} className="mt-4 px-4 py-2 rounded-lg text-sm font-medium"
-            style={{ background: 'var(--az-accent)', color: '#fff' }}>
+            style={{ background: 'var(--f-tint-color)', color: '#fff' }}>
             Retry
           </button>
-        </GlassPanel>
+        </Card>
       </div>
     );
   }
@@ -133,25 +133,25 @@ export default function StorefrontAnalytics() {
   const hasData = summary.totalEvents > 0;
 
   return (
-    <div className="space-y-6" style={{ background: 'var(--az-bg)', minHeight: '100vh' }}>
+    <div className="space-y-6" style={{ background: 'var(--f-bg)', minHeight: '100vh' }}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <BarChart3 className="w-6 h-6" style={{ color: 'var(--az-accent)' }} />
+          <BarChart3 className="w-6 h-6" style={{ color: 'var(--f-tint-color)' }} />
           <div>
-            <h1 className="text-xl font-bold" style={{ color: 'var(--az-text)' }}>Storefront Analytics</h1>
-            <p className="text-xs" style={{ color: 'var(--az-text-muted)' }}>
+            <h1 className="text-xl font-bold" style={{ color: 'var(--f-text)' }}>Storefront Analytics</h1>
+            <p className="text-xs" style={{ color: 'var(--f-text-3)' }}>
               Track views, engagement, and conversion from your published storefront
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-1.5 p-1 rounded-xl" style={{ background: 'var(--az-surface)', border: '1px solid var(--az-border)' }}>
+        <div className="flex items-center gap-1.5 p-1 rounded-xl" style={{ background: 'var(--f-surface)', border: '1px solid var(--f-line)' }}>
           {TIME_RANGES.map(range => (
             <button key={range.value} onClick={() => setDays(range.value)}
               className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
               style={{
-                background: days === range.value ? 'var(--az-accent)' : 'transparent',
-                color: days === range.value ? '#fff' : 'var(--az-text-muted)',
+                background: days === range.value ? 'var(--f-tint-color)' : 'transparent',
+                color: days === range.value ? '#fff' : 'var(--f-text-3)',
               }}>
               {range.label}
             </button>
@@ -160,14 +160,14 @@ export default function StorefrontAnalytics() {
       </div>
 
       {!hasData ? (
-        <GlassPanel className="p-12 text-center">
-          <BarChart2 className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--az-text-muted)' }} />
-          <h3 className="text-base font-bold mb-1" style={{ color: 'var(--az-text)' }}>No analytics data yet</h3>
-          <p className="text-sm max-w-md mx-auto" style={{ color: 'var(--az-text-muted)' }}>
+        <Card className="p-12 text-center">
+          <BarChart2 className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--f-text-3)' }} />
+          <h3 className="text-base font-bold mb-1" style={{ color: 'var(--f-text)' }}>No analytics data yet</h3>
+          <p className="text-sm max-w-md mx-auto" style={{ color: 'var(--f-text-3)' }}>
             Once customers view your published storefront, you'll see views, clicks, and engagement metrics here.
             Make sure your storefront is published and shared.
           </p>
-        </GlassPanel>
+        </Card>
       ) : (
         <>
           {/* KPI Cards */}
@@ -176,36 +176,31 @@ export default function StorefrontAnalytics() {
               label="Total Views"
               value={summary.totalViews + summary.totalWidgetViews}
               icon={Eye}
-              color="var(--az-accent)"
-              loading={false}
+              color="var(--f-tint-color)"
             />
             <KpiCard
               label="CTA Clicks"
               value={summary.totalCTAClicks}
               icon={MousePointerClick}
               color="#E2A33D"
-              loading={false}
             />
             <KpiCard
               label="Unique Visitors"
               value={summary.uniqueVisitors}
               icon={Users}
               color="#1FA37A"
-              loading={false}
             />
             <KpiCard
               label="Click-Through Rate"
               value={`${summary.avgCTR}%`}
               icon={Target}
               color="#E15361"
-              loading={false}
             />
             <KpiCard
               label="Orders Placed"
               value={summary.totalOrders || 0}
               icon={ShoppingBag}
               color="#7C3AED"
-              loading={false}
             />
           </div>
 
@@ -226,7 +221,7 @@ export default function StorefrontAnalytics() {
                 data={widgetEngagementData}
                 xKey="widget"
                 bars={[
-                  { key: 'views', label: 'Views', color: 'var(--az-accent)' },
+                  { key: 'views', label: 'Views', color: 'var(--f-tint-color)' },
                   { key: 'clicks', label: 'Clicks', color: '#E2A33D' },
                 ]}
                 height={260}
@@ -235,8 +230,8 @@ export default function StorefrontAnalytics() {
             )}
 
             {ctaData.length > 0 && (
-              <div className="bg-[var(--az-surface-1)] border border-az-border rounded-az-lg shadow-az-card p-6">
-                <h3 className="text-sm font-bold text-az-text mb-4">CTA Action Breakdown</h3>
+              <div className="bg-[var(--az-surface-1)] border border-line rounded-lg shadow-sm p-6">
+                <h3 className="text-sm font-bold text-ink mb-4">CTA Action Breakdown</h3>
                 <DonutChartCard
                   data={ctaData}
                   height={260}
@@ -248,8 +243,8 @@ export default function StorefrontAnalytics() {
           {/* Traffic Sources + Summary Stats */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {trafficData.length > 0 && (
-              <div className="bg-[var(--az-surface-1)] border border-az-border rounded-az-lg shadow-az-card p-6">
-                <h3 className="text-sm font-bold text-az-text mb-4">Traffic Sources</h3>
+              <div className="bg-[var(--az-surface-1)] border border-line rounded-lg shadow-sm p-6">
+                <h3 className="text-sm font-bold text-ink mb-4">Traffic Sources</h3>
                 <div className="space-y-2">
                   {trafficData.map(source => {
                     const total = trafficData.reduce((sum, s) => sum + s.value, 0);
@@ -258,11 +253,11 @@ export default function StorefrontAnalytics() {
                       <div key={source.name} className="flex items-center gap-3">
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-medium" style={{ color: 'var(--az-text)' }}>{source.name}</span>
-                            <span className="text-xs" style={{ color: 'var(--az-text-muted)' }}>{source.value} ({pct}%)</span>
+                            <span className="text-xs font-medium" style={{ color: 'var(--f-text)' }}>{source.name}</span>
+                            <span className="text-xs" style={{ color: 'var(--f-text-3)' }}>{source.value} ({pct}%)</span>
                           </div>
                           <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--az-bg-alt)' }}>
-                            <div className="h-full rounded-full" style={{ width: `${pct}%`, background: 'var(--az-accent)' }} />
+                            <div className="h-full rounded-full" style={{ width: `${pct}%`, background: 'var(--f-tint-color)' }} />
                           </div>
                         </div>
                       </div>
@@ -272,19 +267,19 @@ export default function StorefrontAnalytics() {
               </div>
             )}
 
-            <div className="bg-[var(--az-surface-1)] border border-az-border rounded-az-lg shadow-az-card p-6">
-              <h3 className="text-sm font-bold text-az-text mb-4 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4" style={{ color: 'var(--az-accent)' }} />
+            <div className="bg-[var(--az-surface-1)] border border-line rounded-lg shadow-sm p-6">
+              <h3 className="text-sm font-bold text-ink mb-4 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4" style={{ color: 'var(--f-tint-color)' }} />
                 Event Summary
               </h3>
               <div className="space-y-2">
                 {Object.entries(analytics?.byEventType || {}).sort(([,a],[,b]) => b - a).map(([type, count]) => (
                   <div key={type} className="flex items-center justify-between py-1.5 border-b last:border-0"
-                    style={{ borderColor: 'var(--az-border)' }}>
-                    <span className="text-xs font-medium" style={{ color: 'var(--az-text-secondary)' }}>
+                    style={{ borderColor: 'var(--f-line)' }}>
+                    <span className="text-xs font-medium" style={{ color: 'var(--f-text-2)' }}>
                       {type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
                     </span>
-                    <span className="text-xs font-bold" style={{ color: 'var(--az-text)' }}>{count}</span>
+                    <span className="text-xs font-bold" style={{ color: 'var(--f-text)' }}>{count}</span>
                   </div>
                 ))}
               </div>
@@ -293,18 +288,18 @@ export default function StorefrontAnalytics() {
 
           {/* Product Taps Detail */}
           {summary.totalProductTaps > 0 && (
-            <GlassPanel className="p-6">
-              <h3 className="text-sm font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--az-text)' }}>
-                <MousePointerClick className="w-4 h-4" style={{ color: 'var(--az-accent)' }} />
+            <Card className="p-6">
+              <h3 className="text-sm font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--f-text)' }}>
+                <MousePointerClick className="w-4 h-4" style={{ color: 'var(--f-tint-color)' }} />
                 Product Interactions
               </h3>
-              <p className="text-sm" style={{ color: 'var(--az-text-muted)' }}>
+              <p className="text-sm" style={{ color: 'var(--f-text-3)' }}>
                 {summary.totalProductTaps} product tap{summary.totalProductTaps !== 1 ? 's' : ''} from your Product Grid widget.
                 {summary.totalProductTaps > 0 && summary.totalViews > 0 && (
                   <span> That's a {(summary.totalProductTaps / summary.totalViews * 100).toFixed(1)}% product engagement rate.</span>
                 )}
               </p>
-            </GlassPanel>
+            </Card>
           )}
         </>
       )}

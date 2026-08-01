@@ -17,41 +17,41 @@ function ProgressStep({ label, done, active, color, timestamp }) {
   return (
     <div className="flex items-start gap-4 relative pb-8 last:pb-0">
       {/* Line connecting steps */}
-      <div className="absolute left-4 top-8 bottom-0 w-0.5 bg-[var(--az-border)] last:hidden" 
+      <div className="absolute left-4 top-8 bottom-0 w-0.5 bg-[var(--f-line)] last:hidden" 
         style={done ? { background: color } : {}} 
       />
       
       {/* Step circle */}
       <div
-        className="w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all z-10 bg-[var(--az-card)]"
+        className="w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all z-10 bg-[var(--f-surface)]"
         style={done || active
           ? { background: `${color}1a`, borderColor: color }
-          : { background: 'transparent', borderColor: 'var(--az-border)' }
+          : { background: 'transparent', borderColor: 'var(--f-line)' }
         }
       >
         {done ? (
           <CheckCircle2 className="w-4 h-4" style={{ color }} />
         ) : (
-          <div className="w-2 h-2 rounded-full" style={{ background: active ? color : 'var(--az-border)' }} />
+          <div className="w-2 h-2 rounded-full" style={{ background: active ? color : 'var(--f-line)' }} />
         )}
       </div>
 
       {/* Step details */}
       <div className="flex-1 min-w-0 pt-0.5">
-        <p className="text-xs font-bold uppercase tracking-wider" style={{ color: done || active ? 'var(--az-text)' : 'var(--az-text-muted)' }}>
+        <p className="text-xs font-bold uppercase tracking-wider" style={{ color: done || active ? 'var(--f-text)' : 'var(--f-text-3)' }}>
           {label}
         </p>
         {timestamp ? (
-          <p className="text-[11px] text-[var(--az-text-muted)] mt-1 flex items-center gap-1">
+          <p className="text-[11px] text-[var(--f-text-3)] mt-1 flex items-center gap-1">
             <Clock className="w-3 h-3" />
             {formatDateTime(timestamp)} ({relativeTime(timestamp)})
           </p>
         ) : done ? (
-          <p className="text-[11px] text-[var(--az-text-muted)] mt-1">Status reached</p>
+          <p className="text-[11px] text-[var(--f-text-3)] mt-1">Status reached</p>
         ) : active ? (
-          <p className="text-[11px] text-[var(--az-accent)] mt-1 font-semibold animate-pulse">Current Phase</p>
+          <p className="text-[11px] text-[var(--f-tint-color)] mt-1 font-semibold animate-pulse">Current Phase</p>
         ) : (
-          <p className="text-[11px] text-[var(--az-text-muted)]/40 mt-1">Pending action</p>
+          <p className="text-[11px] text-[var(--f-text-3)]/40 mt-1">Pending action</p>
         )}
       </div>
     </div>
@@ -125,10 +125,10 @@ export default function OrderDetail() {
   if (isLoading) {
     return (
       <div className="p-6 max-w-4xl mx-auto space-y-6">
-        <Skeleton className="h-8 w-48" />
+        <Skel className="h-8 w-48" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Skeleton className="h-96 md:col-span-2" />
-          <Skeleton className="h-96" />
+          <Skel className="h-96 md:col-span-2" />
+          <Skel className="h-96" />
         </div>
       </div>
     );
@@ -156,7 +156,7 @@ export default function OrderDetail() {
   const currentStepIndex = STEPS.indexOf(currentStatus);
 
   // Status mappings for style colors
-  const statusMeta = ORDER_STATUS_META[currentStatus] || { label: currentStatus, color: 'var(--az-accent)' };
+  const statusMeta = ORDER_STATUS_META[currentStatus] || { label: currentStatus, color: 'var(--f-tint-color)' };
 
   // Calculate timelines based on timestamps from backend
   const timestamps = {
@@ -172,82 +172,82 @@ export default function OrderDetail() {
   const escrowAmount = order.escrowAmount || order.escrow?.amount || order.amount || 0;
 
   const escrowMeta = {
-    PAID: { label: 'Paid & Locked', color: 'var(--az-info)', icon: Lock, desc: 'Funds secured in safety escrow wallet' },
-    HELD: { label: 'Held on Hold', color: 'var(--az-warning)', icon: Lock, desc: 'Funds temporarily frozen for dispute or check' },
-    SATISFIED: { label: 'Satisfied & Released', color: 'var(--az-success)', icon: ShieldCheck, desc: 'Fulfillment confirmed, payout distributed' },
-    DISPUTED: { label: 'Disputed', color: 'var(--az-danger)', icon: AlertTriangle, desc: 'Buyer raised issue. Awaiting merchant reply' },
-    REFUNDED: { label: 'Refunded', color: 'var(--az-accent)', icon: CornerUpLeft, desc: 'Escrow amount returned to buyer wallet' },
-    UNKNOWN: { label: 'No Active Escrow', color: 'var(--az-text-muted)', icon: AlertCircle, desc: 'No escrow record found for this transaction' }
-  }[escrowState] || { label: escrowState, color: 'var(--az-accent)', icon: Lock, desc: 'Escrow status update pending' };
+    PAID: { label: 'Paid & Locked', color: 'var(--f-info)', icon: Lock, desc: 'Funds secured in safety escrow wallet' },
+    HELD: { label: 'Held on Hold', color: 'var(--f-warn)', icon: Lock, desc: 'Funds temporarily frozen for dispute or check' },
+    SATISFIED: { label: 'Satisfied & Released', color: 'var(--f-ok)', icon: ShieldCheck, desc: 'Fulfillment confirmed, payout distributed' },
+    DISPUTED: { label: 'Disputed', color: 'var(--f-bad)', icon: AlertTriangle, desc: 'Buyer raised issue. Awaiting merchant reply' },
+    REFUNDED: { label: 'Refunded', color: 'var(--f-tint-color)', icon: CornerUpLeft, desc: 'Escrow amount returned to buyer wallet' },
+    UNKNOWN: { label: 'No Active Escrow', color: 'var(--f-text-3)', icon: AlertCircle, desc: 'No escrow record found for this transaction' }
+  }[escrowState] || { label: escrowState, color: 'var(--f-tint-color)', icon: Lock, desc: 'Escrow status update pending' };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6 animate-fade-in">
+    <div className="p-6 max-w-5xl mx-auto space-y-6 ">
       {/* Back Header */}
       <div className="flex items-center justify-between">
-        <Link to="/orders" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--az-text-muted)] hover:text-[var(--az-text)] transition-colors">
+        <Link to="/orders" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--f-text-3)]:text-[var(--f-text)] transition-colors">
           <ArrowLeft className="w-4 h-4" />
           Back to Orders
         </Link>
         <div className="flex items-center gap-2">
           {currentStatus === 'AWAITING_PAYMENT' && (
-            <Badge color="var(--az-warning)">Unpaid Order</Badge>
+            <Tag variant="neutral">Unpaid Order</Tag>
           )}
           {currentStatus === 'CANCELLED' && (
-            <Badge color="var(--az-danger)">Cancelled</Badge>
+            <Tag variant="neutral">Cancelled</Tag>
           )}
         </div>
       </div>
 
       {/* Main Order Header Block */}
-      <Card className="p-6 border-[var(--az-border)]">
+      <Card className="p-6 border-[var(--f-line)]">
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <h1 className="text-xl font-black text-[var(--az-text)] az-mono">
+              <h1 className="text-xl font-black text-[var(--f-text)] f-mono">
                 {order.orderRef || `#${order.id}`}
               </h1>
-              <Badge color={statusMeta.color}>{statusMeta.label}</Badge>
+              <Tag color={statusMeta.color}>{statusMeta.label}</Tag>
             </div>
-            <p className="text-xs text-[var(--az-text-muted)]">
+            <p className="text-xs text-[var(--f-text-3)]">
               Placed on {formatDateTime(order.created_date || order.createdAt)}
             </p>
           </div>
 
           <div className="flex flex-col items-start md:items-end gap-1.5">
-            <span className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider">Total Value</span>
-            <span className="text-2xl font-bold text-[var(--az-text)] az-mono">
+            <span className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">Total Value</span>
+            <span className="text-2xl font-bold text-[var(--f-text)] f-mono">
               {fmtUSDC(order.amount)}
             </span>
           </div>
         </div>
 
         {/* Customer & Product Details split layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-[var(--az-border)]/50">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-[var(--f-line)]/50">
           <div className="flex gap-4">
-            <div className="w-10 h-10 rounded-xl bg-[var(--az-accent)]/10 border border-[var(--az-accent)]/20 flex items-center justify-center flex-shrink-0">
-              <User className="w-5 h-5 text-[var(--az-accent)]" />
+            <div className="w-10 h-10 rounded-xl bg-[var(--f-tint-color)]/10 border border-[var(--f-tint-color)]/20 flex items-center justify-center flex-shrink-0">
+              <User className="w-5 h-5 text-[var(--f-tint-color)]" />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-[var(--az-text-muted)] uppercase tracking-wider">Buyer Customer Info</h3>
-              <p className="text-sm font-bold text-[var(--az-text)] mt-1">
+              <h3 className="text-xs font-bold text-[var(--f-text-3)] uppercase tracking-wider">Buyer Customer Info</h3>
+              <p className="text-sm font-bold text-[var(--f-text)] mt-1">
                 {order.customer?.name || order.customerName || 'Anonymous'}
               </p>
-              <p className="text-xs text-[var(--az-text-muted)] az-mono mt-0.5">
+              <p className="text-xs text-[var(--f-text-3)] f-mono mt-0.5">
                 AZM-ID: {order.customer?.azamanId || 'N/A'}
               </p>
             </div>
           </div>
 
           <div className="flex gap-4">
-            <div className="w-10 h-10 rounded-xl bg-[var(--az-info)]/10 border border-[var(--az-info)]/20 flex items-center justify-center flex-shrink-0">
-              <Package className="w-5 h-5 text-[var(--az-info)]" />
+            <div className="w-10 h-10 rounded-xl bg-[var(--f-info)]/10 border border-[var(--f-info)]/20 flex items-center justify-center flex-shrink-0">
+              <Package className="w-5 h-5 text-[var(--f-info)]" />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-[var(--az-text-muted)] uppercase tracking-wider">Fulfillment Product</h3>
-              <p className="text-sm font-bold text-[var(--az-text)] mt-1 line-clamp-1">
+              <h3 className="text-xs font-bold text-[var(--f-text-3)] uppercase tracking-wider">Fulfillment Product</h3>
+              <p className="text-sm font-bold text-[var(--f-text)] mt-1 line-clamp-1">
                 {order.product?.title || order.productTitle || 'N/A'}
               </p>
-              <p className="text-xs text-[var(--az-text-muted)] mt-0.5">
+              <p className="text-xs text-[var(--f-text-3)] mt-0.5">
                 ID: {order.productId || 'N/A'}
               </p>
             </div>
@@ -261,8 +261,8 @@ export default function OrderDetail() {
           
           {/* Status Timeline Card */}
           <Card className="p-6">
-            <h2 className="text-sm font-black uppercase tracking-wider text-[var(--az-text)] mb-6 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-[var(--az-accent)]" />
+            <h2 className="text-sm font-black uppercase tracking-wider text-[var(--f-text)] mb-6 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-[var(--f-tint-color)]" />
               Visual Tracking Timeline
             </h2>
             <div className="space-y-1">
@@ -270,7 +270,7 @@ export default function OrderDetail() {
                 const done = idx <= currentStepIndex;
                 const active = idx === currentStepIndex;
                 const timestamp = timestamps[step];
-                const meta = ORDER_STATUS_META[step] || { label: step, color: 'var(--az-accent)' };
+                const meta = ORDER_STATUS_META[step] || { label: step, color: 'var(--f-tint-color)' };
                 
                 return (
                   <ProgressStep
@@ -289,7 +289,7 @@ export default function OrderDetail() {
                   label="CANCELLED"
                   done={true}
                   active={true}
-                  color="var(--az-danger)"
+                  color="var(--f-bad)"
                   timestamp={timestamps.CANCELLED}
                 />
               )}
@@ -299,15 +299,14 @@ export default function OrderDetail() {
           {/* Delivery Actions & Notes Card */}
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-black uppercase tracking-wider text-[var(--az-text)] flex items-center gap-2">
-                <Truck className="w-4 h-4 text-[var(--az-accent)]" />
+              <h2 className="text-sm font-black uppercase tracking-wider text-[var(--f-text)] flex items-center gap-2">
+                <Truck className="w-4 h-4 text-[var(--f-tint-color)]" />
                 Delivery & Fulfillment Details
               </h2>
               {currentStatus === 'PAID' && (
                 <Button 
                   size="sm"
                   variant="primary"
-                  loading={markDeliveredMutation.isLoading}
                   onClick={() => markDeliveredMutation.mutate(deliveryNotes)}
                 >
                   <CheckCircle2 className="w-4 h-4" />
@@ -319,11 +318,11 @@ export default function OrderDetail() {
             <div className="space-y-4">
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider">Fulfillment Dispatch Notes</label>
+                  <label className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">Fulfillment Dispatch Notes</label>
                   {!isEditingNotes ? (
                     <button 
                       onClick={() => setIsEditingNotes(true)} 
-                      className="text-xs text-[var(--az-accent)] hover:underline flex items-center gap-1"
+                      className="text-xs text-[var(--f-tint-color)]:underline flex items-center gap-1"
                     >
                       <Edit3 className="w-3 h-3" /> Edit
                     </button>
@@ -331,13 +330,13 @@ export default function OrderDetail() {
                     <div className="flex items-center gap-2">
                       <button 
                         onClick={() => setIsEditingNotes(false)} 
-                        className="text-xs text-[var(--az-text-muted)] hover:underline"
+                        className="text-xs text-[var(--f-text-3)]:underline"
                       >
                         Cancel
                       </button>
                       <button 
                         onClick={() => saveNotesMutation.mutate(deliveryNotes)} 
-                        className="text-xs text-[var(--az-accent)] hover:underline font-bold"
+                        className="text-xs text-[var(--f-tint-color)]:underline font-bold"
                       >
                         Save
                       </button>
@@ -354,11 +353,11 @@ export default function OrderDetail() {
               </div>
 
               {currentStatus === 'DELIVERED' && (
-                <div className="p-4 rounded-xl border border-[var(--az-accent)]/20 bg-[var(--az-accent)]/5 text-xs text-[var(--az-accent)] flex items-start gap-2.5">
+                <div className="p-4 rounded-xl border border-[var(--f-tint-color)]/20 bg-[var(--f-tint-color)]/5 text-xs text-[var(--f-tint-color)] flex items-start gap-2.5">
                   <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <div>
                     <span className="font-bold">Awaiting Customer Confirmation</span>
-                    <p className="text-[var(--az-text-muted)] mt-0.5">The order has been marked as delivered. Funds will unlock from escrow automatically once customer completes the booking, or when the platform release timer expires.</p>
+                    <p className="text-[var(--f-text-3)] mt-0.5">The order has been marked as delivered. Funds will unlock from escrow automatically once customer completes the booking, or when the platform release timer expires.</p>
                   </div>
                 </div>
               )}
@@ -370,30 +369,30 @@ export default function OrderDetail() {
         <div className="space-y-6">
           {/* Escrow Status Panel */}
           <Card className="p-6">
-            <h2 className="text-sm font-black uppercase tracking-wider text-[var(--az-text)] mb-4 flex items-center gap-2">
-              <Lock className="w-4 h-4 text-[var(--az-info)]" />
+            <h2 className="text-sm font-black uppercase tracking-wider text-[var(--f-text)] mb-4 flex items-center gap-2">
+              <Lock className="w-4 h-4 text-[var(--f-info)]" />
               Escrow Security Panel
             </h2>
 
             <div className="space-y-5">
-              <div className="flex items-center gap-3 p-3.5 rounded-xl border border-[var(--az-border)] bg-[var(--az-black)]">
+              <div className="flex items-center gap-3 p-3.5 rounded-xl border border-[var(--f-line)] bg-[var(--f-ink-900)]">
                 <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${escrowMeta.color}1a` }}>
                   <escrowMeta.icon className="w-4 h-4" style={{ color: escrowMeta.color }} />
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wider" style={{ color: escrowMeta.color }}>{escrowMeta.label}</p>
-                  <p className="text-[10px] text-[var(--az-text-muted)] mt-0.5">{escrowMeta.desc}</p>
+                  <p className="text-[10px] text-[var(--f-text-3)] mt-0.5">{escrowMeta.desc}</p>
                 </div>
               </div>
 
-              <div className="space-y-2 pb-4 border-b border-[var(--az-border)]/50">
+              <div className="space-y-2 pb-4 border-b border-[var(--f-line)]/50">
                 <div className="flex justify-between text-xs">
-                  <span className="text-[var(--az-text-muted)]">Escrow Amount</span>
-                  <span className="font-bold az-mono text-[var(--az-text)]">{fmtUSDC(escrowAmount)}</span>
+                  <span className="text-[var(--f-text-3)]">Escrow Amount</span>
+                  <span className="font-bold f-mono text-[var(--f-text)]">{fmtUSDC(escrowAmount)}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-[var(--az-text-muted)]">Current Stage</span>
-                  <span className="font-medium text-[var(--az-text)] capitalize">{currentStatus.replace('_', ' ').toLowerCase()}</span>
+                  <span className="text-[var(--f-text-3)]">Current Stage</span>
+                  <span className="font-medium text-[var(--f-text)] capitalize">{currentStatus.replace('_', ' ').toLowerCase()}</span>
                 </div>
               </div>
 
@@ -401,7 +400,7 @@ export default function OrderDetail() {
               {['PAID', 'DELIVERED', 'HELD', 'DISPUTED'].includes(currentStatus) && (
                 <Button 
                   variant="danger" 
-                  className="w-full justify-center bg-transparent text-[var(--az-danger)] border-[var(--az-danger)] hover:bg-[var(--az-danger)]/10"
+                  className="w-full justify-center bg-transparent text-[var(--f-bad)] border-[var(--f-bad)]:bg-[var(--f-bad)]/10"
                   onClick={() => setRefundModal(true)}
                 >
                   <CornerUpLeft className="w-4 h-4" />
@@ -413,40 +412,40 @@ export default function OrderDetail() {
 
           {/* Audit Information Panel */}
           <Card className="p-6">
-            <h2 className="text-sm font-black uppercase tracking-wider text-[var(--az-text)] mb-4 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-[var(--az-accent)]" />
+            <h2 className="text-sm font-black uppercase tracking-wider text-[var(--f-text)] mb-4 flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-[var(--f-tint-color)]" />
               System Audit Metadata
             </h2>
 
             <div className="space-y-3.5 text-xs">
-              <div className="flex justify-between items-center pb-2.5 border-b border-[var(--az-border)]/30">
-                <span className="text-[var(--az-text-muted)]">Order ID</span>
-                <span className="font-bold az-mono text-[var(--az-text)]">{order.id}</span>
+              <div className="flex justify-between items-center pb-2.5 border-b border-[var(--f-line)]/30">
+                <span className="text-[var(--f-text-3)]">Order ID</span>
+                <span className="font-bold f-mono text-[var(--f-text)]">{order.id}</span>
               </div>
-              <div className="flex justify-between items-center pb-2.5 border-b border-[var(--az-border)]/30">
-                <span className="text-[var(--az-text-muted)]">Created Date</span>
-                <span className="text-[var(--az-text)]">{formatDateTime(order.created_date || order.createdAt)}</span>
+              <div className="flex justify-between items-center pb-2.5 border-b border-[var(--f-line)]/30">
+                <span className="text-[var(--f-text-3)]">Created Date</span>
+                <span className="text-[var(--f-text)]">{formatDateTime(order.created_date || order.createdAt)}</span>
               </div>
-              <div className="flex justify-between items-center pb-2.5 border-b border-[var(--az-border)]/30">
-                <span className="text-[var(--az-text-muted)]">Last Updated</span>
-                <span className="text-[var(--az-text)]">{formatDateTime(order.updated_date || order.updatedAt)}</span>
+              <div className="flex justify-between items-center pb-2.5 border-b border-[var(--f-line)]/30">
+                <span className="text-[var(--f-text-3)]">Last Updated</span>
+                <span className="text-[var(--f-text)]">{formatDateTime(order.updated_date || order.updatedAt)}</span>
               </div>
               {timestamps.PAID && (
-                <div className="flex justify-between items-center pb-2.5 border-b border-[var(--az-border)]/30">
-                  <span className="text-[var(--az-text-muted)]">Settled (Paid)</span>
-                  <span className="text-[var(--az-text)]">{formatDateTime(timestamps.PAID)}</span>
+                <div className="flex justify-between items-center pb-2.5 border-b border-[var(--f-line)]/30">
+                  <span className="text-[var(--f-text-3)]">Settled (Paid)</span>
+                  <span className="text-[var(--f-text)]">{formatDateTime(timestamps.PAID)}</span>
                 </div>
               )}
               {timestamps.DELIVERED && (
-                <div className="flex justify-between items-center pb-2.5 border-b border-[var(--az-border)]/30">
-                  <span className="text-[var(--az-text-muted)]">Dispatched At</span>
-                  <span className="text-[var(--az-text)]">{formatDateTime(timestamps.DELIVERED)}</span>
+                <div className="flex justify-between items-center pb-2.5 border-b border-[var(--f-line)]/30">
+                  <span className="text-[var(--f-text-3)]">Dispatched At</span>
+                  <span className="text-[var(--f-text)]">{formatDateTime(timestamps.DELIVERED)}</span>
                 </div>
               )}
               {timestamps.COMPLETED && (
-                <div className="flex justify-between items-center pb-2.5 border-b border-[var(--az-border)]/30">
-                  <span className="text-[var(--az-text-muted)]">Completed At</span>
-                  <span className="text-[var(--az-text)]">{formatDateTime(timestamps.COMPLETED)}</span>
+                <div className="flex justify-between items-center pb-2.5 border-b border-[var(--f-line)]/30">
+                  <span className="text-[var(--f-text-3)]">Completed At</span>
+                  <span className="text-[var(--f-text)]">{formatDateTime(timestamps.COMPLETED)}</span>
                 </div>
               )}
             </div>
@@ -461,16 +460,16 @@ export default function OrderDetail() {
         title="Confirm Order Refund"
       >
         <div className="space-y-4">
-          <div className="p-4 rounded-xl border border-[var(--az-danger)]/20 bg-[var(--az-danger)]/5 text-xs text-[var(--az-danger)] flex items-start gap-2.5">
+          <div className="p-4 rounded-xl border border-[var(--f-bad)]/20 bg-[var(--f-bad)]/5 text-xs text-[var(--f-bad)] flex items-start gap-2.5">
             <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
             <div>
               <span className="font-bold">Irreversible Action Warning</span>
-              <p className="text-[var(--az-text-muted)] mt-0.5">You are initiating a full refund of <strong className="text-[var(--az-text)] az-mono">{fmtUSDC(escrowAmount)}</strong> back to the buyer's wallet. This will close the escrow contract and cannot be undone.</p>
+              <p className="text-[var(--f-text-3)] mt-0.5">You are initiating a full refund of <strong className="text-[var(--f-text)] f-mono">{fmtUSDC(escrowAmount)}</strong> back to the buyer's wallet. This will close the escrow contract and cannot be undone.</p>
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider">Refund Reason / Auditable Note</label>
+            <label className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">Refund Reason / Auditable Note</label>
             <Textarea
               value={refundReason}
               onChange={(e) => setRefundReason(e.target.value)}
@@ -483,8 +482,7 @@ export default function OrderDetail() {
             <Button variant="secondary" size="sm" onClick={() => setRefundModal(false)}>Cancel</Button>
             <Button 
               variant="danger" 
-              size="sm" 
-              loading={refundMutation.isLoading}
+              size="sm"
               disabled={!refundReason.trim()}
               onClick={() => refundMutation.mutate(refundReason)}
             >

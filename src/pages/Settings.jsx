@@ -118,15 +118,15 @@ export default function Settings() {
         {/* Logo */}
         <Card className="space-y-3">
           <div className="flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-[var(--az-accent)]" />
-            <h3 className="text-sm font-semibold text-[var(--az-text)]">Business Logo</h3>
+            <Building2 className="w-4 h-4 text-[var(--f-tint-color)]" />
+            <h3 className="text-sm font-semibold text-[var(--f-text)]">Business Logo</h3>
           </div>
           <div className="flex items-center gap-4">
-            <div className="w-20 h-20 rounded-2xl overflow-hidden border border-[var(--az-border)] flex-shrink-0">
+            <div className="w-20 h-20 rounded-2xl overflow-hidden border border-[var(--f-line)] flex-shrink-0">
               {form.logoUrl
                 ? <img src={form.logoUrl} alt="logo" className="w-full h-full object-cover" />
                 : <div className="w-full h-full flex items-center justify-center bg-[var(--az-accent-subtle)]">
-                    <span className="text-2xl font-black text-[var(--az-accent)]">{(form.businessName || 'B').charAt(0)}</span>
+                    <span className="text-2xl font-black text-[var(--f-tint-color)]">{(form.businessName || 'B').charAt(0)}</span>
                   </div>
               }
             </div>
@@ -141,11 +141,11 @@ export default function Settings() {
 
         {/* Cover Photo */}
         <Card className="space-y-3">
-          <h3 className="text-sm font-semibold text-[var(--az-text)]">Cover Photo</h3>
+          <h3 className="text-sm font-semibold text-[var(--f-text)]">Cover Photo</h3>
           {form.coverPhotoUrl
             ? <img src={form.coverPhotoUrl} alt="cover" className="w-full h-24 rounded-xl object-cover" />
-            : <div className="w-full h-24 rounded-xl border-2 border-dashed border-[var(--az-border)] flex items-center justify-center">
-                <ImagePlus className="w-6 h-6 text-[var(--az-text-muted)]" />
+            : <div className="w-full h-24 rounded-xl border-2 border-dashed border-[var(--f-line)] flex items-center justify-center">
+                <ImagePlus className="w-6 h-6 text-[var(--f-text-3)]" />
               </div>
           }
           <Input
@@ -159,19 +159,19 @@ export default function Settings() {
 
       {/* Basic info */}
       <Card className="space-y-4">
-        <h3 className="text-sm font-semibold text-[var(--az-text)]">Business Information</h3>
+        <h3 className="text-sm font-semibold text-[var(--f-text)]">Business Information</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input label="Business Name" value={form.businessName} onChange={e => setForm({ ...form, businessName: e.target.value })} disabled={!canManage} />
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider">Category</label>
+            <label className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">Category</label>
             <select
-              className="w-full px-4 py-3 rounded-xl bg-[var(--az-black)] border border-[var(--az-border)] text-[var(--az-text)] text-sm outline-none focus:border-[var(--az-accent)]"
+              className="w-full px-4 py-3 rounded-xl bg-[var(--f-ink-900)] border border-[var(--f-line)] text-[var(--f-text)] text-sm outline-none focus:border-[var(--f-tint-color)]"
               value={form.category}
               onChange={e => setForm({ ...form, category: e.target.value })}
               disabled={!canManage}
             >
               <option value="">Select category</option>
-              {CATEGORIES.map(c => <option key={c.value} value={c.value} style={{ background: 'var(--az-surface)' }}>{c.label}</option>)}
+              {CATEGORIES.map(c => <option key={c.value} value={c.value} style={{ background: 'var(--f-surface)' }}>{c.label}</option>)}
             </select>
           </div>
           <Input label="Website" value={form.website} onChange={e => setForm({ ...form, website: e.target.value })} disabled={!canManage} />
@@ -184,17 +184,17 @@ export default function Settings() {
 
       {/* Accent color */}
       <Card className="flex items-center gap-4">
-        <Palette className="w-5 h-5 text-[var(--az-accent)]" />
+        <Palette className="w-5 h-5 text-[var(--f-tint-color)]" />
         <div className="flex-1">
-          <h3 className="text-sm font-semibold text-[var(--az-text)]">Marketplace Accent Color</h3>
-          <p className="text-xs text-[var(--az-text-muted)]">Customize the color of your marketplace card.</p>
+          <h3 className="text-sm font-semibold text-[var(--f-text)]">Marketplace Accent Color</h3>
+          <p className="text-xs text-[var(--f-text-3)]">Customize the color of your marketplace card.</p>
         </div>
         <input
           type="color"
           value={form.adAccentColor || '#6C5FC7'}
           onChange={e => setForm({ ...form, adAccentColor: e.target.value })}
           disabled={!canManage}
-          className="w-12 h-10 rounded-lg border border-[var(--az-border)] cursor-pointer bg-transparent"
+          className="w-12 h-10 rounded-lg border border-[var(--f-line)] cursor-pointer bg-transparent"
         />
       </Card>
 
@@ -203,12 +203,12 @@ export default function Settings() {
         <div className="flex items-center gap-2">
           <BadgeCheck className="w-5 h-5" style={{ color: KYB_STATUS_META[bizProfile?.kybStatus || 'UNVERIFIED']?.color }} />
           <div>
-            <span className="text-xs text-[var(--az-text-muted)]">KYB Status</span>
-            <p className="text-sm font-semibold text-[var(--az-text)]">{KYB_STATUS_META[bizProfile?.kybStatus || 'UNVERIFIED']?.label || bizProfile?.kybStatus}</p>
+            <span className="text-xs text-[var(--f-text-3)]">KYB Status</span>
+            <p className="text-sm font-semibold text-[var(--f-text)]">{KYB_STATUS_META[bizProfile?.kybStatus || 'UNVERIFIED']?.label || bizProfile?.kybStatus}</p>
           </div>
         </div>
         <div className="flex items-center gap-2 ml-auto">
-          <Badge className="font-mono">{bizProfile?.bizId}</Badge>
+          <Tag className="font-mono">{bizProfile?.bizId}</Tag>
           <Button size="sm" variant="ghost" onClick={copyBizId}>Copy BIZ ID</Button>
         </div>
       </Card>
@@ -226,29 +226,29 @@ export default function Settings() {
         <Button variant="ghost" onClick={() => setShowPreview(!showPreview)}>
           <Eye className="w-4 h-4 mr-1.5" /> {showPreview ? 'Hide Preview' : 'Preview'}
         </Button>
-        <Button onClick={handleSave} disabled={!canManage || saveMutation.isPending} loading={saveMutation.isPending}>
+        <Button onClick={handleSave} disabled={!canManage || saveMutation.isPending}>
           <Save className="w-4 h-4 mr-1.5" /> Save Changes
         </Button>
       </div>
 
       {!canManage && (
-        <p className="text-xs text-[var(--az-text-muted)] italic text-center">
+        <p className="text-xs text-[var(--f-text-3)] italic text-center">
           Only the owner or admins with "settings.manage" permission can edit these settings.
         </p>
       )}
 
       {showPreview && bizProfile && (
         <Card className="p-4">
-          <h3 className="text-sm font-semibold text-[var(--az-text)] mb-3">Public Profile Preview</h3>
+          <h3 className="text-sm font-semibold text-[var(--f-text)] mb-3">Public Profile Preview</h3>
           <PublicProfilePreview bizProfile={{ ...bizProfile, ...form }} />
         </Card>
       )}
 
       {bizProfile?.isPausedByOwner && (
-        <Card className="p-4 border-[var(--az-danger)]">
+        <Card className="p-4 border-[var(--f-bad)]">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-[var(--az-danger)]" />
-            <p className="text-sm font-semibold text-[var(--az-danger)]">
+            <AlertTriangle className="w-5 h-5 text-[var(--f-bad)]" />
+            <p className="text-sm font-semibold text-[var(--f-bad)]">
               Your business is currently paused. Go to the Danger Zone tab to resume.
             </p>
           </div>
@@ -271,9 +271,9 @@ export default function Settings() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <h1 className="text-2xl font-bold text-[var(--az-text)]">Settings</h1>
+        <h1 className="text-2xl font-bold text-[var(--f-text)]">Settings</h1>
         {bizProfile?.isPausedByOwner && (
-          <Badge color="var(--az-danger)" className="text-xs">Paused</Badge>
+          <Tag variant="neutral" className="text-xs">Paused</Tag>
         )}
       </div>
       <Tabs tabs={tabs} />

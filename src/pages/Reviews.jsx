@@ -191,9 +191,9 @@ export default function Reviews() {
   if (!canView) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[500px] text-center p-6">
-        <AlertTriangle className="w-12 h-12 text-[var(--az-danger)] mb-4 animate-bounce" />
-        <h2 className="text-xl font-bold text-[var(--az-text)] mb-2">Access Denied</h2>
-        <p className="text-sm text-[var(--az-text-muted)] max-w-md">
+        <AlertTriangle className="w-12 h-12 text-[var(--f-bad)] mb-4 animate-bounce" />
+        <h2 className="text-xl font-bold text-[var(--f-text)] mb-2">Access Denied</h2>
+        <p className="text-sm text-[var(--f-text-3)] max-w-md">
           You do not have permission to view Reviews. Please consult your administrator.
         </p>
       </div>
@@ -228,15 +228,15 @@ export default function Reviews() {
   const paginatedReviews = reviews.slice(page * itemsPerPage, (page + 1) * itemsPerPage);
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto animate-fade-in text-[var(--az-text)]">
+    <div className="p-6 space-y-6 max-w-7xl mx-auto  text-[var(--f-text)]">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black flex items-center gap-3">
-            <Star className="w-6 h-6 text-[var(--az-warning)] fill-[var(--az-warning)]" />
+            <Star className="w-6 h-6 text-[var(--f-warn)] fill-[var(--f-warn)]" />
             Customer Reviews & Feedback
           </h1>
-          <p className="text-sm text-[var(--az-text-muted)] mt-1">
+          <p className="text-sm text-[var(--f-text-3)] mt-1">
             Monitor verified ratings, draft official owner responses, dispute reviews, and pin client love to stories.
           </p>
         </div>
@@ -250,17 +250,17 @@ export default function Reviews() {
         {/* Metric Card 1 */}
         <Card className="flex flex-col justify-between">
           <div>
-            <p className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider mb-2">Average Storefront Rating</p>
+            <p className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider mb-2">Average Storefront Rating</p>
             <div className="flex items-baseline gap-2">
-              <span className="text-4xl font-black text-[var(--az-warning)]">{stats.avgRating || '0.0'}</span>
-              <span className="text-sm text-[var(--az-text-muted)]">/ 5.0</span>
+              <span className="text-4xl font-black text-[var(--f-warn)]">{stats.avgRating || '0.0'}</span>
+              <span className="text-sm text-[var(--f-text-3)]">/ 5.0</span>
             </div>
           </div>
           <div className="flex items-center gap-0.5 mt-4">
             {[1, 2, 3, 4, 5].map((s) => (
               <Star
                 key={s}
-                className={`w-4 h-4 ${s <= Math.round(stats.avgRating || 0) ? 'text-[var(--az-warning)] fill-[var(--az-warning)]' : 'text-[var(--az-border)]'}`}
+                className={`w-4 h-4 ${s <= Math.round(stats.avgRating || 0) ? 'text-[var(--f-warn)] fill-[var(--f-warn)]' : 'text-[var(--f-line)]'}`}
               />
             ))}
           </div>
@@ -269,32 +269,32 @@ export default function Reviews() {
         {/* Metric Card 2 */}
         <Card className="flex flex-col justify-between">
           <div>
-            <p className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider mb-2">Total Reviews Received</p>
+            <p className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider mb-2">Total Reviews Received</p>
             <p className="text-4xl font-black">{stats.totalReviews}</p>
           </div>
-          <p className="text-xs text-[var(--az-text-muted)] mt-4">Verified customer transactions</p>
+          <p className="text-xs text-[var(--f-text-3)] mt-4">Verified customer transactions</p>
         </Card>
 
         {/* Metric Card 3 */}
         <Card className="flex flex-col justify-between">
           <div>
-            <p className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider mb-2">Owner Response Rate</p>
-            <p className="text-4xl font-black text-[var(--az-accent)]">{stats.responseRate}%</p>
+            <p className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider mb-2">Owner Response Rate</p>
+            <p className="text-4xl font-black text-[var(--f-tint-color)]">{stats.responseRate}%</p>
           </div>
-          <div className="w-full bg-[var(--az-border)] h-2 rounded-full overflow-hidden mt-4">
-            <div className="bg-[var(--az-accent)] h-full" style={{ width: `${stats.responseRate}%` }} />
+          <div className="w-full bg-[var(--f-line)] h-2 rounded-full overflow-hidden mt-4">
+            <div className="bg-[var(--f-tint-color)] h-full" style={{ width: `${stats.responseRate}%` }} />
           </div>
         </Card>
 
         {/* Metric Card 4 */}
         <Card className="flex flex-col justify-between">
           <div>
-            <p className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider mb-2">Escrow Verified</p>
-            <p className="text-4xl font-black text-[var(--az-info)]">
+            <p className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider mb-2">Escrow Verified</p>
+            <p className="text-4xl font-black text-[var(--f-info)]">
               {reviews.filter(r => r.hasOrderRef || r.verified).length}
             </p>
           </div>
-          <p className="text-xs text-[var(--az-text-muted)] mt-4">Protected checkout transactions</p>
+          <p className="text-xs text-[var(--f-text-3)] mt-4">Protected checkout transactions</p>
         </Card>
       </div>
 
@@ -303,25 +303,25 @@ export default function Reviews() {
         <DonutChartCard
           title="Ratings Distribution Breakdown"
           data={activeDonutData}
-          colors={['var(--az-accent)', 'var(--az-info)', 'var(--az-warning)', 'var(--az-danger)', 'var(--az-border)']}
+          colors={['var(--f-tint-color)', 'var(--f-info)', 'var(--f-warn)', 'var(--f-bad)', 'var(--f-line)']}
         />
         <AreaChartCard
           title="Average Rating Performance Trend"
           data={ratingTrendData}
           xKey="date"
           yKey="rating"
-          color="var(--az-warning)"
+          color="var(--f-warn)"
         />
       </div>
 
       {/* Filter and Review Feed Block */}
       <div className="space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[var(--az-surface)] p-4 border border-[var(--az-border)] rounded-2xl">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[var(--f-surface)] p-4 border border-[var(--f-line)] rounded-2xl">
           {/* Rating Tabs filter */}
           <div className="flex items-center gap-1.5 overflow-x-auto">
             <button
               onClick={() => { setActiveTab('all'); setPage(0); }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'all' ? 'bg-[var(--az-accent-subtle)] text-[var(--az-accent)] border border-[var(--az-accent)]' : 'text-[var(--az-text-muted)] hover:bg-[var(--az-bg-alt)]'}`}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'all' ? 'bg-[var(--az-accent-subtle)] text-[var(--f-tint-color)] border border-[var(--f-tint-color)]' : 'text-[var(--f-text-3)]:bg-[var(--az-bg-alt)]'}`}
             >
               All Ratings
             </button>
@@ -329,7 +329,7 @@ export default function Reviews() {
               <button
                 key={star}
                 onClick={() => { setActiveTab(String(star)); setPage(0); }}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activeTab === String(star) ? 'bg-[var(--az-warning)]/10 text-[var(--az-warning)] border border-[var(--az-warning)]/30' : 'text-[var(--az-text-muted)] hover:bg-[var(--az-bg-alt)]'}`}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activeTab === String(star) ? 'bg-[var(--f-warn)]/10 text-[var(--f-warn)] border border-[var(--f-warn)]/30' : 'text-[var(--f-text-3)]:bg-[var(--az-bg-alt)]'}`}
               >
                 {star} ★
               </button>
@@ -338,11 +338,11 @@ export default function Reviews() {
 
           {/* Source Select Filter */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[var(--az-text-muted)]">Source Context:</span>
+            <span className="text-xs font-semibold text-[var(--f-text-3)]">Source Context:</span>
             <select
               value={sourceFilter}
               onChange={(e) => { setSourceFilter(e.target.value); setPage(0); }}
-              className="px-3 py-2 rounded-xl bg-[var(--az-black)] border border-[var(--az-border)] text-xs text-[var(--az-text)] outline-none cursor-pointer focus:border-[var(--az-accent)]"
+              className="px-3 py-2 rounded-xl bg-[var(--f-ink-900)] border border-[var(--f-line)] text-xs text-[var(--f-text)] outline-none cursor-pointer focus:border-[var(--f-tint-color)]"
             >
               <option value="all">All Sources</option>
               <option value="order">Storefront Orders</option>
@@ -356,9 +356,9 @@ export default function Reviews() {
         {/* Feed List */}
         {loading ? (
           <div className="space-y-4">
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-24 w-full" />
+            <Skel className="h-24 w-full" />
+            <Skel className="h-24 w-full" />
+            <Skel className="h-24 w-full" />
           </div>
         ) : paginatedReviews.length === 0 ? (
           <Card className="flex flex-col items-center justify-center p-16 text-center">
@@ -371,25 +371,25 @@ export default function Reviews() {
         ) : (
           <div className="space-y-4">
             {paginatedReviews.map((review) => (
-              <Card key={review.id} className="border border-[var(--az-border)] bg-[var(--az-surface)] p-5 space-y-4">
+              <Card key={review.id} className="border border-[var(--f-line)] bg-[var(--f-surface)] p-5 space-y-4">
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-full bg-[var(--az-accent-subtle)] flex items-center justify-center font-black text-[var(--az-accent)]">
+                    <div className="w-12 h-12 rounded-full bg-[var(--az-accent-subtle)] flex items-center justify-center font-black text-[var(--f-tint-color)]">
                       {(review.customerName || review.customerAzamanId || '?').charAt(0).toUpperCase()}
                     </div>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <h4 className="font-extrabold text-sm">{review.customerName || 'Verified Guest'}</h4>
-                        <span className="text-[10px] text-[var(--az-text-muted)] font-mono">{review.customerAzamanId || review.azamanId}</span>
+                        <span className="text-[10px] text-[var(--f-text-3)] font-mono">{review.customerAzamanId || review.azamanId}</span>
                         {review.source && (
-                          <Badge color="var(--az-info)" className="text-[9px] px-1.5 py-0 capitalize">
+                          <Tag variant="neutral" className="text-[9px] px-1.5 py-0 capitalize">
                             via {review.source}
-                          </Badge>
+                          </Tag>
                         )}
                         {(review.hasOrderRef || review.verified) && (
-                          <Badge color="var(--az-accent)" className="text-[9px] px-1.5 py-0 flex items-center gap-0.5">
+                          <Tag variant="neutral" className="text-[9px] px-1.5 py-0 flex items-center gap-0.5">
                             <Sparkles className="w-2.5 h-2.5" /> Escrow Verified
-                          </Badge>
+                          </Tag>
                         )}
                       </div>
 
@@ -398,11 +398,11 @@ export default function Reviews() {
                           {[1, 2, 3, 4, 5].map((st) => (
                             <Star
                               key={st}
-                              className={`w-3.5 h-3.5 ${st <= review.rating ? 'text-[var(--az-warning)] fill-[var(--az-warning)]' : 'text-[var(--az-border)]'}`}
+                              className={`w-3.5 h-3.5 ${st <= review.rating ? 'text-[var(--f-warn)] fill-[var(--f-warn)]' : 'text-[var(--f-line)]'}`}
                             />
                           ))}
                         </div>
-                        <span className="text-xs text-[var(--az-text-muted)]">
+                        <span className="text-xs text-[var(--f-text-3)]">
                           {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Just recently'}
                         </span>
                       </div>
@@ -414,28 +414,28 @@ export default function Reviews() {
                     <Button variant="secondary" size="sm" onClick={() => handleOpenResponse(review)} className="gap-1">
                       <MessageSquare className="w-3.5 h-3.5" /> Respond
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handlePromoteToStory(review)} className="text-[var(--az-accent)] gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => handlePromoteToStory(review)} className="text-[var(--f-tint-color)] gap-1">
                       <Share2 className="w-3.5 h-3.5" /> Highlight Story
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleOpenFlag(review)} className="text-[var(--az-danger)] gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => handleOpenFlag(review)} className="text-[var(--f-bad)] gap-1">
                       <Flag className="w-3.5 h-3.5" /> Dispute
                     </Button>
                   </div>
                 </div>
 
                 {/* Review Text */}
-                <div className="bg-[var(--az-surface)] p-3.5 rounded-xl border border-[var(--az-border)]">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-[var(--az-text-muted)] mb-1">Customer Review</p>
-                  <p className="text-sm leading-relaxed text-[var(--az-text-muted)]">{review.comment || review.text || 'Guest left rating without textual details.'}</p>
+                <div className="bg-[var(--f-surface)] p-3.5 rounded-xl border border-[var(--f-line)]">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[var(--f-text-3)] mb-1">Customer Review</p>
+                  <p className="text-sm leading-relaxed text-[var(--f-text-3)]">{review.comment || review.text || 'Guest left rating without textual details.'}</p>
                 </div>
 
                 {/* Owner Reply if present */}
                 {(review.ownerResponse || review.response) && (
-                  <div className="ml-6 border-l-2 border-l-[var(--az-accent)] pl-4 py-1 space-y-1">
-                    <p className="text-[10px] font-black text-[var(--az-accent)] uppercase tracking-widest flex items-center gap-1">
+                  <div className="ml-6 border-l-2 border-l-[var(--f-tint-color)] pl-4 py-1 space-y-1">
+                    <p className="text-[10px] font-black text-[var(--f-tint-color)] uppercase tracking-widest flex items-center gap-1">
                       <MessageSquare className="w-3 h-3" /> Official Owner Response
                     </p>
-                    <p className="text-xs text-[var(--az-text-muted)] leading-relaxed">
+                    <p className="text-xs text-[var(--f-text-3)] leading-relaxed">
                       {review.ownerResponse || review.response}
                     </p>
                   </div>
@@ -455,7 +455,7 @@ export default function Reviews() {
                 >
                   <ChevronLeft className="w-4 h-4" /> Previous
                 </Button>
-                <span className="text-xs font-semibold text-[var(--az-text-muted)]">
+                <span className="text-xs font-semibold text-[var(--f-text-3)]">
                   Page {page + 1} of {Math.ceil(reviews.length / itemsPerPage)}
                 </span>
                 <Button
@@ -480,16 +480,16 @@ export default function Reviews() {
         title={selectedReview ? `Respond to review by ${selectedReview.customerName || 'Verified Guest'}` : 'Publish Review Response'}
       >
         <form onSubmit={handleSaveResponse} className="space-y-4">
-          <div className="bg-[var(--az-surface)] p-4 rounded-xl border border-[var(--az-border)] text-xs text-[var(--az-text-muted)] mb-2">
+          <div className="bg-[var(--f-surface)] p-4 rounded-xl border border-[var(--f-line)] text-xs text-[var(--f-text-3)] mb-2">
             <strong>Customer Post:</strong> {selectedReview?.comment || selectedReview?.text || 'No comment provided.'}
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-[var(--az-text-muted)]">Owner Reply</label>
+            <label className="text-xs font-bold uppercase tracking-wider text-[var(--f-text-3)]">Owner Reply</label>
             <textarea
               rows={4}
               required
-              className="w-full px-4 py-3 rounded-xl bg-[var(--az-black)] border border-[var(--az-border)] text-sm outline-none focus:border-[var(--az-accent)] text-[var(--az-text)]"
+              className="w-full px-4 py-3 rounded-xl bg-[var(--f-ink-900)] border border-[var(--f-line)] text-sm outline-none focus:border-[var(--f-tint-color)] text-[var(--f-text)]"
               placeholder="Draft your polite, helpful response publicly displayed to all guests..."
               value={responseText}
               onChange={(e) => setResponseText(e.target.value)}
@@ -500,7 +500,7 @@ export default function Reviews() {
             <Button type="button" variant="secondary" onClick={() => setResponseModalOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" loading={submitting} disabled={!canPublish}>
+            <Button type="submit" disabled={!canPublish}>
               Publish Response
             </Button>
           </div>
@@ -514,17 +514,17 @@ export default function Reviews() {
         title="Dispute & Flag Customer Review"
       >
         <form onSubmit={handleSaveFlag} className="space-y-4">
-          <div className="bg-[var(--az-danger)]/10 border border-[var(--az-danger)]/20 p-4 rounded-xl text-xs text-[var(--az-danger)] leading-relaxed">
+          <div className="bg-[var(--f-bad)]/10 border border-[var(--f-bad)]/20 p-4 rounded-xl text-xs text-[var(--f-bad)] leading-relaxed">
             <p className="font-bold">Terms of Administrative Escalation</p>
             <p className="mt-0.5">Flagging reviews submits them directly to the portal administrator team for policy investigation. Only reviews violating service integrity terms (abusive content, fraud) will be removed.</p>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-[var(--az-text-muted)]">Reason for dispute</label>
+            <label className="text-xs font-bold uppercase tracking-wider text-[var(--f-text-3)]">Reason for dispute</label>
             <textarea
               rows={4}
               required
-              className="w-full px-4 py-3 rounded-xl bg-[var(--az-black)] border border-[var(--az-border)] text-sm outline-none focus:border-[var(--az-accent)] text-[var(--az-text)]"
+              className="w-full px-4 py-3 rounded-xl bg-[var(--f-ink-900)] border border-[var(--f-line)] text-sm outline-none focus:border-[var(--f-tint-color)] text-[var(--f-text)]"
               placeholder="e.g. Abusive behavior, completely fraudulent order claiming services were not delivered..."
               value={flagReason}
               onChange={(e) => setFlagReason(e.target.value)}
@@ -535,7 +535,7 @@ export default function Reviews() {
             <Button type="button" variant="secondary" onClick={() => setFlagModalOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" loading={submitting} className="bg-[var(--az-danger)] border-[var(--az-danger)] hover:bg-[var(--az-danger)]/90 text-[var(--az-text)]">
+            <Button type="submit" className="bg-[var(--f-bad)] border-[var(--f-bad)]:bg-[var(--f-bad)]/90 text-[var(--f-text)]">
               Escalate to Admin
             </Button>
           </div>

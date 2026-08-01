@@ -33,11 +33,11 @@ const RANGES = [
 ];
 
 const SOURCE_BADGES = {
-  MANUAL:              { color: 'var(--az-info)',   label: 'Manual' },
-  PAYROLL:             { color: 'var(--az-accent)',  label: 'Payroll' },
-  INVENTORY_RESTOCK:  { color: 'var(--az-warning)',   label: 'Inventory' },
-  VEHICLE_MAINTENANCE: { color: 'var(--az-danger)',     label: 'Maintenance' },
-  AD_SPEND:            { color: 'var(--az-accent)',    label: 'Ad Spend' },
+  MANUAL:              { color: 'var(--f-info)',   label: 'Manual' },
+  PAYROLL:             { color: 'var(--f-tint-color)',  label: 'Payroll' },
+  INVENTORY_RESTOCK:  { color: 'var(--f-warn)',   label: 'Inventory' },
+  VEHICLE_MAINTENANCE: { color: 'var(--f-bad)',     label: 'Maintenance' },
+  AD_SPEND:            { color: 'var(--f-tint-color)',    label: 'Ad Spend' },
 };
 
 // fmtUsd and fmtUSDC imported from @/lib/utils
@@ -69,7 +69,7 @@ export default function Finance() {
   if (!canView) {
     return (
       <div className="p-8">
-        <Empty icon={Shield} title="No access" description="You don't have permission to view finance." />
+        <EmptyState icon={Shield} title="No access" description="You don't have permission to view finance." />
       </div>
     );
   }
@@ -79,22 +79,22 @@ export default function Finance() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--az-text)]">Finance & Ledger</h1>
-          <p className="text-sm text-[var(--az-text-muted)] mt-1">
+          <h1 className="text-2xl font-bold text-[var(--f-text)]">Finance & Ledger</h1>
+          <p className="text-sm text-[var(--f-text-3)] mt-1">
             Track revenue, expenses, P&L, payroll liability, and payout destinations.
           </p>
         </div>
         <div className="flex items-center gap-3">
           {/* Range selector */}
-          <div className="flex items-center gap-1 rounded-lg border border-[var(--az-border)] p-1">
+          <div className="flex items-center gap-1 rounded-lg border border-[var(--f-line)] p-1">
             {RANGES.map(r => (
               <button
                 key={r.key}
                 onClick={() => setRange(r.key)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                   range === r.key
-                    ? 'bg-[var(--az-accent)] text-[var(--az-text)]'
-                    : 'text-[var(--az-text-muted)] hover:text-[var(--az-text)]'
+                    ? 'bg-[var(--f-tint-color)] text-[var(--f-text)]'
+                    : 'text-[var(--f-text-3)]:text-[var(--f-text)]'
                 }`}
               >
                 {r.label}
@@ -105,7 +105,7 @@ export default function Finance() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-[var(--az-border)] overflow-x-auto">
+      <div className="flex items-center gap-1 border-b border-[var(--f-line)] overflow-x-auto">
         {TABS.map(t => {
           const Icon = t.icon;
           return (
@@ -114,8 +114,8 @@ export default function Finance() {
               onClick={() => setTab(t.key)}
               className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                 tab === t.key
-                  ? 'border-[var(--az-accent)] text-[var(--az-text)]'
-                  : 'border-transparent text-[var(--az-text-muted)] hover:text-[var(--az-text)]'
+                  ? 'border-[var(--f-tint-color)] text-[var(--f-text)]'
+                  : 'border-transparent text-[var(--f-text-3)]:text-[var(--f-text)]'
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -189,13 +189,13 @@ function DashboardTab({ rangeDays, canManage }) {
     <div className="space-y-6">
       {/* Escrow Warning Banner */}
       {escrow?.totalHeld > 0 && (
-        <div className="flex items-center gap-3 p-4 rounded-xl border border-az-warning bg-az-warning/10">
-          <AlertTriangle className="w-5 h-5 text-az-warning flex-shrink-0" />
+        <div className="flex items-center gap-3 p-4 rounded-xl border border-warn bg-warn/10">
+          <AlertTriangle className="w-5 h-5 text-warn flex-shrink-0" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-[var(--az-text)]">
+            <p className="text-sm font-medium text-[var(--f-text)]">
               {fmtUsd(escrow.totalHeld)} held in escrow across open orders
             </p>
-            <p className="text-xs text-[var(--az-text-muted)] mt-0.5">
+            <p className="text-xs text-[var(--f-text-3)] mt-0.5">
               These funds are not yet released to your available balance. Settlement occurs when orders are fulfilled.
             </p>
           </div>
@@ -210,7 +210,7 @@ function DashboardTab({ rangeDays, canManage }) {
           delta={fmtPct(revenueDelta)}
           deltaType={revenueDelta >= 0 ? 'positive' : 'negative'}
           icon={TrendingUp}
-          color="var(--az-success)"
+          color="var(--f-ok)"
         />
         <KpiCard
           label="Expenses"
@@ -218,7 +218,7 @@ function DashboardTab({ rangeDays, canManage }) {
           delta={fmtPct(expenseDelta)}
           deltaType={expenseDelta <= 0 ? 'positive' : 'negative'}
           icon={TrendingDown}
-          color="var(--az-danger)"
+          color="var(--f-bad)"
         />
         <KpiCard
           label="Net Profit"
@@ -226,19 +226,19 @@ function DashboardTab({ rangeDays, canManage }) {
           delta={revenue - expenses > 0 ? 'Positive' : 'Negative'}
           deltaType={netProfit >= 0 ? 'positive' : 'negative'}
           icon={DollarSign}
-          color="var(--az-accent)"
+          color="var(--f-tint-color)"
         />
         <KpiCard
           label="Outstanding Invoices"
           value={fmtUsd(outstanding)}
           icon={Receipt}
-          color="var(--az-warning)"
+          color="var(--f-warn)"
         />
         <KpiCard
           label="Payroll Liability"
           value={fmtUsd(payrollLiability)}
           icon={PiggyBank}
-          color="var(--az-info)"
+          color="var(--f-info)"
         />
       </div>
 
@@ -249,7 +249,7 @@ function DashboardTab({ rangeDays, canManage }) {
           data={cashflowData.length > 0 ? cashflowData : [{ date: '—', inflow: 0, outflow: 0 }]}
           xKey="date"
           yKey="inflow"
-          color="var(--az-success)"
+          color="var(--f-ok)"
           formatY={(v) => `$${(v / 1000).toFixed(1)}k`}
         />
         <DonutChartCard
@@ -327,8 +327,8 @@ function PnLTab({ rangeDays }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold text-[var(--az-text)]">Profit & Loss Statement</h2>
-          <p className="text-sm text-[var(--az-text-muted)]">
+          <h2 className="text-lg font-bold text-[var(--f-text)]">Profit & Loss Statement</h2>
+          <p className="text-sm text-[var(--f-text-3)]">
             {data?.period || `Last ${rangeDays} days`} · Prior period comparison
           </p>
         </div>
@@ -341,89 +341,89 @@ function PnLTab({ rangeDays }) {
       <Card className="overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-[var(--az-border)] bg-[var(--az-surface)]">
-              <th className="text-left py-3 px-4 font-semibold text-[var(--az-text)]">Line Item</th>
-              <th className="text-right py-3 px-4 font-semibold text-[var(--az-text)]">Current</th>
-              <th className="text-right py-3 px-4 font-semibold text-[var(--az-text-muted)]">Prior</th>
+            <tr className="border-b border-[var(--f-line)] bg-[var(--f-surface)]">
+              <th className="text-left py-3 px-4 font-semibold text-[var(--f-text)]">Line Item</th>
+              <th className="text-right py-3 px-4 font-semibold text-[var(--f-text)]">Current</th>
+              <th className="text-right py-3 px-4 font-semibold text-[var(--f-text-3)]">Prior</th>
             </tr>
           </thead>
           <tbody>
             {/* Revenue */}
-            <tr className="border-b border-[var(--az-border)]">
-              <td colSpan={3} className="py-2 px-4 text-xs font-bold uppercase tracking-wider text-[var(--az-text-muted)] bg-[var(--az-surface)]/50">Revenue</td>
+            <tr className="border-b border-[var(--f-line)]">
+              <td colSpan={3} className="py-2 px-4 text-xs font-bold uppercase tracking-wider text-[var(--f-text-3)] bg-[var(--f-surface)]/50">Revenue</td>
             </tr>
             {revenueLines.map((l, i) => (
-              <tr key={i} className="border-b border-[var(--az-border)]/50">
-                <td className="py-2 px-4 text-[var(--az-text-muted)] pl-8">{l.label || l.category || '—'}</td>
-                <td className="py-2 px-4 text-right text-[var(--az-text)]">{fmtUsd(l.amount ?? l.value ?? 0)}</td>
-                <td className="py-2 px-4 text-right text-[var(--az-text-muted)]">{fmtUsd(l.priorAmount ?? l.prior ?? 0)}</td>
+              <tr key={i} className="border-b border-[var(--f-line)]/50">
+                <td className="py-2 px-4 text-[var(--f-text-3)] pl-8">{l.label || l.category || '—'}</td>
+                <td className="py-2 px-4 text-right text-[var(--f-text)]">{fmtUsd(l.amount ?? l.value ?? 0)}</td>
+                <td className="py-2 px-4 text-right text-[var(--f-text-3)]">{fmtUsd(l.priorAmount ?? l.prior ?? 0)}</td>
               </tr>
             ))}
-            <tr className="border-b-2 border-[var(--az-border)]">
-              <td className="py-2 px-4 font-semibold text-[var(--az-text)]">Total Revenue</td>
-              <td className="py-2 px-4 text-right font-bold text-[var(--az-success)]">{fmtUsd(totalRevenue)}</td>
-              <td className="py-2 px-4 text-right font-semibold text-[var(--az-text-muted)]">{fmtUsd(data?.priorRevenue ?? 0)}</td>
+            <tr className="border-b-2 border-[var(--f-line)]">
+              <td className="py-2 px-4 font-semibold text-[var(--f-text)]">Total Revenue</td>
+              <td className="py-2 px-4 text-right font-bold text-[var(--f-ok)]">{fmtUsd(totalRevenue)}</td>
+              <td className="py-2 px-4 text-right font-semibold text-[var(--f-text-3)]">{fmtUsd(data?.priorRevenue ?? 0)}</td>
             </tr>
 
             {/* COGS */}
             {cogsLines.length > 0 && (
               <>
-                <tr className="border-b border-[var(--az-border)]">
-                  <td colSpan={3} className="py-2 px-4 text-xs font-bold uppercase tracking-wider text-[var(--az-text-muted)] bg-[var(--az-surface)]/50">Cost of Goods / Services</td>
+                <tr className="border-b border-[var(--f-line)]">
+                  <td colSpan={3} className="py-2 px-4 text-xs font-bold uppercase tracking-wider text-[var(--f-text-3)] bg-[var(--f-surface)]/50">Cost of Goods / Services</td>
                 </tr>
                 {cogsLines.map((l, i) => (
-                  <tr key={i} className="border-b border-[var(--az-border)]/50">
-                    <td className="py-2 px-4 text-[var(--az-text-muted)] pl-8">{l.label || l.category || '—'}</td>
-                    <td className="py-2 px-4 text-right text-[var(--az-text)]">({fmtUsd(l.amount ?? l.value ?? 0)})</td>
-                    <td className="py-2 px-4 text-right text-[var(--az-text-muted)]">({fmtUsd(l.priorAmount ?? l.prior ?? 0)})</td>
+                  <tr key={i} className="border-b border-[var(--f-line)]/50">
+                    <td className="py-2 px-4 text-[var(--f-text-3)] pl-8">{l.label || l.category || '—'}</td>
+                    <td className="py-2 px-4 text-right text-[var(--f-text)]">({fmtUsd(l.amount ?? l.value ?? 0)})</td>
+                    <td className="py-2 px-4 text-right text-[var(--f-text-3)]">({fmtUsd(l.priorAmount ?? l.prior ?? 0)})</td>
                   </tr>
                 ))}
-                <tr className="border-b-2 border-[var(--az-border)]">
-                  <td className="py-2 px-4 font-semibold text-[var(--az-text)]">Total COGS</td>
-                  <td className="py-2 px-4 text-right font-bold text-[var(--az-danger)]">({fmtUsd(totalCogs)})</td>
-                  <td className="py-2 px-4 text-right font-semibold text-[var(--az-text-muted)]">({fmtUsd(data?.priorCogs ?? 0)})</td>
+                <tr className="border-b-2 border-[var(--f-line)]">
+                  <td className="py-2 px-4 font-semibold text-[var(--f-text)]">Total COGS</td>
+                  <td className="py-2 px-4 text-right font-bold text-[var(--f-bad)]">({fmtUsd(totalCogs)})</td>
+                  <td className="py-2 px-4 text-right font-semibold text-[var(--f-text-3)]">({fmtUsd(data?.priorCogs ?? 0)})</td>
                 </tr>
               </>
             )}
 
             {/* Gross Profit */}
-            <tr className="border-b-2 border-[var(--az-accent)]/30 bg-[var(--az-accent)]/5">
-              <td className="py-3 px-4 font-bold text-[var(--az-text)]">Gross Profit</td>
-              <td className="py-3 px-4 text-right font-bold text-[var(--az-accent)]">{fmtUsd(grossProfit)}</td>
-              <td className="py-3 px-4 text-right font-semibold text-[var(--az-text-muted)]">{fmtUsd(data?.priorGrossProfit ?? 0)}</td>
+            <tr className="border-b-2 border-[var(--f-tint-color)]/30 bg-[var(--f-tint-color)]/5">
+              <td className="py-3 px-4 font-bold text-[var(--f-text)]">Gross Profit</td>
+              <td className="py-3 px-4 text-right font-bold text-[var(--f-tint-color)]">{fmtUsd(grossProfit)}</td>
+              <td className="py-3 px-4 text-right font-semibold text-[var(--f-text-3)]">{fmtUsd(data?.priorGrossProfit ?? 0)}</td>
             </tr>
 
             {/* Operating Expenses */}
-            <tr className="border-b border-[var(--az-border)]">
-              <td colSpan={3} className="py-2 px-4 text-xs font-bold uppercase tracking-wider text-[var(--az-text-muted)] bg-[var(--az-surface)]/50">Operating Expenses</td>
+            <tr className="border-b border-[var(--f-line)]">
+              <td colSpan={3} className="py-2 px-4 text-xs font-bold uppercase tracking-wider text-[var(--f-text-3)] bg-[var(--f-surface)]/50">Operating Expenses</td>
             </tr>
             {opexLines.length > 0 ? (
               opexLines.map((l, i) => (
-                <tr key={i} className="border-b border-[var(--az-border)]/50">
-                  <td className="py-2 px-4 text-[var(--az-text-muted)] pl-8">{l.label || l.category || '—'}</td>
-                  <td className="py-2 px-4 text-right text-[var(--az-text)]">({fmtUsd(l.amount ?? l.value ?? 0)})</td>
-                  <td className="py-2 px-4 text-right text-[var(--az-text-muted)]">({fmtUsd(l.priorAmount ?? l.prior ?? 0)})</td>
+                <tr key={i} className="border-b border-[var(--f-line)]/50">
+                  <td className="py-2 px-4 text-[var(--f-text-3)] pl-8">{l.label || l.category || '—'}</td>
+                  <td className="py-2 px-4 text-right text-[var(--f-text)]">({fmtUsd(l.amount ?? l.value ?? 0)})</td>
+                  <td className="py-2 px-4 text-right text-[var(--f-text-3)]">({fmtUsd(l.priorAmount ?? l.prior ?? 0)})</td>
                 </tr>
               ))
             ) : (
-              <tr className="border-b border-[var(--az-border)]/50">
-                <td className="py-2 px-4 text-[var(--az-text-muted)] pl-8 italic">No operating expenses recorded</td>
+              <tr className="border-b border-[var(--f-line)]/50">
+                <td className="py-2 px-4 text-[var(--f-text-3)] pl-8 italic">No operating expenses recorded</td>
                 <td colSpan={2} />
               </tr>
             )}
-            <tr className="border-b-2 border-[var(--az-border)]">
-              <td className="py-2 px-4 font-semibold text-[var(--az-text)]">Total OpEx</td>
-              <td className="py-2 px-4 text-right font-bold text-[var(--az-danger)]">({fmtUsd(totalOpex)})</td>
-              <td className="py-2 px-4 text-right font-semibold text-[var(--az-text-muted)]">({fmtUsd(data?.priorOpex ?? 0)})</td>
+            <tr className="border-b-2 border-[var(--f-line)]">
+              <td className="py-2 px-4 font-semibold text-[var(--f-text)]">Total OpEx</td>
+              <td className="py-2 px-4 text-right font-bold text-[var(--f-bad)]">({fmtUsd(totalOpex)})</td>
+              <td className="py-2 px-4 text-right font-semibold text-[var(--f-text-3)]">({fmtUsd(data?.priorOpex ?? 0)})</td>
             </tr>
 
             {/* Net Profit */}
-            <tr className="bg-[var(--az-accent)]/10">
-              <td className="py-3 px-4 font-bold text-[var(--az-text)]">Net Profit</td>
-              <td className={`py-3 px-4 text-right font-bold ${netProfit >= 0 ? 'text-[var(--az-success)]' : 'text-[var(--az-danger)]'}`}>
+            <tr className="bg-[var(--f-tint-color)]/10">
+              <td className="py-3 px-4 font-bold text-[var(--f-text)]">Net Profit</td>
+              <td className={`py-3 px-4 text-right font-bold ${netProfit >= 0 ? 'text-[var(--f-ok)]' : 'text-[var(--f-bad)]'}`}>
                 {netProfit >= 0 ? fmtUsd(netProfit) : `(${fmtUsd(Math.abs(netProfit))})`}
               </td>
-              <td className="py-3 px-4 text-right font-semibold text-[var(--az-text-muted)]">{fmtUsd(data?.priorNetProfit ?? 0)}</td>
+              <td className="py-3 px-4 text-right font-semibold text-[var(--f-text-3)]">{fmtUsd(data?.priorNetProfit ?? 0)}</td>
             </tr>
           </tbody>
         </table>
@@ -530,7 +530,7 @@ function ExpensesTab({ canManage }) {
       {/* Expense List */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-[var(--az-text)]">Expense Ledger</h2>
+          <h2 className="text-lg font-bold text-[var(--f-text)]">Expense Ledger</h2>
           {canManage && (
             <Button size="sm" onClick={() => setShowEntryModal(true)}>
               <Plus className="w-4 h-4 mr-2" />
@@ -545,8 +545,8 @@ function ExpensesTab({ canManage }) {
             onClick={() => setFilter('ALL')}
             className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
               filter === 'ALL'
-                ? 'bg-[var(--az-accent)] text-[var(--az-text)]'
-                : 'bg-[var(--az-surface)] text-[var(--az-text-muted)] border border-[var(--az-border)] hover:text-[var(--az-text)]'
+                ? 'bg-[var(--f-tint-color)] text-[var(--f-text)]'
+                : 'bg-[var(--f-surface)] text-[var(--f-text-3)] border border-[var(--f-line)]:text-[var(--f-text)]'
             }`}
           >
             All Sources
@@ -557,8 +557,8 @@ function ExpensesTab({ canManage }) {
               onClick={() => setFilter(key)}
               className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
                 filter === key
-                  ? 'text-[var(--az-text)]'
-                  : 'bg-[var(--az-surface)] text-[var(--az-text-muted)] border border-[var(--az-border)] hover:text-[var(--az-text)]'
+                  ? 'text-[var(--f-text)]'
+                  : 'bg-[var(--f-surface)] text-[var(--f-text-3)] border border-[var(--f-line)]:text-[var(--f-text)]'
               }`}
               style={filter === key ? { background: b.color } : {}}
             >
@@ -569,33 +569,33 @@ function ExpensesTab({ canManage }) {
 
         {/* Expense Table */}
         {filteredExpenses.length === 0 ? (
-          <Empty icon={Wallet} title="No expenses found" description="Add a manual entry or adjust your filters." />
+          <EmptyState icon={Wallet} title="No expenses found" description="Add a manual entry or adjust your filters." />
         ) : (
           <Card className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[var(--az-border)]">
-                  <th className="text-left py-3 px-4 font-semibold text-[var(--az-text-muted)]">Date</th>
-                  <th className="text-left py-3 px-4 font-semibold text-[var(--az-text-muted)]">Category</th>
-                  <th className="text-left py-3 px-4 font-semibold text-[var(--az-text-muted)]">Source</th>
-                  <th className="text-left py-3 px-4 font-semibold text-[var(--az-text-muted)]">Description</th>
-                  <th className="text-right py-3 px-4 font-semibold text-[var(--az-text-muted)]">Amount</th>
+                <tr className="border-b border-[var(--f-line)]">
+                  <th className="text-left py-3 px-4 font-semibold text-[var(--f-text-3)]">Date</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[var(--f-text-3)]">Category</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[var(--f-text-3)]">Source</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[var(--f-text-3)]">Description</th>
+                  <th className="text-right py-3 px-4 font-semibold text-[var(--f-text-3)]">Amount</th>
                   {canManage && <th className="w-10" />}
                 </tr>
               </thead>
               <tbody>
                 {filteredExpenses.slice(0, 100).map((e, i) => {
                   const src = e.sourceType || e.source || 'MANUAL';
-                  const badge = SOURCE_BADGES[src] || { color: 'var(--az-text-muted)', label: src };
+                  const badge = SOURCE_BADGES[src] || { color: 'var(--f-text-3)', label: src };
                   return (
-                    <tr key={e.id || i} className="border-b border-[var(--az-border)]/50 hover:bg-[var(--az-surface)]/50">
-                      <td className="py-2.5 px-4 text-[var(--az-text-muted)]">{fmtDate(e.createdAt || e.date)}</td>
-                      <td className="py-2.5 px-4 text-[var(--az-text)]">{e.category || '—'}</td>
+                    <tr key={e.id || i} className="border-b border-[var(--f-line)]/50:bg-[var(--f-surface)]/50">
+                      <td className="py-2.5 px-4 text-[var(--f-text-3)]">{fmtDate(e.createdAt || e.date)}</td>
+                      <td className="py-2.5 px-4 text-[var(--f-text)]">{e.category || '—'}</td>
                       <td className="py-2.5 px-4">
-                        <Badge color={badge.color}>{badge.label}</Badge>
+                        <Tag color={badge.color}>{badge.label}</Tag>
                       </td>
-                      <td className="py-2.5 px-4 text-[var(--az-text-muted)] max-w-xs truncate">{e.description || e.note || '—'}</td>
-                      <td className="py-2.5 px-4 text-right font-medium text-[var(--az-danger)]">
+                      <td className="py-2.5 px-4 text-[var(--f-text-3)] max-w-xs truncate">{e.description || e.note || '—'}</td>
+                      <td className="py-2.5 px-4 text-right font-medium text-[var(--f-bad)]">
                         ({fmtUsd(e.amount ?? e.value ?? 0)})
                       </td>
                       {canManage && (
@@ -603,7 +603,7 @@ function ExpensesTab({ canManage }) {
                           {src === 'MANUAL' && (
                             <button
                               onClick={() => handleDeleteEntry(e.id)}
-                              className="text-[var(--az-text-muted)] hover:text-[var(--az-danger)] transition-colors"
+                              className="text-[var(--f-text-3)]:text-[var(--f-bad)] transition-colors"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -623,8 +623,8 @@ function ExpensesTab({ canManage }) {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Repeat className="w-5 h-5 text-[var(--az-text-muted)]" />
-            <h2 className="text-lg font-bold text-[var(--az-text)]">Recurring Expenses</h2>
+            <Repeat className="w-5 h-5 text-[var(--f-text-3)]" />
+            <h2 className="text-lg font-bold text-[var(--f-text)]">Recurring Expenses</h2>
           </div>
           {canManage && (
             <Button size="sm" variant="secondary" onClick={() => setShowRecurringModal(true)}>
@@ -635,7 +635,7 @@ function ExpensesTab({ canManage }) {
         </div>
 
         {recurring.length === 0 ? (
-          <Empty icon={Repeat} title="No recurring templates" description="Automate monthly expenses like rent or subscriptions." />
+          <EmptyState icon={Repeat} title="No recurring templates" description="Automate monthly expenses like rent or subscriptions." />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {recurring.map((r, i) => (
@@ -643,19 +643,19 @@ function ExpensesTab({ canManage }) {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-[var(--az-text)]">{r.name}</h3>
-                      <Badge color={r.isActive ? 'var(--az-success)' : 'var(--az-text-muted)'} bg={r.isActive ? 'var(--az-success)' : undefined}>
+                      <h3 className="font-semibold text-[var(--f-text)]">{r.name}</h3>
+                      <Tag color={r.isActive ? 'var(--f-ok)' : 'var(--f-text-3)'} bg={r.isActive ? 'var(--f-ok)' : undefined}>
                         {r.isActive ? 'Active' : 'Paused'}
-                      </Badge>
+                      </Tag>
                     </div>
-                    <p className="text-sm text-[var(--az-text-muted)] mt-1">
+                    <p className="text-sm text-[var(--f-text-3)] mt-1">
                       {fmtUsd(r.amount)} · {r.frequency?.toLowerCase() || 'monthly'} · {r.category}
                     </p>
                     {r.description && (
-                      <p className="text-xs text-[var(--az-text-muted)] mt-2">{r.description}</p>
+                      <p className="text-xs text-[var(--f-text-3)] mt-2">{r.description}</p>
                     )}
                     {r.nextDueAt && (
-                      <p className="text-xs text-[var(--az-text-muted)] mt-1">
+                      <p className="text-xs text-[var(--f-text-3)] mt-1">
                         <Clock className="w-3 h-3 inline mr-1" />
                         Next due: {fmtDate(r.nextDueAt)}
                       </p>
@@ -666,7 +666,7 @@ function ExpensesTab({ canManage }) {
                       <Switch checked={r.isActive} onChange={() => handleToggleRecurring(r)} />
                       <button
                         onClick={() => handleDeleteRecurring(r.id)}
-                        className="text-[var(--az-text-muted)] hover:text-[var(--az-danger)] transition-colors"
+                        className="text-[var(--f-text-3)]:text-[var(--f-bad)] transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -751,7 +751,7 @@ function ManualEntryModal({ onClose, onSubmit }) {
         />
         <div className="flex gap-3 justify-end pt-2">
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button type="submit" loading={submitting}>Add Entry</Button>
+          <Button type="submit">Add Entry</Button>
         </div>
       </form>
     </Modal>
@@ -830,7 +830,7 @@ function RecurringModal({ onClose, onSubmit }) {
         />
         <div className="flex gap-3 justify-end pt-2">
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
-          <Button type="submit" loading={submitting}>Create Template</Button>
+          <Button type="submit">Create Template</Button>
         </div>
       </form>
     </Modal>
@@ -869,8 +869,8 @@ function PayrollTab() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-bold text-[var(--az-text)]">Payroll Financial Position</h2>
-        <p className="text-sm text-[var(--az-text-muted)] mt-1">
+        <h2 className="text-lg font-bold text-[var(--f-text)]">Payroll Financial Position</h2>
+        <p className="text-sm text-[var(--f-text-3)] mt-1">
           Financial view of payroll liability vs. what's been disbursed. For running payroll, go to the Payroll page.
         </p>
       </div>
@@ -878,73 +878,73 @@ function PayrollTab() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-5">
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 rounded-lg bg-az-warning/10">
-              <Clock className="w-5 h-5 text-az-warning" />
+            <div className="p-2 rounded-lg bg-warn/10">
+              <Clock className="w-5 h-5 text-warn" />
             </div>
-            <span className="text-sm font-medium text-[var(--az-text-muted)]">Pending</span>
+            <span className="text-sm font-medium text-[var(--f-text-3)]">Pending</span>
           </div>
-          <p className="text-2xl font-bold text-[var(--az-text)]">{fmtUsd(pending)}</p>
-          <p className="text-xs text-[var(--az-text-muted)] mt-1">Awaiting approval</p>
+          <p className="text-2xl font-bold text-[var(--f-text)]">{fmtUsd(pending)}</p>
+          <p className="text-xs text-[var(--f-text-3)] mt-1">Awaiting approval</p>
         </Card>
 
         <Card className="p-5">
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 rounded-lg bg-[var(--az-info)]/10">
-              <CheckCircle2 className="w-5 h-5 text-[var(--az-info)]" />
+            <div className="p-2 rounded-lg bg-[var(--f-info)]/10">
+              <CheckCircle2 className="w-5 h-5 text-[var(--f-info)]" />
             </div>
-            <span className="text-sm font-medium text-[var(--az-text-muted)]">Approved</span>
+            <span className="text-sm font-medium text-[var(--f-text-3)]">Approved</span>
           </div>
-          <p className="text-2xl font-bold text-[var(--az-text)]">{fmtUsd(approved)}</p>
-          <p className="text-xs text-[var(--az-text-muted)] mt-1">Ready for disbursement</p>
+          <p className="text-2xl font-bold text-[var(--f-text)]">{fmtUsd(approved)}</p>
+          <p className="text-xs text-[var(--f-text-3)] mt-1">Ready for disbursement</p>
         </Card>
 
         <Card className="p-5">
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 rounded-lg bg-[var(--az-success)]/10">
-              <DollarSign className="w-5 h-5 text-[var(--az-success)]" />
+            <div className="p-2 rounded-lg bg-[var(--f-ok)]/10">
+              <DollarSign className="w-5 h-5 text-[var(--f-ok)]" />
             </div>
-            <span className="text-sm font-medium text-[var(--az-text-muted)]">Disbursed</span>
+            <span className="text-sm font-medium text-[var(--f-text-3)]">Disbursed</span>
           </div>
-          <p className="text-2xl font-bold text-[var(--az-text)]">{fmtUsd(disbursed)}</p>
-          <p className="text-xs text-[var(--az-text-muted)] mt-1">Paid this period</p>
+          <p className="text-2xl font-bold text-[var(--f-text)]">{fmtUsd(disbursed)}</p>
+          <p className="text-xs text-[var(--f-text-3)] mt-1">Paid this period</p>
         </Card>
 
         <Card className="p-5">
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 rounded-lg bg-[var(--az-accent)]/10">
-              <PiggyBank className="w-5 h-5 text-[var(--az-accent)]" />
+            <div className="p-2 rounded-lg bg-[var(--f-tint-color)]/10">
+              <PiggyBank className="w-5 h-5 text-[var(--f-tint-color)]" />
             </div>
-            <span className="text-sm font-medium text-[var(--az-text-muted)]">EWA Float</span>
+            <span className="text-sm font-medium text-[var(--f-text-3)]">EWA Float</span>
           </div>
-          <p className="text-2xl font-bold text-[var(--az-text)]">{fmtUsd(ewaFloat)}</p>
-          <p className="text-xs text-[var(--az-text-muted)] mt-1">Early wage outstanding</p>
+          <p className="text-2xl font-bold text-[var(--f-text)]">{fmtUsd(ewaFloat)}</p>
+          <p className="text-xs text-[var(--f-text-3)] mt-1">Early wage outstanding</p>
         </Card>
       </div>
 
       {/* Disbursement History */}
       {data?.disbursementHistory?.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-bold text-[var(--az-text)]">Disbursement History</h3>
+          <h3 className="text-sm font-bold text-[var(--f-text)]">Disbursement History</h3>
           <Card className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[var(--az-border)]">
-                  <th className="text-left py-3 px-4 font-semibold text-[var(--az-text-muted)]">Date</th>
-                  <th className="text-left py-3 px-4 font-semibold text-[var(--az-text-muted)]">Recipients</th>
-                  <th className="text-right py-3 px-4 font-semibold text-[var(--az-text-muted)]">Amount</th>
-                  <th className="text-left py-3 px-4 font-semibold text-[var(--az-text-muted)]">Status</th>
+                <tr className="border-b border-[var(--f-line)]">
+                  <th className="text-left py-3 px-4 font-semibold text-[var(--f-text-3)]">Date</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[var(--f-text-3)]">Recipients</th>
+                  <th className="text-right py-3 px-4 font-semibold text-[var(--f-text-3)]">Amount</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[var(--f-text-3)]">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {data.disbursementHistory.map((d, i) => (
-                  <tr key={d.id || i} className="border-b border-[var(--az-border)]/50">
-                    <td className="py-2.5 px-4 text-[var(--az-text-muted)]">{fmtDate(d.date || d.createdAt)}</td>
-                    <td className="py-2.5 px-4 text-[var(--az-text)]">{d.recipientCount ?? d.count ?? '—'}</td>
-                    <td className="py-2.5 px-4 text-right font-medium text-[var(--az-text)]">{fmtUsd(d.amount ?? d.total ?? 0)}</td>
+                  <tr key={d.id || i} className="border-b border-[var(--f-line)]/50">
+                    <td className="py-2.5 px-4 text-[var(--f-text-3)]">{fmtDate(d.date || d.createdAt)}</td>
+                    <td className="py-2.5 px-4 text-[var(--f-text)]">{d.recipientCount ?? d.count ?? '—'}</td>
+                    <td className="py-2.5 px-4 text-right font-medium text-[var(--f-text)]">{fmtUsd(d.amount ?? d.total ?? 0)}</td>
                     <td className="py-2.5 px-4">
-                      <Badge color={d.status === 'COMPLETED' ? 'var(--az-success)' : d.status === 'FAILED' ? 'var(--az-danger)' : 'var(--az-warning)'}>
+                      <Tag color={d.status === 'COMPLETED' ? 'var(--f-ok)' : d.status === 'FAILED' ? 'var(--f-bad)' : 'var(--f-warn)'}>
                         {d.status || 'PENDING'}
-                      </Badge>
+                      </Tag>
                     </td>
                   </tr>
                 ))}
@@ -1036,8 +1036,8 @@ function PayoutTab({ canManage }) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-bold text-[var(--az-text)]">Payout Destination Settings</h2>
-          <p className="text-sm text-[var(--az-text-muted)] mt-1">
+          <h2 className="text-lg font-bold text-[var(--f-text)]">Payout Destination Settings</h2>
+          <p className="text-sm text-[var(--f-text-3)] mt-1">
             Manage where your business receives its funds. Changes require owner re-authentication.
           </p>
         </div>
@@ -1049,11 +1049,11 @@ function PayoutTab({ canManage }) {
       </div>
 
       {/* Security Warning */}
-      <div className="flex items-center gap-3 p-4 rounded-xl border border-az-warning bg-az-warning/10">
-        <Shield className="w-5 h-5 text-az-warning flex-shrink-0" />
+      <div className="flex items-center gap-3 p-4 rounded-xl border border-warn bg-warn/10">
+        <Shield className="w-5 h-5 text-warn flex-shrink-0" />
         <div>
-          <p className="text-sm font-medium text-[var(--az-text)]">High-value security action</p>
-          <p className="text-xs text-[var(--az-text-muted)] mt-0.5">
+          <p className="text-sm font-medium text-[var(--f-text)]">High-value security action</p>
+          <p className="text-xs text-[var(--f-text-3)] mt-0.5">
             Only the business owner can add or change payout destinations. All changes are audit-logged.
           </p>
         </div>
@@ -1096,7 +1096,7 @@ function PayoutTab({ canManage }) {
       {/* Destinations List */}
       {loading ? (
         <Card className="p-8 text-center">
-          <Skeleton className="h-16 w-full" />
+          <Skel className="h-16 w-full" />
         </Card>
       ) : destinations.length === 0 ? (
         <Empty
@@ -1109,17 +1109,17 @@ function PayoutTab({ canManage }) {
           {destinations.map(dest => (
             <Card key={dest.id} className="p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-az-accent/10">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-tint/10">
                   {dest.isExternalCrypto
-                    ? <Wallet className="w-5 h-5 text-az-accent" />
-                    : <Building2 className="w-5 h-5 text-az-accent" />}
+                    ? <Wallet className="w-5 h-5 text-tint" />
+                    : <Building2 className="w-5 h-5 text-tint" />}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <p className="font-bold text-sm">{dest.nickname}</p>
-                    {dest.isDefault && <Badge variant="success" size="sm">Default</Badge>}
+                    {dest.isDefault && <Tag variant="success" size="sm">Default</Tag>}
                   </div>
-                  <p className="text-xs text-[var(--az-text-muted)] font-mono mt-0.5">
+                  <p className="text-xs text-[var(--f-text-3)] font-mono mt-0.5">
                     {dest.destinationType} • {dest.destinationAddress?.substring(0, 20)}{dest.destinationAddress?.length > 20 ? '...' : ''}
                   </p>
                 </div>
@@ -1132,7 +1132,7 @@ function PayoutTab({ canManage }) {
                     </Button>
                   )}
                   <Button variant="ghost" size="sm" onClick={() => handleDelete(dest.id)}>
-                    <Trash2 className="w-4 h-4 text-az-danger" />
+                    <Trash2 className="w-4 h-4 text-bad" />
                   </Button>
                 </div>
               )}
@@ -1150,27 +1150,27 @@ function DashboardSkeleton() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-32 rounded-2xl border border-[var(--az-border)] skeleton-sentry" />
+          <div key={i} className="h-32 rounded-2xl border border-[var(--f-line)] skeleton-sentry" />
         ))}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="h-64 rounded-2xl border border-[var(--az-border)] skeleton-sentry" />
-        <div className="h-64 rounded-2xl border border-[var(--az-border)] skeleton-sentry" />
+        <div className="h-64 rounded-2xl border border-[var(--f-line)] skeleton-sentry" />
+        <div className="h-64 rounded-2xl border border-[var(--f-line)] skeleton-sentry" />
       </div>
     </div>
   );
 }
 
 function PnLSkeleton() {
-  return <div className="h-96 rounded-2xl border border-[var(--az-border)] skeleton-sentry" />;
+  return <div className="h-96 rounded-2xl border border-[var(--f-line)] skeleton-sentry" />;
 }
 
 function ExpensesSkeleton() {
   return (
     <div className="space-y-4">
       <div className="h-10 w-48 rounded-lg skeleton-sentry" />
-      <div className="h-64 rounded-2xl border border-[var(--az-border)] skeleton-sentry" />
-      <div className="h-32 rounded-2xl border border-[var(--az-border)] skeleton-sentry" />
+      <div className="h-64 rounded-2xl border border-[var(--f-line)] skeleton-sentry" />
+      <div className="h-32 rounded-2xl border border-[var(--f-line)] skeleton-sentry" />
     </div>
   );
 }
@@ -1179,7 +1179,7 @@ function PayrollSkeleton() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {[...Array(4)].map((_, i) => (
-        <div key={i} className="h-28 rounded-2xl border border-[var(--az-border)] skeleton-sentry" />
+        <div key={i} className="h-28 rounded-2xl border border-[var(--f-line)] skeleton-sentry" />
       ))}
     </div>
   );
@@ -1189,8 +1189,8 @@ function PayrollSkeleton() {
 function ErrorState({ message, onRetry }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 space-y-4">
-      <AlertTriangle className="w-10 h-10 text-[var(--az-danger)]" />
-      <p className="text-sm text-[var(--az-text-muted)]">Failed to load: {message}</p>
+      <AlertTriangle className="w-10 h-10 text-[var(--f-bad)]" />
+      <p className="text-sm text-[var(--f-text-3)]">Failed to load: {message}</p>
       <Button variant="secondary" size="sm" onClick={onRetry}>
         <RefreshCw className="w-4 h-4 mr-2" />
         Retry

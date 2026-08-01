@@ -5,8 +5,7 @@ import { useToast } from '@/components/ui/Toast';
 import { request } from '@/lib/api';
 import { uploadImageToCloudinary } from '@/lib/cloudinary';
 import { PhonePreview } from '@/components/PhonePreview';
-import { GlassPanel } from '@/components/ui/GlassPanel';
-import { Card, Button, Badge, Skeleton, Empty, Input } from '@/components/ui';
+import { Card } from '@/components/forge';
 import {
   Image as ImageIcon,
   Smartphone,
@@ -230,9 +229,9 @@ export default function Showcase() {
   if (!canView) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[500px] text-center p-6">
-        <AlertTriangle className="w-12 h-12 text-[var(--az-danger)] mb-4" />
-        <h2 className="text-xl font-bold text-[var(--az-text)] mb-2">Access Denied</h2>
-        <p className="text-sm text-[var(--az-text-muted)] max-w-md">
+        <AlertTriangle className="w-12 h-12 text-[var(--f-bad)] mb-4" />
+        <h2 className="text-xl font-bold text-[var(--f-text)] mb-2">Access Denied</h2>
+        <p className="text-sm text-[var(--f-text-3)] max-w-md">
           You do not have permission to view the Showcase Editor. Please consult your administrator.
         </p>
       </div>
@@ -248,15 +247,15 @@ export default function Showcase() {
   };
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto text-[var(--az-text)]">
+    <div className="p-6 space-y-6 max-w-7xl mx-auto text-[var(--f-text)]">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-3">
-            <Smartphone className="w-6 h-6" style={{ color: 'var(--az-accent)' }} />
+            <Smartphone className="w-6 h-6" style={{ color: 'var(--f-tint-color)' }} />
             Digital Storefront Editor
           </h1>
-          <p className="text-sm text-[var(--az-text-muted)] mt-1">
+          <p className="text-sm text-[var(--f-text-3)] mt-1">
             Build high-conversion landing pages for the Azaman customer app. Upload slides, pin signature products, and highlight certificates.
           </p>
         </div>
@@ -309,53 +308,53 @@ export default function Showcase() {
         {/* Editor Column */}
         <div className={showPhonePreview ? 'lg:col-span-7 space-y-6' : 'lg:col-span-12 space-y-6'}>
           {/* Section 1: Hero slideshow */}
-          <GlassPanel solid className="space-y-4 p-6">
+          <Card solid className="space-y-4 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-base font-bold flex items-center gap-2">
-                  <ImageIcon className="w-5 h-5" style={{ color: 'var(--az-accent)' }} /> Full-Bleed Profile Slideshow
+                  <ImageIcon className="w-5 h-5" style={{ color: 'var(--f-tint-color)' }} /> Full-Bleed Profile Slideshow
                 </h3>
-                <p className="text-xs text-[var(--az-text-muted)] mt-0.5">High-definition cover slides shown as full bleed on your profile.</p>
+                <p className="text-xs text-[var(--f-text-3)] mt-0.5">High-definition cover slides shown as full bleed on your profile.</p>
               </div>
-              <Badge>{slides.length} Photos</Badge>
+              <Tag>{slides.length} Photos</Tag>
             </div>
 
             {/* Upload area */}
-            <label className="flex flex-col items-center justify-center border-2 border-dashed border-az-border rounded-az-lg py-8 px-4 hover:border-az-accent cursor-pointer transition-all bg-az-bg-alt">
-              <Upload className="w-8 h-8 text-[var(--az-text-muted)] mb-2" />
-              <span className="text-sm font-semibold" style={{ color: 'var(--az-accent)' }}>
+            <label className="flex flex-col items-center justify-center border-2 border-dashed border-line rounded-lg py-8 px-4:border-tint cursor-pointer transition-all bg-surface-sunken">
+              <Upload className="w-8 h-8 text-[var(--f-text-3)] mb-2" />
+              <span className="text-sm font-semibold" style={{ color: 'var(--f-tint-color)' }}>
                 {uploading ? 'Processing & uploading slide...' : 'Upload Showcase Slide Image'}
               </span>
-              <p className="text-[10px] text-[var(--az-text-muted)] mt-1">Accepts high-resolution JPG, PNG, WebP up to 5MB.</p>
+              <p className="text-[10px] text-[var(--f-text-3)] mt-1">Accepts high-resolution JPG, PNG, WebP up to 5MB.</p>
               <input type="file" accept="image/*" className="hidden" onChange={handleUploadSlide} disabled={!canPublish} />
             </label>
 
             {/* Slides list */}
             {loading ? (
-              <Skeleton className="h-40 w-full" />
+              <Skel className="h-40 w-full" />
             ) : slides.length === 0 ? (
-              <Empty icon={ImageIcon} title="Your slideshow is empty" description="Upload images above to create a powerful hero slideshow carousel." />
+              <EmptyState icon={ImageIcon} title="Your slideshow is empty" description="Upload images above to create a powerful hero slideshow carousel." />
             ) : (
               <div className="space-y-2">
                 {slides.map((slide, idx) => (
-                  <div key={slide.id || idx} className="flex items-center gap-3 p-2.5 rounded-az-md border border-az-border bg-az-surface-solid hover:shadow-az-card transition-all">
-                    <img src={slide.mediaUrl} className="w-16 h-12 object-cover rounded-az-sm" alt="" />
+                  <div key={slide.id || idx} className="flex items-center gap-3 p-2.5 rounded-md border border-line bg-surface-raised:shadow-sm transition-all">
+                    <img src={slide.mediaUrl} className="w-16 h-12 object-cover rounded-sm" alt="" />
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold">Slide {idx + 1}</p>
-                      <p className="text-[10px] text-[var(--az-text-muted)] truncate">{slide.mediaUrl}</p>
+                      <p className="text-[10px] text-[var(--f-text-3)] truncate">{slide.mediaUrl}</p>
                     </div>
                     <div className="flex items-center gap-1">
                       <button onClick={() => handleMoveSlide(idx, -1)} disabled={idx === 0}
-                        className="p-1.5 rounded-az-sm text-[var(--az-text-muted)] hover:bg-az-bg-alt disabled:opacity-30">
+                        className="p-1.5 rounded-sm text-[var(--f-text-3)]:bg-surface-sunken disabled:opacity-30">
                         <ArrowUp className="w-4 h-4" />
                       </button>
                       <button onClick={() => handleMoveSlide(idx, 1)} disabled={idx === slides.length - 1}
-                        className="p-1.5 rounded-az-sm text-[var(--az-text-muted)] hover:bg-az-bg-alt disabled:opacity-30">
+                        className="p-1.5 rounded-sm text-[var(--f-text-3)]:bg-surface-sunken disabled:opacity-30">
                         <ArrowDown className="w-4 h-4" />
                       </button>
                       {canPublish && (
                         <button onClick={() => handleRemoveSlide(slide.id)}
-                          className="p-1.5 rounded-az-sm text-[var(--az-danger)] hover:bg-[var(--az-danger-subtle)]">
+                          className="p-1.5 rounded-sm text-[var(--f-bad)]:bg-[var(--az-danger-subtle)]">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       )}
@@ -364,15 +363,15 @@ export default function Showcase() {
                 ))}
               </div>
             )}
-          </GlassPanel>
+          </Card>
 
           {/* Section 2: Pinned Items */}
-          <GlassPanel solid className="space-y-4 p-6">
+          <Card solid className="space-y-4 p-6">
             <div>
               <h3 className="text-base font-bold flex items-center gap-2">
-                <Pin className="w-5 h-5" style={{ color: 'var(--az-info)' }} /> Signature Curated Items
+                <Pin className="w-5 h-5" style={{ color: 'var(--f-info)' }} /> Signature Curated Items
               </h3>
-              <p className="text-xs text-[var(--az-text-muted)] mt-0.5">Pin exclusive rooms, hot menu options, or freight cargo routes to the storefront top-shelf.</p>
+              <p className="text-xs text-[var(--f-text-3)] mt-0.5">Pin exclusive rooms, hot menu options, or freight cargo routes to the storefront top-shelf.</p>
             </div>
 
             <form onSubmit={handleAddPinItem} className="grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -382,7 +381,7 @@ export default function Showcase() {
                 onChange={(e) => setPinItemForm(prev => ({ ...prev, price: e.target.value }))} required />
               <select value={pinItemForm.category}
                 onChange={(e) => setPinItemForm(prev => ({ ...prev, category: e.target.value }))}
-                className="px-3 py-2 rounded-az-sm bg-az-surface-solid border border-az-border text-sm text-[var(--az-text)]">
+                className="px-3 py-2 rounded-sm bg-surface-raised border border-line text-sm text-[var(--f-text)]">
                 <option value="Product">Product SKU</option>
                 <option value="Room">Luxury Room</option>
                 <option value="Service">Booking Service</option>
@@ -392,29 +391,29 @@ export default function Showcase() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
               {curatedItems.map((item) => (
-                <div key={item.id} className="flex items-center justify-between p-3 rounded-az-md border border-az-border bg-az-surface-solid">
+                <div key={item.id} className="flex items-center justify-between p-3 rounded-md border border-line bg-surface-raised">
                   <div>
                     <div className="flex items-center gap-1.5">
                       <span className="text-xs font-semibold">{item.name}</span>
-                      <Badge>{item.category}</Badge>
+                      <Tag>{item.category}</Tag>
                     </div>
-                    <p className="text-xs text-[var(--az-text-muted)] mt-0.5">${item.price} USDC</p>
+                    <p className="text-xs text-[var(--f-text-3)] mt-0.5">${item.price} USDC</p>
                   </div>
-                  <Button variant="ghost" size="sm" className="text-[var(--az-danger)] p-1" onClick={() => handleRemovePinItem(item.id)}>
+                  <Button variant="ghost" size="sm" className="text-[var(--f-bad)] p-1" onClick={() => handleRemovePinItem(item.id)}>
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
               ))}
             </div>
-          </GlassPanel>
+          </Card>
 
           {/* Section 3: Highlights */}
-          <GlassPanel solid className="space-y-4 p-6">
+          <Card solid className="space-y-4 p-6">
             <div>
               <h3 className="text-base font-bold flex items-center gap-2">
-                <Award className="w-5 h-5" style={{ color: 'var(--az-warning)' }} /> Certifications & Trust Highlights
+                <Award className="w-5 h-5" style={{ color: 'var(--f-warn)' }} /> Certifications & Trust Highlights
               </h3>
-              <p className="text-xs text-[var(--az-text-muted)] mt-0.5">Exhibit Michelin badges, sustainable credentials, or verified transit safety awards.</p>
+              <p className="text-xs text-[var(--f-text-3)] mt-0.5">Exhibit Michelin badges, sustainable credentials, or verified transit safety awards.</p>
             </div>
 
             <form onSubmit={handleAddHighlight} className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -422,7 +421,7 @@ export default function Showcase() {
                 onChange={(e) => setHighlightForm(prev => ({ ...prev, title: e.target.value }))} required />
               <select value={highlightForm.badge}
                 onChange={(e) => setHighlightForm(prev => ({ ...prev, badge: e.target.value }))}
-                className="px-3 py-2 rounded-az-sm bg-az-surface-solid border border-az-border text-sm text-[var(--az-text)]">
+                className="px-3 py-2 rounded-sm bg-surface-raised border border-line text-sm text-[var(--f-text)]">
                 <option value="Award">Trust Award</option>
                 <option value="Certificate">Certificate</option>
                 <option value="Specialty">Specialty Badge</option>
@@ -432,17 +431,17 @@ export default function Showcase() {
 
             <div className="flex flex-wrap gap-2 mt-4">
               {highlights.map((h) => (
-                <div key={h.id} className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-az-border bg-az-surface-solid">
-                  <Award className="w-3.5 h-3.5" style={{ color: 'var(--az-warning)' }} />
+                <div key={h.id} className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-line bg-surface-raised">
+                  <Award className="w-3.5 h-3.5" style={{ color: 'var(--f-warn)' }} />
                   <span className="text-xs font-medium">{h.title}</span>
-                  <span className="text-[10px] text-[var(--az-text-muted)] uppercase">{h.badge}</span>
-                  <button onClick={() => handleRemoveHighlight(h.id)} className="ml-1 text-[var(--az-danger)] hover:opacity-70">
+                  <span className="text-[10px] text-[var(--f-text-3)] uppercase">{h.badge}</span>
+                  <button onClick={() => handleRemoveHighlight(h.id)} className="ml-1 text-[var(--f-bad)]:opacity-70">
                     <X className="w-3 h-3" />
                   </button>
                 </div>
               ))}
             </div>
-          </GlassPanel>
+          </Card>
         </div>
 
         {/* Phone Preview Column */}
@@ -450,13 +449,13 @@ export default function Showcase() {
           <div className="lg:col-span-5">
             <div className="sticky top-24">
               <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-[var(--az-text-secondary)]">Live Preview</h3>
-                <Badge>Real-time</Badge>
+                <h3 className="text-sm font-semibold text-[var(--f-text-2)]">Live Preview</h3>
+                <Tag>Real-time</Tag>
               </div>
               <div className="flex justify-center">
                 <PhonePreview business={previewBusinessObject} />
               </div>
-              <p className="text-xs text-[var(--az-text-muted)] text-center mt-4 max-w-xs mx-auto">
+              <p className="text-xs text-[var(--f-text-3)] text-center mt-4 max-w-xs mx-auto">
                 This is how customers see your storefront in the Azaman app. Changes appear instantly.
               </p>
             </div>
@@ -467,19 +466,19 @@ export default function Showcase() {
       {/* Version History Modal */}
       {showVersionModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.3)' }}>
-          <GlassPanel solid className="w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col" style={{ borderRadius: '20px' }}>
+          <Card solid className="w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col" style={{ borderRadius: '20px' }}>
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-az-border">
+            <div className="flex items-center justify-between p-6 border-b border-line">
               <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-10 h-10 rounded-az-sm" style={{ background: 'var(--az-accent-subtle)' }}>
-                  <History className="w-5 h-5" style={{ color: 'var(--az-accent)' }} />
+                <div className="flex items-center justify-center w-10 h-10 rounded-sm" style={{ background: 'var(--az-accent-subtle)' }}>
+                  <History className="w-5 h-5" style={{ color: 'var(--f-tint-color)' }} />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-[var(--az-text)]">Version History</h2>
-                  <p className="text-xs text-[var(--az-text-muted)]">Publish snapshots and revert to any saved version</p>
+                  <h2 className="text-lg font-bold text-[var(--f-text)]">Version History</h2>
+                  <p className="text-xs text-[var(--f-text-3)]">Publish snapshots and revert to any saved version</p>
                 </div>
               </div>
-              <button onClick={() => setShowVersionModal(false)} className="p-2 rounded-az-sm hover:bg-az-bg-alt text-[var(--az-text-muted)]">
+              <button onClick={() => setShowVersionModal(false)} className="p-2 rounded-sm:bg-surface-sunken text-[var(--f-text-3)]">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -488,38 +487,38 @@ export default function Showcase() {
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {versionsLoading ? (
                 <div className="space-y-3">
-                  {[1,2,3].map(i => <div key={i} className="h-20 rounded-az-md animate-pulse bg-az-bg-alt" />)}
+                  {[1,2,3].map(i => <div key={i} className="h-20 rounded-md animate-pulse bg-surface-sunken" />)}
                 </div>
               ) : versions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <GitCommit className="w-10 h-10 text-[var(--az-text-muted)] mb-3" />
-                  <p className="text-sm font-medium text-[var(--az-text-secondary)]">No published versions yet</p>
-                  <p className="text-xs text-[var(--az-text-muted)] mt-1">Click "Publish Version" to save a snapshot you can revert to later.</p>
+                  <GitCommit className="w-10 h-10 text-[var(--f-text-3)] mb-3" />
+                  <p className="text-sm font-medium text-[var(--f-text-2)]">No published versions yet</p>
+                  <p className="text-xs text-[var(--f-text-3)] mt-1">Click "Publish Version" to save a snapshot you can revert to later.</p>
                 </div>
               ) : (
                 versions.map((v, idx) => (
                   <div
                     key={v.id}
-                    className="flex items-start gap-3 p-4 rounded-az-md border border-az-border bg-az-surface-solid hover:shadow-az-card transition-shadow"
+                    className="flex items-start gap-3 p-4 rounded-md border border-line bg-surface-raised:shadow-sm transition-shadow"
                   >
                     {/* Version icon */}
                     <div className="flex flex-col items-center">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${idx === 0 ? 'text-[var(--az-text)]' : 'text-[var(--az-text-muted)]'}`}
-                        style={{ background: idx === 0 ? 'var(--az-accent)' : 'var(--az-bg-alt)' }}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${idx === 0 ? 'text-[var(--f-text)]' : 'text-[var(--f-text-3)]'}`}
+                        style={{ background: idx === 0 ? 'var(--f-tint-color)' : 'var(--az-bg-alt)' }}>
                         {idx === 0 ? <CheckCircle className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
                       </div>
-                      {idx < versions.length - 1 && <div className="w-0.5 h-8 bg-az-border mt-1" />}
+                      {idx < versions.length - 1 && <div className="w-0.5 h-8 bg-line mt-1" />}
                     </div>
 
                     {/* Version info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-[var(--az-text)]">
+                        <span className="text-sm font-semibold text-[var(--f-text)]">
                           {v.label || `Version ${versions.length - idx}`}
                         </span>
-                        {idx === 0 && <Badge>Latest</Badge>}
+                        {idx === 0 && <Tag>Latest</Tag>}
                       </div>
-                      <p className="text-xs text-[var(--az-text-muted)] mt-0.5">
+                      <p className="text-xs text-[var(--f-text-3)] mt-0.5">
                         {formatDate(v.createdAt)} · {v.slideCount} slides
                       </p>
 
@@ -528,8 +527,8 @@ export default function Showcase() {
                         <button
                           onClick={() => handleRevert(v.id)}
                           disabled={revertingId === v.id}
-                          className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-az-sm transition-colors"
-                          style={{ background: 'var(--az-accent-subtle)', color: 'var(--az-accent)' }}
+                          className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-sm transition-colors"
+                          style={{ background: 'var(--az-accent-subtle)', color: 'var(--f-tint-color)' }}
                         >
                           <RefreshCw className={`w-3 h-3 ${revertingId === v.id ? 'animate-spin' : ''}`} />
                           {revertingId === v.id ? 'Reverting...' : 'Revert to this version'}
@@ -542,12 +541,12 @@ export default function Showcase() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 border-t border-az-border bg-az-bg-alt">
-              <p className="text-xs text-[var(--az-text-muted)] text-center">
+            <div className="p-4 border-t border-line bg-surface-sunken">
+              <p className="text-xs text-[var(--f-text-3)] text-center">
                 Reverting replaces all current slides. A new version entry is created automatically.
               </p>
             </div>
-          </GlassPanel>
+          </Card>
         </div>
       )}
     </div>
