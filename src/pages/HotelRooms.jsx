@@ -11,7 +11,6 @@ import {
   StatCard,
   Avatar,
   Switch,
-  useToast
 } from '@/components/forge';
 
 import {
@@ -36,6 +35,7 @@ import {
 import { hotelOpsApi } from '@/lib/marketplaceApi';
 import { usePermission } from '@/hooks/usePermission';
 import { request } from '@/lib/apiCore'; // safe request fallback if we call new endpoints via fetch/apiCore
+import { toast } from 'sonner';
 
 // Status configuration metadata
 const STATUS_META = {
@@ -62,8 +62,7 @@ const ROOM_TYPES = [
 ];
 
 export default function HotelRooms() {
-  const { toast } = useToast();
-  const { hasPermission } = usePermission();
+    const { hasPermission } = usePermission();
   const canManage = hasPermission('inventory.manage');
 
   // Page level tabs: 'inventory' or 'rates'

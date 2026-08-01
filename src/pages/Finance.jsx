@@ -12,11 +12,11 @@ import { request } from '@/lib/apiCore';
 import { fmtUSDC, fmtUSDC as fmtUsd } from '@/lib/utils';
 import { usePermission } from '@/hooks/usePermission';
 import { useAuth } from '@/lib/AuthContext';
-import { useToast } from '@/components/forge';
 import {
   Card, Button, Badge, Input, Select, Modal, Empty, Skeleton, Switch
 } from '@/components/forge';
 import { KpiCard, DonutChartCard, AreaChartCard, BarChartCard } from '@/components/charts';
+import { toast } from 'sonner';
 
 const TABS = [
   { key: 'dashboard',   label: 'Dashboard',      icon: TrendingUp },
@@ -55,8 +55,7 @@ function fmtDate(d) {
 export default function Finance() {
   const { hasPermission } = usePermission();
   const { bizProfile } = useAuth();
-  const { toast } = useToast();
-  const [tab, setTab] = useState('dashboard');
+    const [tab, setTab] = useState('dashboard');
   const [range, setRange] = useState('30d');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -434,8 +433,7 @@ function PnLTab({ rangeDays }) {
 
 // ── Expenses & Ledger Tab ─────────────────────────────────────────────────
 function ExpensesTab({ canManage }) {
-  const { toast } = useToast();
-  const [expenses, setExpenses] = useState(null);
+    const [expenses, setExpenses] = useState(null);
   const [recurring, setRecurring] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -967,8 +965,7 @@ const PAYOUT_TYPES = [
 ];
 
 function PayoutTab({ canManage }) {
-  const { toast } = useToast();
-  const [destinations, setDestinations] = useState([]);
+    const [destinations, setDestinations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [submitting, setSubmitting] = useState(false);

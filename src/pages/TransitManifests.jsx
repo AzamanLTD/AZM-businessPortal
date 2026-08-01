@@ -5,11 +5,11 @@ import { useState, useEffect } from 'react';
 import { transitOpsApi, cargoApi } from '@/lib/marketplaceApi';
 import { Card, Button, Badge, Empty, Avatar, Sheet, Select } from '@/components/forge';
 import { Progress } from '@/components/forge';
-import { useToast } from '@/components/forge';
 import {
   Ticket, Users, DollarSign, QrCode, MapPin, Package, AlertTriangle,
   CheckCircle2, Clock, Plus, Truck, Scale, Phone, ArrowRight, RefreshCw,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const CARGO_STATUS_META = {
   PENDING:     { label: 'Pending',     color: 'var(--f-warn)',  dot: 'bg-amber-400' },
@@ -42,8 +42,7 @@ function useDepartureCountdown(departureAt) {
 }
 
 export default function TransitManifests() {
-  const { toast } = useToast();
-  const [trips, setTrips] = useState([]);
+    const [trips, setTrips] = useState([]);
   const [selectedTrip, setSelectedTrip] = useState(null);
   const [manifest, setManifest] = useState(null);
   const [cargo, setCargo] = useState([]);

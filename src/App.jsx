@@ -45,25 +45,15 @@ const StorefrontEditor = lazy(() => import('@/pages/StorefrontEditor'));
 const StorefrontAnalytics = lazy(() => import('@/pages/StorefrontAnalytics'));
 const POS = lazy(() => import('@/pages/POS'));
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from '@/lib/query-client';
 import { Toaster } from 'sonner';
 import { useEffect, useState } from 'react';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import ErrorBoundary, { SectionBoundary } from '@/components/ErrorBoundary';
-import { ToastProvider } from '@/components/forge';
-import { useToast } from '@/components/forge';
 import { ForgeLayout } from '@/components/forge/ForgeLayout';
 import { AppBackground } from '@/components/AppBackground';
 import { TypeGuardedRoute } from './components/TypeGuardedRoute';
-
-const qc = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 30_000,
-    },
-  },
-});
 
 function AppRoutes() {
   const { authed, loading, bizProfile, isAdmin } = useAuth();
@@ -72,8 +62,9 @@ function AppRoutes() {
     return (
       <div className="fixed inset-0 flex items-center justify-center" style={{ background: 'var(--f-bg)' }}>
         <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-2 border-az-border-strong border-t-az-accent rounded-full animate-spin" />
-          <p className="text-sm text-az-text-muted">Loading your portal...</p>
+          <div className="w-10 h-10 border-2 rounded-full animate-spin"
+               style={{ borderColor: 'var(--f-line)', borderTopColor: 'var(--f-tint-color)' }} />
+          <p className="text-sm" style={{ color: 'var(--f-text-3)' }}>Loading your portal...</p>
         </div>
       </div>
     );
@@ -162,8 +153,7 @@ export default function App() {
     <ErrorBoundary>
       <AppBackground />
       <AuthProvider>
-        <QueryClientProvider client={qc}>
-          <ToastProvider>
+        <QueryClientProvider client={queryClient}>
             <Router>
               <AppRoutes />
             </Router>
@@ -183,7 +173,6 @@ export default function App() {
                 },
               }}
             />
-          </ToastProvider>
         </QueryClientProvider>
       </AuthProvider>
     </ErrorBoundary>

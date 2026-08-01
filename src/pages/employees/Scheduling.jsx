@@ -2,11 +2,11 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { shiftApi, employeeApi } from '@/lib/marketplaceApi';
 import { usePermission } from '@/hooks/usePermission';
 import { Card, Button, Badge, Input, Select, Modal, Empty, Skeleton, Avatar, StatCard, Tabs } from '@/components/forge';
-import { useToast } from '@/components/forge';
 import {
   Calendar, Plus, ChevronLeft, ChevronRight, Clock, CheckCircle2, XCircle,
   Edit2, Trash2, Repeat, ArrowLeftRight, AlertCircle
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const STATUS_COLORS = {
   SCHEDULED: 'var(--f-tint-color)',
@@ -72,8 +72,7 @@ function shiftDuration(start, end) {
 const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 export default function Scheduling() {
-  const { toast } = useToast();
-  const { hasPermission } = usePermission();
+    const { hasPermission } = usePermission();
   const [tab, setTab] = useState(0);
   const [loading, setLoading] = useState(true);
   const [shifts, setShifts] = useState([]);

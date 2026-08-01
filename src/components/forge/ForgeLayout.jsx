@@ -1,6 +1,6 @@
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useMemo } from 'react';
-import { Shell, CommandPalette, TooltipProvider, ToastProvider as ForgeToast } from '@/components/forge';
+import { Shell, CommandPalette, TooltipProvider } from '@/components/forge';
 import { CommandProvider } from '@/lib/command';
 import { ThemeProvider } from '@/lib/theme';
 import { useAuth } from '@/lib/AuthContext';
@@ -18,7 +18,7 @@ export function ForgeLayout() {
     hasPermission,
     isOwner,
     counts: {
-      notifications: notifData?.unreadCount,
+      notifications: notifData?.count ?? notifData?.unreadCount,
       reservationsPending: notifData?.reservationsPending,
       ordersOpen: notifData?.ordersOpen,
       arrivalsToday: notifData?.arrivalsToday,
@@ -36,19 +36,17 @@ export function ForgeLayout() {
     <ThemeProvider>
       <CommandProvider>
         <TooltipProvider>
-          <ForgeToast>
-            <Shell
-              navProps={navProps}
-              brandName={bizProfile?.name || 'Azaman'}
-              brandShort={(bizProfile?.name || 'AZ').slice(0, 2).toUpperCase()}
-              user={user}
-              onLogout={logout}
-              onNavigateSettings={() => navigate('/settings')}
-            >
-              <Outlet />
-            </Shell>
-            <CommandPalette navProps={navProps} />
-          </ForgeToast>
+          <Shell
+            navProps={navProps}
+            brandName={bizProfile?.name || 'Azaman'}
+            brandShort={(bizProfile?.name || 'AZ').slice(0, 2).toUpperCase()}
+            user={user}
+            onLogout={logout}
+            onNavigateSettings={() => navigate('/settings')}
+          >
+            <Outlet />
+          </Shell>
+          <CommandPalette navProps={navProps} />
         </TooltipProvider>
       </CommandProvider>
     </ThemeProvider>

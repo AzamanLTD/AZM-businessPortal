@@ -2,7 +2,6 @@
 // Pre-designed storefront layouts per business type — businesses browse,
 // preview, and apply with one click.
 import { Card } from '@/components/forge';
-import { useToast } from '@/components/forge';
 import { LayoutTemplate, Check, Sparkles, Star, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { getWidgetDefaults } from '@/lib/businessTypes';
@@ -237,8 +236,7 @@ function generateTemplateLayout(template, widgets) {
 }
 
 function TemplateCard({ template, themes, widgets, onApply, isLocked }) {
-  const { toast } = useToast();
-  const theme = themes.find(t => t.key === template.themeKey);
+    const theme = themes.find(t => t.key === template.themeKey);
   const accent = theme?.tokenSet?.accent || '#6C4FD1';
   const bg = theme?.tokenSet?.background || '#F7F5F2';
   const locked = isLocked(template);

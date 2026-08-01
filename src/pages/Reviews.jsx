@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
-import { useToast } from '@/components/forge';
 import { request } from '@/lib/api';
 import { Card, Button, Badge, Skeleton, Empty, Tabs } from '@/components/forge';
 import { DonutChartCard, AreaChartCard } from '@/components/charts';
@@ -18,12 +17,12 @@ import {
   RefreshCw,
   Send
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function Reviews() {
   const { hasPermission } = usePermission();
   const { bizProfile } = useAuth();
-  const { toast } = useToast();
-
+  
   const businessId = bizProfile?.id;
 
   // Permissions Gating

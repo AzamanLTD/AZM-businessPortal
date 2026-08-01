@@ -1,11 +1,9 @@
 // src/components/storefront/NitroUpsellBanner.jsx
 import { Card } from '@/components/forge';
-import { useToast } from '@/components/forge';
 import { Zap, TrendingUp } from 'lucide-react';
 
 export default function NitroUpsellBanner({ eligibility, onStakeClick }) {
-  const { toast } = useToast();
-
+  
   if (!eligibility) return null;
   const staked = eligibility.stakedBalance ?? 0;
   const nextTier = staked < 500   ? { name: 'Bronze', needed: 500  - staked, min: 500 }

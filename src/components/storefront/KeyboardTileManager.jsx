@@ -100,7 +100,7 @@ export default function KeyboardTileManager({
   }, [handleKeyDown]);
 
   return (
-    <div ref={containerRef} className="outline-none focus:ring-2 focus:ring-az-accent/20 rounded-xl">
+    <div ref={containerRef} className="outline-none focus:ring-2 focus:ring-2 rounded-xl">
       {selectedTileId && (
         <div className="mb-3 px-3 py-2 rounded-xl text-xs flex items-center gap-2 flex-wrap"
           style={{ background: 'var(--f-surface-sunken)', color: 'var(--f-text-2)' }}>

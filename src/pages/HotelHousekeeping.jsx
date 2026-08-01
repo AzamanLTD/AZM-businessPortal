@@ -12,7 +12,6 @@ import {
   Avatar,
   StatCard
 } from '@/components/forge';
-import { useToast } from '@/components/forge';
 import { Switch } from '@/components/forge';
 import { usePermission } from '@/hooks/usePermission';
 import { request } from '@/lib/apiCore';
@@ -34,6 +33,7 @@ import {
   CheckSquare,
   Square
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const COLUMNS = [
   { key: 'PENDING', label: 'Pending', color: 'var(--f-text-3)', bg: 'rgba(154, 160, 172, 0.15)', icon: Sparkles },
@@ -115,8 +115,7 @@ function ElapsedTimer({ task }) {
 }
 
 export default function HotelHousekeeping() {
-  const { toast } = useToast();
-  const { hasPermission } = usePermission();
+    const { hasPermission } = usePermission();
 
   // Tasks and Employees State
   const [tasks, setTasks] = useState({

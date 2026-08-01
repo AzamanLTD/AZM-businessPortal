@@ -16,7 +16,6 @@ import {
   Tabs,
   Tooltip
 } from '@/components/forge';
-import { useToast } from '@/components/forge';
 import {
   LogIn,
   LogOut,
@@ -27,10 +26,10 @@ import {
   Move,
   Info
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function HotelFrontDesk() {
-  const { toast } = useToast();
-  const { hasPermission } = usePermission();
+    const { hasPermission } = usePermission();
 
   // Active Tab: 0 = Today's Operations, 1 = Room Rack
   const [activeTab, setActiveTab] = useState(0);

@@ -4,12 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { notifications as notifApi } from '@/lib/api';
 import { Card, Button, Badge, Skeleton, Empty } from '@/components/forge';
 import { useBizNotifications } from '@/hooks/useBizNotifications';
-import { useToast } from '@/components/forge';
 import { cn, relativeTime } from '@/lib/utils';
 import {
   Bell, CheckCheck, ShoppingBag, Wallet, AlertTriangle,
   CheckCircle2, XCircle, RotateCcw, ShieldCheck, CalendarCheck, Clock, Check, HelpCircle
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const FILTER_CHIPS = [
   { key: 'ALL', label: 'All' },
@@ -42,8 +42,7 @@ const TYPE_META = {
 export default function Notifications() {
   const qc = useQueryClient();
   const navigate = useNavigate();
-  const toast = useToast();
-  const [filter, setFilter] = useState('ALL');
+    const [filter, setFilter] = useState('ALL');
 
   // Activate Real-time notifications
   useBizNotifications();
@@ -74,10 +73,10 @@ export default function Notifications() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['biz-notifications'] });
       qc.invalidateQueries({ queryKey: ['biz-notifications-unread-count'] });
-      toast.show('Notification marked as read', 'success');
+      toast.success('Notification marked as read');
     },
     onError: () => {
-      toast.show('Failed to mark read', 'error');
+      toast.error('Failed to mark read');
     }
   });
 
@@ -87,10 +86,10 @@ export default function Notifications() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['biz-notifications'] });
       qc.invalidateQueries({ queryKey: ['biz-notifications-unread-count'] });
-      toast.show('All notifications marked as read', 'success');
+      toast.success('All notifications marked as read');
     },
     onError: () => {
-      toast.show('Failed to mark all read', 'error');
+      toast.error('Failed to mark all read');
     }
   });
 

@@ -32,13 +32,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoices as invoicesApi, locations as locApi } from '@/lib/api';
 import { bookingOpsApi } from '@/lib/marketplaceApi';
 import { Card, Badge, Button, Input, Textarea, Select, Empty, Skeleton, Modal, Tabs, Progress } from '@/components/forge';
-import { useToast } from '@/components/forge';
 // Widget replaced by KpiCard/Card
 import { fmtUSDC, fmt, formatDateTime, relativeTime, cn } from '@/lib/utils';
 import {
   Receipt, Plus, Search, X, Trash2, Eye, Send, Ban, Mail,
   User, MapPin, Star, AlertCircle, Loader2, ChevronDown, ChevronUp, Check, Repeat, RefreshCw, CalendarClock
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 // ── Invoice status display config ───────────────────────────────────────────
 const INVOICE_STATUS_META = {
@@ -55,8 +55,7 @@ const initials = (name) => (name || '?').trim().charAt(0).toUpperCase();
 export default function Invoices() {
   const qc = useQueryClient();
   const { bizProfile } = useAuth();
-  const { toast } = useToast();
-  const [tab, setTab] = useState('ALL');
+    const [tab, setTab] = useState('ALL');
   const [search, setSearch] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const [detailId, setDetailId] = useState(null);
@@ -523,8 +522,7 @@ export default function Invoices() {
 // Customer Lookup
 function CustomerLookup({ customer, onSelect, onClear }) {
   const [azamanId, setAzamanId] = useState('');
-  const { toast } = useToast();
-
+  
   const lookupMut = useMutation({
     mutationFn: (id) => invoicesApi.lookupCustomer(id),
     onSuccess: (res) => onSelect(res.customer),
@@ -585,8 +583,7 @@ const BLANK_LINE = { description: '', quantity: '1', unitPrice: '' };
 const BLANK_TAX  = { name: '', type: 'PERCENTAGE', value: '' };
 
 function CreateInvoiceModal({ onClose, onCreated }) {
-  const { toast } = useToast();
-  const [customer, setCustomer] = useState(null);
+    const [customer, setCustomer] = useState(null);
   const [lineItems, setLineItems] = useState([{ ...BLANK_LINE }]);
   const [taxLines, setTaxLines] = useState([]);
   const [locationId, setLocationId] = useState('');
@@ -1044,8 +1041,7 @@ function InvoiceDetailModal({ invoiceId, onClose, onSend, onVoid, sending }) {
 // Tax Presets Section Component
 function TaxPresetsSection() {
   const qc = useQueryClient();
-  const { toast } = useToast();
-  const [editingPreset, setEditingPreset] = useState(null); // stores { id, name, type, value, isDefault } or blank for new
+    const [editingPreset, setEditingPreset] = useState(null); // stores { id, name, type, value, isDefault } or blank for new
   const [showForm, setShowForm] = useState(false);
 
   // Form states
@@ -1237,8 +1233,7 @@ function TaxPresetsSection() {
 // Recurring Invoice Panel (Phase 3)
 function RecurringPanel() {
   const qc = useQueryClient();
-  const { toast } = useToast();
-
+  
   const { data: recurringData, isLoading } = useQuery({
     queryKey: ['recurring-invoices'],
     queryFn: () => bookingOpsApi.listRecurring(),

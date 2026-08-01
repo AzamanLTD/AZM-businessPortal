@@ -3,7 +3,6 @@
 // from the backend catalog and renders the appropriate input for each property.
 import { Card } from '@/components/forge';
 import { Badge } from '@/components/forge';
-import { useToast } from '@/components/forge';
 import { Trash2, Settings, Upload, Loader2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { storefrontApi } from '@/services/storefrontApi';
@@ -63,8 +62,7 @@ const FIELD_LABELS = {
 const UPLOADABLE_FIELDS = new Set(['mediaUrl', 'videoUrl', 'posterUrl']);
 
 function ConfigField({ fieldKey, schemaProp, value, onChange }) {
-  const { toast } = useToast();
-  const fileInputRef = useRef(null);
+    const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const label = FIELD_LABELS[fieldKey] || fieldKey.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
   const type = schemaProp?.type || 'string';

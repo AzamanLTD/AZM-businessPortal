@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { usePermission } from '@/hooks/usePermission';
 import { payrollApi, ewaApi, employeeApi } from '@/lib/marketplaceApi';
-import { useToast } from '@/components/forge';
 import {
   Card,
   Button,
@@ -28,11 +27,11 @@ import {
   ArrowUpCircle,
   Calendar
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function Payroll() {
   const { hasPermission } = usePermission();
-  const { toast } = useToast();
-
+  
   const canView = hasPermission('payroll.view');
   const canProcess = hasPermission('payroll.process');
   const canDisburse = hasPermission('payroll.disburse');

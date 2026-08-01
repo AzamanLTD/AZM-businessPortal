@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { cargoApi, transit as transitApi } from '@/lib/marketplaceApi';
 import { Card, Button, Badge, Skeleton, Empty, Modal, Input, Select } from '@/components/forge';
-import { useToast } from '@/components/forge';
 import { fmtUSDC, cn } from '@/lib/utils';
 import { Package, Plus, Clock, MapPin, AlertCircle, CheckCircle2, Truck, Link, Filter } from 'lucide-react';
+import { toast } from 'sonner';
 
 const STATUS_COLUMNS = [
   { key: 'PENDING', label: 'Pending', color: 'var(--f-text-3)' },
@@ -24,8 +24,7 @@ const NEXT_STATUS = {
 };
 
 export default function TransitCargo() {
-  const { toast } = useToast();
-  const [cargo, setCargo] = useState(null);
+    const [cargo, setCargo] = useState(null);
   const [trips, setTrips] = useState([]);
   const [filterTrip, setFilterTrip] = useState('');
   const [filterStatus, setFilterStatus] = useState('');

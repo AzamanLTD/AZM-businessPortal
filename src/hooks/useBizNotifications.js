@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getSocket } from '@/lib/socket';
+import { notifications as notifApi } from '@/lib/api';
 
 /**
  * Subscribes to real-time business notification events and keeps React Query
@@ -17,6 +18,9 @@ import { getSocket } from '@/lib/socket';
  *
  * Listeners are torn down on unmount (and re-bound if the socket instance
  * changes) so re-renders never stack duplicate handlers.
+ *
+ * Returns { data } where data contains the unread notification count,
+ * so the ForgeLayout sidebar badge can render correctly.
  */
 const ORDER_EVENTS = new Set([
   'NEW_ORDER', 'ORDER_FUNDED', 'ORDER_SATISFIED',
@@ -26,6 +30,14 @@ const ORDER_EVENTS = new Set([
 export function useBizNotifications() {
   const qc = useQueryClient();
   const socket = getSocket();
+
+  // Fetch unread notification count for sidebar badge
+  const { data } = useQuery({
+    queryKey: ['biz-notifications-count'],
+    queryFn: () => notifApi.unreadCount(),
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
 
   useEffect(() => {
     if (!socket) return;
@@ -52,4 +64,6 @@ export function useBizNotifications() {
       socket.off('biz_notifications_updated', refreshNotifs);
     };
   }, [qc, socket]);
+
+  return { data };
 }

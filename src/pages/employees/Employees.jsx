@@ -17,7 +17,6 @@ import {
   StatCard,
   Textarea
 } from '@/components/forge';
-import { useToast } from '@/components/forge';
 import { VirtualizedGrid } from '@/components/forge';
 import {
   Users,
@@ -36,6 +35,7 @@ import {
   CheckCircle2,
   Filter
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const ROLES = [
   { value: 'OWNER', label: 'Owner' },
@@ -70,8 +70,7 @@ const AVAILABLE_PERMISSIONS = [
 ];
 
 export default function Employees() {
-  const { toast } = useToast();
-  const { hasPermission } = usePermission();
+    const { hasPermission } = usePermission();
 
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);

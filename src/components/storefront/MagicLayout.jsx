@@ -2,7 +2,6 @@
 // One-click auto-layout generator — analyzes the business type and creates
 // an optimized storefront with the right widgets, order, defaults, and theme.
 import { Card } from '@/components/forge';
-import { useToast } from '@/components/forge';
 import { Sparkles, Wand2, Check, X } from 'lucide-react';
 import { useState } from 'react';
 import { getWidgetDefaults } from '@/lib/businessTypes';
@@ -200,8 +199,7 @@ export function generateMagicLayout(businessType, widgets, themes) {
 // ── Magic Layout Button + Confirmation Modal ──────────────────────────
 
 export default function MagicLayout({ businessType, widgets, themes, draft, onApply, disabled }) {
-  const { toast } = useToast();
-  const [showConfirm, setShowConfirm] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
   const [generated, setGenerated] = useState(null);
 
   const handleClick = () => {

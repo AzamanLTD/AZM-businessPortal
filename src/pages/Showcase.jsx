@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
-import { useToast } from '@/components/forge';
 import { request } from '@/lib/api';
 import { uploadImageToCloudinary } from '@/lib/cloudinary';
 import { PhonePreview } from '@/components/PhonePreview';
@@ -26,12 +25,12 @@ import {
   CheckCircle,
   Clock
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function Showcase() {
   const { hasPermission } = usePermission();
   const { bizProfile } = useAuth();
-  const { toast } = useToast();
-
+  
   const businessId = bizProfile?.id;
 
   const canView = hasPermission('marketing.view');

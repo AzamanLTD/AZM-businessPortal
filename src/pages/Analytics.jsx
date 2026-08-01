@@ -315,7 +315,7 @@ export default function Analytics() {
               <div className="space-y-2">{[1,2,3].map(i => <Sk key={i} className="h-10 w-full" />)}</div>
             ) : churnList.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-center">
-                <Users className="w-8 h-8 text-az-border mb-2" />
+                <Users className="w-8 h-8 text-[color:var(--f-text-3)] mb-2" />
                 <p className="text-sm text-ink-2">No churn risks detected</p>
                 <p className="text-xs text-ink-3 mt-1">Your regular customers are still active</p>
               </div>

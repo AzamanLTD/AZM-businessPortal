@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
-import { useToast } from '@/components/forge';
 import { request } from '@/lib/api';
 import { uploadImageToCloudinary } from '@/lib/cloudinary';
 import {
@@ -33,12 +32,12 @@ import {
   Clock,
   Sparkles
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function Marketing() {
   const { hasPermission } = usePermission();
   const { bizProfile } = useAuth();
-  const { toast } = useToast();
-
+  
   const businessId = bizProfile?.id;
 
   // View & Publish Gates

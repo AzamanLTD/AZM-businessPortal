@@ -15,7 +15,6 @@ import {
   Tabs, 
   Progress 
 } from '@/components/forge';
-import { useToast } from '@/components/forge';
 // Widget replaced by KpiCard/Card
 import { fmtUSDC, fmt, formatDateTime, relativeTime, cn } from '@/lib/utils';
 import { 
@@ -52,8 +51,7 @@ const RESERVATION_STATUS = {
 
 export default function Reservations() {
   const qc = useQueryClient();
-  const { toast } = useToast();
-
+  
   // View States
   const [activeTab, setActiveTab] = useState('list'); // 'list' or 'calendar'
   const [showSlotsPanel, setShowSlotsPanel] = useState(false);

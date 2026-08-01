@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { timeOffApi, feedbackApi, employeeApi } from '@/lib/marketplaceApi';
 import { usePermission } from '@/hooks/usePermission';
-import { useToast } from '@/components/forge';
 import {
   Card,
   Button,
@@ -31,6 +30,7 @@ import {
   ChevronDown,
   ChevronRight
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const TIME_OFF_TYPES = [
   { value: 'VACATION', label: 'Vacation' },
@@ -77,8 +77,7 @@ const STATUS_COLORS = {
 };
 
 export default function TimeOff() {
-  const { toast } = useToast();
-  const { hasPermission } = usePermission();
+    const { hasPermission } = usePermission();
 
   const canApproveTimeOff = hasPermission('shifts.approve_timeoff');
   const canGiveFeedback = hasPermission('feedback.give');
