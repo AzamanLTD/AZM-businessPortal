@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { Eye, EyeOff, AlertCircle, LogIn } from 'lucide-react';
 import { Button, Input } from '@/components/forge';
-// ParticleField removed in Forge purge
+import { ParticleField } from "@/components/forge/ParticleField";
 import { spring } from '@/lib/motion';
 
 export default function Login() {
@@ -164,7 +164,7 @@ export default function Login() {
               <motion.div
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={spring.snappy}
+                transition={spring.press}
                 className="flex items-center gap-2 p-3 rounded-xl"
                 style={{ background: 'var(--f-bad-bg)', border: '1px solid var(--f-bad-bg)' }}
               >
