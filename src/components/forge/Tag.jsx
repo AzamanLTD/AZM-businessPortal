@@ -40,7 +40,8 @@ export const STATUS = {
   LOW:['ok','Low risk'], MEDIUM:['warn','Medium risk'], HIGH:['bad','High risk'],
 };
 
-export function Tag({ status, tone, children, dot = true, className }) {
+export function Tag({ status, tone, variant, children, dot = true, className }) {
+  if (variant) tone = variant === 'success' ? 'ok' : variant === 'error' ? 'bad' : variant;
   const [t, label] = STATUS[status] ?? [tone ?? 'neutral', children ?? status];
   return (
     <span className={cn('f-tag', `f-tag--${tone ?? t}`, className)}>

@@ -95,6 +95,7 @@ export const invoices = {
   get:          (id)          => request(`/api/business/invoices/${id}`),
   create:       (data)        => request('/api/business/invoices', { method: 'POST', body: JSON.stringify(data) }),
   send:         (id)          => request(`/api/business/invoices/${id}/send`, { method: 'POST' }),
+  email:        (id, email)   => request(`/api/business/invoices/${id}/email`, { method: 'POST', body: JSON.stringify({ email }) }),
   void:         (id)          => request(`/api/business/invoices/${id}/void`, { method: 'POST' }),
   lookupCustomer: (azamanId)  => request(`/api/business/customers/lookup?azamanId=${encodeURIComponent(azamanId)}`),
 };

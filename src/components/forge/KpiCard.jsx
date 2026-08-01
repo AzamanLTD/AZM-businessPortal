@@ -21,7 +21,7 @@ function useCounter(value, format) {
 }
 
 export function KpiCard({ label, value, format = v => Math.round(v).toLocaleString(),
-                          delta, deltaLabel, polarity = 'normal', spark, onClick }) {
+                          delta, deltaLabel, polarity = 'normal', spark, onClick, icon: KpiIcon, deltaTone }) {
   const ref = useCounter(value, format);
   const dir = delta == null ? 'flat' : delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
   const Icon = dir === 'up' ? ArrowUp : dir === 'down' ? ArrowDown : Minus;
@@ -29,12 +29,12 @@ export function KpiCard({ label, value, format = v => Math.round(v).toLocaleStri
     <div className={cn('f-card f-kpi', onClick && 'cursor-pointer')}
          data-polarity={polarity === 'invert' ? 'invert' : undefined}
          onClick={onClick}>
-      <div className="f-kpi__k">{label}</div>
+      <div className="f-kpi__k">{KpiIcon ? <KpiIcon className="h-3 w-3 inline mr-1" /> : null}{label}</div>
       <div className="f-kpi__v" ref={ref}>
         {typeof value === 'number' ? format(value) : value}
       </div>
       {delta != null && (
-        <div className={`f-kpi__d f-kpi__d--${dir}`}>
+        <div className={`f-kpi__d f-kpi__d--${deltaTone || dir}`}>
           <Icon className="h-3 w-3" aria-hidden />
           {deltaLabel ?? `${Math.abs(delta)}%`}
         </div>

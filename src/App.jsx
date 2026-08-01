@@ -114,6 +114,10 @@ function AppRoutes() {
         <Route path="/guests" element={<TypeGuardedRoute types={['HOTEL', 'RESTAURANT']}>{<Guests />}</TypeGuardedRoute>} />
         <Route path="/marketing"            element={<Marketing />} />
         <Route path="/finance"              element={<FinanceV2 />} />
+        <Route path="/finance/pnl"          element={<FinanceV2 />} />
+        <Route path="/finance/expenses"     element={<FinanceV2 />} />
+        <Route path="/finance/payouts"      element={<FinanceV2 />} />
+        <Route path="/finance/disputes"     element={<FinanceV2 />} />
         <Route path="/seat-map"             element={<Navigate to="/transit" replace />} />
         <Route path="/showcase"             element={<Showcase />} />
         <Route path="/employees"            element={<Employees />} />

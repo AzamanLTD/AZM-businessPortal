@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 
 const VARIANT = {
   primary:'f-btn--primary', secondary:'', ghost:'f-btn--ghost', danger:'f-btn--danger',
+  outline:'f-btn--outline', destructive:'f-btn--danger',
 };
 const SIZE = { sm:'f-btn--sm', md:'', lg:'f-btn--lg' };
 

@@ -2,6 +2,7 @@
 // Module 07 — Finance, Ledger & Payouts
 // Full financial hub: Dashboard, P&L, Expenses & Ledger, Payroll Position, Payout Settings
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Wallet, TrendingUp, TrendingDown, DollarSign, Receipt, Download,
   Plus, Trash2, RefreshCw, AlertTriangle, Calendar, Building2, Repeat,
@@ -55,7 +56,10 @@ function fmtDate(d) {
 export default function Finance() {
   const { hasPermission } = usePermission();
   const { bizProfile } = useAuth();
-    const [tab, setTab] = useState('dashboard');
+    const location = useLocation();
+    const pathTab = location.pathname.split('/finance/')[1] || 'dashboard';
+    const tabFromUrl = pathTab === 'pnl' ? 'pnl' : pathTab === 'expenses' ? 'expenses' : pathTab === 'payouts' ? 'payout' : pathTab === 'disputes' ? 'expenses' : 'dashboard';
+    const [tab, setTab] = useState(tabFromUrl);
   const [range, setRange] = useState('30d');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
