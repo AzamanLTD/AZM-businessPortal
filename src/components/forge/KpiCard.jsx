@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { useEffect, useRef } from 'react';
 import { animate, useReducedMotion } from 'framer-motion';
 import { ArrowUp, ArrowDown, Minus } from 'lucide-react';

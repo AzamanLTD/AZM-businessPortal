@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 /**
  * Dashboard — Forge design system rebuild.
  * Title is "Command Center" — no greeting string.
