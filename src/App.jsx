@@ -51,7 +51,7 @@ import { useEffect, useState } from 'react';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import ErrorBoundary, { SectionBoundary } from '@/components/ErrorBoundary';
 import { ToastProvider } from '@/components/ui/Toast';
-import Layout from '@/components/layout/Layout';
+import { ForgeLayout } from '@/components/forge/ForgeLayout';
 import { AppBackground } from '@/components/AppBackground';
 import { TypeGuardedRoute } from './components/TypeGuardedRoute';
 
@@ -103,7 +103,7 @@ function AppRoutes() {
   return (
     <Suspense fallback={<div className="flex items-center justify-center h-screen" style={{ background: 'var(--az-bg)' }}><div className="animate-pulse text-sm" style={{ color: 'var(--az-text-muted)' }}>Loading…</div></div>}>
     <Routes>
-      <Route element={<Layout />}>
+      <Route element={<ForgeLayout />}>
         <Route path="/"               element={<Dashboard />} />
         <Route path="/orders"         element={<Orders />} />
         <Route path="/orders/:id"     element={<OrderDetail />} />
