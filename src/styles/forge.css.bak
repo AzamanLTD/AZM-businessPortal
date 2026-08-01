@@ -1,10 +1,6 @@
 /* ============================================================================
    FORGE — the only place in this repository where a colour may be defined.
    ============================================================================ */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 
 :root {
   /* ---------- neutral ink scale (the whole product) --------------------- */
