@@ -1,10 +1,53 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Menu, Search, Bell, Sun, Moon, ChevronDown,
 } from 'lucide-react';
 import { resolveNav } from '@/lib/nav';
+
+// Route → primary query key for hover prefetch
+const ROUTE_QUERIES = {
+  '/':                    ['biz', 'dashboard'],
+  '/notifications':       ['biz', 'notifications'],
+  '/messages':            ['biz', 'messages'],
+  '/hotel-front-desk':    ['biz', 'front-desk'],
+  '/checkin':             ['biz', 'checkin'],
+  '/hotel-housekeeping':  ['biz', 'housekeeping'],
+  '/hotel-rooms':         ['biz', 'rooms'],
+  '/restaurant-kitchen': ['biz', 'kitchen'],
+  '/restaurant-tables':  ['biz', 'tables'],
+  '/pos':                ['biz', 'pos'],
+  '/transit-fleet':      ['biz', 'fleet'],
+  '/transit':            ['biz', 'trips'],
+  '/transit-drivers':    ['biz', 'drivers'],
+  '/transit-cargo':      ['biz', 'cargo'],
+  '/reservations':       ['biz', 'reservations'],
+  '/orders':             ['biz', 'orders'],
+  '/invoices':           ['biz', 'invoices'],
+  '/restaurant-inventory': ['biz', 'inventory'],
+  '/retail-inventory':   ['biz', 'retail'],
+  '/finance':            ['biz', 'finance'],
+  '/finance/pnl':        ['biz', 'pnl'],
+  '/finance/payouts':    ['biz', 'payouts'],
+  '/finance/expenses':   ['biz', 'expenses'],
+  '/finance/disputes':   ['biz', 'finance-disputes'],
+  '/employees':          ['biz', 'employees'],
+  '/payroll':            ['biz', 'payroll'],
+  '/scheduling':        ['biz', 'scheduling'],
+  '/analytics':         ['biz', 'analytics'],
+  '/marketing':         ['biz', 'marketing'],
+  '/reviews':           ['biz', 'reviews'],
+  '/guests':            ['biz', 'guests'],
+  '/groups':            ['biz', 'groups'],
+  '/storefront':        ['biz', 'storefront'],
+  '/settings':          ['biz', 'settings'],
+  '/kyb':               ['biz', 'kyb'],
+  '/locations':         ['biz', 'locations'],
+  '/showcase':          ['biz', 'showcase'],
+};
+
 import { useTheme } from '@/lib/theme';
 import { useCommandPalette } from '@/lib/command';
 import { useSequence } from '@/lib/keys';
@@ -16,6 +59,7 @@ export function Shell({ children, navProps, brandName = 'Azaman', brandShort = '
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const nav = useMemo(() => resolveNav(navProps), [navProps]);
+  const qc = useQueryClient();
 
   // Close mobile drawer on route change
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
