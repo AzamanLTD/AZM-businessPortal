@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { locations } from '@/lib/api';
 import { reservations, bookingOpsApi } from '@/lib/marketplaceApi';
@@ -129,94 +130,86 @@ export default function Reservations() {
   const confirmMutation = useMutation({
     mutationFn: (id) => reservations.confirm(id),
     onSuccess: () => {
-      toast({ title: 'Success', description: 'Reservation confirmed', variant: 'success' });
+      toast.success('Reservation confirmed');
       qc.invalidateQueries(['reservations']);
       qc.invalidateQueries(['reservation-stats']);
     },
-    onError: (e) => toast({ title: 'Error', description: e.message || 'Action failed', variant: 'destructive' }),
+    onError: (e) => toast.error(e.message || 'Action failed'),
   });
 
   const cancelMutation = useMutation({
     mutationFn: ({ id, reason }) => reservations.cancel(id, reason),
     onSuccess: () => {
-      toast({ title: 'Success', description: 'Reservation cancelled', variant: 'success' });
+      toast.success('Reservation cancelled');
       setCancelReservation(null);
       setCancelReason('');
       qc.invalidateQueries(['reservations']);
       qc.invalidateQueries(['reservation-stats']);
     },
-    onError: (e) => toast({ title: 'Error', description: e.message || 'Action failed', variant: 'destructive' }),
+    onError: (e) => toast.error(e.message || 'Action failed'),
   });
 
   const checkInMutation = useMutation({
     mutationFn: (id) => reservations.checkIn(id),
     onSuccess: () => {
-      toast({ title: 'Success', description: 'Guest checked in successfully', variant: 'success' });
+      toast.success('Guest checked in successfully');
       qc.invalidateQueries(['reservations']);
       qc.invalidateQueries(['reservation-stats']);
     },
-    onError: (e) => toast({ title: 'Error', description: e.message || 'Action failed', variant: 'destructive' }),
+    onError: (e) => toast.error(e.message || 'Action failed'),
   });
 
   const checkOutMutation = useMutation({
     mutationFn: (id) => reservations.checkOut(id),
     onSuccess: () => {
-      toast({ title: 'Success', description: 'Guest checked out successfully', variant: 'success' });
+      toast.success('Guest checked out successfully');
       qc.invalidateQueries(['reservations']);
       qc.invalidateQueries(['reservation-stats']);
     },
-    onError: (e) => toast({ title: 'Error', description: e.message || 'Action failed', variant: 'destructive' }),
+    onError: (e) => toast.error(e.message || 'Action failed'),
   });
 
   const noShowMutation = useMutation({
     mutationFn: (id) => reservations.markNoShow(id),
     onSuccess: () => {
-      toast({ title: 'Success', description: 'Marked as No-Show. Penalties applied.', variant: 'success' });
+      toast.success('Marked as No-Show. Penalties applied.');
       setNoShowReservation(null);
       qc.invalidateQueries(['reservations']);
       qc.invalidateQueries(['reservation-stats']);
     },
-    onError: (e) => toast({ title: 'Error', description: e.message || 'Action failed', variant: 'destructive' }),
+    onError: (e) => toast.error(e.message || 'Action failed'),
   });
 
   const rescheduleMutation = useMutation({
     mutationFn: ({ id, data }) => bookingOpsApi.proposeReschedule(id, data),
     onSuccess: () => {
-      toast({ title: 'Success', description: 'Reschedule proposed to customer', variant: 'success' });
+      toast.success('Reschedule proposed to customer');
       setRescheduleReservation(null);
       setRescheduleDate('');
       setRescheduleNotes('');
       qc.invalidateQueries(['reservations']);
     },
-    onError: (e) => toast({ title: 'Error', description: e.message || 'Action failed', variant: 'destructive' }),
+    onError: (e) => toast.error(e.message || 'Action failed'),
   });
 
   const respondRescheduleMutation = useMutation({
     mutationFn: ({ id, accept }) => bookingOpsApi.respondReschedule(id, accept),
     onSuccess: (_, variables) => {
-      toast({ 
-        title: 'Success', 
-        description: variables.accept ? 'Reschedule proposal accepted' : 'Reschedule proposal rejected', 
-        variant: 'success' 
-      });
+      toast.success(variables.accept ? 'Reschedule proposal accepted' : 'Reschedule proposal rejected');
       qc.invalidateQueries(['reservations']);
       qc.invalidateQueries(['reservation-stats']);
     },
-    onError: (e) => toast({ title: 'Error', description: e.message || 'Action failed', variant: 'destructive' }),
+    onError: (e) => toast.error(e.message || 'Action failed'),
   });
 
   const overbookingMutation = useMutation({
     mutationFn: (allowed) => bookingOpsApi.setOverbooking(allowed),
     onSuccess: (data, allowed) => {
       setOverbookingAllowed(allowed);
-      toast({ 
-        title: 'Settings Updated', 
-        description: allowed ? 'Overbooking is now enabled' : 'Overbooking is now disabled', 
-        variant: 'success' 
-      });
+      toast.success(allowed ? 'Overbooking is now enabled' : 'Overbooking is now disabled');
       qc.invalidateQueries(['bookingDashboard']);
     },
-    onError: (e) => toast({ title: 'Error', description: e.message || 'Failed to update settings', variant: 'destructive' }),
+    onError: (e) => toast.error(e.message || 'Failed to update settings'),
   });
 
   // Filtered reservations logic

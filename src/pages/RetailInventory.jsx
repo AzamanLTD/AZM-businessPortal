@@ -37,6 +37,7 @@ import {
   FileText,
   ScanLine,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const TABS = [
   { key: 'overview', label: 'Overview', icon: Package },
@@ -176,7 +177,9 @@ function OverviewTab({ lowStockItems, loading }) {
       qc.invalidateQueries({ queryKey: ['retail'] });
       qc.invalidateQueries({ queryKey: ['products'] });
       setEditingId(null);
+      toast.success('Barcode updated');
     },
+    onError: (e) => toast.error(e.message || 'Failed to update barcode'),
   });
 
   const { data: productsData } = useQuery({
@@ -327,15 +330,18 @@ function SuppliersTab() {
   const { data, isLoading } = useQuery({ queryKey: ['retail', 'suppliers'], queryFn: retailApi.listSuppliers });
   const createMut = useMutation({
     mutationFn: retailApi.createSupplier,
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['retail'] }); setShowModal(false); resetForm(); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['retail'] }); setShowModal(false); resetForm(); toast.success('Supplier created'); },
+    onError: (e) => toast.error(e.message || 'Failed to create supplier'),
   });
   const updateMut = useMutation({
     mutationFn: ({ id, data }) => retailApi.updateSupplier(id, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['retail'] }); setShowModal(false); resetForm(); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['retail'] }); setShowModal(false); resetForm(); toast.success('Supplier updated'); },
+    onError: (e) => toast.error(e.message || 'Failed to update supplier'),
   });
   const deleteMut = useMutation({
     mutationFn: retailApi.deleteSupplier,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['retail'] }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['retail'] }); toast.success('Supplier deleted'); },
+    onError: (e) => toast.error(e.message || 'Failed to delete supplier'),
   });
 
   function resetForm() { setForm({ name: '', contactName: '', email: '', phone: '', address: '', notes: '' }); setEditSupplier(null); }
@@ -431,11 +437,13 @@ function PurchaseOrdersTab({ suppliers }) {
   const { data, isLoading } = useQuery({ queryKey: ['retail', 'purchase-orders'], queryFn: retailApi.listPurchaseOrders });
   const createMut = useMutation({
     mutationFn: retailApi.createPurchaseOrder,
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['retail'] }); setShowModal(false); resetPOForm(); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['retail'] }); setShowModal(false); resetPOForm(); toast.success('Purchase order created'); },
+    onError: (e) => toast.error(e.message || 'Failed to create purchase order'),
   });
   const statusMut = useMutation({
     mutationFn: ({ id, data }) => retailApi.updatePurchaseOrder(id, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['retail'] }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['retail'] }); toast.success('Purchase order updated'); },
+    onError: (e) => toast.error(e.message || 'Failed to update purchase order'),
   });
 
   function resetPOForm() { setPoForm({ supplierId: '', notes: '', expectedDate: '', items: [{ productName: '', sku: '', quantity: 1, unitCost: 0 }] }); }

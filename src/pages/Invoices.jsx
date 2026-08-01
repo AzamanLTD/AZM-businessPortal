@@ -86,26 +86,26 @@ export default function Invoices() {
   const sendMut = useMutation({
     mutationFn: (id) => invoicesApi.send(id),
     onSuccess: () => {
-      toast({ title: 'Invoice Sent', description: 'The invoice has been locked and sent to the customer.', variant: 'success' });
+      toast.success('The invoice has been locked and sent to the customer.');
   const emailMut = useMutation({
     mutationFn: ({ id, email }) => invoicesApi.email(id, email),
-    onSuccess: (data) => toast({ title: 'Invoice Emailed', description: data.message || 'Invoice sent successfully.', variant: 'success' }),
-    onError: (e) => toast({ title: 'Error Emailing', description: e.message, variant: 'destructive' }),
+    onSuccess: (data) => toast.success(data.message || 'Invoice sent successfully.'),
+    onError: (e) => toast.error(`Error Emailing: ${e.message}`),
   });
       invalidate();
     },
-    onError: (e) => toast({ title: 'Error Sending', description: e.message, variant: 'destructive' }),
+    onError: (e) => toast.error(`Error Sending: ${e.message}`),
   });
 
   const voidMut = useMutation({
     mutationFn: ({ id, reason }) => invoicesApi.void(id, { reason }),
     onSuccess: () => {
-      toast({ title: 'Invoice Voided', description: 'The invoice is now cancelled.', variant: 'success' });
+      toast.success('The invoice is now cancelled.');
       setShowVoidReason(null);
       setVoidReason('');
       invalidate();
     },
-    onError: (e) => toast({ title: 'Error Voiding', description: e.message, variant: 'destructive' }),
+    onError: (e) => toast.error(`Error Voiding: ${e.message}`),
   });
 
   // Bulk mutations
@@ -123,11 +123,7 @@ export default function Invoices() {
         console.error(err);
       }
     }
-    toast({
-      title: 'Bulk Send Complete',
-      description: `Successfully sent ${successCount} of ${drafts.length} draft invoices.`,
-      variant: 'success'
-    });
+    toast.success(`Successfully sent ${successCount} of ${drafts.length} draft invoices.`);
     setSelectedIds([]);
     invalidate();
     setIsBulkProcessing(false);
@@ -147,11 +143,7 @@ export default function Invoices() {
         console.error(err);
       }
     }
-    toast({
-      title: 'Bulk Void Complete',
-      description: `Successfully voided ${successCount} of ${sents.length} sent invoices.`,
-      variant: 'success'
-    });
+    toast.success(`Successfully voided ${successCount} of ${sents.length} sent invoices.`);
     setSelectedIds([]);
     invalidate();
     setIsBulkProcessing(false);
@@ -526,13 +518,13 @@ function CustomerLookup({ customer, onSelect, onClear }) {
   const lookupMut = useMutation({
     mutationFn: (id) => invoicesApi.lookupCustomer(id),
     onSuccess: (res) => onSelect(res.customer),
-    onError: () => toast({ title: 'Lookup Failed', description: 'No user found with that AZM ID.', variant: 'destructive' }),
+    onError: () => toast.error('No user found with that AZM ID.'),
   });
 
   const submit = () => {
     const id = azamanId.trim();
     if (!id.toUpperCase().startsWith('AZM-')) {
-      toast({ title: 'Invalid ID format', description: 'Enter a valid AZM ID (e.g. AZM-00123456).', variant: 'destructive' });
+      toast.error('Enter a valid AZM ID (e.g. AZM-00123456).');
       return;
     }
     lookupMut.mutate(id);
@@ -606,19 +598,19 @@ function CreateInvoiceModal({ onClose, onCreated }) {
   const createMut = useMutation({
     mutationFn: (payload) => invoicesApi.create(payload),
     onSuccess: (res) => {
-      toast({ title: 'Invoice Created', description: 'Draft saved successfully.', variant: 'success' });
+      toast.success('Draft saved successfully.');
       onCreated(res.invoice);
     },
-    onError: (e) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
+    onError: (e) => toast.error(`Error: ${e.message}`),
   });
 
   const sendMut = useMutation({
     mutationFn: (id) => invoicesApi.send(id),
     onSuccess: (res) => {
-      toast({ title: 'Invoice Sent', description: 'Invoice successfully drafted and sent to customer.', variant: 'success' });
+      toast.success('Invoice successfully drafted and sent to customer.');
       onCreated(res.invoice);
     },
-    onError: (e) => toast({ title: 'Error Sending', description: e.message, variant: 'destructive' }),
+    onError: (e) => toast.error(`Error Sending: ${e.message}`),
   });
 
   // Line item helpers
@@ -654,7 +646,7 @@ function CreateInvoiceModal({ onClose, onCreated }) {
 
   const preparePayload = () => {
     if (!customer) {
-      toast({ title: 'Required', description: 'Find a customer first.', variant: 'destructive' });
+      toast.error('Find a customer first.');
       return null;
     }
     const cleanLines = lineItems
@@ -665,7 +657,7 @@ function CreateInvoiceModal({ onClose, onCreated }) {
       }))
       .filter(it => it.description && !isNaN(it.unitPrice) && it.unitPrice >= 0);
     if (cleanLines.length === 0) {
-      toast({ title: 'Invalid Line Items', description: 'Add at least one valid line item (description + price).', variant: 'destructive' });
+      toast.error('Add at least one valid line item (description + price).');
       return null;
     }
 
@@ -675,11 +667,11 @@ function CreateInvoiceModal({ onClose, onCreated }) {
       const value = parseFloat(t.value);
       if (!name && isNaN(value)) continue; // skip fully-empty rows
       if (!name) {
-        toast({ title: 'Invalid Tax', description: 'Every tax line needs a name.', variant: 'destructive' });
+        toast.error('Every tax line needs a name.');
         return null;
       }
       if (isNaN(value) || value < 0) {
-        toast({ title: 'Invalid Tax', description: `Invalid value for tax "${name}".`, variant: 'destructive' });
+        toast.error(`Invalid value for tax "${name}".`);
         return null;
       }
       cleanTaxes.push({ name, type: t.type === 'FLAT' ? 'FLAT' : 'PERCENTAGE', value });
@@ -707,7 +699,7 @@ function CreateInvoiceModal({ onClose, onCreated }) {
       const res = await invoicesApi.create(payload);
       sendMut.mutate(res.invoice.id);
     } catch (err) {
-      toast({ title: 'Error Creating', description: err.message, variant: 'destructive' });
+      toast.error(`Error Creating: ${err.message}`);
     }
   };
 
@@ -1060,30 +1052,30 @@ function TaxPresetsSection() {
   const createMut = useMutation({
     mutationFn: (data) => bookingOpsApi.createTaxPreset(data),
     onSuccess: () => {
-      toast({ title: 'Preset Created', description: 'Saved successfully.', variant: 'success' });
+      toast.success('Saved successfully.');
       resetForm();
       invalidate();
     },
-    onError: (e) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
+    onError: (e) => toast.error(`Error: ${e.message}`),
   });
 
   const updateMut = useMutation({
     mutationFn: ({ id, data }) => bookingOpsApi.updateTaxPreset(id, data),
     onSuccess: () => {
-      toast({ title: 'Preset Updated', description: 'Changes saved.', variant: 'success' });
+      toast.success('Changes saved.');
       resetForm();
       invalidate();
     },
-    onError: (e) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
+    onError: (e) => toast.error(`Error: ${e.message}`),
   });
 
   const deleteMut = useMutation({
     mutationFn: (id) => bookingOpsApi.deleteTaxPreset(id),
     onSuccess: () => {
-      toast({ title: 'Preset Deleted', description: 'Tax preset deleted.', variant: 'success' });
+      toast.success('Tax preset deleted.');
       invalidate();
     },
-    onError: (e) => toast({ title: 'Error', description: e.message, variant: 'destructive' }),
+    onError: (e) => toast.error(`Error: ${e.message}`),
   });
 
   const resetForm = () => {
@@ -1106,12 +1098,12 @@ function TaxPresetsSection() {
 
   const handleSave = () => {
     if (!name.trim()) {
-      toast({ title: 'Required', description: 'Name is required.', variant: 'destructive' });
+      toast.error('Name is required.');
       return;
     }
     const val = parseFloat(value);
     if (isNaN(val) || val < 0) {
-      toast({ title: 'Invalid Value', description: 'Enter a valid positive number.', variant: 'destructive' });
+      toast.error('Enter a valid positive number.');
       return;
     }
 

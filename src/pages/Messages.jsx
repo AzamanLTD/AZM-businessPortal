@@ -10,6 +10,7 @@ import {
 import { getSocket } from '@/lib/socket';
 import { VirtualizedList } from '@/components/forge';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 
 const DEFAULT_QUICK_REPLIES = [
   "Your order is ready for pickup",
@@ -78,6 +79,7 @@ export default function Messages() {
       qc.invalidateQueries(['chat-thread', selectedUser?.id, businessId]);
       qc.invalidateQueries(['business-inbox', businessId]);
     },
+    onError: (e) => toast.error(e.message || 'Failed to send message'),
   });
 
   // Handle deep-link support: pre-select user if present

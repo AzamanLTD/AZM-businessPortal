@@ -473,11 +473,11 @@ function ExpensesTab({ canManage }) {
   const handleAddEntry = async (formData) => {
     try {
       await financeApi.createLedgerEntry(formData);
-      toast({ title: 'Entry added', variant: 'success' });
+      toast.success('Entry added');
       setShowEntryModal(false);
       load();
     } catch (e) {
-      toast({ title: 'Failed to add entry', description: e.message, variant: 'error' });
+      toast.error(`Failed to add entry: ${e.message}`);
     }
   };
 
@@ -485,20 +485,20 @@ function ExpensesTab({ canManage }) {
     if (!confirm('Delete this ledger entry? This cannot be undone.')) return;
     try {
       await financeApi.deleteLedgerEntry(id);
-      toast({ title: 'Entry deleted', variant: 'success' });
+      toast.success('Entry deleted');
       load();
     } catch (e) {
-      toast({ title: 'Failed to delete', description: e.message, variant: 'error' });
+      toast.error(`Failed to delete: ${e.message}`);
     }
   };
 
   const handleToggleRecurring = async (item) => {
     try {
       await financeApi.updateRecurring(item.id, { isActive: !item.isActive });
-      toast({ title: `Recurring ${item.isActive ? 'paused' : 'activated'}`, variant: 'success' });
+      toast.success(`Recurring ${item.isActive ? 'paused' : 'activated'}`);
       load();
     } catch (e) {
-      toast({ title: 'Failed to update', description: e.message, variant: 'error' });
+      toast.error(`Failed to update: ${e.message}`);
     }
   };
 
@@ -506,21 +506,21 @@ function ExpensesTab({ canManage }) {
     if (!confirm('Delete this recurring template?')) return;
     try {
       await financeApi.deleteRecurring(id);
-      toast({ title: 'Template deleted', variant: 'success' });
+      toast.success('Template deleted');
       load();
     } catch (e) {
-      toast({ title: 'Failed to delete', description: e.message, variant: 'error' });
+      toast.error(`Failed to delete: ${e.message}`);
     }
   };
 
   const handleAddRecurring = async (formData) => {
     try {
       await financeApi.createRecurring(formData);
-      toast({ title: 'Recurring template created', variant: 'success' });
+      toast.success('Recurring template created');
       setShowRecurringModal(false);
       load();
     } catch (e) {
-      toast({ title: 'Failed to create template', description: e.message, variant: 'error' });
+      toast.error(`Failed to create template: ${e.message}`);
     }
   };
 
