@@ -41,9 +41,9 @@ function ReceiptModal({ order, bizName, onClose }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <motion.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}
         className="bg-[var(--az-surface-1)] rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden">
-        <div style={{ background: 'var(--az-accent)' }} className="p-6 text-center text-[var(--az-text)]">
+        <div style={{ background: 'var(--f-tint-color)' }} className="p-6 text-center text-[var(--f-text)]">
           <div className="text-2xl font-bold">{bizName || 'AZM POS'}</div>
-          <div className="text-[var(--az-text)]/80 text-sm mt-1">{now}</div>
+          <div className="text-[var(--f-text)]/80 text-sm mt-1">{now}</div>
         </div>
         <div className="p-5 space-y-2">
           {order.items.map((item, i) => (
@@ -53,7 +53,7 @@ function ReceiptModal({ order, bizName, onClose }) {
             </div>
           ))}
           <div className="border-t border-gray-200 my-2 pt-2 flex justify-between font-bold text-base">
-            <span>Total</span><span className="tabular-nums" style={{ color: 'var(--az-accent)' }}>{fmt(order.total)}</span>
+            <span>Total</span><span className="tabular-nums" style={{ color: 'var(--f-tint-color)' }}>{fmt(order.total)}</span>
           </div>
           <div className="flex justify-between text-sm text-gray-500">
             <span>Payment</span><span className="font-medium capitalize">{order.paymentMethod || 'cash'}</span>
@@ -70,10 +70,10 @@ function ReceiptModal({ order, bizName, onClose }) {
           )}
         </div>
         <div className="px-5 pb-5 flex gap-2">
-          <button onClick={() => window.print()} className="flex-1 flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl py-3 text-sm font-semibold transition-colors">
+          <button onClick={() => window.print()} className="flex-1 flex items-center justify-center gap-2 bg-gray-100:bg-gray-200 text-gray-700 rounded-xl py-3 text-sm font-semibold transition-colors">
             <Printer className="w-4 h-4" /> Print
           </button>
-          <button onClick={onClose} className="flex-1 flex items-center justify-center gap-2 text-[var(--az-text)] rounded-xl py-3 text-sm font-semibold transition-colors" style={{ background: 'var(--az-accent)' }}>
+          <button onClick={onClose} className="flex-1 flex items-center justify-center gap-2 text-[var(--f-text)] rounded-xl py-3 text-sm font-semibold transition-colors" style={{ background: 'var(--f-tint-color)' }}>
             <CheckCircle2 className="w-4 h-4" /> Done
           </button>
         </div>
@@ -99,31 +99,31 @@ function PaymentModal({ total, onClose, onConfirm, isLoading }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }}
-        style={{ background: 'var(--az-bg-alt)', borderColor: 'var(--az-border)' }}
+        style={{ background: 'var(--az-bg-alt)', borderColor: 'var(--f-line)' }}
         className="border rounded-2xl shadow-2xl w-full max-w-md">
-        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b" style={{ borderColor: 'var(--az-border)' }}>
-          <h3 className="font-bold text-lg" style={{ color: 'var(--az-text)' }}>Payment</h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--az-text-muted)' }}><X className="w-5 h-5" /></button>
+        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b" style={{ borderColor: 'var(--f-line)' }}>
+          <h3 className="font-bold text-lg" style={{ color: 'var(--f-text)' }}>Payment</h3>
+          <button onClick={onClose} className="p-1.5 rounded-lg transition-colors" style={{ color: 'var(--f-text-3)' }}><X className="w-5 h-5" /></button>
         </div>
         <div className="p-6 space-y-5">
           <div className="text-center">
-            <div className="text-sm mb-1" style={{ color: 'var(--az-text-muted)' }}>Amount Due</div>
-            <div className="text-4xl font-bold tabular-nums" style={{ color: 'var(--az-text)' }}>{fmt(total)}</div>
+            <div className="text-sm mb-1" style={{ color: 'var(--f-text-3)' }}>Amount Due</div>
+            <div className="text-4xl font-bold tabular-nums" style={{ color: 'var(--f-text)' }}>{fmt(total)}</div>
           </div>
           <div className="grid grid-cols-3 gap-2">
             {METHODS.map(m => (
               <button key={m.id} onClick={() => setMethod(m.id)}
-                className={cn('flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-xs font-semibold transition-all', method === m.id ? 'border-current' : 'border-gray-200 text-gray-400 hover:border-gray-300')}
-                style={method === m.id ? { borderColor: 'var(--az-accent)', color: 'var(--az-accent)', background: 'var(--az-accent-subtle)' } : {}}>
+                className={cn('flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-xs font-semibold transition-all', method === m.id ? 'border-current' : 'border-gray-200 text-gray-400:border-gray-300')}
+                style={method === m.id ? { borderColor: 'var(--f-tint-color)', color: 'var(--f-tint-color)', background: 'var(--az-accent-subtle)' } : {}}>
                 <m.icon className="w-5 h-5" />{m.label}
               </button>
             ))}
           </div>
           {(method === 'CASH' || method === 'SPLIT') && (
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--az-text-muted)' }}>{method === 'SPLIT' ? 'Cash Amount' : 'Cash Given'}</label>
+              <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--f-text-3)' }}>{method === 'SPLIT' ? 'Cash Amount' : 'Cash Given'}</label>
               <input type="number" value={cashInput} onChange={e => setCashInput(e.target.value)} placeholder={cashRequired.toFixed(2)}
-                className="w-full bg-[var(--az-surface-1)] border rounded-xl px-4 py-3 text-lg font-bold tabular-nums focus:outline-none" style={{ borderColor: 'var(--az-border)', color: 'var(--az-text)' }} />
+                className="w-full bg-[var(--az-surface-1)] border rounded-xl px-4 py-3 text-lg font-bold tabular-nums focus:outline-none" style={{ borderColor: 'var(--f-line)', color: 'var(--f-text)' }} />
               {change > 0 && (
                 <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2 text-sm flex justify-between">
                   <span className="text-green-700">Change</span><span className="font-bold text-green-700 tabular-nums">{fmt(change)}</span>
@@ -133,14 +133,14 @@ function PaymentModal({ total, onClose, onConfirm, isLoading }) {
           )}
           {method === 'SPLIT' && (
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--az-text-muted)' }}>AZM Amount</label>
+              <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--f-text-3)' }}>AZM Amount</label>
               <input type="number" value={azmInput} onChange={e => setAzmInput(e.target.value)} placeholder="0.00"
-                className="w-full bg-[var(--az-surface-1)] border rounded-xl px-4 py-3 text-lg font-bold tabular-nums focus:outline-none" style={{ borderColor: 'var(--az-border)', color: 'var(--az-text)' }} />
+                className="w-full bg-[var(--az-surface-1)] border rounded-xl px-4 py-3 text-lg font-bold tabular-nums focus:outline-none" style={{ borderColor: 'var(--f-line)', color: 'var(--f-text)' }} />
             </div>
           )}
           <button onClick={() => onConfirm({ method, cashGiven: cashAmt, azmAmount: azmAmt })} disabled={!canConfirm || isLoading}
-            className="w-full py-4 text-[var(--az-text)] font-bold rounded-xl text-base transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm disabled:opacity-40"
-            style={{ background: 'var(--az-accent)' }}>
+            className="w-full py-4 text-[var(--f-text)] font-bold rounded-xl text-base transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm disabled:opacity-40"
+            style={{ background: 'var(--f-tint-color)' }}>
             {isLoading ? <RefreshCw className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
             Confirm Payment
           </button>
@@ -244,17 +244,17 @@ export default function POS() {
   }, [online, outboxCount]);
 
   return (
-    <div className="flex overflow-hidden" style={{ height: 'calc(100vh - 4rem)', background: 'var(--az-bg)' }}>
+    <div className="flex overflow-hidden" style={{ height: 'calc(100vh - 4rem)', background: 'var(--f-bg)' }}>
       {/* Product Grid */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Toolbar */}
-        <div className="flex items-center gap-3 px-5 py-3 border-b" style={{ borderColor: 'var(--az-border)', background: 'var(--az-bg-alt)' }}>
+        <div className="flex items-center gap-3 px-5 py-3 border-b" style={{ borderColor: 'var(--f-line)', background: 'var(--az-bg-alt)' }}>
           <div className="relative flex-1 max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--az-text-muted)' }} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--f-text-3)' }} />
             <input value={searchQ} onChange={e => setSearchQ(e.target.value)} placeholder="Search items…"
               className="w-full pl-9 pr-4 py-2.5 bg-[var(--az-surface-1)] border rounded-xl text-sm focus:outline-none"
-              style={{ borderColor: 'var(--az-border)', color: 'var(--az-text)' }} />
-            {searchQ && <button onClick={() => setSearchQ('')} className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--az-text-muted)' }}><X className="w-3.5 h-3.5" /></button>}
+              style={{ borderColor: 'var(--f-line)', color: 'var(--f-text)' }} />
+            {searchQ && <button onClick={() => setSearchQ('')} className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--f-text-3)' }}><X className="w-3.5 h-3.5" /></button>}
           </div>
           <div className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border', online ? 'bg-green-50 text-green-700 border-green-200' : 'bg-amber-50 text-amber-700 border-amber-200')}>
             {online ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
@@ -268,14 +268,14 @@ export default function POS() {
         </div>
 
         {/* Categories */}
-        <div className="flex items-center gap-1.5 px-5 py-3 overflow-x-auto no-scrollbar border-b" style={{ borderColor: 'var(--az-border)', background: 'var(--az-bg-alt)' }}>
+        <div className="flex items-center gap-1.5 px-5 py-3 overflow-x-auto no-scrollbar border-b" style={{ borderColor: 'var(--f-line)', background: 'var(--az-bg-alt)' }}>
           {categories.map(cat => {
             const Icon = CAT_ICONS[cat] || Tag;
             const isActive = activeCategory === cat;
             return (
               <button key={cat} onClick={() => setActiveCategory(cat)}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold whitespace-nowrap transition-all border"
-                style={isActive ? { background: 'var(--az-accent)', color: '#fff', borderColor: 'var(--az-accent)' } : { background: 'white', color: 'var(--az-text-muted)', borderColor: 'var(--az-border)' }}>
+                style={isActive ? { background: 'var(--f-tint-color)', color: '#fff', borderColor: 'var(--f-tint-color)' } : { background: 'white', color: 'var(--f-text-3)', borderColor: 'var(--f-line)' }}>
                 <Icon className="w-3.5 h-3.5" />
                 {cat.charAt(0).toUpperCase() + cat.slice(1)}
               </button>
@@ -288,11 +288,11 @@ export default function POS() {
           {loadingProducts ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {Array.from({ length: 12 }).map((_, i) => (
-                <div key={i} className="aspect-[3/4] rounded-2xl animate-pulse" style={{ background: 'var(--az-border)' }} />
+                <div key={i} className="aspect-[3/4] rounded-2xl animate-pulse" style={{ background: 'var(--f-line)' }} />
               ))}
             </div>
           ) : visibleProducts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full gap-3" style={{ color: 'var(--az-text-muted)' }}>
+            <div className="flex flex-col items-center justify-center h-full gap-3" style={{ color: 'var(--f-text-3)' }}>
               <Package className="w-12 h-12 opacity-30" /><p className="text-sm">No items found</p>
             </div>
           ) : (
@@ -304,28 +304,28 @@ export default function POS() {
                   <motion.button key={product.id}
                     variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
                     onClick={() => addToCart(product)}
-                    className="group relative flex flex-col bg-[var(--az-surface-1)] border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all active:scale-[0.97] text-left"
-                    style={{ borderColor: 'var(--az-border)' }}>
-                    <div className="aspect-square relative overflow-hidden" style={{ background: 'var(--az-bg)' }}>
+                    className="group relative flex flex-col bg-[var(--az-surface-1)] border rounded-2xl overflow-hidden shadow-sm:shadow-md transition-all active:scale-[0.97] text-left"
+                    style={{ borderColor: 'var(--f-line)' }}>
+                    <div className="aspect-square relative overflow-hidden" style={{ background: 'var(--f-bg)' }}>
                       {product.imageUrl
                         ? <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                        : <div className="w-full h-full flex items-center justify-center"><Package className="w-10 h-10 opacity-20" style={{ color: 'var(--az-text-muted)' }} /></div>
+                        : <div className="w-full h-full flex items-center justify-center"><Package className="w-10 h-10 opacity-20" style={{ color: 'var(--f-text-3)' }} /></div>
                       }
                       {cartItem && (
-                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full text-[var(--az-text)] text-xs font-bold flex items-center justify-center shadow-md" style={{ background: 'var(--az-accent)' }}>
+                        <div className="absolute top-2 right-2 w-6 h-6 rounded-full text-[var(--f-text)] text-xs font-bold flex items-center justify-center shadow-md" style={{ background: 'var(--f-tint-color)' }}>
                           {cartItem.qty}
                         </div>
                       )}
                       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center" style={{ background: 'rgba(108,79,209,0.08)' }}>
-                        <Plus className="w-7 h-7 drop-shadow" style={{ color: 'var(--az-accent)' }} />
+                        <Plus className="w-7 h-7 drop-shadow" style={{ color: 'var(--f-tint-color)' }} />
                       </div>
                     </div>
                     <div className="p-3 flex-1 flex flex-col">
-                      <span className="text-sm font-semibold line-clamp-2" style={{ color: 'var(--az-text)' }}>{product.name}</span>
+                      <span className="text-sm font-semibold line-clamp-2" style={{ color: 'var(--f-text)' }}>{product.name}</span>
                       <div className="mt-auto pt-2 flex items-center justify-between">
-                        <span className="text-sm font-bold tabular-nums" style={{ color: 'var(--az-accent)' }}>{fmt(product.price)}</span>
+                        <span className="text-sm font-bold tabular-nums" style={{ color: 'var(--f-tint-color)' }}>{fmt(product.price)}</span>
                         {product.stockQuantity != null && product.stockQuantity < 5 && (
-                          <span className="text-xs font-medium" style={{ color: 'var(--az-danger)' }}>{product.stockQuantity} left</span>
+                          <span className="text-xs font-medium" style={{ color: 'var(--f-bad)' }}>{product.stockQuantity} left</span>
                         )}
                       </div>
                     </div>
@@ -338,20 +338,20 @@ export default function POS() {
       </div>
 
       {/* Cart Panel */}
-      <div className="w-80 xl:w-96 flex flex-col border-l" style={{ borderColor: 'var(--az-border)', background: 'var(--az-bg-alt)' }}>
-        <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'var(--az-border)' }}>
+      <div className="w-80 xl:w-96 flex flex-col border-l" style={{ borderColor: 'var(--f-line)', background: 'var(--az-bg-alt)' }}>
+        <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'var(--f-line)' }}>
           <div className="flex items-center gap-2">
-            <ShoppingCart className="w-5 h-5" style={{ color: 'var(--az-accent)' }} />
-            <h2 className="font-bold" style={{ color: 'var(--az-text)' }}>Cart</h2>
+            <ShoppingCart className="w-5 h-5" style={{ color: 'var(--f-tint-color)' }} />
+            <h2 className="font-bold" style={{ color: 'var(--f-text)' }}>Cart</h2>
             {cart.length > 0 && (
-              <span className="text-xs font-bold text-[var(--az-text)] px-2 py-0.5 rounded-full" style={{ background: 'var(--az-accent)' }}>
+              <span className="text-xs font-bold text-[var(--f-text)] px-2 py-0.5 rounded-full" style={{ background: 'var(--f-tint-color)' }}>
                 {cart.reduce((s, i) => s + i.qty, 0)}
               </span>
             )}
           </div>
           {cart.length > 0 && (
             <button onClick={clearCart} className="text-xs font-semibold flex items-center gap-1 px-2 py-1 rounded-lg transition-colors"
-              style={{ color: 'var(--az-danger)' }}>
+              style={{ color: 'var(--f-bad)' }}>
               <Trash2 className="w-3.5 h-3.5" /> Clear
             </button>
           )}
@@ -360,56 +360,56 @@ export default function POS() {
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
           <AnimatePresence>
             {cart.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full gap-3" style={{ color: 'var(--az-text-muted)' }}>
+              <div className="flex flex-col items-center justify-center h-full gap-3" style={{ color: 'var(--f-text-3)' }}>
                 <ShoppingCart className="w-12 h-12 opacity-20" />
                 <p className="text-sm text-center">Tap items on the left<br/>to add them here</p>
               </div>
             ) : cart.map(item => (
               <motion.div key={item.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-                className="flex items-center gap-3 bg-[var(--az-surface-1)] border rounded-xl p-3" style={{ borderColor: 'var(--az-border)' }}>
-                <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0" style={{ background: 'var(--az-bg)' }}>
+                className="flex items-center gap-3 bg-[var(--az-surface-1)] border rounded-xl p-3" style={{ borderColor: 'var(--f-line)' }}>
+                <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0" style={{ background: 'var(--f-bg)' }}>
                   {item.imageUrl
                     ? <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
                     : <div className="w-full h-full flex items-center justify-center"><Package className="w-4 h-4 opacity-30" /></div>
                   }
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate" style={{ color: 'var(--az-text)' }}>{item.name}</p>
-                  <p className="text-xs tabular-nums" style={{ color: 'var(--az-text-muted)' }}>{fmt(item.price)}</p>
+                  <p className="text-sm font-semibold truncate" style={{ color: 'var(--f-text)' }}>{item.name}</p>
+                  <p className="text-xs tabular-nums" style={{ color: 'var(--f-text-3)' }}>{fmt(item.price)}</p>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <button onClick={() => updateQty(item.id, -1)} className="w-7 h-7 rounded-lg border flex items-center justify-center transition-colors hover:bg-red-50 hover:border-red-200"
-                    style={{ background: 'var(--az-bg)', borderColor: 'var(--az-border)', color: 'var(--az-text-secondary)' }}>
+                  <button onClick={() => updateQty(item.id, -1)} className="w-7 h-7 rounded-lg border flex items-center justify-center transition-colors:bg-red-50:border-red-200"
+                    style={{ background: 'var(--f-bg)', borderColor: 'var(--f-line)', color: 'var(--f-text-2)' }}>
                     <Minus className="w-3 h-3" />
                   </button>
-                  <span className="w-7 text-center text-sm font-bold tabular-nums" style={{ color: 'var(--az-text)' }}>{item.qty}</span>
+                  <span className="w-7 text-center text-sm font-bold tabular-nums" style={{ color: 'var(--f-text)' }}>{item.qty}</span>
                   <button onClick={() => updateQty(item.id, 1)} className="w-7 h-7 rounded-lg border flex items-center justify-center transition-colors"
-                    style={{ background: 'var(--az-bg)', borderColor: 'var(--az-border)', color: 'var(--az-text-secondary)' }}>
+                    style={{ background: 'var(--f-bg)', borderColor: 'var(--f-line)', color: 'var(--f-text-2)' }}>
                     <Plus className="w-3 h-3" />
                   </button>
                 </div>
-                <span className="text-sm font-bold tabular-nums w-16 text-right" style={{ color: 'var(--az-text)' }}>{fmt(item.price * item.qty)}</span>
+                <span className="text-sm font-bold tabular-nums w-16 text-right" style={{ color: 'var(--f-text)' }}>{fmt(item.price * item.qty)}</span>
               </motion.div>
             ))}
           </AnimatePresence>
         </div>
 
         {cart.length > 0 && (
-          <div className="p-5 border-t bg-[var(--az-surface-1)] space-y-3" style={{ borderColor: 'var(--az-border)' }}>
+          <div className="p-5 border-t bg-[var(--az-surface-1)] space-y-3" style={{ borderColor: 'var(--f-line)' }}>
             <div className="space-y-1.5 text-sm">
-              <div className="flex justify-between" style={{ color: 'var(--az-text-secondary)' }}>
+              <div className="flex justify-between" style={{ color: 'var(--f-text-2)' }}>
                 <span>Subtotal</span><span className="tabular-nums">{fmt(subtotal)}</span>
               </div>
-              <div className="flex justify-between" style={{ color: 'var(--az-text-secondary)' }}>
+              <div className="flex justify-between" style={{ color: 'var(--f-text-2)' }}>
                 <span>Tax (2.5%)</span><span className="tabular-nums">{fmt(tax)}</span>
               </div>
-              <div className="flex justify-between font-bold text-base pt-1 border-t mt-1" style={{ borderColor: 'var(--az-border)', color: 'var(--az-text)' }}>
-                <span>Total</span><span className="tabular-nums" style={{ color: 'var(--az-accent)' }}>{fmt(total)}</span>
+              <div className="flex justify-between font-bold text-base pt-1 border-t mt-1" style={{ borderColor: 'var(--f-line)', color: 'var(--f-text)' }}>
+                <span>Total</span><span className="tabular-nums" style={{ color: 'var(--f-tint-color)' }}>{fmt(total)}</span>
               </div>
             </div>
             <button onClick={() => setShowPayment(true)} disabled={!canRing}
-              className="w-full py-4 text-[var(--az-text)] font-bold rounded-xl text-base transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm disabled:opacity-40"
-              style={{ background: 'var(--az-accent)' }}>
+              className="w-full py-4 text-[var(--f-text)] font-bold rounded-xl text-base transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm disabled:opacity-40"
+              style={{ background: 'var(--f-tint-color)' }}>
               <Zap className="w-5 h-5" /> Charge {fmt(total)}
             </button>
             {!online && (

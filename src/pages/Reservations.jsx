@@ -16,7 +16,7 @@ import {
   Progress 
 } from '@/components/ui';
 import { useToast } from '@/components/ui/Toast';
-import { Widget, WidgetStat, WidgetRow } from '@/components/ui/Widget';
+// Widget replaced by KpiCard/Card
 import { fmtUSDC, fmt, formatDateTime, relativeTime, cn } from '@/lib/utils';
 import { 
   Calendar, 
@@ -42,12 +42,12 @@ import {
 } from 'lucide-react';
 
 const RESERVATION_STATUS = {
-  PENDING: { label: 'Pending', color: 'var(--az-warning)' },
-  CONFIRMED: { label: 'Confirmed', color: 'var(--az-info)' },
-  CHECKED_IN: { label: 'Checked In', color: 'var(--az-accent)' },
-  COMPLETED: { label: 'Completed', color: 'var(--az-success)' },
-  CANCELLED: { label: 'Cancelled', color: 'var(--az-danger)' },
-  NO_SHOW: { label: 'No-Show', color: 'var(--az-danger)' },
+  PENDING: { label: 'Pending', color: 'var(--f-warn)' },
+  CONFIRMED: { label: 'Confirmed', color: 'var(--f-info)' },
+  CHECKED_IN: { label: 'Checked In', color: 'var(--f-tint-color)' },
+  COMPLETED: { label: 'Completed', color: 'var(--f-ok)' },
+  CANCELLED: { label: 'Cancelled', color: 'var(--f-bad)' },
+  NO_SHOW: { label: 'No-Show', color: 'var(--f-bad)' },
 };
 
 export default function Reservations() {
@@ -297,35 +297,35 @@ export default function Reservations() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--az-bg)] text-[var(--az-text)] p-6 animate-fade-in">
+    <div className="min-h-screen bg-[var(--f-bg)] text-[var(--f-text)] p-6 ">
       {/* Upper Dashboard Header & Fast Stats */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[var(--az-text)] flex items-center gap-2">
-            <Calendar className="w-6 h-6 text-[var(--az-info)]" />
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--f-text)] flex items-center gap-2">
+            <Calendar className="w-6 h-6 text-[var(--f-info)]" />
             Reservations Console
           </h1>
-          <p className="text-sm text-[var(--az-text-muted)]">
+          <p className="text-sm text-[var(--f-text-3)]">
             Unified status deck, reschedule negotiations, slot previews, and customer trust ratings.
           </p>
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
           {/* Overbooking Mode Controller */}
-          <div className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-[var(--az-surface)] border border-[var(--az-border)]">
-            <SlidersHorizontal className="w-4 h-4 text-[var(--az-text-muted)]" />
-            <span className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider">Overbooking Mode</span>
+          <div className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-[var(--f-surface)] border border-[var(--f-line)]">
+            <SlidersHorizontal className="w-4 h-4 text-[var(--f-text-3)]" />
+            <span className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">Overbooking Mode</span>
             <button
               onClick={() => overbookingMutation.mutate(!overbookingAllowed)}
               disabled={overbookingMutation.isPending}
               className={cn(
                 "relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                overbookingAllowed ? "bg-[var(--az-info)]" : "bg-[var(--az-border)]"
+                overbookingAllowed ? "bg-[var(--f-info)]" : "bg-[var(--f-line)]"
               )}
             >
               <span
                 className={cn(
-                  "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-[var(--az-bg)] shadow ring-0 transition duration-200 ease-in-out",
+                  "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-[var(--f-bg)] shadow ring-0 transition duration-200 ease-in-out",
                   overbookingAllowed ? "translate-x-4" : "translate-x-0"
                 )}
               />
@@ -344,7 +344,7 @@ export default function Reservations() {
           <Button
             variant="secondary"
             onClick={() => refetch()}
-            className="p-2.5 rounded-xl border border-[var(--az-border)] text-[var(--az-text-muted)] hover:text-[var(--az-text)]"
+            className="p-2.5 rounded-xl border border-[var(--f-line)] text-[var(--f-text-3)]:text-[var(--f-text)]"
             title="Reload Data"
           >
             <RefreshCw className="w-4 h-4" />
@@ -354,18 +354,18 @@ export default function Reservations() {
 
       {/* Numerical Stats Bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <Widget title="All Bookings" icon={Calendar} iconColor="var(--az-info)" loading={isLoading}>
-          <WidgetStat value={fmt(stats.total || filteredReservations.length, 0)} label="Total reservation scope" />
-        </Widget>
-        <Widget title="Pending Confirmation" icon={Clock} iconColor="var(--az-warning)" loading={isLoading}>
-          <WidgetStat value={fmt(stats.pending || 0, 0)} label="Requires verification" color="var(--az-warning)" />
-        </Widget>
-        <Widget title="Checked In" icon={CheckCircle2} iconColor="var(--az-accent)" loading={isLoading}>
-          <WidgetStat value={fmt(stats.checkedIn || 0, 0)} label="Currently on premises" color="var(--az-accent)" />
-        </Widget>
-        <Widget title="No-Shows / Reschedules" icon={UserX} iconColor="var(--az-danger)" loading={isLoading}>
-          <WidgetStat value={fmt(stats.noShows || 0, 0)} label="No-shows reported" color="var(--az-danger)" />
-        </Widget>
+        <KpiCard title="All Bookings" icon={Calendar} iconColor="var(--f-info)">
+          <KpiCardStat value={fmt(stats.total || filteredReservations.length, 0)} label="Total reservation scope" />
+        </KpiCard>
+        <KpiCard title="Pending Confirmation" icon={Clock} iconColor="var(--f-warn)">
+          <KpiCardStat value={fmt(stats.pending || 0, 0)} label="Requires verification" color="var(--f-warn)" />
+        </KpiCard>
+        <KpiCard title="Checked In" icon={CheckCircle2} iconColor="var(--f-tint-color)">
+          <KpiCardStat value={fmt(stats.checkedIn || 0, 0)} label="Currently on premises" color="var(--f-tint-color)" />
+        </KpiCard>
+        <KpiCard title="No-Shows / Reschedules" icon={UserX} iconColor="var(--f-bad)">
+          <KpiCardStat value={fmt(stats.noShows || 0, 0)} label="No-shows reported" color="var(--f-bad)" />
+        </KpiCard>
       </div>
 
       <div className="flex gap-6 items-start">
@@ -373,15 +373,15 @@ export default function Reservations() {
         <div className="flex-1 min-w-0 space-y-6">
           {/* Hybrid View Selector + Filters Toolbar */}
           <Card className="p-4 space-y-4">
-            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 border-b border-[var(--az-border)] pb-4">
-              <div className="flex items-center gap-1.5 p-1 bg-[var(--az-bg)] rounded-xl border border-[var(--az-border)] w-fit">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 border-b border-[var(--f-line)] pb-4">
+              <div className="flex items-center gap-1.5 p-1 bg-[var(--f-bg)] rounded-xl border border-[var(--f-line)] w-fit">
                 <button
                   onClick={() => setActiveTab('list')}
                   className={cn(
                     "px-4 py-2 rounded-lg text-xs font-bold transition-all",
                     activeTab === 'list' 
-                      ? "bg-[var(--az-surface)] text-[var(--az-info)] border border-[var(--az-border)] shadow" 
-                      : "text-[var(--az-text-muted)] hover:text-[var(--az-text)]"
+                      ? "bg-[var(--f-surface)] text-[var(--f-info)] border border-[var(--f-line)] shadow" 
+                      : "text-[var(--f-text-3)]:text-[var(--f-text)]"
                   )}
                 >
                   Filtered List
@@ -391,8 +391,8 @@ export default function Reservations() {
                   className={cn(
                     "px-4 py-2 rounded-lg text-xs font-bold transition-all",
                     activeTab === 'calendar' 
-                      ? "bg-[var(--az-surface)] text-[var(--az-info)] border border-[var(--az-border)] shadow" 
-                      : "text-[var(--az-text-muted)] hover:text-[var(--az-text)]"
+                      ? "bg-[var(--f-surface)] text-[var(--f-info)] border border-[var(--f-line)] shadow" 
+                      : "text-[var(--f-text-3)]:text-[var(--f-text)]"
                   )}
                 >
                   Calendar Hybrid Grid
@@ -404,7 +404,7 @@ export default function Reservations() {
                 <select
                   value={locationId}
                   onChange={(e) => setLocationId(e.target.value)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--az-bg)] border border-[var(--az-border)] text-[var(--az-text)] focus:border-[var(--az-info)] outline-none cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[var(--f-bg)] border border-[var(--f-line)] text-[var(--f-text)] focus:border-[var(--f-info)] outline-none cursor-pointer"
                 >
                   <option value="all">All Locations</option>
                   {locationList.map(loc => (
@@ -412,7 +412,7 @@ export default function Reservations() {
                   ))}
                 </select>
 
-                <div className="flex items-center gap-1.5 bg-[var(--az-bg)] p-1 rounded-lg border border-[var(--az-border)]">
+                <div className="flex items-center gap-1.5 bg-[var(--f-bg)] p-1 rounded-lg border border-[var(--f-line)]">
                   {['all', 'PENDING', 'CONFIRMED', 'CHECKED_IN', 'NO_SHOW'].map(status => (
                     <button
                       key={status}
@@ -420,8 +420,8 @@ export default function Reservations() {
                       className={cn(
                         "px-2.5 py-1 rounded-md text-[10px] font-semibold transition-colors uppercase tracking-wider",
                         statusFilter === status
-                          ? "bg-[var(--az-info)] text-[var(--az-bg)]"
-                          : "text-[var(--az-text-muted)] hover:text-[var(--az-text)]"
+                          ? "bg-[var(--f-info)] text-[var(--f-bg)]"
+                          : "text-[var(--f-text-3)]:text-[var(--f-text)]"
                       )}
                     >
                       {status === 'all' ? 'All Status' : status.replace('_', ' ')}
@@ -434,33 +434,33 @@ export default function Reservations() {
             {/* Advanced Filters & Search (Reference / Customer Name) */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--az-text-muted)]" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--f-text-3)]" />
                 <input
                   type="text"
                   placeholder="Search reservationRef or customer name..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl bg-[var(--az-bg)] border border-[var(--az-border)] text-[var(--az-text)] placeholder:text-[var(--az-text-muted)] outline-none focus:border-[var(--az-info)] focus:ring-1 focus:ring-[var(--az-info)] transition-colors"
+                  className="w-full pl-9 pr-4 py-2.5 text-xs rounded-xl bg-[var(--f-bg)] border border-[var(--f-line)] text-[var(--f-text)] placeholder:text-[var(--f-text-3)] outline-none focus:border-[var(--f-info)] focus:ring-1 focus:ring-[var(--f-info)] transition-colors"
                 />
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-[var(--az-text-muted)] flex-shrink-0">From:</span>
+                <span className="text-xs font-semibold text-[var(--f-text-3)] flex-shrink-0">From:</span>
                 <input
                   type="date"
                   value={dateRange.start}
                   onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--az-bg)] border border-[var(--az-border)] text-[var(--az-text)] focus:border-[var(--az-info)] outline-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--f-bg)] border border-[var(--f-line)] text-[var(--f-text)] focus:border-[var(--f-info)] outline-none"
                 />
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-[var(--az-text-muted)] flex-shrink-0">To:</span>
+                <span className="text-xs font-semibold text-[var(--f-text-3)] flex-shrink-0">To:</span>
                 <input
                   type="date"
                   value={dateRange.end}
                   onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                  className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--az-bg)] border border-[var(--az-border)] text-[var(--az-text)] focus:border-[var(--az-info)] outline-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl bg-[var(--f-bg)] border border-[var(--f-line)] text-[var(--f-text)] focus:border-[var(--f-info)] outline-none"
                 />
               </div>
             </div>
@@ -469,14 +469,14 @@ export default function Reservations() {
           {/* MAIN VIEWPORT */}
           {isLoading ? (
             <div className="space-y-4">
-              <Skeleton className="h-20 w-full" />
-              <Skeleton className="h-64 w-full" />
+              <Skel className="h-20 w-full" />
+              <Skel className="h-64 w-full" />
             </div>
           ) : isError ? (
-            <Card className="flex flex-col items-center justify-center py-16 text-center border-[var(--az-danger)] bg-[#ef444405]">
-              <AlertCircle className="w-10 h-10 text-[var(--az-danger)] mb-3" />
-              <p className="text-base font-bold text-[var(--az-text)]">Failed to retrieve reservations</p>
-              <p className="text-sm text-[var(--az-text-muted)] mt-1 max-w-sm">
+            <Card className="flex flex-col items-center justify-center py-16 text-center border-[var(--f-bad)] bg-[#ef444405]">
+              <AlertCircle className="w-10 h-10 text-[var(--f-bad)] mb-3" />
+              <p className="text-base font-bold text-[var(--f-text)]">Failed to retrieve reservations</p>
+              <p className="text-sm text-[var(--f-text-3)] mt-1 max-w-sm">
                 There was a network error fetching your booking details. Please refresh the query deck.
               </p>
               <Button variant="secondary" onClick={() => refetch()} className="mt-4">
@@ -504,30 +504,30 @@ export default function Reservations() {
           ) : activeTab === 'calendar' ? (
             /* Calendar Hybrid View Grid */
             <Card className="p-5">
-              <div className="flex items-center justify-between mb-4 border-b border-[var(--az-border)] pb-4">
+              <div className="flex items-center justify-between mb-4 border-b border-[var(--f-line)] pb-4">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--az-text)]">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-[var(--f-text)]">
                     {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
                   </h3>
                 </div>
                 <div className="flex items-center gap-2">
                   <button 
                     onClick={prevMonth}
-                    className="p-1.5 rounded-lg border border-[var(--az-border)] hover:bg-[var(--az-bg)] transition"
+                    className="p-1.5 rounded-lg border border-[var(--f-line)]:bg-[var(--f-bg)] transition"
                   >
-                    <ChevronLeft className="w-4 h-4 text-[var(--az-text-muted)] hover:text-[var(--az-text)]" />
+                    <ChevronLeft className="w-4 h-4 text-[var(--f-text-3)]:text-[var(--f-text)]" />
                   </button>
                   <button 
                     onClick={() => setCurrentDate(new Date())}
-                    className="px-2.5 py-1 text-xs font-semibold border border-[var(--az-border)] rounded-lg hover:bg-[var(--az-bg)] transition"
+                    className="px-2.5 py-1 text-xs font-semibold border border-[var(--f-line)] rounded-lg:bg-[var(--f-bg)] transition"
                   >
                     Today
                   </button>
                   <button 
                     onClick={nextMonth}
-                    className="p-1.5 rounded-lg border border-[var(--az-border)] hover:bg-[var(--az-bg)] transition"
+                    className="p-1.5 rounded-lg border border-[var(--f-line)]:bg-[var(--f-bg)] transition"
                   >
-                    <ChevronRight className="w-4 h-4 text-[var(--az-text-muted)] hover:text-[var(--az-text)]" />
+                    <ChevronRight className="w-4 h-4 text-[var(--f-text-3)]:text-[var(--f-text)]" />
                   </button>
                 </div>
               </div>
@@ -535,7 +535,7 @@ export default function Reservations() {
               {/* Day names headers */}
               <div className="grid grid-cols-7 gap-1.5 text-center mb-1.5">
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
-                  <div key={d} className="text-[10px] font-bold text-[var(--az-text-muted)] uppercase tracking-widest py-1">
+                  <div key={d} className="text-[10px] font-bold text-[var(--f-text-3)] uppercase tracking-widest py-1">
                     {d}
                   </div>
                 ))}
@@ -553,20 +553,20 @@ export default function Reservations() {
                       className={cn(
                         "min-h-[110px] p-2 rounded-xl border flex flex-col justify-between transition-all",
                         cell.isCurrentMonth 
-                          ? "bg-[var(--az-bg)] border-[var(--az-border)]" 
-                          : "bg-black/10 border-[var(--az-border)] opacity-40",
-                        isToday && "border-[var(--az-info)] ring-1 ring-[var(--az-info)]"
+                          ? "bg-[var(--f-bg)] border-[var(--f-line)]" 
+                          : "bg-black/10 border-[var(--f-line)] opacity-40",
+                        isToday && "border-[var(--f-info)] ring-1 ring-[var(--f-info)]"
                       )}
                     >
                       <div className="flex justify-between items-center mb-1">
                         <span className={cn(
                           "text-xs font-bold",
-                          isToday ? "text-[var(--az-info)]" : "text-[var(--az-text-muted)]"
+                          isToday ? "text-[var(--f-info)]" : "text-[var(--f-text-3)]"
                         )}>
                           {cell.date.getDate()}
                         </span>
                         {dayReservations.length > 0 && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-[var(--az-border)] text-[var(--az-text)] font-semibold">
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-[var(--f-line)] text-[var(--f-text)] font-semibold">
                             {dayReservations.length}
                           </span>
                         )}
@@ -597,7 +597,7 @@ export default function Reservations() {
                           );
                         })}
                         {dayReservations.length > 3 && (
-                          <div className="text-[9px] text-[var(--az-text-muted)] text-center font-semibold pt-0.5">
+                          <div className="text-[9px] text-[var(--f-text-3)] text-center font-semibold pt-0.5">
                             + {dayReservations.length - 3} more
                           </div>
                         )}
@@ -616,51 +616,51 @@ export default function Reservations() {
                 const hasProposedReschedule = res.proposedStartDatetime ? true : false;
 
                 return (
-                  <Card key={res.id} className="p-5 border-[var(--az-border)] bg-[var(--az-surface)] hover:border-slate-700 transition duration-150">
+                  <Card key={res.id} className="p-5 border-[var(--f-line)] bg-[var(--f-surface)]:border-slate-700 transition duration-150">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                       {/* Left: Customer + Location Context */}
                       <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-[var(--az-border)] flex items-center justify-center flex-shrink-0 border border-slate-700">
-                          <span className="text-sm font-bold text-[var(--az-info)]">
+                        <div className="w-10 h-10 rounded-xl bg-[var(--f-line)] flex items-center justify-center flex-shrink-0 border border-slate-700">
+                          <span className="text-sm font-bold text-[var(--f-info)]">
                             {(res.customerName || res.azamanId || '?').charAt(0).toUpperCase()}
                           </span>
                         </div>
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-bold text-sm text-[var(--az-text)]">
+                            <span className="font-bold text-sm text-[var(--f-text)]">
                               {res.customerName || 'Anonymous Guest'}
                             </span>
-                            <Badge color="var(--az-text-muted)" className="text-[10px] tracking-widest uppercase">
+                            <Tag variant="neutral" className="text-[10px] tracking-widest uppercase">
                               {res.reference || 'No Ref'}
-                            </Badge>
+                            </Tag>
                             
                             {/* Reschedule Proposal Indicator Badge */}
                             {hasProposedReschedule && (
-                              <Badge color="var(--az-warning)" className="animate-pulse text-[10px]">
+                              <Tag variant="neutral" className="animate-pulse text-[10px]">
                                 Reschedule Proposed
-                              </Badge>
+                              </Tag>
                             )}
 
                             {/* Trust Rating Metric Indicator */}
                             {res.customerTrustScore !== undefined && (
-                              <div className="inline-flex items-center gap-1 text-[10px] font-semibold text-[var(--az-info)] px-2 py-0.5 rounded-full bg-[var(--az-info)]">
+                              <div className="inline-flex items-center gap-1 text-[10px] font-semibold text-[var(--f-info)] px-2 py-0.5 rounded-full bg-[var(--f-info)]">
                                 Trust: {res.customerTrustScore}%
                               </div>
                             )}
                           </div>
 
-                          <div className="flex items-center gap-3 text-xs text-[var(--az-text-muted)] mt-1.5 flex-wrap">
+                          <div className="flex items-center gap-3 text-xs text-[var(--f-text-3)] mt-1.5 flex-wrap">
                             <span className="flex items-center gap-1 text-[10px] font-medium">
-                              <MapPin className="w-3 h-3 text-[var(--az-text-muted)]" />
+                              <MapPin className="w-3 h-3 text-[var(--f-text-3)]" />
                               {locationName}
                             </span>
                             <span className="flex items-center gap-1 text-[10px] font-medium">
-                              <Calendar className="w-3 h-3 text-[var(--az-text-muted)]" />
+                              <Calendar className="w-3 h-3 text-[var(--f-text-3)]" />
                               {formatDateTime(res.scheduledFor || res.createdAt)}
                             </span>
                             {res.partySize && (
                               <span className="flex items-center gap-1 text-[10px] font-medium">
-                                <Users className="w-3 h-3 text-[var(--az-text-muted)]" />
+                                <Users className="w-3 h-3 text-[var(--f-text-3)]" />
                                 {res.partySize} Guests
                               </span>
                             )}
@@ -668,22 +668,22 @@ export default function Reservations() {
 
                           {/* Message / Proposed rescheduling block info */}
                           {hasProposedReschedule && (
-                            <div className="mt-3 p-3 rounded-xl bg-[var(--az-bg)] border border-[var(--az-warning)]/20 flex flex-col gap-1.5">
-                              <div className="flex items-center gap-1.5 text-[var(--az-warning)] text-xs font-semibold">
+                            <div className="mt-3 p-3 rounded-xl bg-[var(--f-bg)] border border-[var(--f-warn)]/20 flex flex-col gap-1.5">
+                              <div className="flex items-center gap-1.5 text-[var(--f-warn)] text-xs font-semibold">
                                 <Clock className="w-3.5 h-3.5 animate-spin" />
                                 Reschedule Requested by customer
                               </div>
-                              <p className="text-xs text-[var(--az-text)] flex items-center gap-2">
-                                <span className="line-through text-[var(--az-text-muted)]">
+                              <p className="text-xs text-[var(--f-text)] flex items-center gap-2">
+                                <span className="line-through text-[var(--f-text-3)]">
                                   {formatDateTime(res.scheduledFor || res.createdAt)}
                                 </span>
-                                <ArrowRight className="w-3.5 h-3.5 text-[var(--az-text-muted)]" />
-                                <span className="font-semibold text-[var(--az-info)]">
+                                <ArrowRight className="w-3.5 h-3.5 text-[var(--f-text-3)]" />
+                                <span className="font-semibold text-[var(--f-info)]">
                                   {formatDateTime(res.proposedStartDatetime)}
                                 </span>
                               </p>
                               {res.rescheduleReason && (
-                                <p className="text-xs text-[var(--az-text-muted)] italic">
+                                <p className="text-xs text-[var(--f-text-3)] italic">
                                   "{res.rescheduleReason}"
                                 </p>
                               )}
@@ -693,14 +693,14 @@ export default function Reservations() {
                       </div>
 
                       {/* Right Side: Status Badge, Amount, and Action Center */}
-                      <div className="flex items-center justify-between lg:justify-end gap-6 flex-wrap lg:flex-nowrap border-t lg:border-t-0 border-[var(--az-border)] pt-3 lg:pt-0">
+                      <div className="flex items-center justify-between lg:justify-end gap-6 flex-wrap lg:flex-nowrap border-t lg:border-t-0 border-[var(--f-line)] pt-3 lg:pt-0">
                         <div className="text-left lg:text-right">
-                          <p className="text-xs text-[var(--az-text-muted)] font-medium">Total Price</p>
-                          <p className="text-base font-bold text-[var(--az-info)] tracking-tight az-mono">
+                          <p className="text-xs text-[var(--f-text-3)] font-medium">Total Price</p>
+                          <p className="text-base font-bold text-[var(--f-info)] tracking-tight f-mono">
                             {res.amountUsdc ? fmtUSDC(res.amountUsdc) : "—"}
                           </p>
                           <div className="mt-1">
-                            <Badge color={statusMeta.color}>{statusMeta.label}</Badge>
+                            <Tag color={statusMeta.color}>{statusMeta.label}</Tag>
                           </div>
                         </div>
 
@@ -708,13 +708,13 @@ export default function Reservations() {
                         <div className="flex items-center gap-2 flex-wrap">
                           {/* Accept / Reject Customer Proposed Reschedule */}
                           {hasProposedReschedule && (
-                            <div className="flex items-center gap-1.5 p-1 bg-[var(--az-bg)] border border-[var(--az-warning)]/35 rounded-xl">
+                            <div className="flex items-center gap-1.5 p-1 bg-[var(--f-bg)] border border-[var(--f-warn)]/35 rounded-xl">
                               <Button
                                 size="sm"
                                 variant="primary"
                                 onClick={() => respondRescheduleMutation.mutate({ id: res.id, accept: true })}
                                 disabled={respondRescheduleMutation.isPending}
-                                className="px-2.5 py-1 text-[10px] bg-[var(--az-success)] text-[var(--az-text)] hover:bg-emerald-600 h-7"
+                                className="px-2.5 py-1 text-[10px] bg-[var(--f-ok)] text-[var(--f-text)]:bg-emerald-600 h-7"
                               >
                                 Accept Prop
                               </Button>
@@ -723,7 +723,7 @@ export default function Reservations() {
                                 variant="secondary"
                                 onClick={() => respondRescheduleMutation.mutate({ id: res.id, accept: false })}
                                 disabled={respondRescheduleMutation.isPending}
-                                className="px-2.5 py-1 text-[10px] text-[var(--az-danger)] border-[var(--az-danger)]/40 hover:bg-[var(--az-danger)]/10 h-7"
+                                className="px-2.5 py-1 text-[10px] text-[var(--f-bad)] border-[var(--f-bad)]/40:bg-[var(--f-bad)]/10 h-7"
                               >
                                 Decline Prop
                               </Button>
@@ -751,7 +751,7 @@ export default function Reservations() {
                               variant="outline"
                               onClick={() => checkInMutation.mutate(res.id)}
                               disabled={checkInMutation.isPending}
-                              className="text-xs h-8 border-[var(--az-info)] text-[var(--az-info)] hover:bg-[var(--az-info)]/10"
+                              className="text-xs h-8 border-[var(--f-info)] text-[var(--f-info)]:bg-[var(--f-info)]/10"
                             >
                               Check-In Guest
                             </Button>
@@ -763,7 +763,7 @@ export default function Reservations() {
                               variant="outline"
                               onClick={() => checkOutMutation.mutate(res.id)}
                               disabled={checkOutMutation.isPending}
-                              className="text-xs h-8 border-[var(--az-success)] text-[var(--az-success)] hover:bg-[var(--az-success)]/10"
+                              className="text-xs h-8 border-[var(--f-ok)] text-[var(--f-ok)]:bg-[var(--f-ok)]/10"
                             >
                               Check-Out
                             </Button>
@@ -778,7 +778,7 @@ export default function Reservations() {
                                 setRescheduleReservation(res);
                                 setRescheduleDate(res.scheduledFor ? new Date(res.scheduledFor).toISOString().slice(0, 16) : '');
                               }}
-                              className="text-xs h-8 text-[var(--az-warning)] border-[var(--az-warning)]/20 hover:bg-[var(--az-warning)]/5"
+                              className="text-xs h-8 text-[var(--f-warn)] border-[var(--f-warn)]/20:bg-[var(--f-warn)]/5"
                             >
                               Reschedule
                             </Button>
@@ -790,7 +790,7 @@ export default function Reservations() {
                               size="sm"
                               variant="secondary"
                               onClick={() => setNoShowReservation(res)}
-                              className="text-xs h-8 text-[var(--az-danger)] border-[var(--az-danger)]/20 hover:bg-[var(--az-danger)]/5"
+                              className="text-xs h-8 text-[var(--f-bad)] border-[var(--f-bad)]/20:bg-[var(--f-bad)]/5"
                             >
                               No-Show
                             </Button>
@@ -800,7 +800,7 @@ export default function Reservations() {
                           {['PENDING', 'CONFIRMED'].includes(res.status) && (
                             <button
                               onClick={() => setCancelReservation(res)}
-                              className="p-2 rounded-lg hover:bg-[var(--az-border)] text-[var(--az-text-muted)] hover:text-[var(--az-danger)] transition-colors h-8 w-8 flex items-center justify-center border border-slate-800"
+                              className="p-2 rounded-lg:bg-[var(--f-line)] text-[var(--f-text-3)]:text-[var(--f-bad)] transition-colors h-8 w-8 flex items-center justify-center border border-slate-800"
                               title="Decline/Cancel Booking"
                             >
                               <XCircle className="w-4 h-4" />
@@ -819,17 +819,17 @@ export default function Reservations() {
         {/* Collapsible Slots Preview Side Panel */}
         {showSlotsPanel && (
           <div className="w-[340px] flex-shrink-0 animate-scale-in">
-            <Card className="sticky top-6 p-4 border-[var(--az-border)] bg-[var(--az-surface)] space-y-4">
-              <div className="flex items-center justify-between border-b border-[var(--az-border)] pb-3">
+            <Card className="sticky top-6 p-4 border-[var(--f-line)] bg-[var(--f-surface)] space-y-4">
+              <div className="flex items-center justify-between border-b border-[var(--f-line)] pb-3">
                 <div className="flex items-center gap-2">
-                  <SlidersHorizontal className="w-4 h-4 text-[var(--az-info)]" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--az-text)]">
+                  <SlidersHorizontal className="w-4 h-4 text-[var(--f-info)]" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--f-text)]">
                     Slots Monitor (7 Days)
                   </h3>
                 </div>
                 <button
                   onClick={() => setShowSlotsPanel(false)}
-                  className="text-xs font-bold text-[var(--az-text-muted)] hover:text-[var(--az-text)]"
+                  className="text-xs font-bold text-[var(--f-text-3)]:text-[var(--f-text)]"
                 >
                   Close
                 </button>
@@ -838,12 +838,12 @@ export default function Reservations() {
               {isLoadingSlots ? (
                 <div className="space-y-2.5">
                   {[...Array(5)].map((_, i) => (
-                    <Skeleton key={i} className="h-14 w-full" />
+                    <Skel key={i} className="h-14 w-full" />
                   ))}
                 </div>
               ) : slotsPreview.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-xs text-[var(--az-text-muted)]">No slot configurations listed on the server.</p>
+                  <p className="text-xs text-[var(--f-text-3)]">No slot configurations listed on the server.</p>
                 </div>
               ) : (
                 <div className="space-y-3 max-h-[500px] overflow-y-auto custom-scrollbar pr-1">
@@ -853,25 +853,25 @@ export default function Reservations() {
                       className={cn(
                         "p-3 rounded-xl border flex flex-col gap-1.5 transition-all",
                         slot.isOpen 
-                          ? "bg-[var(--az-bg)] border-[var(--az-border)]" 
-                          : "bg-[var(--az-danger)]/5 border-red-500/15 opacity-60"
+                          ? "bg-[var(--f-bg)] border-[var(--f-line)]" 
+                          : "bg-[var(--f-bad)]/5 border-red-500/15 opacity-60"
                       )}
                     >
                       <div className="flex justify-between items-center">
-                        <span className="text-xs font-bold text-[var(--az-text)]">
+                        <span className="text-xs font-bold text-[var(--f-text)]">
                           {slot.date ? new Date(slot.date).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' }) : `Day ${index + 1}`}
                         </span>
-                        <Badge 
-                          color={slot.isOpen ? "var(--az-success)" : "var(--az-danger)"}
+                        <Tag 
+                          color={slot.isOpen ? "var(--f-ok)" : "var(--f-bad)"}
                           className="text-[9px] tracking-wider uppercase font-semibold"
                         >
                           {slot.isOpen ? "Open" : "Closed"}
-                        </Badge>
+                        </Tag>
                       </div>
 
-                      <div className="flex items-center justify-between text-[10px] text-[var(--az-text-muted)]">
+                      <div className="flex items-center justify-between text-[10px] text-[var(--f-text-3)]">
                         <span className="flex items-center gap-1 font-medium">
-                          <Users className="w-3 h-3 text-[var(--az-text-muted)]" />
+                          <Users className="w-3 h-3 text-[var(--f-text-3)]" />
                           {slot.bookedCount || 0} Booked
                         </span>
                         <span>
@@ -883,9 +883,9 @@ export default function Reservations() {
                 </div>
               )}
 
-              <div className="p-3 rounded-xl bg-[var(--az-info)]/5 border border-blue-500/10 flex gap-2">
-                <Info className="w-4 h-4 text-[var(--az-info)] flex-shrink-0 mt-0.5" />
-                <p className="text-[10px] text-[var(--az-text-muted)] leading-normal">
+              <div className="p-3 rounded-xl bg-[var(--f-info)]/5 border border-blue-500/10 flex gap-2">
+                <Info className="w-4 h-4 text-[var(--f-info)] flex-shrink-0 mt-0.5" />
+                <p className="text-[10px] text-[var(--f-text-3)] leading-normal">
                   This preview lets you audit what external customers see on the main marketplace scheduling feed.
                 </p>
               </div>
@@ -903,12 +903,12 @@ export default function Reservations() {
       >
         {cancelReservation && (
           <div className="space-y-4">
-            <div className="p-3.5 rounded-xl bg-[var(--az-bg)] border border-[var(--az-border)]">
-              <p className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider">Reservation Reference</p>
-              <p className="text-sm font-bold text-[var(--az-text)] mt-0.5">{cancelReservation.reference}</p>
+            <div className="p-3.5 rounded-xl bg-[var(--f-bg)] border border-[var(--f-line)]">
+              <p className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">Reservation Reference</p>
+              <p className="text-sm font-bold text-[var(--f-text)] mt-0.5">{cancelReservation.reference}</p>
               
-              <p className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider mt-3">Customer Name</p>
-              <p className="text-sm font-bold text-[var(--az-text)] mt-0.5">{cancelReservation.customerName || 'Anonymous'}</p>
+              <p className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider mt-3">Customer Name</p>
+              <p className="text-sm font-bold text-[var(--f-text)] mt-0.5">{cancelReservation.customerName || 'Anonymous'}</p>
             </div>
 
             <Textarea
@@ -919,9 +919,9 @@ export default function Reservations() {
               required
             />
 
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--az-warning)]/5 border border-amber-500/10">
-              <Info className="w-4 h-4 text-[var(--az-warning)] flex-shrink-0" />
-              <p className="text-[11px] text-[var(--az-text-muted)]">
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--f-warn)]/5 border border-amber-500/10">
+              <Info className="w-4 h-4 text-[var(--f-warn)] flex-shrink-0" />
+              <p className="text-[11px] text-[var(--f-text-3)]">
                 The customer will be notified, and the smart contract escrow balance will be fully refunded.
               </p>
             </div>
@@ -937,7 +937,7 @@ export default function Reservations() {
                 variant="primary"
                 onClick={() => cancelMutation.mutate({ id: cancelReservation.id, reason: cancelReason })}
                 disabled={cancelMutation.isPending || !cancelReason}
-                className="bg-[var(--az-danger)] text-[var(--az-text)] hover:bg-red-600"
+                className="bg-[var(--f-bad)] text-[var(--f-text)]:bg-red-600"
               >
                 Confirm Cancellation
               </Button>
@@ -955,9 +955,9 @@ export default function Reservations() {
       >
         {rescheduleReservation && (
           <div className="space-y-4">
-            <div className="p-3.5 rounded-xl bg-[var(--az-bg)] border border-[var(--az-border)]">
-              <p className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider">Current Schedule</p>
-              <p className="text-sm font-bold text-[var(--az-text)] mt-0.5">
+            <div className="p-3.5 rounded-xl bg-[var(--f-bg)] border border-[var(--f-line)]">
+              <p className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">Current Schedule</p>
+              <p className="text-sm font-bold text-[var(--f-text)] mt-0.5">
                 {formatDateTime(rescheduleReservation.scheduledFor || rescheduleReservation.createdAt)}
               </p>
             </div>
@@ -1011,23 +1011,23 @@ export default function Reservations() {
       >
         {noShowReservation && (
           <div className="space-y-4">
-            <div className="p-4 rounded-xl bg-[var(--az-bg)] border border-red-500/10 flex flex-col gap-3">
-              <div className="flex items-center gap-2 text-[var(--az-danger)] font-bold text-sm">
-                <ShieldAlert className="w-5 h-5 text-[var(--az-danger)]" />
+            <div className="p-4 rounded-xl bg-[var(--f-bg)] border border-red-500/10 flex flex-col gap-3">
+              <div className="flex items-center gap-2 text-[var(--f-bad)] font-bold text-sm">
+                <ShieldAlert className="w-5 h-5 text-[var(--f-bad)]" />
                 Deductible Smart Penalty Warnings
               </div>
 
               <div className="grid grid-cols-2 gap-3 mt-1 text-xs">
-                <div className="bg-[var(--az-surface)] p-2.5 rounded-lg border border-[var(--az-border)]">
-                  <span className="text-[var(--az-text-muted)] block text-[10px] uppercase tracking-wider">Computed Penalty</span>
-                  <span className="text-sm font-bold text-[var(--az-text)] az-mono">
+                <div className="bg-[var(--f-surface)] p-2.5 rounded-lg border border-[var(--f-line)]">
+                  <span className="text-[var(--f-text-3)] block text-[10px] uppercase tracking-wider">Computed Penalty</span>
+                  <span className="text-sm font-bold text-[var(--f-text)] f-mono">
                     {fmtUSDC(noShowReservation.noShowPenaltyUsdc || noShowReservation.penaltyAmountUsdc || 0)}
                   </span>
                 </div>
 
-                <div className="bg-[var(--az-surface)] p-2.5 rounded-lg border border-[var(--az-border)]">
-                  <span className="text-[var(--az-text-muted)] block text-[10px] uppercase tracking-wider">Penalty Percentage</span>
-                  <span className="text-sm font-bold text-[var(--az-text)] az-mono">
+                <div className="bg-[var(--f-surface)] p-2.5 rounded-lg border border-[var(--f-line)]">
+                  <span className="text-[var(--f-text-3)] block text-[10px] uppercase tracking-wider">Penalty Percentage</span>
+                  <span className="text-sm font-bold text-[var(--f-text)] f-mono">
                     {noShowReservation.noShowPenaltyPct || 0}%
                   </span>
                 </div>
@@ -1038,19 +1038,19 @@ export default function Reservations() {
                 <div className={cn(
                   "p-3 rounded-lg border flex flex-col gap-1 mt-1",
                   noShowReservation.customerTrustScore < 80 
-                    ? "bg-[var(--az-danger)]/5 border-red-500/10" 
-                    : "bg-[var(--az-info)]/5 border-blue-500/10"
+                    ? "bg-[var(--f-bad)]/5 border-red-500/10" 
+                    : "bg-[var(--f-info)]/5 border-blue-500/10"
                 )}>
                   <div className="flex items-center gap-1.5 text-xs font-semibold">
                     <Users className="w-3.5 h-3.5" />
                     Customer Trust Rating: {noShowReservation.customerTrustScore}%
                   </div>
                   {noShowReservation.customerTrustScore < 80 ? (
-                    <p className="text-[10px] text-[var(--az-danger)] leading-normal">
+                    <p className="text-[10px] text-[var(--f-bad)] leading-normal">
                       This customer has a history of high cancel / no-show percentages. Full penalty deduction is highly recommended.
                     </p>
                   ) : (
-                    <p className="text-[10px] text-[var(--az-text-muted)] leading-normal">
+                    <p className="text-[10px] text-[var(--f-text-3)] leading-normal">
                       This customer has maintained an exemplary rating of creditworthy transactions.
                     </p>
                   )}
@@ -1058,7 +1058,7 @@ export default function Reservations() {
               )}
             </div>
 
-            <p className="text-xs text-[var(--az-text-muted)] leading-relaxed">
+            <p className="text-xs text-[var(--f-text-3)] leading-relaxed">
               Marking this reservation as No-Show triggers an immediate lock-and-charge function. The computed percentage penalty amount will be drawn from escrow to reimburse your business.
             </p>
 
@@ -1073,7 +1073,7 @@ export default function Reservations() {
                 variant="primary"
                 onClick={() => noShowMutation.mutate(noShowReservation.id)}
                 disabled={noShowMutation.isPending}
-                className="bg-[var(--az-danger)] text-[var(--az-text)] hover:bg-red-600"
+                className="bg-[var(--f-bad)] text-[var(--f-text)]:bg-red-600"
               >
                 Confirm Penalty Deduction
               </Button>

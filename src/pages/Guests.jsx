@@ -75,11 +75,11 @@ export default function Guests({ businessId }) {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6 animate-fade-in" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+    <div className="p-6 max-w-7xl mx-auto space-y-6 " style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
       
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-[var(--az-text)]">Customer Intelligence</h1>
+        <h1 className="text-2xl font-bold text-[var(--f-text)]">Customer Intelligence</h1>
         <p className="text-sm text-[var(--sn-text-muted)] mt-1">
           Perform targeted segments, track retention metrics, review payment loyalty, and check trust records.
         </p>
@@ -87,49 +87,49 @@ export default function Guests({ businessId }) {
 
       {/* KPI Metrics Dashboard */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <GlassPanel className="p-4 border border-[var(--az-border)] rounded-2xl flex items-center gap-4">
+        <Card className="p-4 border border-[var(--f-line)] rounded-2xl flex items-center gap-4">
           <div className="p-3 rounded-xl bg-[#6C4FD1]/10 text-[#6C4FD1]">
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
             <span className="text-xs text-[var(--sn-text-muted)]">Total Customers</span>
-            <p className="text-xl font-extrabold text-[var(--az-text)]">{totalGuestsCount}</p>
+            <p className="text-xl font-extrabold text-[var(--f-text)]">{totalGuestsCount}</p>
           </div>
-        </GlassPanel>
+        </Card>
 
-        <GlassPanel className="p-4 border border-[var(--az-border)] rounded-2xl flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-[var(--az-success-subtle)] text-[var(--az-success)]">
+        <Card className="p-4 border border-[var(--f-line)] rounded-2xl flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-[var(--az-success-subtle)] text-[var(--f-ok)]">
             <RefreshCw className="w-5 h-5" />
           </div>
           <div>
             <span className="text-xs text-[var(--sn-text-muted)]">Repeat Rate %</span>
-            <p className="text-xl font-extrabold text-[var(--az-text)]">{repeatRate.toFixed(1)}%</p>
+            <p className="text-xl font-extrabold text-[var(--f-text)]">{repeatRate.toFixed(1)}%</p>
           </div>
-        </GlassPanel>
+        </Card>
 
-        <GlassPanel className="p-4 border border-[var(--az-border)] rounded-2xl flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-[var(--az-warning-subtle)] text-[var(--az-warning)]">
+        <Card className="p-4 border border-[var(--f-line)] rounded-2xl flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-[var(--az-warning-subtle)] text-[var(--f-warn)]">
             <DollarSign className="w-5 h-5" />
           </div>
           <div>
             <span className="text-xs text-[var(--sn-text-muted)]">Avg Spend</span>
-            <p className="text-xl font-extrabold text-[var(--az-text)]">{avgSpend.toFixed(2)} USDC</p>
+            <p className="text-xl font-extrabold text-[var(--f-text)]">{avgSpend.toFixed(2)} USDC</p>
           </div>
-        </GlassPanel>
+        </Card>
 
-        <GlassPanel className="p-4 border border-[var(--az-border)] rounded-2xl flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-[var(--az-info)] text-[var(--az-info)]">
+        <Card className="p-4 border border-[var(--f-line)] rounded-2xl flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-[var(--f-info)] text-[var(--f-info)]">
             <TrendingUp className="w-5 h-5" />
           </div>
           <div>
             <span className="text-xs text-[var(--sn-text-muted)]">LTV Estimate</span>
-            <p className="text-xl font-extrabold text-[var(--az-text)]">{ltvEstimate.toFixed(2)} USDC</p>
+            <p className="text-xl font-extrabold text-[var(--f-text)]">{ltvEstimate.toFixed(2)} USDC</p>
           </div>
-        </GlassPanel>
+        </Card>
       </div>
 
       {/* Segmentation Filter Row */}
-      <div className="flex flex-wrap gap-2 border-b border-[var(--az-border)] pb-3">
+      <div className="flex flex-wrap gap-2 border-b border-[var(--f-line)] pb-3">
         {[
           { key: 'ALL', label: 'All Segments' },
           { key: 'VIP', label: 'VIP (5+ Visits)' },
@@ -142,7 +142,7 @@ export default function Guests({ businessId }) {
             className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all ${
               activeSegment === seg.key
                 ? 'bg-[#6C4FD1]/15 text-[#6C4FD1] border-[#6C4FD1]'
-                : 'bg-[var(--az-surface-1)] text-[var(--sn-text-muted)] border-[var(--az-border)] hover:bg-[var(--az-border)]/10'
+                : 'bg-[var(--az-surface-1)] text-[var(--sn-text-muted)] border-[var(--f-line)]:bg-[var(--f-line)]/10'
             }`}
           >
             {seg.label}
@@ -155,7 +155,7 @@ export default function Guests({ businessId }) {
         
         {/* Search and Filters Table Column */}
         <div className="lg:col-span-2 space-y-4">
-          <GlassPanel className="p-4 border border-[var(--az-border)] rounded-2xl flex flex-col md:flex-row gap-4 items-center">
+          <Card className="p-4 border border-[var(--f-line)] rounded-2xl flex flex-col md:flex-row gap-4 items-center">
             <div className="relative flex-1 w-full">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--sn-text-muted)]" />
               <Input
@@ -168,7 +168,7 @@ export default function Guests({ businessId }) {
             
             <div className="w-full md:w-48">
               <select
-                className="w-full px-4 py-2.5 rounded-xl bg-[var(--az-surface-1)] border border-[var(--az-border)] text-[var(--az-text)] text-sm outline-none focus:border-[#6C4FD1]"
+                className="w-full px-4 py-2.5 rounded-xl bg-[var(--az-surface-1)] border border-[var(--f-line)] text-[var(--f-text)] text-sm outline-none focus:border-[#6C4FD1]"
                 value={sourceFilter}
                 onChange={(e) => setSourceFilter(e.target.value)}
               >
@@ -178,13 +178,13 @@ export default function Guests({ businessId }) {
                 <option value="NO_SHOW">No Shows</option>
               </select>
             </div>
-          </GlassPanel>
+          </Card>
 
           {/* Customer Table */}
-          <GlassPanel className="border border-[var(--az-border)] rounded-2xl overflow-hidden">
+          <Card className="border border-[var(--f-line)] rounded-2xl overflow-hidden">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-[var(--az-border)]/20 text-xs font-semibold text-[var(--sn-text-muted)] border-b border-[var(--az-border)]">
+                <tr className="bg-[var(--f-line)]/20 text-xs font-semibold text-[var(--sn-text-muted)] border-b border-[var(--f-line)]">
                   <th className="p-4">Customer Name</th>
                   <th className="p-4">Loyalty Tier</th>
                   <th className="p-4">Total Visits</th>
@@ -193,10 +193,10 @@ export default function Guests({ businessId }) {
                   <th className="p-4 text-right">Details</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[var(--az-border)] text-xs text-[var(--az-text)]">
+              <tbody className="divide-y divide-[var(--f-line)] text-xs text-[var(--f-text)]">
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center"><Skeleton className="h-20 w-full" /></td>
+                    <td colSpan={6} className="p-8 text-center"><Skel className="h-20 w-full" /></td>
                   </tr>
                 ) : filteredGuests.length === 0 ? (
                   <tr>
@@ -210,11 +210,11 @@ export default function Guests({ businessId }) {
                       <tr
                         key={guest.id}
                         onClick={() => setSelectedGuest(guest)}
-                        className="hover:bg-[var(--az-border)]/10 cursor-pointer transition-colors"
+                        className="hover:bg-[var(--f-line)]/10 cursor-pointer transition-colors"
                       >
                         <td className="p-4 flex items-center gap-3">
                           <div
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--az-text)] font-bold text-xs"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--f-text)] font-bold text-xs"
                             style={{ backgroundColor: getInitialsColor(guest.fullName) }}
                           >
                             {guest.fullName?.[0] || '?'}
@@ -236,25 +236,25 @@ export default function Guests({ businessId }) {
                         <td className="p-4 font-mono font-semibold">{(guest.totalSpentUsdc || 0).toFixed(2)} USDC</td>
                         <td className="p-4">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                            guest.trustLevel === 'EXCELLENT' ? 'text-[var(--az-success)] bg-emerald-50' : 'text-[var(--az-info)] bg-blue-50'
+                            guest.trustLevel === 'EXCELLENT' ? 'text-[var(--f-ok)] bg-emerald-50' : 'text-[var(--f-info)] bg-blue-50'
                           }`}>
                             {guest.trustLevel}
                           </span>
                         </td>
-                        <td className="p-4 text-right text-[#6C4FD1] font-semibold hover:underline">Drawer →</td>
+                        <td className="p-4 text-right text-[#6C4FD1] font-semibold:underline">Drawer →</td>
                       </tr>
                     );
                   })
                 )}
               </tbody>
             </table>
-          </GlassPanel>
+          </Card>
         </div>
 
         {/* Legend Panel & Quick insights */}
         <div className="space-y-6 col-span-1">
-          <GlassPanel className="p-5 border border-[var(--az-border)] rounded-2xl space-y-4">
-            <h3 className="text-sm font-bold text-[var(--az-text)]">Loyalty Tier Thresholds</h3>
+          <Card className="p-5 border border-[var(--f-line)] rounded-2xl space-y-4">
+            <h3 className="text-sm font-bold text-[var(--f-text)]">Loyalty Tier Thresholds</h3>
             <p className="text-xs text-[var(--sn-text-muted)] leading-relaxed">
               Customers automatically upgrade tiers based on cumulative lifetime purchase volume.
             </p>
@@ -263,42 +263,42 @@ export default function Guests({ businessId }) {
               <div className="flex items-center gap-3">
                 <span className="w-3 h-3 rounded-full" style={{ backgroundColor: TIER_COLORS.GOLD.color }} />
                 <div className="flex-1">
-                  <p className="text-xs font-bold text-[var(--az-text)]">Gold Segment</p>
+                  <p className="text-xs font-bold text-[var(--f-text)]">Gold Segment</p>
                   <p className="text-[10px] text-[var(--sn-text-muted)]">Cumulative spend ≥ 500 USDC</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <span className="w-3 h-3 rounded-full" style={{ backgroundColor: TIER_COLORS.SILVER.color }} />
                 <div className="flex-1">
-                  <p className="text-xs font-bold text-[var(--az-text)]">Silver Segment</p>
+                  <p className="text-xs font-bold text-[var(--f-text)]">Silver Segment</p>
                   <p className="text-[10px] text-[var(--sn-text-muted)]">Cumulative spend ≥ 150 USDC</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <span className="w-3 h-3 rounded-full" style={{ backgroundColor: TIER_COLORS.BRONZE.color }} />
                 <div className="flex-1">
-                  <p className="text-xs font-bold text-[var(--az-text)]">Bronze Segment</p>
+                  <p className="text-xs font-bold text-[var(--f-text)]">Bronze Segment</p>
                   <p className="text-[10px] text-[var(--sn-text-muted)]">Initial Tier &lt; 150 USDC</p>
                 </div>
               </div>
             </div>
-          </GlassPanel>
+          </Card>
 
-          <GlassPanel className="p-5 border border-[var(--az-border)] rounded-2xl space-y-3">
-            <h3 className="text-sm font-bold text-[var(--az-text)] flex items-center gap-2">
+          <Card className="p-5 border border-[var(--f-line)] rounded-2xl space-y-3">
+            <h3 className="text-sm font-bold text-[var(--f-text)] flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-[#6C4FD1]" /> System Trust Score
             </h3>
             <p className="text-xs text-[var(--sn-text-muted)] leading-relaxed">
               Calculated based on booking retention, no-show histories, and verified payments across the network.
             </p>
-          </GlassPanel>
+          </Card>
         </div>
       </div>
 
       {/* Guest Detail Drawer */}
       {selectedGuest && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-end p-0 z-50 animate-fade-in"
+          className="fixed inset-0 bg-black/50 flex items-center justify-end p-0 z-50 "
           onClick={() => setSelectedGuest(null)}
         >
           <div
@@ -306,30 +306,30 @@ export default function Guests({ businessId }) {
             onClick={(e) => e.stopPropagation()}
             style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}
           >
-            <div className="flex justify-between items-center border-b border-[var(--az-border)] pb-4">
+            <div className="flex justify-between items-center border-b border-[var(--f-line)] pb-4">
               <div>
-                <h2 className="text-lg font-bold text-[var(--az-text)]">{selectedGuest.fullName}</h2>
+                <h2 className="text-lg font-bold text-[var(--f-text)]">{selectedGuest.fullName}</h2>
                 <span className="text-xs font-mono text-[var(--sn-text-muted)]">{selectedGuest.azamanId}</span>
               </div>
-              <button onClick={() => setSelectedGuest(null)} className="text-[var(--sn-text-muted)] hover:text-black font-bold">✕</button>
+              <button onClick={() => setSelectedGuest(null)} className="text-[var(--sn-text-muted)]:text-black font-bold">✕</button>
             </div>
 
             {/* Spend Insights & Loyalty */}
             <div className="grid grid-cols-2 gap-4 text-xs">
-              <div className="p-3 bg-[var(--az-border)]/15 border border-[var(--az-border)] rounded-xl">
+              <div className="p-3 bg-[var(--f-line)]/15 border border-[var(--f-line)] rounded-xl">
                 <span className="text-[var(--sn-text-muted)] block mb-1">Total Visits</span>
-                <span className="font-extrabold text-[var(--az-text)] text-sm">{selectedGuest.totalVisits}</span>
+                <span className="font-extrabold text-[var(--f-text)] text-sm">{selectedGuest.totalVisits}</span>
               </div>
-              <div className="p-3 bg-[var(--az-border)]/15 border border-[var(--az-border)] rounded-xl">
+              <div className="p-3 bg-[var(--f-line)]/15 border border-[var(--f-line)] rounded-xl">
                 <span className="text-[var(--sn-text-muted)] block mb-1">Lifetime Volume</span>
-                <span className="font-extrabold text-[var(--az-text)] text-sm font-mono">{(selectedGuest.totalSpentUsdc || 0).toFixed(2)} USDC</span>
+                <span className="font-extrabold text-[var(--f-text)] text-sm font-mono">{(selectedGuest.totalSpentUsdc || 0).toFixed(2)} USDC</span>
               </div>
             </div>
 
             {/* Visit Breakdown chart simulation */}
             <div className="space-y-2">
               <h4 className="text-xs font-bold text-[var(--sn-text-muted)] uppercase tracking-wider">Spend Progression</h4>
-              <div className="h-44 bg-[var(--az-border)]/10 rounded-xl p-3 flex flex-col justify-end">
+              <div className="h-44 bg-[var(--f-line)]/10 rounded-xl p-3 flex flex-col justify-end">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={[
                     { name: 'Jan', spend: (selectedGuest.totalSpentUsdc || 0) * 0.2 },
@@ -339,13 +339,13 @@ export default function Guests({ businessId }) {
                   ]}>
                     <defs>
                       <linearGradient id="colorSpend" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="var(--az-accent)" stopOpacity={0.4}/>
-                        <stop offset="95%" stopColor="var(--az-accent)" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="var(--f-tint-color)" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="var(--f-tint-color)" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                     <XAxis dataKey="name" fontSize={10} tickLine={false} />
                     <Tooltip />
-                    <Area type="monotone" dataKey="spend" stroke="var(--az-accent)" fillOpacity={1} fill="url(#colorSpend)" />
+                    <Area type="monotone" dataKey="spend" stroke="var(--f-tint-color)" fillOpacity={1} fill="url(#colorSpend)" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -359,10 +359,10 @@ export default function Guests({ businessId }) {
                   selectedGuest.recentVisits.map((v, i) => (
                     <div key={i} className="flex gap-3 items-start text-xs border-l-2 border-[#6C4FD1]/30 pl-3 ml-1.5 py-1">
                       <div className="flex-1">
-                        <p className="font-bold text-[var(--az-text)]">{v.description}</p>
+                        <p className="font-bold text-[var(--f-text)]">{v.description}</p>
                         <p className="text-[10px] text-[var(--sn-text-muted)] mt-0.5">{v.date || 'Recent Event'}</p>
                       </div>
-                      <Badge color="#6C4FD1" bg="rgba(108, 79, 209, 0.08)">{v.type}</Badge>
+                      <Tag variant="neutral" bg="rgba(108, 79, 209, 0.08)">{v.type}</Tag>
                     </div>
                   ))
                 ) : (
@@ -372,15 +372,15 @@ export default function Guests({ businessId }) {
             </div>
 
             {/* Sticky Admin note field */}
-            <div className="space-y-2 border-t border-[var(--az-border)] pt-4">
+            <div className="space-y-2 border-t border-[var(--f-line)] pt-4">
               <h4 className="text-xs font-bold text-[var(--sn-text-muted)] uppercase tracking-wider">Internal Desk Notes</h4>
               <textarea
-                className="w-full text-xs p-3 rounded-xl border border-[var(--az-border)] outline-none focus:border-[#6C4FD1] min-h-[60px]"
+                className="w-full text-xs p-3 rounded-xl border border-[var(--f-line)] outline-none focus:border-[#6C4FD1] min-h-[60px]"
                 placeholder="Write optional operational notes here (such as diet preferences or table assignments)..."
               />
             </div>
 
-            <Button onClick={() => setSelectedGuest(null)} className="w-full bg-[#6C4FD1] text-[var(--az-text)] hover:bg-[#5b42b1]">
+            <Button onClick={() => setSelectedGuest(null)} className="w-full bg-[#6C4FD1] text-[var(--f-text)]:bg-[#5b42b1]">
               Close Directory Profile
             </Button>
           </div>

@@ -93,7 +93,7 @@ function AtRiskWidget() {
           const Icon = RISK_ICONS[item.type] || AlertTriangle;
           return (
             <Link key={i} to={item.link || '#'}
-                  className="flex items-center gap-3 p-2 rounded-md hover:bg-surface-sunken transition-colors">
+                  className="flex items-center gap-3 p-2 rounded-md:bg-surface-sunken transition-colors">
               <div className={cn('f-icon-wrap', item.severity === 'urgent' ? 'f-icon-wrap--bad' : 'f-icon-wrap--warn')}>
                 <Icon className="h-3.5 w-3.5" />
               </div>
@@ -193,7 +193,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {businesses.map(b => (
                 <button key={b.id} onClick={() => selectBusiness(b.id)}
-                  className="f-card p-4 text-left hover:shadow-md transition-shadow cursor-pointer">
+                  className="f-card p-4 text-left:shadow-md transition-shadow cursor-pointer">
                   <p className="text-sm font-semibold text-ink">{b.name}</p>
                   <p className="text-xs text-ink-3 mt-1">{b.business_type || 'General'}</p>
                 </button>
@@ -267,10 +267,10 @@ export default function Dashboard() {
       {/* Employee KPIs */}
       <motion.div variants={ContainerV} initial="hidden" animate="show"
                   className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-        <ItemV><KpiCard label="Total Employees" value={employeeStatsLoading ? '—' : String(employeeStats.totalEmployees)} delta={employeeStats.totalEmployees > 0 ? `${employeeStats.totalEmployees} active` : 'No employees yet'} icon={Users} loading={employeeStatsLoading} /></ItemV>
-        <ItemV><KpiCard label="Active Shifts" value={employeeStatsLoading ? '—' : String(employeeStats.activeShifts)} delta={employeeStats.activeShifts > 0 ? 'On duty' : 'None'} deltaTone={employeeStats.activeShifts > 0 ? 'up' : 'flat'} icon={Clock} loading={employeeStatsLoading} /></ItemV>
-        <ItemV><KpiCard label="Time Off Requests" value={employeeStatsLoading ? '—' : String(employeeStats.pendingTimeOff)} delta={employeeStats.pendingTimeOff > 0 ? 'Pending' : 'All clear'} deltaTone={employeeStats.pendingTimeOff > 0 ? 'down' : 'up'} icon={CalendarCheck} loading={employeeStatsLoading} /></ItemV>
-        <ItemV><KpiCard label="Monthly Payroll" value={employeeStatsLoading ? '—' : `${Number(employeeStats.monthlyPayroll).toLocaleString()} USDC`} delta="This month" icon={DollarSign} loading={employeeStatsLoading} /></ItemV>
+        <ItemV><KpiCard label="Total Employees" value={employeeStatsLoading ? '—' : String(employeeStats.totalEmployees)} delta={employeeStats.totalEmployees > 0 ? `${employeeStats.totalEmployees} active` : 'No employees yet'} icon={Users} /></ItemV>
+        <ItemV><KpiCard label="Active Shifts" value={employeeStatsLoading ? '—' : String(employeeStats.activeShifts)} delta={employeeStats.activeShifts > 0 ? 'On duty' : 'None'} deltaTone={employeeStats.activeShifts > 0 ? 'up' : 'flat'} icon={Clock} /></ItemV>
+        <ItemV><KpiCard label="Time Off Requests" value={employeeStatsLoading ? '—' : String(employeeStats.pendingTimeOff)} delta={employeeStats.pendingTimeOff > 0 ? 'Pending' : 'All clear'} deltaTone={employeeStats.pendingTimeOff > 0 ? 'down' : 'up'} icon={CalendarCheck} /></ItemV>
+        <ItemV><KpiCard label="Monthly Payroll" value={employeeStatsLoading ? '—' : `${Number(employeeStats.monthlyPayroll).toLocaleString()} USDC`} delta="This month" icon={DollarSign} /></ItemV>
       </motion.div>
 
       {/* Quick action cards by type */}
@@ -280,7 +280,7 @@ export default function Dashboard() {
             const Icon = a.icon;
             return (
               <Link key={a.to} to={a.to}>
-                <Card className="h-full hover:shadow-md transition-shadow">
+                <Card className="h-full:shadow-md transition-shadow">
                   <CardBody className="flex flex-col justify-between h-full">
                     <div>
                       <div className="f-icon-wrap mb-3"><Icon className="h-4 w-4" /></div>
@@ -312,10 +312,10 @@ export default function Dashboard() {
       {/* Core KPIs */}
       <motion.div variants={ContainerV} initial="hidden" animate="show"
                   className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-        <ItemV><KpiCard label="Total Orders" value={fmt(stats.totalOrders || 0, 0)} delta="All time" icon={ShoppingBag} loading={statsLoading} /></ItemV>
-        <ItemV><KpiCard label="Revenue" value={fmtUSDC(stats.totalRevenue || 0)} delta="Completed" icon={TrendingUp} loading={statsLoading} /></ItemV>
-        <ItemV><KpiCard label="Pending" value={fmt(stats.pendingOrders || 0, 0)} delta="Awaiting action" icon={Clock} loading={statsLoading} /></ItemV>
-        <ItemV><KpiCard label="Completed" value={fmt(stats.completedOrders || 0, 0)} delta="All time" icon={CheckCircle2} loading={statsLoading} /></ItemV>
+        <ItemV><KpiCard label="Total Orders" value={fmt(stats.totalOrders || 0, 0)} delta="All time" icon={ShoppingBag} /></ItemV>
+        <ItemV><KpiCard label="Revenue" value={fmtUSDC(stats.totalRevenue || 0)} delta="Completed" icon={TrendingUp} /></ItemV>
+        <ItemV><KpiCard label="Pending" value={fmt(stats.pendingOrders || 0, 0)} delta="Awaiting action" icon={Clock} /></ItemV>
+        <ItemV><KpiCard label="Completed" value={fmt(stats.completedOrders || 0, 0)} delta="All time" icon={CheckCircle2} /></ItemV>
       </motion.div>
 
       {/* Type-specific KPIs */}
@@ -402,7 +402,7 @@ export default function Dashboard() {
                 const meta = ORDER_STATUS_META[o.status] || {};
                 return (
                   <Link key={o.id} to={`/orders/${o.id}`}
-                    className="flex items-center justify-between gap-2 p-2 rounded-md hover:bg-surface-sunken transition-colors">
+                    className="flex items-center justify-between gap-2 p-2 rounded-md:bg-surface-sunken transition-colors">
                     <div className="min-w-0">
                       <p className="text-xs font-medium text-ink truncate">
                         {o.items?.length || 0} item{(o.items?.length || 0) !== 1 ? 's' : ''}

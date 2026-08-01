@@ -271,17 +271,17 @@ export default function HotelFrontDesk() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-xl font-bold text-[var(--az-text)]">Hotel Front Desk</h1>
-            <p className="text-sm text-[var(--az-text-muted)] mt-0.5">Manage daily operations, bookings, and room allocations.</p>
+            <h1 className="text-xl font-bold text-[var(--f-text)]">Hotel Front Desk</h1>
+            <p className="text-sm text-[var(--f-text-3)] mt-0.5">Manage daily operations, bookings, and room allocations.</p>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Skeleton className="h-24" />
-          <Skeleton className="h-24" />
-          <Skeleton className="h-24" />
-          <Skeleton className="h-24" />
+          <Skel className="h-24" />
+          <Skel className="h-24" />
+          <Skel className="h-24" />
+          <Skel className="h-24" />
         </div>
-        <Skeleton className="h-96" />
+        <Skel className="h-96" />
       </div>
     );
   }
@@ -300,9 +300,9 @@ export default function HotelFrontDesk() {
       content: (
         <div className="space-y-8 mt-6">
           {/* Quick Actions / Date Controls */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[var(--az-surface)] p-4 rounded-xl border border-[var(--az-border)]">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-[var(--f-surface)] p-4 rounded-xl border border-[var(--f-line)]">
             <div className="flex items-center gap-2">
-              <label className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider">Viewing Date:</label>
+              <label className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">Viewing Date:</label>
               <Input
                 type="date"
                 value={selectedDate}
@@ -324,38 +324,38 @@ export default function HotelFrontDesk() {
           {/* Grid of lists */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Arrivals Card */}
-            <Card className="flex flex-col h-full border border-[var(--az-border)]">
-              <div className="p-4 border-b border-[var(--az-border)] flex items-center justify-between bg-[rgba(108,79,209,0.02)]">
+            <Card className="flex flex-col h-full border border-[var(--f-line)]">
+              <div className="p-4 border-b border-[var(--f-line)] flex items-center justify-between bg-[rgba(108,79,209,0.02)]">
                 <div className="flex items-center gap-2">
-                  <LogIn className="text-[var(--az-accent)]" size={18} />
-                  <h3 className="font-semibold text-[var(--az-text)]">Arrivals Today</h3>
+                  <LogIn className="text-[var(--f-tint-color)]" size={18} />
+                  <h3 className="font-semibold text-[var(--f-text)]">Arrivals Today</h3>
                 </div>
-                <Badge color="var(--az-accent)">{arrivals.length}</Badge>
+                <Tag variant="neutral">{arrivals.length}</Tag>
               </div>
               <div className="p-4 flex-1 overflow-y-auto max-h-[500px] space-y-3">
                 {arrivals.length === 0 ? (
-                  <Empty icon={Calendar} title="No arrivals remaining" description="All expected guests for today have been checked in or cancelled." />
+                  <EmptyState icon={Calendar} title="No arrivals remaining" description="All expected guests for today have been checked in or cancelled." />
                 ) : (
                   arrivals.map(guest => (
-                    <div key={guest.id} className="p-3 bg-[var(--az-bg)] rounded-lg border border-[var(--az-border)] hover:border-[var(--az-accent)] transition-all">
+                    <div key={guest.id} className="p-3 bg-[var(--f-bg)] rounded-lg border border-[var(--f-line)]:border-[var(--f-tint-color)] transition-all">
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <p className="font-semibold text-sm text-[var(--az-text)]">{guest.customer?.username || guest.customerName || 'Guest'}</p>
-                          <p className="text-xs text-[var(--az-text-muted)]">Room Type: {guest.roomType?.name || 'Standard'}</p>
+                          <p className="font-semibold text-sm text-[var(--f-text)]">{guest.customer?.username || guest.customerName || 'Guest'}</p>
+                          <p className="text-xs text-[var(--f-text-3)]">Room Type: {guest.roomType?.name || 'Standard'}</p>
                         </div>
-                        <Badge color={guest.amountUsdc ? 'var(--az-success)' : 'var(--az-warning)'}>
+                        <Tag color={guest.amountUsdc ? 'var(--f-ok)' : 'var(--f-warn)'}>
                           {guest.amountUsdc ? `${guest.amountUsdc} USDC` : 'No Deposit'}
-                        </Badge>
+                        </Tag>
                       </div>
-                      <div className="flex items-center justify-between mt-3 pt-2 border-t border-[var(--az-border)]">
-                        <span className="text-xs text-[var(--az-text-muted)]">
+                      <div className="flex items-center justify-between mt-3 pt-2 border-t border-[var(--f-line)]">
+                        <span className="text-xs text-[var(--f-text-3)]">
                           Check-in: {guest.startDatetime ? new Date(guest.startDatetime).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' }) : 'Flexible'}
                         </span>
                         <Button
                           size="sm"
                           disabled={actionPending}
                           onClick={() => handleCheckIn(guest.id)}
-                          className="px-3 py-1 bg-[var(--az-accent)] text-[var(--az-text)] hover:bg-[var(--az-accent)] opacity-90 hover:opacity-100 flex items-center gap-1 text-xs"
+                          className="px-3 py-1 bg-[var(--f-tint-color)] text-[var(--f-text)]:bg-[var(--f-tint-color)] opacity-90:opacity-100 flex items-center gap-1 text-xs"
                         >
                           <LogIn size={12} /> Check In
                         </Button>
@@ -367,37 +367,37 @@ export default function HotelFrontDesk() {
             </Card>
 
             {/* In-House Card */}
-            <Card className="flex flex-col h-full border border-[var(--az-border)]">
-              <div className="p-4 border-b border-[var(--az-border)] flex items-center justify-between bg-[rgba(61,116,219,0.02)]">
+            <Card className="flex flex-col h-full border border-[var(--f-line)]">
+              <div className="p-4 border-b border-[var(--f-line)] flex items-center justify-between bg-[rgba(61,116,219,0.02)]">
                 <div className="flex items-center gap-2">
-                  <BedDouble className="text-[var(--az-info)]" size={18} />
-                  <h3 className="font-semibold text-[var(--az-text)]">In-House Guests</h3>
+                  <BedDouble className="text-[var(--f-info)]" size={18} />
+                  <h3 className="font-semibold text-[var(--f-text)]">In-House Guests</h3>
                 </div>
-                <Badge color="var(--az-info)">{inHouse.length}</Badge>
+                <Tag variant="neutral">{inHouse.length}</Tag>
               </div>
               <div className="p-4 flex-1 overflow-y-auto max-h-[500px] space-y-3">
                 {inHouse.length === 0 ? (
-                  <Empty icon={BedDouble} title="No active guests" description="There are currently no guests registered in-house." />
+                  <EmptyState icon={BedDouble} title="No active guests" description="There are currently no guests registered in-house." />
                 ) : (
                   inHouse.map(guest => (
-                    <div key={guest.id} className="p-3 bg-[var(--az-bg)] rounded-lg border border-[var(--az-border)] hover:border-[var(--az-info)] transition-all">
+                    <div key={guest.id} className="p-3 bg-[var(--f-bg)] rounded-lg border border-[var(--f-line)]:border-[var(--f-info)] transition-all">
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <p className="font-semibold text-sm text-[var(--az-text)]">{guest.customer?.username || guest.customerName || 'Guest'}</p>
-                          <p className="text-xs text-[var(--az-text-muted)]">Room {guest.room?.roomNumber || 'Unassigned'} ({guest.room?.roomType || 'Standard'})</p>
+                          <p className="font-semibold text-sm text-[var(--f-text)]">{guest.customer?.username || guest.customerName || 'Guest'}</p>
+                          <p className="text-xs text-[var(--f-text-3)]">Room {guest.room?.roomNumber || 'Unassigned'} ({guest.room?.roomType || 'Standard'})</p>
                         </div>
-                        <Badge color="var(--az-info)">In House</Badge>
+                        <Tag variant="neutral">In House</Tag>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 my-2 text-xs text-[var(--az-text-muted)] bg-[var(--az-surface)] p-2 rounded">
-                        <div>Nights Remaining: <strong className="text-[var(--az-text)]">{guest.nightsRemaining ?? 1}</strong></div>
-                        <div>Total spend: <strong className="text-[var(--az-text)]">{guest.amountUsdc || 0} USDC</strong></div>
+                      <div className="grid grid-cols-2 gap-2 my-2 text-xs text-[var(--f-text-3)] bg-[var(--f-surface)] p-2 rounded">
+                        <div>Nights Remaining: <strong className="text-[var(--f-text)]">{guest.nightsRemaining ?? 1}</strong></div>
+                        <div>Total spend: <strong className="text-[var(--f-text)]">{guest.amountUsdc || 0} USDC</strong></div>
                       </div>
-                      <div className="flex justify-end gap-2 mt-3 pt-2 border-t border-[var(--az-border)]">
+                      <div className="flex justify-end gap-2 mt-3 pt-2 border-t border-[var(--f-line)]">
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => openMoveRoomModal(guest)}
-                          className="px-2 py-1 text-xs text-[var(--az-text-muted)] hover:text-[var(--az-text)] border border-[var(--az-border)] flex items-center gap-1"
+                          className="px-2 py-1 text-xs text-[var(--f-text-3)]:text-[var(--f-text)] border border-[var(--f-line)] flex items-center gap-1"
                         >
                           <Move size={12} /> Move Room
                         </Button>
@@ -409,38 +409,38 @@ export default function HotelFrontDesk() {
             </Card>
 
             {/* Departures Card */}
-            <Card className="flex flex-col h-full border border-[var(--az-border)]">
-              <div className="p-4 border-b border-[var(--az-border)] flex items-center justify-between bg-[rgba(222,168,50,0.02)]">
+            <Card className="flex flex-col h-full border border-[var(--f-line)]">
+              <div className="p-4 border-b border-[var(--f-line)] flex items-center justify-between bg-[rgba(222,168,50,0.02)]">
                 <div className="flex items-center gap-2">
-                  <LogOut className="text-[var(--az-warning)]" size={18} />
-                  <h3 className="font-semibold text-[var(--az-text)]">Departures Today</h3>
+                  <LogOut className="text-[var(--f-warn)]" size={18} />
+                  <h3 className="font-semibold text-[var(--f-text)]">Departures Today</h3>
                 </div>
-                <Badge color="var(--az-warning)">{departures.length}</Badge>
+                <Tag variant="neutral">{departures.length}</Tag>
               </div>
               <div className="p-4 flex-1 overflow-y-auto max-h-[500px] space-y-3">
                 {departures.length === 0 ? (
-                  <Empty icon={Calendar} title="No departures today" description="No departures are scheduled or outstanding for today." />
+                  <EmptyState icon={Calendar} title="No departures today" description="No departures are scheduled or outstanding for today." />
                 ) : (
                   departures.map(guest => (
-                    <div key={guest.id} className="p-3 bg-[var(--az-bg)] rounded-lg border border-[var(--az-border)] hover:border-[var(--az-warning)] transition-all">
+                    <div key={guest.id} className="p-3 bg-[var(--f-bg)] rounded-lg border border-[var(--f-line)]:border-[var(--f-warn)] transition-all">
                       <div className="flex justify-between items-start mb-2">
                         <div>
-                          <p className="font-semibold text-sm text-[var(--az-text)]">{guest.customer?.username || guest.customerName || 'Guest'}</p>
-                          <p className="text-xs text-[var(--az-text-muted)]">Room {guest.room?.roomNumber || 'Unassigned'}</p>
+                          <p className="font-semibold text-sm text-[var(--f-text)]">{guest.customer?.username || guest.customerName || 'Guest'}</p>
+                          <p className="text-xs text-[var(--f-text-3)]">Room {guest.room?.roomNumber || 'Unassigned'}</p>
                         </div>
-                        <Badge color={guest.amountUsdc ? 'var(--az-danger)' : 'var(--az-success)'}>
+                        <Tag color={guest.amountUsdc ? 'var(--f-bad)' : 'var(--f-ok)'}>
                           {guest.amountUsdc ? `${guest.amountUsdc} USDC Due` : 'No Balance'}
-                        </Badge>
+                        </Tag>
                       </div>
-                      <div className="flex items-center justify-between mt-3 pt-2 border-t border-[var(--az-border)]">
-                        <span className="text-xs text-[var(--az-text-muted)]">
+                      <div className="flex items-center justify-between mt-3 pt-2 border-t border-[var(--f-line)]">
+                        <span className="text-xs text-[var(--f-text-3)]">
                           Checkout: {guest.endDatetime ? new Date(guest.endDatetime).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' }) : 'Flexible'}
                         </span>
                         <Button
                           size="sm"
                           disabled={actionPending}
                           onClick={() => openCheckoutConfirm(guest)}
-                          className="px-3 py-1 bg-[var(--az-warning)] text-[var(--az-text)] hover:bg-[var(--az-warning)] opacity-90 hover:opacity-100 flex items-center gap-1 text-xs"
+                          className="px-3 py-1 bg-[var(--f-warn)] text-[var(--f-text)]:bg-[var(--f-warn)] opacity-90:opacity-100 flex items-center gap-1 text-xs"
                         >
                           <LogOut size={12} /> Check Out
                         </Button>
@@ -461,33 +461,33 @@ export default function HotelFrontDesk() {
       content: (
         <div className="space-y-6 mt-6">
           {/* Room Rack Legend */}
-          <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--az-surface)] border border-[var(--az-border)] rounded-xl">
+          <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-[var(--f-surface)] border border-[var(--f-line)] rounded-xl">
             <div className="flex flex-wrap gap-4 items-center">
-              <span className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider mr-2">Status Legend:</span>
+              <span className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider mr-2">Status Legend:</span>
               <div className="flex items-center gap-1.5 text-xs">
-                <span className="w-3.5 h-3.5 rounded bg-[var(--az-success)] inline-block" />
+                <span className="w-3.5 h-3.5 rounded bg-[var(--f-ok)] inline-block" />
                 <span>Available</span>
               </div>
               <div className="flex items-center gap-1.5 text-xs">
-                <span className="w-3.5 h-3.5 rounded bg-[var(--az-info)] inline-block" />
+                <span className="w-3.5 h-3.5 rounded bg-[var(--f-info)] inline-block" />
                 <span>Occupied</span>
               </div>
               <div className="flex items-center gap-1.5 text-xs">
-                <span className="w-3.5 h-3.5 rounded bg-[var(--az-accent)] inline-block" />
+                <span className="w-3.5 h-3.5 rounded bg-[var(--f-tint-color)] inline-block" />
                 <span>Reserved</span>
               </div>
               <div className="flex items-center gap-1.5 text-xs">
-                <span className="w-3.5 h-3.5 rounded bg-[var(--az-warning)] inline-block" />
+                <span className="w-3.5 h-3.5 rounded bg-[var(--f-warn)] inline-block" />
                 <span>Dirty / Cleaning</span>
               </div>
               <div className="flex items-center gap-1.5 text-xs">
-                <span className="w-3.5 h-3.5 rounded bg-[var(--az-danger)] inline-block" />
+                <span className="w-3.5 h-3.5 rounded bg-[var(--f-bad)] inline-block" />
                 <span>Maintenance</span>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <label className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider">Start Date:</label>
+              <label className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">Start Date:</label>
               <Input
                 type="date"
                 value={selectedDate}
@@ -498,15 +498,15 @@ export default function HotelFrontDesk() {
           </div>
 
           {/* Grid Rack View */}
-          <Card className="overflow-x-auto border border-[var(--az-border)] p-4">
+          <Card className="overflow-x-auto border border-[var(--f-line)] p-4">
             <table className="w-full border-collapse min-w-[800px]">
               <thead>
                 <tr>
-                  <th className="p-3 text-left text-xs font-semibold text-[var(--az-text-muted)] border-b border-[var(--az-border)] uppercase tracking-wider min-w-[200px]">
+                  <th className="p-3 text-left text-xs font-semibold text-[var(--f-text-3)] border-b border-[var(--f-line)] uppercase tracking-wider min-w-[200px]">
                     Room Information
                   </th>
                   {rackDates.map((rd, i) => (
-                    <th key={rd.dateStr} className={`p-3 text-center text-xs font-semibold border-b border-[var(--az-border)] uppercase tracking-wider ${i === 0 ? 'text-[var(--az-accent)] font-bold bg-[rgba(108,79,209,0.02)]' : 'text-[var(--az-text-muted)]'}`}>
+                    <th key={rd.dateStr} className={`p-3 text-center text-xs font-semibold border-b border-[var(--f-line)] uppercase tracking-wider ${i === 0 ? 'text-[var(--f-tint-color)] font-bold bg-[rgba(108,79,209,0.02)]' : 'text-[var(--f-text-3)]'}`}>
                       {rd.label} {i === 0 && '(Today)'}
                     </th>
                   ))}
@@ -515,7 +515,7 @@ export default function HotelFrontDesk() {
               <tbody>
                 {Object.keys(roomsByFloor).length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="p-8 text-center text-sm text-[var(--az-text-muted)]">
+                    <td colSpan={8} className="p-8 text-center text-sm text-[var(--f-text-3)]">
                       No hotel rooms configured or found.
                     </td>
                   </tr>
@@ -525,8 +525,8 @@ export default function HotelFrontDesk() {
                       <td colSpan={8} className="p-0">
                         <table className="w-full table-fixed">
                           <thead>
-                            <tr className="bg-[var(--az-bg)]">
-                              <td colSpan={8} className="p-2 text-xs font-bold text-[var(--az-text)] border-b border-t border-[var(--az-border)]">
+                            <tr className="bg-[var(--f-bg)]">
+                              <td colSpan={8} className="p-2 text-xs font-bold text-[var(--f-text)] border-b border-t border-[var(--f-line)]">
                                 {floor}
                               </td>
                             </tr>
@@ -536,11 +536,11 @@ export default function HotelFrontDesk() {
                               return (
                                 <tr key={room.id} className="hover:bg-[rgba(214,210,203,0.1)]">
                                   {/* Room description column */}
-                                  <td className="p-3 text-sm border-b border-[var(--az-border)] w-[200px]">
-                                    <div className="font-semibold text-[var(--az-text)]">
+                                  <td className="p-3 text-sm border-b border-[var(--f-line)] w-[200px]">
+                                    <div className="font-semibold text-[var(--f-text)]">
                                       Room {room.roomNumber}
                                     </div>
-                                    <div className="text-xs text-[var(--az-text-muted)] capitalize">
+                                    <div className="text-xs text-[var(--f-text-3)] capitalize">
                                       {room.roomType || 'Standard'}
                                     </div>
                                   </td>
@@ -572,16 +572,16 @@ export default function HotelFrontDesk() {
                                     }
 
                                     // Color mapping
-                                    let cellColor = 'var(--az-success)';
-                                    if (status === 'OCCUPIED') cellColor = 'var(--az-info)';
-                                    if (status === 'RESERVED') cellColor = 'var(--az-accent)';
-                                    if (status === 'DIRTY') cellColor = 'var(--az-warning)';
-                                    if (status === 'MAINTENANCE') cellColor = 'var(--az-danger)';
+                                    let cellColor = 'var(--f-ok)';
+                                    if (status === 'OCCUPIED') cellColor = 'var(--f-info)';
+                                    if (status === 'RESERVED') cellColor = 'var(--f-tint-color)';
+                                    if (status === 'DIRTY') cellColor = 'var(--f-warn)';
+                                    if (status === 'MAINTENANCE') cellColor = 'var(--f-bad)';
 
                                     const displayTooltip = status === 'OCCUPIED' || status === 'RESERVED';
 
                                     return (
-                                      <td key={rd.dateStr} className="p-2 border-b border-r border-[var(--az-border)] text-center relative">
+                                      <td key={rd.dateStr} className="p-2 border-b border-r border-[var(--f-line)] text-center relative">
                                         {displayTooltip ? (
                                           <Tooltip
                                             content={
@@ -594,7 +594,7 @@ export default function HotelFrontDesk() {
                                           >
                                             <div
                                               style={{ backgroundColor: cellColor }}
-                                              className="h-9 rounded flex items-center justify-center text-[10px] font-bold text-[var(--az-text)] cursor-pointer hover:brightness-95 transition-all shadow-sm"
+                                              className="h-9 rounded flex items-center justify-center text-[10px] font-bold text-[var(--f-text)] cursor-pointer:brightness-95 transition-all shadow-sm"
                                             >
                                               {status.slice(0, 3)}
                                             </div>
@@ -611,7 +611,7 @@ export default function HotelFrontDesk() {
                                                 setWalkInOpen(true);
                                               }
                                             }}
-                                            className="h-9 rounded flex items-center justify-center text-[10px] font-bold text-[var(--az-text)] cursor-pointer hover:brightness-95 transition-all shadow-sm"
+                                            className="h-9 rounded flex items-center justify-center text-[10px] font-bold text-[var(--f-text)] cursor-pointer:brightness-95 transition-all shadow-sm"
                                             title={status === 'AVAILABLE' ? 'Click to Book for this date' : status}
                                           >
                                             {status.slice(0, 3)}
@@ -642,13 +642,13 @@ export default function HotelFrontDesk() {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--az-text)] tracking-tight">Hotel Front Desk</h1>
-          <p className="text-sm text-[var(--az-text-muted)] mt-0.5">
+          <h1 className="text-2xl font-bold text-[var(--f-text)] tracking-tight">Hotel Front Desk</h1>
+          <p className="text-sm text-[var(--f-text-3)] mt-0.5">
             Overview of arrivals, in-house guests, checkouts and reservations.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" onClick={loadData} className="border border-[var(--az-border)] flex items-center gap-1.5 text-sm">
+          <Button variant="ghost" onClick={loadData} className="border border-[var(--f-line)] flex items-center gap-1.5 text-sm">
             <RefreshCw size={14} /> Refresh Desk
           </Button>
         </div>
@@ -660,25 +660,25 @@ export default function HotelFrontDesk() {
           label="Arrivals Today"
           value={arrivals.length}
           icon={LogIn}
-          color="var(--az-accent)"
+          color="var(--f-tint-color)"
         />
         <StatCard
           label="In-House Guests"
           value={inHouse.length}
           icon={BedDouble}
-          color="var(--az-info)"
+          color="var(--f-info)"
         />
         <StatCard
           label="Departures Today"
           value={departures.length}
           icon={LogOut}
-          color="var(--az-warning)"
+          color="var(--f-warn)"
         />
         <StatCard
           label="Available Rooms"
           value={availableRoomsCount}
           icon={Calendar}
-          color="var(--az-success)"
+          color="var(--f-ok)"
         />
       </div>
 
@@ -755,11 +755,11 @@ export default function HotelFrontDesk() {
             onChange={(e) => setWalkInForm(prev => ({ ...prev, notes: e.target.value }))}
           />
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--az-border)]">
+          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--f-line)]">
             <Button variant="ghost" type="button" onClick={() => setWalkInOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={actionPending} loading={actionPending}>
+            <Button type="submit" disabled={actionPending}>
               Create Booking
             </Button>
           </div>
@@ -774,9 +774,9 @@ export default function HotelFrontDesk() {
         className="max-w-md"
       >
         <form onSubmit={handleMoveRoomSubmit} className="space-y-4 pt-3">
-          <div className="bg-[var(--az-bg)] p-3 rounded border border-[var(--az-border)] text-sm space-y-1">
-            <p className="text-[var(--az-text-muted)]">Guest Name: <strong className="text-[var(--az-text)]">{moveRoomForm.guestName}</strong></p>
-            <p className="text-[var(--az-text-muted)]">Current Room: <strong className="text-[var(--az-text)]">{moveRoomForm.currentRoomNumber}</strong></p>
+          <div className="bg-[var(--f-bg)] p-3 rounded border border-[var(--f-line)] text-sm space-y-1">
+            <p className="text-[var(--f-text-3)]">Guest Name: <strong className="text-[var(--f-text)]">{moveRoomForm.guestName}</strong></p>
+            <p className="text-[var(--f-text-3)]">Current Room: <strong className="text-[var(--f-text)]">{moveRoomForm.currentRoomNumber}</strong></p>
           </div>
 
           <Select
@@ -801,11 +801,11 @@ export default function HotelFrontDesk() {
             onChange={(e) => setMoveRoomForm(prev => ({ ...prev, reason: e.target.value }))}
           />
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--az-border)]">
+          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--f-line)]">
             <Button variant="ghost" type="button" onClick={() => setMoveRoomOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={actionPending} loading={actionPending}>
+            <Button type="submit" disabled={actionPending}>
               Update Room
             </Button>
           </div>
@@ -820,42 +820,41 @@ export default function HotelFrontDesk() {
         className="max-w-md"
       >
         <div className="space-y-4 pt-3">
-          <div className="bg-[rgba(222,168,50,0.05)] border border-[var(--az-warning)] p-4 rounded-lg flex items-start gap-3">
-            <Info className="text-[var(--az-warning)] shrink-0 mt-0.5" size={18} />
+          <div className="bg-[rgba(222,168,50,0.05)] border border-[var(--f-warn)] p-4 rounded-lg flex items-start gap-3">
+            <Info className="text-[var(--f-warn)] shrink-0 mt-0.5" size={18} />
             <div className="text-sm">
-              <p className="font-semibold text-[var(--az-text)]">Review Checkout Details</p>
-              <p className="text-[var(--az-text-muted)] mt-1">
-                You are checking out <strong className="text-[var(--az-text)]">{checkoutConfirmData.guestName}</strong> from Room <strong className="text-[var(--az-text)]">{checkoutConfirmData.roomNumber}</strong>.
+              <p className="font-semibold text-[var(--f-text)]">Review Checkout Details</p>
+              <p className="text-[var(--f-text-3)] mt-1">
+                You are checking out <strong className="text-[var(--f-text)]">{checkoutConfirmData.guestName}</strong> from Room <strong className="text-[var(--f-text)]">{checkoutConfirmData.roomNumber}</strong>.
               </p>
             </div>
           </div>
 
-          <div className="p-3 bg-[var(--az-bg)] rounded border border-[var(--az-border)] space-y-2 text-sm">
+          <div className="p-3 bg-[var(--f-bg)] rounded border border-[var(--f-line)] space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-[var(--az-text-muted)]">Outstanding Balance:</span>
-              <strong className={checkoutConfirmData.balanceDue > 0 ? 'text-[var(--az-danger)] font-bold' : 'text-[var(--az-success)] font-bold'}>
+              <span className="text-[var(--f-text-3)]">Outstanding Balance:</span>
+              <strong className={checkoutConfirmData.balanceDue > 0 ? 'text-[var(--f-bad)] font-bold' : 'text-[var(--f-ok)] font-bold'}>
                 {checkoutConfirmData.balanceDue ? `${checkoutConfirmData.balanceDue} USDC` : 'Settled'}
               </strong>
             </div>
-            <div className="flex justify-between border-t border-[var(--az-border)] pt-2 mt-1">
-              <span className="text-[var(--az-text-muted)]">Housekeeping Task:</span>
-              <span className="text-[var(--az-text)] font-medium">Automatic Clean Created (DIRTY)</span>
+            <div className="flex justify-between border-t border-[var(--f-line)] pt-2 mt-1">
+              <span className="text-[var(--f-text-3)]">Housekeeping Task:</span>
+              <span className="text-[var(--f-text)] font-medium">Automatic Clean Created (DIRTY)</span>
             </div>
           </div>
 
-          <p className="text-xs text-[var(--az-text-muted)] italic">
+          <p className="text-xs text-[var(--f-text-3)] italic">
             Note: Once finalized, Room {checkoutConfirmData.roomNumber} will immediately set to DIRTY status to notify cleaning crews.
           </p>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--az-border)]">
+          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--f-line)]">
             <Button variant="ghost" type="button" onClick={() => setCheckoutConfirmOpen(false)}>
               Cancel
             </Button>
             <Button
               onClick={handleCheckOut}
               disabled={actionPending}
-              loading={actionPending}
-              className="bg-[var(--az-warning)] hover:bg-[var(--az-warning)] text-[var(--az-text)]"
+              className="bg-[var(--f-warn)]:bg-[var(--f-warn)] text-[var(--f-text)]"
             >
               Confirm Checkout
             </Button>

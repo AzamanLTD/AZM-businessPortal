@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { transit as transitApi, transitOpsApi } from '@/lib/marketplaceApi';
-import { Widget, WidgetStat, WidgetRow } from '@/components/ui/Widget';
+// Widget replaced by KpiCard/Card
 import { StatusCard } from '@/components/ui/StatusCard';
 import { DataTable } from '@/components/ui/DataTable';
 import { Button, Badge, Input, Select, Modal, Empty, Skeleton } from '@/components/ui';
@@ -13,12 +13,12 @@ import {
 } from 'lucide-react';
 
 const TRIP_STATUS = {
-  SCHEDULED: { label: 'Scheduled', color: 'var(--az-info)' },
-  BOARDING: { label: 'Boarding', color: 'var(--az-warning)' },
-  DEPARTED: { label: 'Departed', color: 'var(--az-accent)' },
-  COMPLETED: { label: 'Completed', color: 'var(--az-accent)' },
-  CANCELLED: { label: 'Cancelled', color: 'var(--az-danger)' },
-  DELAYED: { label: 'Delayed', color: 'var(--az-danger)' }
+  SCHEDULED: { label: 'Scheduled', color: 'var(--f-info)' },
+  BOARDING: { label: 'Boarding', color: 'var(--f-warn)' },
+  DEPARTED: { label: 'Departed', color: 'var(--f-tint-color)' },
+  COMPLETED: { label: 'Completed', color: 'var(--f-tint-color)' },
+  CANCELLED: { label: 'Cancelled', color: 'var(--f-bad)' },
+  DELAYED: { label: 'Delayed', color: 'var(--f-bad)' }
 };
 
 const BLANK_TRIP = {
@@ -275,12 +275,12 @@ export default function TransitTrips() {
       sortValue: (r) => r.routeName,
       render: (r) => (
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-[var(--az-info)] border border-[#4f8ef730] flex items-center justify-center flex-shrink-0">
-            <Route className="w-3.5 h-3.5 text-[var(--az-info)]" />
+          <div className="w-8 h-8 rounded-lg bg-[var(--f-info)] border border-[#4f8ef730] flex items-center justify-center flex-shrink-0">
+            <Route className="w-3.5 h-3.5 text-[var(--f-info)]" />
           </div>
           <div className="min-w-0">
-            <p className="font-semibold text-[var(--az-text)] truncate">{r.routeName}</p>
-            <p className="text-[var(--az-text-muted)] text-[10px] truncate">{r.origin} → {r.destination}</p>
+            <p className="font-semibold text-[var(--f-text)] truncate">{r.routeName}</p>
+            <p className="text-[var(--f-text-3)] text-[10px] truncate">{r.origin} → {r.destination}</p>
           </div>
         </div>
       ),
@@ -292,13 +292,13 @@ export default function TransitTrips() {
       sortValue: (r) => new Date(r.departureAt).getTime(),
       render: (r) => (
         <div className="flex flex-col">
-          <span className="text-[var(--az-text)] font-medium">{formatDateTime(r.departureAt)}</span>
+          <span className="text-[var(--f-text)] font-medium">{formatDateTime(r.departureAt)}</span>
           {r.arrivalAt && (
-            <span className="text-[var(--az-text-muted)] text-[10px]">
+            <span className="text-[var(--f-text-3)] text-[10px]">
               ETA: {formatDateTime(r.arrivalAt)}
             </span>
           )}
-          <span className="text-[var(--az-text-muted)] text-[10px]">{r.vehicle?.licensePlate || 'No plate'} · {r.vehicle?.type || '—'}</span>
+          <span className="text-[var(--f-text-3)] text-[10px]">{r.vehicle?.licensePlate || 'No plate'} · {r.vehicle?.type || '—'}</span>
         </div>
       ),
     },
@@ -313,9 +313,9 @@ export default function TransitTrips() {
         const pct = total > 0 ? (booked / total) * 100 : 0;
         return (
           <div className="flex flex-col gap-1">
-            <span className="text-[var(--az-text)] font-bold az-mono">{booked}/{total}</span>
-            <div className="w-20 h-1.5 rounded-full bg-[var(--az-border)] overflow-hidden">
-              <div className="h-full rounded-full" style={{ width: `${pct}%`, background: pct > 80 ? 'var(--az-warning)' : 'var(--az-accent)' }} />
+            <span className="text-[var(--f-text)] font-bold f-mono">{booked}/{total}</span>
+            <div className="w-20 h-1.5 rounded-full bg-[var(--f-line)] overflow-hidden">
+              <div className="h-full rounded-full" style={{ width: `${pct}%`, background: pct > 80 ? 'var(--f-warn)' : 'var(--f-tint-color)' }} />
             </div>
           </div>
         );
@@ -326,7 +326,7 @@ export default function TransitTrips() {
       label: 'Fare',
       sortable: true,
       sortValue: (r) => Number(r.fareUsdc) || 0,
-      render: (r) => <span className="text-[var(--az-text)] font-bold az-mono">{fmtUSDC(r.fareUsdc)}</span>,
+      render: (r) => <span className="text-[var(--f-text)] font-bold f-mono">{fmtUSDC(r.fareUsdc)}</span>,
     },
     {
       key: 'status',
@@ -335,7 +335,7 @@ export default function TransitTrips() {
       sortValue: (r) => r.status,
       render: (r) => {
         const meta = TRIP_STATUS[r.status] || TRIP_STATUS.SCHEDULED;
-        return <Badge color={meta.color}>{meta.label}</Badge>;
+        return <Tag color={meta.color}>{meta.label}</Tag>;
       },
     },
     {
@@ -345,7 +345,7 @@ export default function TransitTrips() {
         <div className="flex items-center gap-1.5">
           <button
             onClick={(e) => { e.stopPropagation(); setSeatEditorFor(r); }}
-            className="p-1.5 rounded-lg hover:bg-[var(--az-border)] text-[var(--az-text-muted)] hover:text-[var(--az-info)] transition-colors"
+            className="p-1.5 rounded-lg:bg-[var(--f-line)] text-[var(--f-text-3)]:text-[var(--f-info)] transition-colors"
             title="Edit seat map"
           >
             <Grid3x3 className="w-3.5 h-3.5" />
@@ -353,7 +353,7 @@ export default function TransitTrips() {
           
           <button
             onClick={(e) => { e.stopPropagation(); openDelayModal(r); }}
-            className="p-1.5 rounded-lg hover:bg-[var(--az-border)] text-[var(--az-text-muted)] hover:text-[var(--az-warning)] transition-colors"
+            className="p-1.5 rounded-lg:bg-[var(--f-line)] text-[var(--f-text-3)]:text-[var(--f-warn)] transition-colors"
             title="Mark Delay / ETA"
           >
             <Clock className="w-3.5 h-3.5" />
@@ -361,7 +361,7 @@ export default function TransitTrips() {
 
           <button
             onClick={(e) => { e.stopPropagation(); openEdit(r); }}
-            className="p-1.5 rounded-lg hover:bg-[var(--az-border)] text-[var(--az-text-muted)] hover:text-[var(--az-accent)] transition-colors"
+            className="p-1.5 rounded-lg:bg-[var(--f-line)] text-[var(--f-text-3)]:text-[var(--f-tint-color)] transition-colors"
             title="Edit trip"
           >
             <Pencil className="w-3.5 h-3.5" />
@@ -369,7 +369,7 @@ export default function TransitTrips() {
 
           <button
             onClick={(e) => { e.stopPropagation(); handleRequestCancel(r); }}
-            className="p-1.5 rounded-lg hover:bg-[var(--az-border)] text-[var(--az-text-muted)] hover:text-[var(--az-danger)] transition-colors"
+            className="p-1.5 rounded-lg:bg-[var(--f-line)] text-[var(--f-text-3)]:text-[var(--f-bad)] transition-colors"
             title="Cancel Trip & Refunds"
           >
             <XCircle className="w-3.5 h-3.5" />
@@ -380,7 +380,7 @@ export default function TransitTrips() {
               e.stopPropagation();
               if (confirm(`Delete trip "${r.routeName}"? This cannot be undone.`)) deleteMut.mutate(r.id);
             }}
-            className="p-1.5 rounded-lg hover:bg-[var(--az-border)] text-[var(--az-text-muted)] hover:text-[var(--az-danger)] transition-colors"
+            className="p-1.5 rounded-lg:bg-[var(--f-line)] text-[var(--f-text-3)]:text-[var(--f-bad)] transition-colors"
             title="Delete trip"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -391,15 +391,15 @@ export default function TransitTrips() {
   ];
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto animate-fade-in">
+    <div className="p-6 space-y-6 max-w-7xl mx-auto ">
       {/* Header */}
-      <div className="flex items-start justify-between border-b border-[var(--az-border)] pb-5">
+      <div className="flex items-start justify-between border-b border-[var(--f-line)] pb-5">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--az-text)] flex items-center gap-2">
-            <Bus className="w-5 h-5 text-[var(--az-info)]" />
+          <h1 className="text-2xl font-bold text-[var(--f-text)] flex items-center gap-2">
+            <Bus className="w-5 h-5 text-[var(--f-info)]" />
             Transit Trips Console
           </h1>
-          <p className="text-sm text-[var(--az-text-muted)] mt-1">Schedule and status-track commercial runs, templates, cancellations, and visual layouts.</p>
+          <p className="text-sm text-[var(--f-text-3)] mt-1">Schedule and status-track commercial runs, templates, cancellations, and visual layouts.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={() => setTemplatesExpanded(!templatesExpanded)} variant="secondary" size="sm">
@@ -413,11 +413,11 @@ export default function TransitTrips() {
 
       {/* Collapsible Route Templates Section */}
       {templatesExpanded && (
-        <Card className="border-[var(--az-accent)]/20 bg-black/20 space-y-4">
-          <div className="flex items-center justify-between border-b border-[var(--az-border)] pb-3">
+        <Card className="border-[var(--f-tint-color)]/20 bg-black/20 space-y-4">
+          <div className="flex items-center justify-between border-b border-[var(--f-line)] pb-3">
             <div className="flex items-center gap-2">
-              <Route className="w-4 h-4 text-[var(--az-accent)]" />
-              <h2 className="text-sm font-bold text-[var(--az-text)]">Recurring Route Templates</h2>
+              <Route className="w-4 h-4 text-[var(--f-tint-color)]" />
+              <h2 className="text-sm font-bold text-[var(--f-text)]">Recurring Route Templates</h2>
             </div>
             <div className="flex items-center gap-2">
               <Button size="sm" variant="outline" className="text-xs" onClick={() => setGenerateTripsOpen(true)}>
@@ -430,22 +430,22 @@ export default function TransitTrips() {
           </div>
 
           {templates.length === 0 ? (
-            <p className="text-xs text-[var(--az-text-muted)] py-4 text-center">No route templates found. Create template patterns to batch schedule recurring schedules.</p>
+            <p className="text-xs text-[var(--f-text-3)] py-4 text-center">No route templates found. Create template patterns to batch schedule recurring schedules.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {templates.map(t => (
-                <div key={t.id} className="p-3.5 rounded-xl bg-[var(--az-surface)] border border-[var(--az-border)] relative group">
-                  <button onClick={() => handleDeleteTemplate(t.id)} className="absolute top-3.5 right-3.5 p-1 rounded hover:bg-[var(--az-danger-subtle)] text-[var(--az-text-muted)] hover:text-[var(--az-danger)] transition-colors">
+                <div key={t.id} className="p-3.5 rounded-xl bg-[var(--f-surface)] border border-[var(--f-line)] relative group">
+                  <button onClick={() => handleDeleteTemplate(t.id)} className="absolute top-3.5 right-3.5 p-1 rounded:bg-[var(--az-danger-subtle)] text-[var(--f-text-3)]:text-[var(--f-bad)] transition-colors">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
-                  <p className="font-bold text-xs text-[var(--az-text)]">{t.name}</p>
-                  <p className="text-[10px] text-[var(--az-text-muted)] mt-0.5">{t.origin} → {t.destination}</p>
-                  <div className="mt-3 flex items-center justify-between text-[10px] font-mono text-[var(--az-text-muted)]">
+                  <p className="font-bold text-xs text-[var(--f-text)]">{t.name}</p>
+                  <p className="text-[10px] text-[var(--f-text-3)] mt-0.5">{t.origin} → {t.destination}</p>
+                  <div className="mt-3 flex items-center justify-between text-[10px] font-mono text-[var(--f-text-3)]">
                     <span>Est: {t.durationMins} mins</span>
-                    <span className="text-[var(--az-success)] font-bold">${t.typicalFareUsdc} USDC</span>
+                    <span className="text-[var(--f-ok)] font-bold">${t.typicalFareUsdc} USDC</span>
                   </div>
-                  <div className="mt-2 text-[10px] text-[var(--az-text-muted)]">
-                    <span className="font-bold block text-[8px] uppercase tracking-wider text-[var(--az-accent)]">Scheduled times:</span>
+                  <div className="mt-2 text-[10px] text-[var(--f-text-3)]">
+                    <span className="font-bold block text-[8px] uppercase tracking-wider text-[var(--f-tint-color)]">Scheduled times:</span>
                     <span className="font-mono">{t.departureTimes || '—'}</span>
                   </div>
                 </div>
@@ -465,9 +465,9 @@ export default function TransitTrips() {
 
       {/* Main Table */}
       {isLoading ? (
-        <Skeleton className="h-96" />
+        <Skel className="h-96" />
       ) : trips.length === 0 ? (
-        <Empty icon={Bus} title="No trips scheduled" description="Use Route Templates or create custom schedules to get started." />
+        <EmptyState icon={Bus} title="No trips scheduled" description="Use Route Templates or create custom schedules to get started." />
       ) : (
         <Card className="p-0 overflow-hidden">
           <DataTable columns={columns} data={trips} />
@@ -478,7 +478,7 @@ export default function TransitTrips() {
       <Modal open={!!modal} onClose={closeModal} title={modal === 'create' ? 'Schedule New Run' : 'Edit Scheduled Run'}>
         <form onSubmit={handleSubmit} className="space-y-4">
           {formError && (
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--az-danger-subtle)] border border-[var(--az-danger)] text-xs text-[var(--az-danger)]">
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--az-danger-subtle)] border border-[var(--f-bad)] text-xs text-[var(--f-bad)]">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               <span>{formError}</span>
             </div>
@@ -540,15 +540,15 @@ export default function TransitTrips() {
                 options={[{ value: '', label: 'Select a vehicle...' }, ...vehicleOptions.map(v => ({ value: v.value, label: `${v.label} — ${v.sub}` }))]}
               />
             ) : (
-              <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--az-warning)]/10 border border-[var(--az-warning)]">
-                <AlertCircle className="w-4 h-4 text-[var(--az-warning)] flex-shrink-0" />
-                <p className="text-xs text-[var(--az-warning)]">Add a vehicle in Fleet Management first — a trip needs one.</p>
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--f-warn)]/10 border border-[var(--f-warn)]">
+                <AlertCircle className="w-4 h-4 text-[var(--f-warn)] flex-shrink-0" />
+                <p className="text-xs text-[var(--f-warn)]">Add a vehicle in Fleet Management first — a trip needs one.</p>
               </div>
             )
           ) : (
-            <div className="p-3 rounded-xl bg-[var(--az-border)]">
-              <p className="text-xs text-[var(--az-text-muted)]">Vehicle (fixed after creation)</p>
-              <p className="text-sm text-[var(--az-text)] font-medium mt-0.5">
+            <div className="p-3 rounded-xl bg-[var(--f-line)]">
+              <p className="text-xs text-[var(--f-text-3)]">Vehicle (fixed after creation)</p>
+              <p className="text-sm text-[var(--f-text)] font-medium mt-0.5">
                 {modal?.vehicle ? `${modal.vehicle.make || ''} ${modal.vehicle.model || ''} — ${modal.vehicle.licensePlate || 'No plate'}`.trim() : '—'}
               </p>
             </div>
@@ -562,7 +562,7 @@ export default function TransitTrips() {
           />
 
           <div className="flex gap-3 pt-2">
-            <Button type="submit" loading={createMut.isPending || updateMut.isPending} className="flex-1">
+            <Button type="submit" className="flex-1">
               {modal === 'create' ? 'Create Trip' : 'Save Changes'}
             </Button>
             <Button type="button" variant="secondary" onClick={closeModal}>Cancel</Button>
@@ -612,7 +612,7 @@ export default function TransitTrips() {
       {/* Modal - Cancellation Refund Preview & Confirmation */}
       <Modal open={cancelPreviewOpen} onClose={() => setCancelPreviewOpen(false)} title="Confirm Trip Cancellation & Refunds">
         <div className="space-y-4 text-xs">
-          <div className="p-3 bg-[var(--az-danger-subtle)] border border-red-500/30 rounded-xl text-[var(--az-danger)] flex items-start gap-2">
+          <div className="p-3 bg-[var(--az-danger-subtle)] border border-red-500/30 rounded-xl text-[var(--f-bad)] flex items-start gap-2">
             <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-bold">Irreversible Action Warning</p>
@@ -620,15 +620,15 @@ export default function TransitTrips() {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl border border-[var(--az-border)] bg-black/20 space-y-3">
-            <p className="font-semibold text-xs border-b border-[var(--az-border)] pb-2 uppercase tracking-wide">Cancellation Impact Breakdown</p>
+          <div className="p-4 rounded-xl border border-[var(--f-line)] bg-black/20 space-y-3">
+            <p className="font-semibold text-xs border-b border-[var(--f-line)] pb-2 uppercase tracking-wide">Cancellation Impact Breakdown</p>
             <div className="flex justify-between">
               <span>Affected Bookings Count</span>
-              <span className="font-bold text-[var(--az-text)]">{cancellationPreviewData?.cancelledBookings || cancellationPreviewData?.bookings?.length || 0}</span>
+              <span className="font-bold text-[var(--f-text)]">{cancellationPreviewData?.cancelledBookings || cancellationPreviewData?.bookings?.length || 0}</span>
             </div>
             <div className="flex justify-between">
               <span>Expected Cash Refund (USDC)</span>
-              <span className="font-bold text-[var(--az-danger)]">
+              <span className="font-bold text-[var(--f-bad)]">
                 {fmtUSDC((cancellationPreviewData?.bookings?.length || 0) * (Number(selectedTripToCancel?.fareUsdc) || 0))}
               </span>
             </div>
@@ -636,7 +636,7 @@ export default function TransitTrips() {
 
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="secondary" onClick={() => { setCancelPreviewOpen(false); setSelectedTripToCancel(null); }}>Keep Trip Active</Button>
-            <Button variant="danger" className="bg-[var(--az-danger)] text-[var(--az-text)] hover:bg-red-700" onClick={confirmTripCancellation}>Confirm Cancellation</Button>
+            <Button variant="danger" className="bg-[var(--f-bad)] text-[var(--f-text)]:bg-red-700" onClick={confirmTripCancellation}>Confirm Cancellation</Button>
           </div>
         </div>
       </Modal>
@@ -644,14 +644,14 @@ export default function TransitTrips() {
       {/* Modal - Mark Trip Delayed */}
       <Modal open={delayModalOpen} onClose={() => setDelayModalOpen(false)} title="Mark Trip as Delayed">
         <form onSubmit={handleMarkDelayed} className="space-y-4 text-xs">
-          <p className="text-[var(--az-text-muted)]">Input total minutes delayed. An updated arrival ETA estimate is pushed to booking alerts.</p>
+          <p className="text-[var(--f-text-3)]">Input total minutes delayed. An updated arrival ETA estimate is pushed to booking alerts.</p>
           <div className="grid grid-cols-2 gap-4">
             <Input label="Delay (Minutes) *" type="number" value={delayForm.delayMins} onChange={e => setFormDelay({ ...delayForm, delayMins: e.target.value })} />
             <Input label="New Estimated Arrival Time (ETA)" type="datetime-local" value={delayForm.eta} onChange={e => setFormDelay({ ...delayForm, eta: e.target.value })} />
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="secondary" onClick={() => setDelayModalOpen(false)}>Cancel</Button>
-            <Button type="submit" className="bg-[var(--az-warning)] text-black">Update Route Delay</Button>
+            <Button type="submit" className="bg-[var(--f-warn)] text-black">Update Route Delay</Button>
           </div>
         </form>
       </Modal>
@@ -667,9 +667,9 @@ export default function TransitTrips() {
 // ── Seat Map Editor ──────────────────────────────────────────────────────────
 const SEAT_TIERS = ['ECONOMY', 'STANDARD', 'VIP'];
 const TIER_COLORS = {
-  ECONOMY:  { bg: 'var(--az-accent-subtle))', border: 'var(--az-accent)', text: 'var(--az-accent)' },
-  STANDARD: { bg: 'var(--az-info-subtle))', border: 'var(--az-info)', text: 'var(--az-info)' },
-  VIP:      { bg: 'var(--az-warning-subtle))', border: 'var(--az-warning)', text: 'var(--az-warning)' },
+  ECONOMY:  { bg: 'var(--az-accent-subtle))', border: 'var(--f-tint-color)', text: 'var(--f-tint-color)' },
+  STANDARD: { bg: 'var(--az-info-subtle))', border: 'var(--f-info)', text: 'var(--f-info)' },
+  VIP:      { bg: 'var(--az-warning-subtle))', border: 'var(--f-warn)', text: 'var(--f-warn)' },
 };
 
 function SeatMapEditor({ trip, onClose }) {
@@ -736,7 +736,7 @@ function SeatMapEditor({ trip, onClose }) {
     setSaving(false);
   };
 
-  if (loading) return <Modal open onClose={onClose} title="Seat Map Editor"><Skeleton className="h-64" /></Modal>;
+  if (loading) return <Modal open onClose={onClose} title="Seat Map Editor"><Skel className="h-64" /></Modal>;
 
   return (
     <Modal open onClose={onClose} title={`Seat Map — ${trip.routeName}`} className="max-w-2xl">
@@ -744,14 +744,14 @@ function SeatMapEditor({ trip, onClose }) {
         {/* Legend */}
         <div className="flex items-center gap-4 flex-wrap text-xs">
           <div className="flex items-center gap-1.5">
-            <div className="w-5 h-5 rounded-lg bg-[var(--az-warning)] border border-[var(--az-warning)]" />
-            <span className="text-[var(--az-text-muted)]">Occupied (locked)</span>
+            <div className="w-5 h-5 rounded-lg bg-[var(--f-warn)] border border-[var(--f-warn)]" />
+            <span className="text-[var(--f-text-3)]">Occupied (locked)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-5 h-5 rounded-lg bg-[var(--az-danger)] border border-[var(--az-danger)]" />
-            <span className="text-[var(--az-text-muted)]">Blocked</span>
+            <div className="w-5 h-5 rounded-lg bg-[var(--f-bad)] border border-[var(--f-bad)]" />
+            <span className="text-[var(--f-text-3)]">Blocked</span>
           </div>
-          <span className="text-[var(--az-text-muted)] ml-auto">Click a seat to cycle its tier · click legend below to block/unblock</span>
+          <span className="text-[var(--f-text-3)] ml-auto">Click a seat to cycle its tier · click legend below to block/unblock</span>
         </div>
 
         {/* Tier legend / fare inputs */}
@@ -773,10 +773,10 @@ function SeatMapEditor({ trip, onClose }) {
         </div>
 
         {/* Bus outline */}
-        <div className="rounded-2xl border-2 border-[var(--az-border)] p-4 mx-auto max-w-sm" style={{ background: 'var(--az-black)' }}>
+        <div className="rounded-2xl border-2 border-[var(--f-line)] p-4 mx-auto max-w-sm" style={{ background: 'var(--f-ink-900)' }}>
           {/* Driver */}
           <div className="flex justify-center mb-3">
-            <div className="w-10 h-6 rounded-lg bg-[var(--az-border)] flex items-center justify-center text-[10px] text-[var(--az-text-muted)] font-bold">
+            <div className="w-10 h-6 rounded-lg bg-[var(--f-line)] flex items-center justify-center text-[10px] text-[var(--f-text-3)] font-bold">
               DRIVER
             </div>
           </div>
@@ -787,7 +787,7 @@ function SeatMapEditor({ trip, onClose }) {
         </div>
 
         <div className="flex gap-3 pt-2">
-          <Button onClick={handleSave} loading={saving} className="flex-1">Save Seat Map</Button>
+          <Button onClick={handleSave} className="flex-1">Save Seat Map</Button>
           <Button variant="secondary" onClick={onClose}>Cancel</Button>
         </div>
       </div>
@@ -845,9 +845,9 @@ function SeatButton({ seat, onClick }) {
   const isOccupied = seat.status === 'OCCUPIED';
   const isBlocked = seat.status === 'BLOCKED';
   const c = isOccupied
-    ? { bg: 'var(--az-warning)', border: 'var(--az-warning)', text: 'var(--az-warning)' }
+    ? { bg: 'var(--f-warn)', border: 'var(--f-warn)', text: 'var(--f-warn)' }
     : isBlocked
-    ? { bg: 'var(--az-danger)', border: 'var(--az-danger)', text: 'var(--az-danger)' }
+    ? { bg: 'var(--f-bad)', border: 'var(--f-bad)', text: 'var(--f-bad)' }
     : TIER_COLORS[seat.tier || 'ECONOMY'];
 
   return (
@@ -861,7 +861,7 @@ function SeatButton({ seat, onClick }) {
       style={{
         background: c.bg,
         borderColor: c.border,
-        color: isOccupied || isBlocked ? '#000000' : 'var(--az-text)'
+        color: isOccupied || isBlocked ? '#000000' : 'var(--f-text)'
       }}
     >
       <span>{seat.seatId}</span>

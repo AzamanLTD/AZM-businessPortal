@@ -18,3 +18,13 @@ export { CommandPalette } from './CommandPalette';
 export { ToastProvider, useToast, notify } from './toast';
 export * from './chartTheme';
 export { ForgeLayout } from './ForgeLayout';
+
+// ── Backward-compatible re-exports for legacy @/components/ui imports ──
+// These keep existing pages working during migration. Removed in Phase 8.
+export { Badge } from './Tag';  // Badge = Tag alias
+export { Skeleton } from './Skeleton';  // Skeleton = Skel alias
+export { Empty } from './EmptyState';  // Empty = EmptyState alias
+export { Spinner } from './Skeleton';  // Spinner = Skel alias
+export { Progress } from './Progress';
+export { Avatar } from './Avatar';
+export { Tabs } from './Tabs';
