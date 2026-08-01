@@ -13,7 +13,7 @@ import {
   Empty,
   Skeleton,
   Modal,
-} from '@/components/ui';
+} from '@/components/forge';
 import { fmtUSDC } from '@/lib/utils';
 import {
   Package,

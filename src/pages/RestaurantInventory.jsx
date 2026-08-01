@@ -15,7 +15,7 @@ import {
   Tabs,
   Progress,
   Tooltip
-} from '../components/ui';
+} from '@/components/forge';
 import {
   Package,
   AlertTriangle,

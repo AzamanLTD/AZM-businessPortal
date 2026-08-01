@@ -27,3 +27,19 @@ export { Progress } from './Progress';
 export { Avatar } from './Avatar';
 export { Tabs } from './Tabs';
 export { ProfileMenu } from "./ProfileMenu";
+
+// ── Dialog / Sheet / Select / Switch / ScrollArea ──
+export { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from './Dialog';
+export { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from './Sheet';
+export { Select, SelectValue, SelectItem, SelectGroup, SelectLabel } from './Select';
+export { Switch } from './Switch';
+export { ScrollArea, ScrollBar } from './ScrollArea';
+
+// ── Legacy name re-exports ──
+export { Card as GlassPanel } from './Card';
+export { KpiCard as StatCard } from './KpiCard';
+
+export { AnimatedNumber } from "./AnimatedNumber";
+export { VirtualizedGrid } from "./VirtualizedGrid";
+export { DropdownMenu } from "./DropdownMenu";
+export { VirtualizedList } from "./VirtualizedList";

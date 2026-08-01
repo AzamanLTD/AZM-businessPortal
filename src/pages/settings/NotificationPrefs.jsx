@@ -9,7 +9,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { businessOS } from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
-import { Card, Switch, Button } from '@/components/ui';
+import { Card, Switch, Button } from '@/components/forge';
 import { Bell, Save, BellRing } from 'lucide-react';
 import { toast } from 'sonner';
 

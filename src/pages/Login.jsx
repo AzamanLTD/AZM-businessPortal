@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { Eye, EyeOff, AlertCircle, LogIn } from 'lucide-react';
-import { Button, Input } from '@/components/ui';
+import { Button, Input } from '@/components/forge';
 // ParticleField removed in Forge purge
 import { spring } from '@/lib/motion';
 

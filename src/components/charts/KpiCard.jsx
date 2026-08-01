@@ -1,7 +1,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { TrendingUp, TrendingDown } from 'lucide-react';
-import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
+import { AnimatedNumber } from '@/components/forge';
 
 export function KpiCard({ label, value, delta, deltaType = 'positive', sparkData, icon: Icon, color = 'var(--f-tint-color)', loading }) {
   if (loading) {

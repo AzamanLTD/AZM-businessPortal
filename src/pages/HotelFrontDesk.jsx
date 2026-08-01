@@ -15,7 +15,7 @@ import {
   Avatar,
   Tabs,
   Tooltip
-} from '@/components/ui';
+} from '@/components/forge';
 import { useToast } from '@/components/forge';
 import {
   LogIn,

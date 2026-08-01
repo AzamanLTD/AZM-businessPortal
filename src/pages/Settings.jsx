@@ -13,7 +13,7 @@ import { business as businessApi, locations as locApi } from '@/lib/api';
 import { marketplaceApi } from '@/lib/marketplaceApi';
 import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
-import { Card, Button, Input, Textarea, Badge, Switch, Tabs } from '@/components/ui';
+import { Card, Button, Input, Textarea, Badge, Switch, Tabs } from '@/components/forge';
 import { KYB_STATUS_META } from '@/lib/utils';
 import { Building2, Save, Eye, BadgeCheck, QrCode, Wallet, ImagePlus, Palette, Shield, Bell, History, AlertTriangle, CheckCircle2, Users, Code2 } from 'lucide-react';
 import { uploadImageToCloudinary, isCloudinaryConfigured, validateImageFile } from '@/lib/cloudinary';

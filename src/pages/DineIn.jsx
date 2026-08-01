@@ -16,7 +16,7 @@ import {
   Modal,
   Tabs,
   Tooltip
-} from '../components/ui';
+} from '@/components/forge';
 import {
   Receipt,
   User,

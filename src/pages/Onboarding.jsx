@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { business as businessApi } from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
-import { Button, Input, Textarea, Select } from '@/components/ui';
+import { Button, Input, Textarea, Select } from '@/components/forge';
 import { Store, ArrowRight, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 

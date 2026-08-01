@@ -1,6 +1,6 @@
 // src/components/storefront/VersionHistorySidebar.jsx
 import { Card } from '@/components/forge';
-import { Badge } from '@/components/ui';
+import { Badge } from '@/components/forge';
 import { History, RotateCcw, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { storefrontApi } from '@/services/storefrontApi';

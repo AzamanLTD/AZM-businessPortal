@@ -11,7 +11,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { businessOS } from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
-import { Card, Button, Input, Badge, Switch, Tabs } from '@/components/ui';
+import { Card, Button, Input, Badge, Switch, Tabs } from '@/components/forge';
 import { Shield, Save, Lock, Check } from 'lucide-react';
 import { toast } from 'sonner';
 

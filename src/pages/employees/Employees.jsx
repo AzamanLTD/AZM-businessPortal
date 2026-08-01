@@ -16,9 +16,9 @@ import {
   Switch,
   StatCard,
   Textarea
-} from '@/components/ui';
+} from '@/components/forge';
 import { useToast } from '@/components/forge';
-import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
+import { VirtualizedGrid } from '@/components/forge';
 import {
   Users,
   UserPlus,

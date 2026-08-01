@@ -15,7 +15,7 @@ import {
   Skeleton,
   Switch,
   Tabs
-} from '@/components/ui';
+} from '@/components/forge';
 import {
   Tag,
   Megaphone,

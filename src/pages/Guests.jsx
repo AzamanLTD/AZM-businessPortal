@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, Sparkles, TrendingUp, DollarSign, RefreshCw, ShieldCheck } from 'lucide-react';
 import { marketplaceApi } from '../lib/marketplaceApi';
-import { Card, Button, Badge, Input, Empty, GlassPanel } from '@/components/ui';
+import { Card, Button, Badge, Input, Empty, GlassPanel } from '@/components/forge';
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { toast } from 'sonner';
 

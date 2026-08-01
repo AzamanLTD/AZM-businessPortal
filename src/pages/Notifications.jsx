@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { notifications as notifApi } from '@/lib/api';
-import { Card, Button, Badge, Skeleton, Empty } from '@/components/ui';
+import { Card, Button, Badge, Skeleton, Empty } from '@/components/forge';
 import { useBizNotifications } from '@/hooks/useBizNotifications';
 import { useToast } from '@/components/forge';
 import { cn, relativeTime } from '@/lib/utils';

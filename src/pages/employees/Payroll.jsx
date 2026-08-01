@@ -15,7 +15,7 @@ import {
   StatCard,
   Tooltip,
   Progress
-} from '@/components/ui';
+} from '@/components/forge';
 import {
   DollarSign,
   Wallet,

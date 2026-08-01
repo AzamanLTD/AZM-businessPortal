@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { business as businessApi, products as productsApi } from '@/lib/api';
-import { Modal, Skeleton, Badge } from '@/components/ui';
+import { Modal, Skeleton, Badge } from '@/components/forge';
 import { fmtUSDC, fmt } from '@/lib/utils';
 import { BadgeCheck, Globe, Package, ShoppingBag, Star } from 'lucide-react';
 

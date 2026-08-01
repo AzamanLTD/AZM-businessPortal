@@ -9,7 +9,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/AuthContext';
 import { request } from '@/lib/apiCore';
 import { cn } from '@/lib/utils';
-import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
+import { AnimatedNumber } from '@/components/forge';
 import { Card } from '@/components/forge';
 import {
   Building2, TrendingUp, Users, ShoppingBag, DollarSign,

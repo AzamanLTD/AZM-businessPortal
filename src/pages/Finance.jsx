@@ -15,7 +15,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { useToast } from '@/components/forge';
 import {
   Card, Button, Badge, Input, Select, Modal, Empty, Skeleton, Switch
-} from '@/components/ui';
+} from '@/components/forge';
 import { KpiCard, DonutChartCard, AreaChartCard, BarChartCard } from '@/components/charts';
 
 const TABS = [

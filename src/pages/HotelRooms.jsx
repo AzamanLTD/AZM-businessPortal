@@ -12,7 +12,7 @@ import {
   Avatar,
   Switch,
   useToast
-} from '@/components/ui';
+} from '@/components/forge';
 
 import {
   BedDouble,

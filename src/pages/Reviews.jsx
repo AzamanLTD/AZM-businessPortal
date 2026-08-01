@@ -3,7 +3,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
 import { useToast } from '@/components/forge';
 import { request } from '@/lib/api';
-import { Card, Button, Badge, Skeleton, Empty, Tabs } from '@/components/ui';
+import { Card, Button, Badge, Skeleton, Empty, Tabs } from '@/components/forge';
 import { DonutChartCard, AreaChartCard } from '@/components/charts';
 import {
   Star,

@@ -11,7 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import { businessOS } from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
-import { Card, Button, Input, Badge, Select } from '@/components/ui';
+import { Card, Button, Input, Badge, Select } from '@/components/forge';
 import { History, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const ACTION_LABELS = {

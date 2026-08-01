@@ -14,7 +14,7 @@ import {
   Skeleton,
   Modal,
   Switch
-} from '@/components/ui';
+} from '@/components/forge';
 import { fmtUSDC, fmt } from '@/lib/utils';
 import {
   Package,

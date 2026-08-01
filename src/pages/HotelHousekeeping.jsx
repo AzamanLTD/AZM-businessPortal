@@ -11,9 +11,9 @@ import {
   Select,
   Avatar,
   StatCard
-} from '@/components/ui';
+} from '@/components/forge';
 import { useToast } from '@/components/forge';
-import { Switch } from '@/components/ui/Switch';
+import { Switch } from '@/components/forge';
 import { usePermission } from '@/hooks/usePermission';
 import { request } from '@/lib/apiCore';
 import {

@@ -1,6 +1,6 @@
 // src/components/storefront/WidgetPalette.jsx
 import { Card } from '@/components/forge';
-import { Badge } from '@/components/ui';
+import { Badge } from '@/components/forge';
 import { Lock, Plus, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

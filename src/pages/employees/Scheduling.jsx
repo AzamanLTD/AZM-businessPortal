@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { shiftApi, employeeApi } from '@/lib/marketplaceApi';
 import { usePermission } from '@/hooks/usePermission';
-import { Card, Button, Badge, Input, Select, Modal, Empty, Skeleton, Avatar, StatCard, Tabs } from '@/components/ui';
+import { Card, Button, Badge, Input, Select, Modal, Empty, Skeleton, Avatar, StatCard, Tabs } from '@/components/forge';
 import { useToast } from '@/components/forge';
 import {
   Calendar, Plus, ChevronLeft, ChevronRight, Clock, CheckCircle2, XCircle,

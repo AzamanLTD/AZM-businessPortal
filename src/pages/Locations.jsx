@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { locations as locApi, businessOS } from '@/lib/api';
 import { uploadImageToCloudinary, isCloudinaryConfigured, validateImageFile } from '@/lib/cloudinary';
-import { Card, Button, Input, Badge, Empty, Skeleton, Modal } from '@/components/ui';
+import { Card, Button, Input, Badge, Empty, Skeleton, Modal } from '@/components/forge';
 import { MapPin, Plus, Pencil, Trash2, Clock, ChevronDown, ChevronUp, Image, CalendarDays, X } from 'lucide-react';
 import { toast } from 'sonner';
 

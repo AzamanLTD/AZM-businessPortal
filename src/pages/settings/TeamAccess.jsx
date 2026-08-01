@@ -12,7 +12,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { businessOSEmployees, businessOS } from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
-import { Card, Button, Input, Badge, Modal, Switch } from '@/components/ui';
+import { Card, Button, Input, Badge, Modal, Switch } from '@/components/forge';
 import { Users, UserPlus, Shield, Trash2, Pencil, Crown, Mail, ChevronDown, ChevronUp, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 

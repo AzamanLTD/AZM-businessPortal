@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { kyb as kybApi } from '@/lib/api';
-import { Card, Badge, Button, Input, Empty } from '@/components/ui';
+import { Card, Badge, Button, Input, Empty } from '@/components/forge';
 import { KYB_STATUS_META } from '@/lib/utils';
 import { FileCheck, Upload, CheckCircle2, Clock, XCircle, AlertCircle, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';

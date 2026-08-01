@@ -8,7 +8,7 @@ import {
   MessageSquare, Send, Check, Settings as SettingsIcon, AlertCircle, RefreshCw, X, Plus
 } from 'lucide-react';
 import { getSocket } from '@/lib/socket';
-import { VirtualizedList } from '@/components/ui/VirtualizedList';
+import { VirtualizedList } from '@/components/forge';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const DEFAULT_QUICK_REPLIES = [

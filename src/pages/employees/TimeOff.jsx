@@ -16,7 +16,7 @@ import {
   Textarea,
   Tooltip,
   Switch
-} from '@/components/ui';
+} from '@/components/forge';
 import {
   Calendar,
   CheckCircle2,

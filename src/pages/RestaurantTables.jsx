@@ -4,7 +4,7 @@ import { restaurantOpsApi as restaurantApi, marketplaceApi } from '@/lib/marketp
 import { locations as locApi, products as productsApi } from '@/lib/api';
 import { usePermission } from '@/hooks/usePermission';
 import { useAuth } from '@/lib/AuthContext';
-import { Card, Button, Badge, Skeleton, Empty, Avatar, Input, Select, Modal } from '@/components/ui';
+import { Card, Button, Badge, Skeleton, Empty, Avatar, Input, Select, Modal } from '@/components/forge';
 import { toast } from 'sonner';
 import {
   Grid3x3, Clock, Users, Plus, Trash2, Edit2, Play, CheckCircle, HelpCircle,
