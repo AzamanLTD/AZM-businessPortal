@@ -89,24 +89,24 @@ function ConfigField({ fieldKey, schemaProp, value, onChange }) {
   };
 
   const inputStyle = {
-    background: 'var(--az-bg-alt)',
-    border: '1.5px solid var(--az-border)',
-    color: 'var(--az-text)',
+    background: 'var(--f-surface-sunken)',
+    border: '1.5px solid var(--f-line)',
+    color: 'var(--f-text)',
   };
-  const focusStyle = e => { e.target.style.borderColor = 'var(--az-accent)'; };
-  const blurStyle = e => { e.target.style.borderColor = 'var(--az-border)'; };
+  const focusStyle = e => { e.target.style.borderColor = 'var(--f-tint-color)'; };
+  const blurStyle = e => { e.target.style.borderColor = 'var(--f-line)'; };
 
   // Boolean → toggle switch
   if (type === 'boolean') {
     return (
       <div className="flex items-center justify-between">
-        <label className="text-xs font-semibold" style={{ color: 'var(--az-text-secondary)' }}>{label}</label>
+        <label className="text-xs font-semibold" style={{ color: 'var(--f-text-2)' }}>{label}</label>
         <button
           onClick={() => onChange({ [fieldKey]: !value })}
           className="relative w-10 h-5 rounded-full transition-colors"
-          style={{ background: value ? 'var(--az-accent)' : 'var(--az-border)' }}
+          style={{ background: value ? 'var(--f-tint-color)' : 'var(--f-line)' }}
         >
-          <div className="absolute top-0.5 w-4 h-4 rounded-full bg-[var(--az-surface-1)] transition-transform"
+          <div className="absolute top-0.5 w-4 h-4 rounded-full bg-[var(--f-surface)] transition-transform"
             style={{ transform: value ? 'translateX(20px)' : 'translateX(2px)' }} />
         </button>
       </div>
@@ -117,7 +117,7 @@ function ConfigField({ fieldKey, schemaProp, value, onChange }) {
   if (schemaProp?.enum) {
     return (
       <div>
-        <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--az-text-secondary)' }}>{label}</label>
+        <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--f-text-2)' }}>{label}</label>
         <select
           value={value ?? schemaProp.default ?? ''}
           onChange={e => onChange({ [fieldKey]: e.target.value })}
@@ -138,7 +138,7 @@ function ConfigField({ fieldKey, schemaProp, value, onChange }) {
   if (type === 'number' || type === 'integer') {
     return (
       <div>
-        <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--az-text-secondary)' }}>{label}</label>
+        <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--f-text-2)' }}>{label}</label>
         <input
           type="number"
           value={value ?? schemaProp.default ?? 0}
@@ -159,7 +159,7 @@ function ConfigField({ fieldKey, schemaProp, value, onChange }) {
   if (fieldKey.toLowerCase().includes('color') || fieldKey === 'gradientFrom' || fieldKey === 'gradientTo') {
     return (
       <div>
-        <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--az-text-secondary)' }}>{label}</label>
+        <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--f-text-2)' }}>{label}</label>
         <div className="flex gap-2">
           <input
             type="color"
@@ -187,7 +187,7 @@ function ConfigField({ fieldKey, schemaProp, value, onChange }) {
   if (fieldKey === 'html') {
     return (
       <div>
-        <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--az-text-secondary)' }}>{label}</label>
+        <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--f-text-2)' }}>{label}</label>
         <textarea
           value={value || ''}
           onChange={e => onChange({ [fieldKey]: e.target.value })}
@@ -198,7 +198,7 @@ function ConfigField({ fieldKey, schemaProp, value, onChange }) {
           onFocus={focusStyle}
           onBlur={blurStyle}
         />
-        <p className="text-[10px] mt-1" style={{ color: 'var(--az-text-muted)' }}>Sanitized on render. Supports basic HTML tags.</p>
+        <p className="text-[10px] mt-1" style={{ color: 'var(--f-text-3)' }}>Sanitized on render. Supports basic HTML tags.</p>
       </div>
     );
   }
@@ -207,7 +207,7 @@ function ConfigField({ fieldKey, schemaProp, value, onChange }) {
   if (isUploadable) {
     return (
       <div>
-        <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--az-text-secondary)' }}>{label}</label>
+        <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--f-text-2)' }}>{label}</label>
         <div className="flex gap-2">
           <input
             type="url"
@@ -223,7 +223,7 @@ function ConfigField({ fieldKey, schemaProp, value, onChange }) {
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
             className="flex-shrink-0 px-3 rounded-xl text-sm font-medium transition-all disabled:opacity-50"
-            style={{ background: 'var(--az-accent-subtle)', color: 'var(--az-accent)', border: '1.5px solid var(--az-border)' }}
+            style={{ background: 'var(--f-surface-sunken)', color: 'var(--f-tint-color)', border: '1.5px solid var(--f-line)' }}
             title="Upload file"
           >
             {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
@@ -247,7 +247,7 @@ function ConfigField({ fieldKey, schemaProp, value, onChange }) {
   if (fieldKey === 'subtitle' || fieldKey === 'ctaAction') {
     return (
       <div>
-        <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--az-text-secondary)' }}>{label}</label>
+        <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--f-text-2)' }}>{label}</label>
         <textarea
           value={value || ''}
           onChange={e => onChange({ [fieldKey]: e.target.value })}
@@ -264,7 +264,7 @@ function ConfigField({ fieldKey, schemaProp, value, onChange }) {
   // Default → text input
   return (
     <div>
-      <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--az-text-secondary)' }}>{label}</label>
+      <label className="text-xs font-semibold mb-1.5 block" style={{ color: 'var(--f-text-2)' }}>{label}</label>
       <input
         type="text"
         value={value ?? ''}
@@ -290,14 +290,14 @@ export default function TileConfigPanel({ tile, widget, onUpdate, onRemove }) {
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Settings className="w-4 h-4" style={{ color: 'var(--az-text-muted)' }} />
-          <h3 className="text-sm font-bold" style={{ color: 'var(--az-text)' }}>Configure</h3>
+          <Settings className="w-4 h-4" style={{ color: 'var(--f-text-3)' }} />
+          <h3 className="text-sm font-bold" style={{ color: 'var(--f-text)' }}>Configure</h3>
         </div>
         <Badge variant="primary">{widget?.displayName || tile?.widgetType}</Badge>
       </div>
       <GlassPanel className="p-4 space-y-3">
         {editableKeys.length === 0 ? (
-          <p className="text-xs text-center" style={{ color: 'var(--az-text-muted)' }}>
+          <p className="text-xs text-center" style={{ color: 'var(--f-text-3)' }}>
             No configurable properties for this widget.
           </p>
         ) : (
@@ -314,7 +314,7 @@ export default function TileConfigPanel({ tile, widget, onUpdate, onRemove }) {
       </GlassPanel>
       <button onClick={onRemove}
         className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
-        style={{ background: 'var(--az-danger-subtle)', color: 'var(--az-danger)', border: '1px solid rgba(225,83,97,0.2)' }}>
+        style={{ background: 'var(--f-bad-bg)', color: 'var(--f-bad)', border: '1px solid rgba(225,83,97,0.2)' }}>
         <Trash2 className="w-4 h-4" />Remove Widget
       </button>
     </div>

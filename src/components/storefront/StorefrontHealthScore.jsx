@@ -166,7 +166,7 @@ export default function StorefrontHealthScore({ draft, businessType, onAddWidget
         <div className="relative flex-shrink-0" style={{ width: 70, height: 70 }}>
           <svg width="70" height="70" className="transform -rotate-90">
             <circle cx="35" cy="35" r={radius} fill="none"
-              stroke="var(--az-border)" strokeWidth="4" />
+              stroke="var(--f-line)" strokeWidth="4" />
             <circle cx="35" cy="35" r={radius} fill="none"
               stroke={scoreColor} strokeWidth="4" strokeLinecap="round"
               strokeDasharray={circumference}
@@ -175,13 +175,13 @@ export default function StorefrontHealthScore({ draft, businessType, onAddWidget
           </svg>
           <div className="absolute inset-0 flex items-center justify-center flex-col">
             <span className="text-lg font-bold" style={{ color: scoreColor }}>{score}</span>
-            <span className="text-[8px] font-medium" style={{ color: 'var(--az-text-muted)' }}>/100</span>
+            <span className="text-[8px] font-medium" style={{ color: 'var(--f-text-3)' }}>/100</span>
           </div>
         </div>
         <div className="flex-1">
-          <h3 className="text-sm font-bold" style={{ color: 'var(--az-text)' }}>Storefront Score</h3>
+          <h3 className="text-sm font-bold" style={{ color: 'var(--f-text)' }}>Storefront Score</h3>
           <p className="text-xs" style={{ color: scoreColor, fontWeight: 600 }}>{getScoreLabel(score)}</p>
-          <p className="text-[11px] mt-0.5" style={{ color: 'var(--az-text-muted)' }}>
+          <p className="text-[11px] mt-0.5" style={{ color: 'var(--f-text-3)' }}>
             {tiles.length} widget{tiles.length !== 1 ? 's' : ''} · {SCORING_RULES.length - failedRules.length}/{SCORING_RULES.length} checks passed
           </p>
         </div>
@@ -201,16 +201,16 @@ export default function StorefrontHealthScore({ draft, businessType, onAddWidget
               ) : (
                 <div className="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0"
                   style={{ background: 'rgba(225, 83, 97, 0.1)' }}>
-                  <X className="w-2.5 h-2.5" style={{ color: 'var(--az-danger)' }} />
+                  <X className="w-2.5 h-2.5" style={{ color: 'var(--f-bad)' }} />
                 </div>
               )}
               <span style={{
-                color: passed ? 'var(--az-text-secondary)' : 'var(--az-text-muted)',
+                color: passed ? 'var(--f-text-2)' : 'var(--f-text-3)',
                 textDecoration: passed ? 'none' : 'none',
               }}>
                 {rule.label}
               </span>
-              <span className="ml-auto text-[10px]" style={{ color: 'var(--az-text-muted)' }}>
+              <span className="ml-auto text-[10px]" style={{ color: 'var(--f-text-3)' }}>
                 {rule.weight}pts
               </span>
             </div>
@@ -221,15 +221,15 @@ export default function StorefrontHealthScore({ draft, businessType, onAddWidget
       {/* Smart Suggestions */}
       {failedRules.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--az-text-muted)' }}>
+          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--f-text-3)' }}>
             Suggested Actions
           </p>
           {failedRules.slice(0, 3).map(rule => (
             <div key={rule.id} className="flex items-start gap-2 p-2.5 rounded-lg"
-              style={{ background: 'var(--az-accent-subtle)' }}>
-              <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-0.5" style={{ color: 'var(--az-accent)' }} />
+              style={{ background: 'var(--f-surface-sunken)' }}>
+              <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-0.5" style={{ color: 'var(--f-tint-color)' }} />
               <div className="flex-1">
-                <p className="text-xs" style={{ color: 'var(--az-text-secondary)' }}>{rule.suggestion}</p>
+                <p className="text-xs" style={{ color: 'var(--f-text-2)' }}>{rule.suggestion}</p>
               </div>
             </div>
           ))}
@@ -239,24 +239,24 @@ export default function StorefrontHealthScore({ draft, businessType, onAddWidget
       {/* Enhancement Tips */}
       {enhancementTips.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--az-text-muted)' }}>
+          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--f-text-3)' }}>
             Enhancement Tips
           </p>
           {enhancementTips.map((tip, i) => (
             <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg"
-              style={{ background: 'var(--az-surface)', border: '1px solid var(--az-border)' }}>
-              <tip.icon className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: 'var(--az-accent)' }} />
+              style={{ background: 'var(--f-surface)', border: '1px solid var(--f-line)' }}>
+              <tip.icon className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: 'var(--f-tint-color)' }} />
               <div className="flex-1">
                 <div className="flex items-center gap-1.5">
-                  <p className="text-xs font-semibold" style={{ color: 'var(--az-text)' }}>{tip.title}</p>
+                  <p className="text-xs font-semibold" style={{ color: 'var(--f-text)' }}>{tip.title}</p>
                   {tip.tier && (
                     <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold"
-                      style={{ background: 'var(--az-accent-subtle)', color: 'var(--az-accent)' }}>
+                      style={{ background: 'var(--f-surface-sunken)', color: 'var(--f-tint-color)' }}>
                       {tip.tier.replace('NITRO_', '')}
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] mt-0.5" style={{ color: 'var(--az-text-muted)' }}>{tip.desc}</p>
+                <p className="text-[11px] mt-0.5" style={{ color: 'var(--f-text-3)' }}>{tip.desc}</p>
               </div>
             </div>
           ))}

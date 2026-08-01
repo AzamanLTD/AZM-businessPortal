@@ -1,12 +1,12 @@
 import { ResponsiveContainer, AreaChart as RAreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
-export function AreaChartCard({ title, data, xKey, yKey, color = 'var(--az-accent)', height = 240, formatY }) {
-  const gridColor = 'var(--az-border)';
-  const axisColor = 'var(--az-text-muted)';
+export function AreaChartCard({ title, data, xKey, yKey, color = 'var(--f-tint-color)', height = 240, formatY }) {
+  const gridColor = 'var(--f-line)';
+  const axisColor = 'var(--f-text-3)';
 
   return (
-    <div className="bg-az-surface backdrop-blur-glass border border-az-border rounded-az-lg shadow-az-card p-6">
-      {title && <h3 className="text-sm font-bold text-az-text mb-4">{title}</h3>}
+    <div className="bg-surface backdrop-blur-sm border border-line rounded-lg shadow-sm p-6">
+      {title && <h3 className="text-sm font-bold text-ink mb-4">{title}</h3>}
       <ResponsiveContainer width="100%" height={height}>
         <RAreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
           <defs>
@@ -20,10 +20,10 @@ export function AreaChartCard({ title, data, xKey, yKey, color = 'var(--az-accen
           <YAxis stroke={axisColor} fontSize={11} tickLine={false} axisLine={false} tickFormatter={formatY} width={60} />
           <Tooltip
             contentStyle={{
-              background: 'var(--az-surface-solid)', border: '1px solid var(--az-border)', borderRadius: '6px',
-              fontSize: '12px', color: 'var(--az-text)',
+              background: 'var(--f-surface-raised)', border: '1px solid var(--f-line)', borderRadius: '6px',
+              fontSize: '12px', color: 'var(--f-text)',
             }}
-            labelStyle={{ color: 'var(--az-text-muted)' }}
+            labelStyle={{ color: 'var(--f-text-3)' }}
           />
           <Area type="monotone" dataKey={yKey} stroke={color} strokeWidth={2} fill={`url(#grad-${yKey})`} />
         </RAreaChart>

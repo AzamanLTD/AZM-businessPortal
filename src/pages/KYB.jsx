@@ -118,7 +118,7 @@ export default function KYB() {
       {/* Verified — full green state */}
       {kybStatus === 'VERIFIED' && (
         <Card className="flex flex-col items-center py-10 gap-4">
-          <div className="w-16 h-16 rounded-full bg-[var(--az-accent-subtle)] border border-[var(--f-tint-color)] flex items-center justify-center">
+          <div className="w-16 h-16 rounded-full bg-[var(--f-surface-sunken)] border border-[var(--f-tint-color)] flex items-center justify-center">
             <CheckCircle2 className="w-8 h-8 text-[var(--f-tint-color)]" />
           </div>
           <div className="text-center">
@@ -159,7 +159,7 @@ export default function KYB() {
                     {existing && (
                       <Tag
                         color={existing.status === 'APPROVED' ? 'var(--f-tint-color)' : existing.status === 'REJECTED' ? 'var(--f-bad)' : 'var(--f-warn)'}
-                        bg={existing.status === 'APPROVED' ? 'var(--az-accent-subtle)' : existing.status === 'REJECTED' ? 'var(--f-bad)' : 'var(--f-warn)'}
+                        bg={existing.status === 'APPROVED' ? 'var(--f-surface-sunken)' : existing.status === 'REJECTED' ? 'var(--f-bad)' : 'var(--f-warn)'}
                       >
                         {existing.status}
                       </Tag>
@@ -173,7 +173,7 @@ export default function KYB() {
                   <div className="px-5 pb-4 border-t border-[var(--f-line)]">
                     <div className="pt-4 space-y-3">
                       {existing?.status === 'APPROVED' ? (
-                        <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--az-accent-subtle)] border border-[#00d97e30]">
+                        <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--f-surface-sunken)] border border-[var(--f-ok)]">
                           <CheckCircle2 className="w-4 h-4 text-[var(--f-tint-color)]" />
                           <p className="text-xs text-[var(--f-tint-color)]">This document has been approved and cannot be replaced.</p>
                         </div>
@@ -190,7 +190,7 @@ export default function KYB() {
                           )}
                           {isCloudinaryConfigured() && (
                             <div className="flex items-center gap-3">
-                              <label className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-semibold transition-colors ${uploadingType === value ? 'opacity-60 border-[var(--f-line)] text-[var(--f-text-3)]' : 'cursor-pointer border-[var(--f-tint-color)] text-[var(--f-tint-color)]:bg-[#00d97e10]'}`}>
+                              <label className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-semibold transition-colors ${uploadingType === value ? 'opacity-60 border-[var(--f-line)] text-[var(--f-text-3)]' : 'cursor-pointer border-[var(--f-tint-color)] text-[var(--f-tint-color)]:bg-[var(--f-ok-bg)]'}`}>
                                 <input
                                   type="file"
                                   accept="image/jpeg,image/png,image/webp"

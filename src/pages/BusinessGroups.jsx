@@ -23,8 +23,8 @@ const fmt = (n) => `GHS ${Number(n || 0).toLocaleString('en-GH', { minimumFracti
 const fmtShort = (n) => n >= 1000000 ? `${(n/1000000).toFixed(1)}M` : n >= 1000 ? `${(n/1000).toFixed(0)}k` : String(Math.round(n));
 
 const BIZ_TYPE_COLORS = {
-  RESTAURANT: '#E2A33D', HOTEL: '#3D74DB', TRANSIT: '#1FA37A',
-  RETAIL: '#6C4FD1', DEFAULT: '#9A96A3',
+  RESTAURANT: 'var(--f-warn)', HOTEL: 'var(--f-info)', TRANSIT: 'var(--f-ok)',
+  RETAIL: 'var(--f-tint-color)', DEFAULT: 'var(--f-text-3)',
 };
 
 export default function BusinessGroups() {
@@ -149,7 +149,7 @@ export default function BusinessGroups() {
               {METRICS.map(m => (
                 <button key={m.id} onClick={() => setActiveMetric(m.id)}
                   className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-                  style={activeMetric === m.id ? { background: 'var(--f-tint-color)', color: '#fff' } : { color: 'var(--f-text-3)' }}>
+                  style={activeMetric === m.id ? { background: 'var(--f-tint-color)', color: 'var(--f-text-inv)' } : { color: 'var(--f-text-3)' }}>
                   <m.icon className="w-3 h-3" />{m.label}
                 </button>
               ))}

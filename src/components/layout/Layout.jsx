@@ -106,30 +106,28 @@ function SentryNavItem({ item, active, collapsed, onLinkClick }) {
       )}
       style={{
         borderColor: active
-          ? 'var(--az-accent-border)'
+          ? 'var(--f-line-strong)'
           : 'transparent',
         background: active
-          ? 'var(--az-accent-subtle)'
+          ? 'var(--f-surface-sunken)'
           : 'transparent',
         color: active
-          ? 'var(--az-text)'
-          : 'var(--az-text-secondary)',
+          ? 'var(--f-text)'
+          : 'var(--f-text-2)',
         fontWeight: active ? 600 : 500,
       }}
       onMouseEnter={(e) => {
         if (!active) {
-          e.currentTarget.style.borderColor = 'var(--az-border-strong)';
-          e.currentTarget.style.background = 'var(--az-surface-3)';
-          e.currentTarget.style.color = 'var(--az-text)';
+          e.currentTarget.style.borderColor = 'var(--f-line-strong)';
+          e.currentTarget.style.color = 'var(--f-text)';
         } else {
-          e.currentTarget.style.background = 'var(--az-accent-subtle)';
         }
       }}
       onMouseLeave={(e) => {
         if (!active) {
           e.currentTarget.style.borderColor = 'transparent';
           e.currentTarget.style.background = 'transparent';
-          e.currentTarget.style.color = 'var(--az-text-secondary)';
+          e.currentTarget.style.color = 'var(--f-text-2)';
         }
       }}
     >
@@ -145,9 +143,9 @@ function SentryNavItem({ item, active, collapsed, onLinkClick }) {
       {collapsed && (
         <div className="absolute left-full ml-3 px-2 py-1 rounded-md border text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 z-50"
           style={{
-            background: 'var(--az-surface-1)',
-            borderColor: 'var(--az-border-strong)',
-            color: 'var(--az-text)',
+            background: 'var(--f-surface)',
+            borderColor: 'var(--f-line-strong)',
+            color: 'var(--f-text)',
           }}
         >
           {item.label}
@@ -271,26 +269,26 @@ export default function Layout() {
         className="flex items-center gap-2.5 shrink-0 border-b px-4"
         style={{
           height: 'var(--header-height, 52px)',
-          borderColor: 'var(--az-border)',
+          borderColor: 'var(--f-line)',
         }}
       >
         <div
           className="rounded-lg flex items-center justify-center flex-shrink-0"
           style={{
             width: 32, height: 32,
-            background: 'var(--az-accent-subtle)',
-            border: '1px solid var(--az-accent-border)',
+            background: 'var(--f-surface-sunken)',
+            border: '1px solid var(--f-line-strong)',
           }}
         >
           <img src="/azaman-logo.png" alt="Azaman" className="w-4.5 h-4.5 object-contain" />
         </div>
         {sidebarExpanded && (
           <div className="min-w-0">
-            <p className="text-sm font-bold tracking-tight truncate" style={{ color: 'var(--az-text)' }}>
+            <p className="text-sm font-bold tracking-tight truncate" style={{ color: 'var(--f-text)' }}>
               {bizProfile?.businessName || 'AZM Portal'}
             </p>
             {!bizProfile && (
-              <p className="text-[10px] font-medium" style={{ color: 'var(--az-text-muted)' }}>
+              <p className="text-[10px] font-medium" style={{ color: 'var(--f-text-3)' }}>
                 Business Portal
               </p>
             )}
@@ -305,7 +303,7 @@ export default function Layout() {
             {sidebarExpanded && (
               <p
                 className="px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-wider"
-                style={{ color: 'var(--az-text-muted)' }}
+                style={{ color: 'var(--f-text-3)' }}
               >
                 {group.header}
               </p>
@@ -327,7 +325,7 @@ export default function Layout() {
       </nav>
 
       {/* Bottom: Live Preview + Collapse */}
-      <div className="shrink-0 border-t p-2 space-y-1" style={{ borderColor: 'var(--az-border)' }}>
+      <div className="shrink-0 border-t p-2 space-y-1" style={{ borderColor: 'var(--f-line)' }}>
         {bizProfile && (
           <button
             onClick={() => setShowPhonePreview(true)}
@@ -335,10 +333,9 @@ export default function Layout() {
               'w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] font-medium border border-transparent transition-all',
               !sidebarExpanded && 'justify-center',
             )}
-            style={{ color: 'var(--az-text-secondary)' }}
+            style={{ color: 'var(--f-text-2)' }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = 'var(--az-border-strong)';
-              e.currentTarget.style.background = 'var(--az-surface-3)';
+              e.currentTarget.style.borderColor = 'var(--f-line-strong)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.borderColor = 'transparent';
@@ -355,10 +352,9 @@ export default function Layout() {
             'w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] font-medium border border-transparent transition-all',
             !sidebarExpanded && 'justify-center',
           )}
-          style={{ color: 'var(--az-text-secondary)' }}
+          style={{ color: 'var(--f-text-2)' }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = 'var(--az-border-strong)';
-            e.currentTarget.style.background = 'var(--az-surface-3)';
+            e.currentTarget.style.borderColor = 'var(--f-line-strong)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.borderColor = 'transparent';
@@ -375,7 +371,7 @@ export default function Layout() {
   );
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden" style={{ background: 'var(--az-bg)', color: 'var(--az-text)' }}>
+    <div className="flex h-screen w-screen overflow-hidden" style={{ background: 'var(--f-bg)', color: 'var(--f-text)' }}>
 
       <CommandPalette isOpen={cmdPaletteOpen} onClose={() => setCmdPaletteOpen(false)} />
       <ProductTour tourName={tourName} run={tourRun} onClose={() => setTourRun(false)} />
@@ -386,8 +382,8 @@ export default function Layout() {
         transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
         className="hidden md:flex flex-col flex-shrink-0 border-r overflow-hidden relative z-20 h-full"
         style={{
-          background: 'var(--az-surface-1)',
-          borderColor: 'var(--az-border)',
+          background: 'var(--f-surface)',
+          borderColor: 'var(--f-line)',
         }}
       >
         <SidebarContent />
@@ -409,8 +405,8 @@ export default function Layout() {
               transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
               className="fixed inset-y-0 left-0 w-[260px] border-r z-40 md:hidden flex flex-col h-full"
               style={{
-                background: 'var(--az-surface-1)',
-                borderColor: 'var(--az-border)',
+                background: 'var(--f-surface)',
+                borderColor: 'var(--f-line)',
               }}
             >
               {/* Mobile sidebar always shows expanded */}
@@ -434,8 +430,8 @@ export default function Layout() {
           className="shrink-0 flex items-center justify-between px-4 md:px-6 border-b"
           style={{
             height: 'var(--header-height, 52px)',
-            background: 'var(--az-surface-1)',
-            borderColor: 'var(--az-border)',
+            background: 'var(--f-surface)',
+            borderColor: 'var(--f-line)',
           }}
         >
           <div className="flex items-center gap-3">
@@ -443,7 +439,7 @@ export default function Layout() {
             <button
               onClick={() => setMobileOpen(true)}
               className="p-1.5 -ml-1.5 rounded-md md:hidden"
-              style={{ color: 'var(--az-text-secondary)' }}
+              style={{ color: 'var(--f-text-2)' }}
             >
               <Menu style={{ width: 18, height: 18 }} />
             </button>
@@ -451,11 +447,11 @@ export default function Layout() {
             {/* Breadcrumb */}
             {activeItem && (
               <div className="hidden sm:flex items-center gap-2 text-[13px]">
-                <span className="capitalize" style={{ color: 'var(--az-text-muted)' }}>
+                <span className="capitalize" style={{ color: 'var(--f-text-3)' }}>
                   {activeItem.section}
                 </span>
-                <ChevronRight style={{ width: 12, height: 12, color: 'var(--az-text-muted)' }} />
-                <span className="font-semibold" style={{ color: 'var(--az-text)' }}>
+                <ChevronRight style={{ width: 12, height: 12, color: 'var(--f-text-3)' }} />
+                <span className="font-semibold" style={{ color: 'var(--f-text)' }}>
                   {activeItem.label}
                 </span>
               </div>
@@ -469,9 +465,9 @@ export default function Layout() {
               onClick={() => setCmdPaletteOpen(true)}
               className="hidden md:flex items-center gap-2 px-2.5 py-1.5 rounded-md border text-xs transition-colors"
               style={{
-                border: '1px solid var(--az-border)',
-                background: 'var(--az-surface-2)',
-                color: 'var(--az-text-muted)',
+                border: '1px solid var(--f-line)',
+                background: 'var(--f-surface-raised)',
+                color: 'var(--f-text-3)',
               }}
             >
               <Search style={{ width: 12, height: 12 }} />
@@ -479,9 +475,9 @@ export default function Layout() {
               <kbd
                 className="text-[10px] font-mono px-1.5 py-0.5 rounded border"
                 style={{
-                  background: 'var(--az-surface-3)',
-                  borderColor: 'var(--az-border)',
-                  color: 'var(--az-text-muted)',
+                  background: 'var(--f-surface-sunken)',
+                  borderColor: 'var(--f-line)',
+                  color: 'var(--f-text-3)',
                 }}
               >⌘K</kbd>
             </button>
@@ -492,9 +488,9 @@ export default function Layout() {
                 to="/kyb"
                 className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium border transition-colors"
                 style={{
-                  background: kybMeta.bg || 'var(--az-warning-subtle)',
-                  color: kybMeta.color || 'var(--az-warning)',
-                  borderColor: `${kybMeta.color || 'var(--az-warning)'}30`,
+                  background: kybMeta.bg || 'var(--f-warn-bg)',
+                  color: kybMeta.color || 'var(--f-warn)',
+                  borderColor: `${kybMeta.color || 'var(--f-warn)'}30`,
                 }}
               >
                 {bizProfile.kybStatus === 'UNVERIFIED'
@@ -509,9 +505,9 @@ export default function Layout() {
               <span
                 className="px-2.5 py-1 rounded-md text-xs font-semibold border"
                 style={{
-                  background: 'var(--az-accent-subtle)',
-                  color: 'var(--az-accent)',
-                  borderColor: 'var(--az-accent-border)',
+                  background: 'var(--f-surface-sunken)',
+                  color: 'var(--f-tint-color)',
+                  borderColor: 'var(--f-line-strong)',
                 }}
               >
                 Admin View-All
@@ -534,9 +530,9 @@ export default function Layout() {
                 onClick={() => setProfileMenuOpen(v => !v)}
                 className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all flex-shrink-0 border"
                 style={{
-                  background: 'var(--az-accent-subtle)',
-                  color: 'var(--az-accent)',
-                  borderColor: 'var(--az-accent-border)',
+                  background: 'var(--f-surface-sunken)',
+                  color: 'var(--f-tint-color)',
+                  borderColor: 'var(--f-line-strong)',
                 }}
               >
                 {initial}
@@ -551,31 +547,31 @@ export default function Layout() {
                     transition={{ duration: 0.15 }}
                     className="absolute right-0 mt-2 w-56 rounded-lg border shadow-lg z-50 overflow-hidden"
                     style={{
-                      background: 'var(--az-surface-1)',
-                      borderColor: 'var(--az-border)',
+                      background: 'var(--f-surface)',
+                      borderColor: 'var(--f-line)',
                     }}
                   >
                     <div
                       className="px-4 py-3 border-b flex items-center gap-3"
                       style={{
-                        borderColor: 'var(--az-border)',
-                        background: 'var(--az-surface-2)',
+                        borderColor: 'var(--f-line)',
+                        background: 'var(--f-surface-raised)',
                       }}
                     >
                       <div
                         className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0"
                         style={{
-                          background: 'var(--az-accent-subtle)',
-                          color: 'var(--az-accent)',
+                          background: 'var(--f-surface-sunken)',
+                          color: 'var(--f-tint-color)',
                         }}
                       >
                         {initial}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold truncate" style={{ color: 'var(--az-text)' }}>
+                        <p className="text-sm font-semibold truncate" style={{ color: 'var(--f-text)' }}>
                           {bizProfile?.businessName || user?.username || 'Account'}
                         </p>
-                        <p className="text-xs truncate" style={{ color: 'var(--az-text-muted)' }}>
+                        <p className="text-xs truncate" style={{ color: 'var(--f-text-3)' }}>
                           {user?.email || user?.username || 'Signed in'}
                         </p>
                       </div>
@@ -584,9 +580,7 @@ export default function Layout() {
                     <button
                       onClick={() => { setProfileMenuOpen(false); navigate('/settings'); }}
                       className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors"
-                      style={{ color: 'var(--az-text-secondary)' }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--az-surface-2)'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                      style={{ color: 'var(--f-text-2)' }}
                     >
                       <Settings style={{ width: 15, height: 15 }} /> Account settings
                     </button>
@@ -595,11 +589,9 @@ export default function Layout() {
                       onClick={handleLogout}
                       className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors border-t"
                       style={{
-                        color: 'var(--az-danger)',
-                        borderColor: 'var(--az-border)',
+                        color: 'var(--f-bad)',
+                        borderColor: 'var(--f-line)',
                       }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--az-danger-subtle)'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                     >
                       <LogOut style={{ width: 15, height: 15 }} /> Sign out
                     </button>
@@ -642,22 +634,22 @@ function MobileSidebarContent({ navGroups, isItemActive, onLinkClick, bizProfile
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="flex items-center gap-2.5 shrink-0 border-b px-4"
-        style={{ height: '52px', borderColor: 'var(--az-border)' }}>
+        style={{ height: '52px', borderColor: 'var(--f-line)' }}>
         <div className="rounded-lg flex items-center justify-center flex-shrink-0"
-          style={{ width: 32, height: 32, background: 'var(--az-accent-subtle)', border: '1px solid var(--az-accent-border)' }}>
+          style={{ width: 32, height: 32, background: 'var(--f-surface-sunken)', border: '1px solid var(--f-line-strong)' }}>
           <img src="/azaman-logo.png" alt="Azaman" className="w-4.5 h-4.5 object-contain" />
         </div>
-        <p className="text-sm font-bold tracking-tight truncate" style={{ color: 'var(--az-text)' }}>
+        <p className="text-sm font-bold tracking-tight truncate" style={{ color: 'var(--f-text)' }}>
           {bizProfile?.businessName || 'AZM Portal'}
         </p>
-        <button onClick={onLinkClick} className="ml-auto p-1.5 rounded-md" style={{ color: 'var(--az-text-secondary)' }}>
+        <button onClick={onLinkClick} className="ml-auto p-1.5 rounded-md" style={{ color: 'var(--f-text-2)' }}>
           <X style={{ width: 18, height: 18 }} />
         </button>
       </div>
       <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-3">
         {navGroups.map(group => (
           <div key={group.key}>
-            <p className="px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--az-text-muted)' }}>
+            <p className="px-2.5 pb-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--f-text-3)' }}>
               {group.header}
             </p>
             <div className="space-y-0.5">
@@ -669,10 +661,10 @@ function MobileSidebarContent({ navGroups, isItemActive, onLinkClick, bizProfile
         ))}
       </nav>
       {bizProfile && (
-        <div className="shrink-0 border-t p-2" style={{ borderColor: 'var(--az-border)' }}>
+        <div className="shrink-0 border-t p-2" style={{ borderColor: 'var(--f-line)' }}>
           <button onClick={() => { onLinkClick(); setShowPhonePreview(true); }}
             className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] font-medium"
-            style={{ color: 'var(--az-text-secondary)' }}>
+            style={{ color: 'var(--f-text-2)' }}>
             <Smartphone style={{ width: 16, height: 16 }} />
             <span>Live Preview</span>
           </button>

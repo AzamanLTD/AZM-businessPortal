@@ -826,13 +826,13 @@ export default function HotelHousekeeping() {
                     <div className="flex gap-2 justify-end">
                       <Button
                         onClick={() => handleInspection(selectedTask.id, false)}
-                        className="bg-[var(--f-bad)] text-[var(--f-text)]:bg-red-600 border-none px-4 py-2"
+                        className="bg-[var(--f-bad)] text-[var(--f-text)]:bg-bad border-none px-4 py-2"
                       >
                         Fail Inspection
                       </Button>
                       <Button
                         onClick={() => handleInspection(selectedTask.id, true)}
-                        className="bg-[var(--f-ok)] text-black:bg-green-500 border-none px-4 py-2"
+                        className="bg-[var(--f-ok)] text-black:bg-ok border-none px-4 py-2"
                       >
                         Pass Inspection
                       </Button>

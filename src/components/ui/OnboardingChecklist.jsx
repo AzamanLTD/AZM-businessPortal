@@ -20,10 +20,10 @@ function ProgressRing({ pct, size = 48, stroke = 4 }) {
   const offset = circ * (1 - pct / 100);
   return (
     <svg width={size} height={size} className="rotate-[-90deg]">
-      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="var(--az-border)" strokeWidth={stroke} />
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="var(--f-line)" strokeWidth={stroke} />
       <circle
         cx={size/2} cy={size/2} r={r} fill="none"
-        stroke="var(--az-accent)" strokeWidth={stroke}
+        stroke="var(--f-tint-color)" strokeWidth={stroke}
         strokeDasharray={circ} strokeDashoffset={offset}
         strokeLinecap="round"
         style={{ transition: 'stroke-dashoffset 0.6s ease' }}
@@ -99,29 +99,29 @@ export default function OnboardingChecklist() {
       <div className="flex items-center gap-4">
         <div className="relative flex-shrink-0">
           <ProgressRing pct={pct} />
-          <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-az-accent" style={{transform:'rotate(90deg)'}}>
+          <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-tint" style={{transform:'rotate(90deg)'}}>
             {pct}%
           </span>
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-bold text-az-text">Get set up</h3>
-          <p className="text-xs text-az-text-muted mt-0.5">{completed}/{allItems.length} steps complete — finish setup to unlock all features</p>
+          <h3 className="text-sm font-bold text-ink">Get set up</h3>
+          <p className="text-xs text-ink-3 mt-0.5">{completed}/{allItems.length} steps complete — finish setup to unlock all features</p>
         </div>
         <div className="flex items-center gap-1">
-          <button onClick={() => setExpanded(e => !e)} className="p-1.5 rounded-az-sm hover:bg-az-accent-subtle text-az-text-muted transition-colors">
+          <button onClick={() => setExpanded(e => !e)} className="p-1.5 rounded-sm hover:bg-surface-sunken text-ink-3 transition-colors">
             {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
-          <button onClick={handleDismiss} className="p-1.5 rounded-az-sm hover:bg-az-accent-subtle text-az-text-muted transition-colors" title="Dismiss">
+          <button onClick={handleDismiss} className="p-1.5 rounded-sm hover:bg-surface-sunken text-ink-3 transition-colors" title="Dismiss">
             <X className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {/* Progress bar */}
-      <div className="mt-3 h-1.5 rounded-full bg-az-border overflow-hidden">
+      <div className="mt-3 h-1.5 rounded-full bg-line overflow-hidden">
         <motion.div
           className="h-full rounded-full"
-          style={{ background: 'var(--az-accent)' }}
+          style={{ background: 'var(--f-tint-color)' }}
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
@@ -147,19 +147,19 @@ export default function OnboardingChecklist() {
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.04 }}
-                  className="flex items-center gap-3 p-2.5 rounded-az-sm group hover:bg-az-accent-subtle transition-colors"
+                  className="flex items-center gap-3 p-2.5 rounded-sm group hover:bg-surface-sunken transition-colors"
                 >
                   {done
-                    ? <CheckCircle2 className="w-4 h-4 text-az-success flex-shrink-0" />
-                    : <Circle className="w-4 h-4 text-az-border flex-shrink-0" />
+                    ? <CheckCircle2 className="w-4 h-4 text-ok flex-shrink-0" />
+                    : <Circle className="w-4 h-4 text-ink-3 flex-shrink-0" />
                   }
-                  <Icon className={`w-4 h-4 flex-shrink-0 ${done ? 'text-az-text-muted' : 'text-az-accent'}`} />
+                  <Icon className={`w-4 h-4 flex-shrink-0 ${done ? 'text-ink-3' : 'text-tint'}`} />
                   <div className="flex-1 min-w-0">
-                    <p className={`text-xs font-medium ${done ? 'line-through text-az-text-muted' : 'text-az-text'}`}>{item.label}</p>
-                    {!done && <p className="text-[11px] text-az-text-muted">{item.hint}</p>}
+                    <p className={`text-xs font-medium ${done ? 'line-through text-ink-3' : 'text-ink'}`}>{item.label}</p>
+                    {!done && <p className="text-[11px] text-ink-3">{item.hint}</p>}
                   </div>
                   {!done && (
-                    <Link to={item.link} className="text-[11px] font-semibold text-az-accent opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    <Link to={item.link} className="text-[11px] font-semibold text-tint opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                       Do this →
                     </Link>
                   )}

@@ -15,7 +15,7 @@ export function Tooltip({ content, children, side = 'top', className }) {
       {show && content && (
         <div className={cn(
           'absolute z-50 px-2.5 py-1.5 rounded-lg text-xs whitespace-nowrap pointer-events-none',
-          'bg-[var(--az-surface)] border border-[var(--az-border)] text-[var(--az-text-muted)] shadow-xl',
+          'bg-[var(--f-surface)] border border-[var(--f-line)] text-[var(--f-text-3)] shadow-xl',
           'animate-scale-in',
           positions[side],
           className

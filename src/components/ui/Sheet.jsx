@@ -17,14 +17,14 @@ export function Sheet({ open, onClose, title, children, side = 'right', width = 
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div
         className={cn(
-          'absolute top-0 bottom-0 overflow-y-auto border-l border-[var(--az-border)] shadow-2xl',
+          'absolute top-0 bottom-0 overflow-y-auto border-l border-[var(--f-line)] shadow-2xl',
           sideClass, animation, width, className
         )}
-        style={{ background: 'var(--az-surface)' }}
+        style={{ background: 'var(--f-surface)' }}
       >
-        <div className="sticky top-0 flex items-center justify-between px-6 py-4 border-b border-[var(--az-border)] z-10" style={{ background: 'var(--az-surface)' }}>
-          <h2 className="text-base font-bold text-[var(--az-text)]">{title}</h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[var(--az-bg-alt)] text-[var(--az-text-muted)] hover:text-[var(--az-text)] transition-colors">
+        <div className="sticky top-0 flex items-center justify-between px-6 py-4 border-b border-[var(--f-line)] z-10" style={{ background: 'var(--f-surface)' }}>
+          <h2 className="text-base font-bold text-[var(--f-text)]">{title}</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[var(--f-surface-sunken)] text-[var(--f-text-3)] hover:text-[var(--f-text)] transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>

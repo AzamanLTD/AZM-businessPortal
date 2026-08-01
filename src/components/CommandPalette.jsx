@@ -188,28 +188,28 @@ export function CommandPalette({ isOpen, onClose }) {
             transition={{ type: 'spring', damping: 25, stiffness: 350 }}
             className="w-full max-w-2xl relative z-10"
           >
-            <GlassPanel className="border border-az-border bg-az-surface/80 shadow-az-card rounded-az-lg overflow-hidden flex flex-col max-h-[70vh]">
+            <GlassPanel className="border border-line bg-surface/80 shadow-sm rounded-lg overflow-hidden flex flex-col max-h-[70vh]">
               {/* Input header */}
-              <div className="flex items-center gap-3 px-4 py-3.5 border-b border-az-border">
-                <Search className="w-5 h-5 text-az-text-secondary" />
+              <div className="flex items-center gap-3 px-4 py-3.5 border-b border-line">
+                <Search className="w-5 h-5 text-ink-2" />
                 <input 
                   autoFocus
                   value={query}
                   onChange={e => setQuery(e.target.value)}
                   placeholder="Type a command or search..."
-                  className="flex-1 bg-transparent text-sm text-az-text outline-none placeholder:text-az-text-muted"
+                  className="flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-ink-3"
                 />
-                <kbd className="text-[10px] font-sans bg-az-bg-alt px-1.5 py-0.5 rounded border border-az-border text-az-text-secondary">ESC</kbd>
+                <kbd className="text-[10px] font-sans bg-surface-sunken px-1.5 py-0.5 rounded border border-line text-ink-2">ESC</kbd>
               </div>
 
               {/* Scrollable list */}
               <div className="overflow-y-auto p-2 max-h-96 custom-scrollbar">
                 {filtered.length === 0 ? (
-                  <p className="px-4 py-8 text-center text-sm text-az-text-muted">No commands or actions found</p>
+                  <p className="px-4 py-8 text-center text-sm text-ink-3">No commands or actions found</p>
                 ) : (
                   Object.entries(groupedResults).map(([group, items]) => (
                     <div key={group} className="space-y-1">
-                      <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-az-text-muted">{group}</p>
+                      <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-ink-3">{group}</p>
                       {items.map(item => {
                         const isSelected = item.globalIndex === selectedIndex;
                         const Icon = item.icon || Search;
@@ -218,23 +218,23 @@ export function CommandPalette({ isOpen, onClose }) {
                             key={item.label + item.path}
                             onClick={() => handleExecute(item)}
                             onMouseEnter={() => setSelectedIndex(item.globalIndex)}
-                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-az-md text-left transition-all ${
+                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-left transition-all ${
                               isSelected 
-                                ? 'bg-az-accent text-[var(--az-text)] shadow-sm' 
-                                : 'text-az-text-secondary hover:bg-az-bg-alt hover:text-az-text'
+                                ? 'bg-tint text-[var(--f-text)] shadow-sm' 
+                                : 'text-ink-2 hover:bg-surface-sunken hover:text-ink'
                             }`}
                           >
-                            <Icon className={`w-4.5 h-4.5 flex-shrink-0 ${isSelected ? 'text-[var(--az-text)]' : 'text-az-text-secondary'}`} />
+                            <Icon className={`w-4.5 h-4.5 flex-shrink-0 ${isSelected ? 'text-[var(--f-text)]' : 'text-ink-2'}`} />
                             <div className="flex-1 min-w-0">
                               <span className="text-sm font-medium block truncate">{item.label}</span>
                               {item.subtitle && (
-                                <span className={`text-xs block truncate ${isSelected ? 'text-[var(--az-text)]/80' : 'text-az-text-muted'}`}>
+                                <span className={`text-xs block truncate ${isSelected ? 'text-[var(--f-text)]/80' : 'text-ink-3'}`}>
                                   {item.subtitle}
                                 </span>
                               )}
                             </div>
                             {isSelected && (
-                              <ArrowRight className="w-4 h-4 text-[var(--az-text)]" />
+                              <ArrowRight className="w-4 h-4 text-[var(--f-text)]" />
                             )}
                           </button>
                         );

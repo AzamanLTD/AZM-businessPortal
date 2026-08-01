@@ -6,9 +6,9 @@ import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { toast } from 'sonner';
 
 const TIER_COLORS = {
-  GOLD: { color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.1)', border: '#F59E0B30' },
-  SILVER: { color: '#6B7280', bg: 'rgba(107, 114, 128, 0.1)', border: '#6B728030' },
-  BRONZE: { color: '#B45309', bg: 'rgba(180, 83, 9, 0.1)', border: '#B4530930' }
+  GOLD: { color: 'var(--f-warn)', bg: 'var(--f-warn-bg)', border: 'var(--f-warn)30' },
+  SILVER: { color: 'var(--f-text-3)', bg: 'var(--f-surface-sunken)', border: 'var(--f-text-3)30' },
+  BRONZE: { color: 'var(--f-warn)', bg: 'var(--f-warn-bg)', border: 'var(--f-warn)30' }
 };
 
 export default function Guests({ businessId }) {
@@ -68,8 +68,8 @@ export default function Guests({ businessId }) {
 
   // Initials color helper
   const getInitialsColor = (name) => {
-    if (!name) return '#6C4FD1';
-    const colors = ['#6C4FD1', '#10B981', '#3B82F6', '#EC4899', '#F59E0B', '#8B5CF6'];
+    if (!name) return 'var(--f-tint-color)';
+    const colors = ['var(--f-tint-color)', 'var(--f-ok)', 'var(--f-info)', 'var(--f-tint-color)', 'var(--f-warn)', 'var(--f-tint-color)'];
     const charCodeSum = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return colors[charCodeSum % colors.length];
   };
@@ -88,7 +88,7 @@ export default function Guests({ businessId }) {
       {/* KPI Metrics Dashboard */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-4 border border-[var(--f-line)] rounded-2xl flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-[#6C4FD1]/10 text-[#6C4FD1]">
+          <div className="p-3 rounded-xl bg-[var(--f-tint-color)]/10 text-[var(--f-tint-color)]">
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
@@ -141,7 +141,7 @@ export default function Guests({ businessId }) {
             onClick={() => setActiveSegment(seg.key)}
             className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all ${
               activeSegment === seg.key
-                ? 'bg-[#6C4FD1]/15 text-[#6C4FD1] border-[#6C4FD1]'
+                ? 'bg-[var(--f-tint-color)]/15 text-[var(--f-tint-color)] border-[var(--f-tint-color)]'
                 : 'bg-[var(--az-surface-1)] text-[var(--sn-text-muted)] border-[var(--f-line)]:bg-[var(--f-line)]/10'
             }`}
           >
@@ -168,7 +168,7 @@ export default function Guests({ businessId }) {
             
             <div className="w-full md:w-48">
               <select
-                className="w-full px-4 py-2.5 rounded-xl bg-[var(--az-surface-1)] border border-[var(--f-line)] text-[var(--f-text)] text-sm outline-none focus:border-[#6C4FD1]"
+                className="w-full px-4 py-2.5 rounded-xl bg-[var(--az-surface-1)] border border-[var(--f-line)] text-[var(--f-text)] text-sm outline-none focus:border-[var(--f-tint-color)]"
                 value={sourceFilter}
                 onChange={(e) => setSourceFilter(e.target.value)}
               >
@@ -236,12 +236,12 @@ export default function Guests({ businessId }) {
                         <td className="p-4 font-mono font-semibold">{(guest.totalSpentUsdc || 0).toFixed(2)} USDC</td>
                         <td className="p-4">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                            guest.trustLevel === 'EXCELLENT' ? 'text-[var(--f-ok)] bg-emerald-50' : 'text-[var(--f-info)] bg-blue-50'
+                            guest.trustLevel === 'EXCELLENT' ? 'text-[var(--f-ok)] bg-ok-bg' : 'text-[var(--f-info)] bg-info-bg'
                           }`}>
                             {guest.trustLevel}
                           </span>
                         </td>
-                        <td className="p-4 text-right text-[#6C4FD1] font-semibold:underline">Drawer →</td>
+                        <td className="p-4 text-right text-[var(--f-tint-color)] font-semibold:underline">Drawer →</td>
                       </tr>
                     );
                   })
@@ -286,7 +286,7 @@ export default function Guests({ businessId }) {
 
           <Card className="p-5 border border-[var(--f-line)] rounded-2xl space-y-3">
             <h3 className="text-sm font-bold text-[var(--f-text)] flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-[#6C4FD1]" /> System Trust Score
+              <ShieldCheck className="w-4 h-4 text-[var(--f-tint-color)]" /> System Trust Score
             </h3>
             <p className="text-xs text-[var(--sn-text-muted)] leading-relaxed">
               Calculated based on booking retention, no-show histories, and verified payments across the network.
@@ -357,7 +357,7 @@ export default function Guests({ businessId }) {
               <div className="space-y-3.5">
                 {selectedGuest.recentVisits && selectedGuest.recentVisits.length > 0 ? (
                   selectedGuest.recentVisits.map((v, i) => (
-                    <div key={i} className="flex gap-3 items-start text-xs border-l-2 border-[#6C4FD1]/30 pl-3 ml-1.5 py-1">
+                    <div key={i} className="flex gap-3 items-start text-xs border-l-2 border-[var(--f-tint-color)]/30 pl-3 ml-1.5 py-1">
                       <div className="flex-1">
                         <p className="font-bold text-[var(--f-text)]">{v.description}</p>
                         <p className="text-[10px] text-[var(--sn-text-muted)] mt-0.5">{v.date || 'Recent Event'}</p>
@@ -375,12 +375,12 @@ export default function Guests({ businessId }) {
             <div className="space-y-2 border-t border-[var(--f-line)] pt-4">
               <h4 className="text-xs font-bold text-[var(--sn-text-muted)] uppercase tracking-wider">Internal Desk Notes</h4>
               <textarea
-                className="w-full text-xs p-3 rounded-xl border border-[var(--f-line)] outline-none focus:border-[#6C4FD1] min-h-[60px]"
+                className="w-full text-xs p-3 rounded-xl border border-[var(--f-line)] outline-none focus:border-[var(--f-tint-color)] min-h-[60px]"
                 placeholder="Write optional operational notes here (such as diet preferences or table assignments)..."
               />
             </div>
 
-            <Button onClick={() => setSelectedGuest(null)} className="w-full bg-[#6C4FD1] text-[var(--f-text)]:bg-[#5b42b1]">
+            <Button onClick={() => setSelectedGuest(null)} className="w-full bg-[var(--f-tint-color)] text-[var(--f-text)]:bg-[#5b42b1]">
               Close Directory Profile
             </Button>
           </div>

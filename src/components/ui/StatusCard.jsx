@@ -1,12 +1,12 @@
 import { GlassPanel } from '@/components/ui/GlassPanel';
 
 const statusColors = {
-  active: 'var(--az-success)',
-  warning: 'var(--az-warning)',
-  danger: 'var(--az-danger)',
-  info: 'var(--az-info)',
-  success: 'var(--az-success)',
-  neutral: 'var(--az-text-muted)',
+  active: 'var(--f-ok)',
+  warning: 'var(--f-warn)',
+  danger: 'var(--f-bad)',
+  info: 'var(--f-info)',
+  success: 'var(--f-ok)',
+  neutral: 'var(--f-text-3)',
 };
 
 export function StatusCard({ icon: Icon, label, value, status, trend, onClick, className }) {
@@ -31,7 +31,7 @@ export function StatusCard({ icon: Icon, label, value, status, trend, onClick, c
       <p className="text-2xl font-bold text-foreground">{value}</p>
       <p className="text-xs font-medium text-muted-foreground mt-0.5">{label}</p>
       {trend != null && (
-        <p className="text-xs mt-1" style={{ color: trend > 0 ? 'var(--az-success)' : 'var(--az-danger)' }}>
+        <p className="text-xs mt-1" style={{ color: trend > 0 ? 'var(--f-ok)' : 'var(--f-bad)' }}>
           {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}% this week
         </p>
       )}

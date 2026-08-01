@@ -557,7 +557,7 @@ export default function DineIn() {
                               variant="primary"
                               size="sm"
                               onClick={() => closeTabMutation.mutate(selectedTabId)}
-                              className="w-full bg-[var(--f-ok)]:bg-[#00c870] flex items-center justify-center gap-1.5 h-10"
+                              className="w-full bg-[var(--f-ok)]:bg-[var(--f-ok)] flex items-center justify-center gap-1.5 h-10"
                             >
                               <CheckCircle className="w-4 h-4" />
                               Confirm & Pay Tab

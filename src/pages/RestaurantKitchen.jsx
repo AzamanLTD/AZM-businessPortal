@@ -46,46 +46,8 @@ const ORDER_STATUS_COLORS = {
   CANCELLED: 'var(--f-bad)'
 };
 
-// Simple visual components for the interactive styles
-const PulseAlert = () => (
-  <style dangerouslySetInnerHTML={{ __html: `
-    @keyframes kds-pulse-red {
-      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-      70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-    }
-    @keyframes kds-pulse-amber {
-      0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
-      70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
-    }
-    @keyframes glow-rush {
-      0%, 100% { border-color: var(--f-bad); filter: drop-shadow(0 0 2px var(--f-bad)); }
-      50% { border-color: var(--f-tint-color); filter: drop-shadow(0 0 8px var(--f-tint-color)); }
-    }
-    .kds-card-rush {
-      animation: glow-rush 2s infinite ease-in-out;
-      border-width: 2px !important;
-    }
-    .pulse-amber {
-      animation: kds-pulse-amber 2s infinite;
-    }
-    .pulse-red {
-      animation: kds-pulse-red 1.5s infinite;
-    }
-    .kds-grid {
-      display: grid;
-      gap: 1.25rem;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    }
-    .kds-kiosk {
-      font-size: 1.15rem;
-    }
-    .kds-kiosk button, .kds-kiosk select, .kds-kiosk input {
-      min-height: 48px;
-    }
-  `}} />
-);
+// KDS styles moved to forge.css — no more dangerouslySetInnerHTML
+const PulseAlert = () => null;
 
 // Helper to play synthesized beep sounds or Web Audio alerts
 const playAlertSound = (type = 'new-order') => {

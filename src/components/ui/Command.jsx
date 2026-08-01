@@ -27,9 +27,9 @@ export function Command({ items, placeholder = 'Search...', onSelect, className 
   const flatList = filtered;
 
   return (
-    <div className={cn('rounded-xl border border-[var(--az-border)] overflow-hidden', className)} style={{ background: 'var(--az-surface)' }}>
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-[var(--az-border)]">
-        <Search className="w-4 h-4 text-[var(--az-text-muted)]" />
+    <div className={cn('rounded-xl border border-[var(--f-line)] overflow-hidden', className)} style={{ background: 'var(--f-surface)' }}>
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-[var(--f-line)]">
+        <Search className="w-4 h-4 text-[var(--f-text-3)]" />
         <input
           autoFocus
           value={query}
@@ -40,13 +40,13 @@ export function Command({ items, placeholder = 'Search...', onSelect, className 
             if (e.key === 'Enter' && selected >= 0) { onSelect?.(flatList[selected]); }
           }}
           placeholder={placeholder}
-          className="flex-1 bg-transparent text-sm text-[var(--az-text)] outline-none placeholder:text-[var(--az-text-muted)]"
+          className="flex-1 bg-transparent text-sm text-[var(--f-text)] outline-none placeholder:text-[var(--f-text-3)]"
         />
       </div>
       <div className="max-h-64 overflow-y-auto p-2">
         {Object.entries(grouped).map(([group, items]) => (
           <div key={group}>
-            <p className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--az-text-muted)]">{group}</p>
+            <p className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--f-text-3)]">{group}</p>
             {items.map(item => {
               const idx = flatList.indexOf(item);
               return (
@@ -56,19 +56,19 @@ export function Command({ items, placeholder = 'Search...', onSelect, className 
                   onMouseEnter={() => setSelected(idx)}
                   className={cn(
                     'w-full flex items-center gap-3 px-2 py-2 rounded-lg text-sm text-left transition-colors',
-                    selected === idx ? 'bg-[var(--az-bg-alt)] text-[var(--az-text)]' : 'text-[var(--az-text-muted)]'
+                    selected === idx ? 'bg-[var(--f-surface-sunken)] text-[var(--f-text)]' : 'text-[var(--f-text-3)]'
                   )}
                 >
                   {item.icon && <item.icon className="w-4 h-4 flex-shrink-0" />}
                   <span className="flex-1 truncate">{item.label}</span>
-                  {item.badge && <span className="text-xs text-[var(--az-text-muted)]">{item.badge}</span>}
+                  {item.badge && <span className="text-xs text-[var(--f-text-3)]">{item.badge}</span>}
                 </button>
               );
             })}
           </div>
         ))}
         {filtered.length === 0 && (
-          <p className="px-2 py-4 text-sm text-center text-[var(--az-text-muted)]">No results found</p>
+          <p className="px-2 py-4 text-sm text-center text-[var(--f-text-3)]">No results found</p>
         )}
       </div>
     </div>
