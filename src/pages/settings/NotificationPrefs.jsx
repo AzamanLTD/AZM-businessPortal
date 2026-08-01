@@ -57,39 +57,39 @@ export default function NotificationPrefs() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <Bell className="w-6 h-6 text-[var(--az-accent)]" />
+        <Bell className="w-6 h-6 text-[var(--f-tint-color)]" />
         <div>
-          <h2 className="text-lg font-bold text-[var(--az-text)]">Notification Preferences</h2>
-          <p className="text-sm text-[var(--az-text-muted)]">
+          <h2 className="text-lg font-bold text-[var(--f-text)]">Notification Preferences</h2>
+          <p className="text-sm text-[var(--f-text-3)]">
             Choose which alerts you receive and where they're delivered.
           </p>
         </div>
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-12 text-[var(--az-text-muted)]">
-          <div className="w-6 h-6 border-2 border-[var(--az-border)] border-t-[var(--az-accent)] rounded-full animate-spin mr-3" />
+        <div className="flex items-center justify-center py-12 text-[var(--f-text-3)]">
+          <div className="w-6 h-6 border-2 border-[var(--f-line)] border-t-[var(--f-tint-color)] rounded-full animate-spin mr-3" />
           Loading preferences...
         </div>
       ) : (
         <Card className="overflow-hidden">
           {/* Table header */}
-          <div className="grid grid-cols-12 gap-2 px-4 py-3 border-b border-[var(--az-border)] bg-[var(--az-surface)]">
-            <div className="col-span-6 text-sm font-semibold text-[var(--az-text)]">Event</div>
-            <div className="col-span-3 text-center text-sm font-semibold text-[var(--az-text-muted)]">In Portal</div>
-            <div className="col-span-3 text-center text-sm font-semibold text-[var(--az-text-muted)]">Email</div>
+          <div className="grid grid-cols-12 gap-2 px-4 py-3 border-b border-[var(--f-line)] bg-[var(--f-surface)]">
+            <div className="col-span-6 text-sm font-semibold text-[var(--f-text)]">Event</div>
+            <div className="col-span-3 text-center text-sm font-semibold text-[var(--f-text-3)]">In Portal</div>
+            <div className="col-span-3 text-center text-sm font-semibold text-[var(--f-text-3)]">Email</div>
           </div>
 
           {EVENT_TYPES.map(evt => {
             const pref = prefs[evt.key] || { portal: true, email: false };
             return (
-              <div key={evt.key} className="grid grid-cols-12 gap-2 px-4 py-3 border-b border-[var(--az-border)] items-center hover:bg-[var(--az-surface)]">
+              <div key={evt.key} className="grid grid-cols-12 gap-2 px-4 py-3 border-b border-[var(--f-line)] items-center hover:bg-[var(--f-surface)]">
                 <div className="col-span-6">
                   <div className="flex items-center gap-2">
-                    <BellRing className="w-4 h-4 text-[var(--az-text-muted)]" />
-                    <span className="text-sm font-medium text-[var(--az-text)]">{evt.label}</span>
+                    <BellRing className="w-4 h-4 text-[var(--f-text-3)]" />
+                    <span className="text-sm font-medium text-[var(--f-text)]">{evt.label}</span>
                   </div>
-                  <p className="text-xs text-[var(--az-text-muted)] ml-6">{evt.desc}</p>
+                  <p className="text-xs text-[var(--f-text-3)] ml-6">{evt.desc}</p>
                 </div>
                 <div className="col-span-3 flex justify-center">
                   <Switch
@@ -112,7 +112,7 @@ export default function NotificationPrefs() {
       )}
 
       {!canManage && (
-        <p className="text-xs text-[var(--az-text-muted)] italic">
+        <p className="text-xs text-[var(--f-text-3)] italic">
           Only the business owner or admins with "settings.manage" permission can change these settings.
         </p>
       )}

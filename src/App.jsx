@@ -50,7 +50,8 @@ import { Toaster } from 'sonner';
 import { useEffect, useState } from 'react';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import ErrorBoundary, { SectionBoundary } from '@/components/ErrorBoundary';
-import { ToastProvider } from '@/components/ui/Toast';
+import { ToastProvider } from '@/components/forge';
+import { useToast } from '@/components/forge';
 import { ForgeLayout } from '@/components/forge/ForgeLayout';
 import { AppBackground } from '@/components/AppBackground';
 import { TypeGuardedRoute } from './components/TypeGuardedRoute';
@@ -69,7 +70,7 @@ function AppRoutes() {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center" style={{ background: 'var(--az-bg, #F7F5F2)' }}>
+      <div className="fixed inset-0 flex items-center justify-center" style={{ background: 'var(--f-bg)' }}>
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-2 border-az-border-strong border-t-az-accent rounded-full animate-spin" />
           <p className="text-sm text-az-text-muted">Loading your portal...</p>
@@ -80,7 +81,7 @@ function AppRoutes() {
 
   if (!authed) {
     return (
-      <Suspense fallback={<div className="flex items-center justify-center h-screen" style={{ background: 'var(--az-bg)' }}><div className="animate-pulse text-sm" style={{ color: 'var(--az-text-muted)' }}>Loading…</div></div>}>
+      <Suspense fallback={<div className="flex items-center justify-center h-screen" style={{ background: 'var(--f-bg)' }}><div className="animate-pulse text-sm" style={{ color: 'var(--f-text-3)' }}>Loading…</div></div>}>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="*"      element={<Navigate to="/login" replace />} />
@@ -91,7 +92,7 @@ function AppRoutes() {
 
   if (!isAdmin && !bizProfile) {
     return (
-      <Suspense fallback={<div className="flex items-center justify-center h-screen" style={{ background: 'var(--az-bg)' }}><div className="animate-pulse text-sm" style={{ color: 'var(--az-text-muted)' }}>Loading…</div></div>}>
+      <Suspense fallback={<div className="flex items-center justify-center h-screen" style={{ background: 'var(--f-bg)' }}><div className="animate-pulse text-sm" style={{ color: 'var(--f-text-3)' }}>Loading…</div></div>}>
       <Routes>
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="*"           element={<Navigate to="/onboarding" replace />} />
@@ -101,7 +102,7 @@ function AppRoutes() {
   }
 
   return (
-    <Suspense fallback={<div className="flex items-center justify-center h-screen" style={{ background: 'var(--az-bg)' }}><div className="animate-pulse text-sm" style={{ color: 'var(--az-text-muted)' }}>Loading…</div></div>}>
+    <Suspense fallback={<div className="flex items-center justify-center h-screen" style={{ background: 'var(--f-bg)' }}><div className="animate-pulse text-sm" style={{ color: 'var(--f-text-3)' }}>Loading…</div></div>}>
     <Routes>
       <Route element={<ForgeLayout />}>
         <Route path="/"               element={<Dashboard />} />
@@ -174,9 +175,9 @@ export default function App() {
               toastOptions={{
                 className: 'sentry-toast',
                 style: {
-                  background: 'var(--az-surface-solid)',
-                  border: '1px solid var(--az-border)',
-                  color: 'var(--az-text)',
+                  background: 'var(--f-surface-raised)',
+                  border: '1px solid var(--f-line)',
+                  color: 'var(--f-text)',
                   backdropFilter: 'blur(12px)',
                   boxShadow: '0 4px 20px rgba(17,17,17,0.08)',
                 },

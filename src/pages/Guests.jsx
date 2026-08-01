@@ -98,7 +98,7 @@ export default function Guests({ businessId }) {
         </Card>
 
         <Card className="p-4 border border-[var(--f-line)] rounded-2xl flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-[var(--az-success-subtle)] text-[var(--f-ok)]">
+          <div className="p-3 rounded-xl bg-[var(--f-ok-bg)] text-[var(--f-ok)]">
             <RefreshCw className="w-5 h-5" />
           </div>
           <div>
@@ -108,7 +108,7 @@ export default function Guests({ businessId }) {
         </Card>
 
         <Card className="p-4 border border-[var(--f-line)] rounded-2xl flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-[var(--az-warning-subtle)] text-[var(--f-warn)]">
+          <div className="p-3 rounded-xl bg-[var(--f-warn-bg)] text-[var(--f-warn)]">
             <DollarSign className="w-5 h-5" />
           </div>
           <div>
@@ -142,7 +142,7 @@ export default function Guests({ businessId }) {
             className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all ${
               activeSegment === seg.key
                 ? 'bg-[var(--f-tint-color)]/15 text-[var(--f-tint-color)] border-[var(--f-tint-color)]'
-                : 'bg-[var(--az-surface-1)] text-[var(--sn-text-muted)] border-[var(--f-line)]:bg-[var(--f-line)]/10'
+                : 'bg-[var(--f-surface)] text-[var(--sn-text-muted)] border-[var(--f-line)]:bg-[var(--f-line)]/10'
             }`}
           >
             {seg.label}
@@ -168,7 +168,7 @@ export default function Guests({ businessId }) {
             
             <div className="w-full md:w-48">
               <select
-                className="w-full px-4 py-2.5 rounded-xl bg-[var(--az-surface-1)] border border-[var(--f-line)] text-[var(--f-text)] text-sm outline-none focus:border-[var(--f-tint-color)]"
+                className="w-full px-4 py-2.5 rounded-xl bg-[var(--f-surface)] border border-[var(--f-line)] text-[var(--f-text)] text-sm outline-none focus:border-[var(--f-tint-color)]"
                 value={sourceFilter}
                 onChange={(e) => setSourceFilter(e.target.value)}
               >
@@ -302,7 +302,7 @@ export default function Guests({ businessId }) {
           onClick={() => setSelectedGuest(null)}
         >
           <div
-            className="bg-[var(--az-surface-1)] max-w-md w-full h-full p-6 space-y-6 flex flex-col shadow-2xl overflow-y-auto animate-slide-in"
+            className="bg-[var(--f-surface)] max-w-md w-full h-full p-6 space-y-6 flex flex-col shadow-2xl overflow-y-auto animate-slide-in"
             onClick={(e) => e.stopPropagation()}
             style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}
           >

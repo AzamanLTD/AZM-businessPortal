@@ -1,5 +1,5 @@
 // src/components/storefront/WidgetPalette.jsx
-import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Card } from '@/components/forge';
 import { Badge } from '@/components/ui';
 import { Lock, Plus, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';

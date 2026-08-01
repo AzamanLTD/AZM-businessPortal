@@ -16,7 +16,7 @@ import {
   Tabs,
   Tooltip
 } from '@/components/ui';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/components/forge';
 import {
   LogIn,
   LogOut,

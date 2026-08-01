@@ -1,9 +1,9 @@
 // src/components/storefront/TileConfigPanel.jsx
 // Schema-driven tile configuration panel — reads the widget's configSchema
 // from the backend catalog and renders the appropriate input for each property.
-import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Card } from '@/components/forge';
 import { Badge } from '@/components/ui';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/components/forge';
 import { Trash2, Settings, Upload, Loader2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { storefrontApi } from '@/services/storefrontApi';

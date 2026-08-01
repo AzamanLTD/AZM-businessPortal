@@ -2,25 +2,25 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { shiftApi, employeeApi } from '@/lib/marketplaceApi';
 import { usePermission } from '@/hooks/usePermission';
 import { Card, Button, Badge, Input, Select, Modal, Empty, Skeleton, Avatar, StatCard, Tabs } from '@/components/ui';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/components/forge';
 import {
   Calendar, Plus, ChevronLeft, ChevronRight, Clock, CheckCircle2, XCircle,
   Edit2, Trash2, Repeat, ArrowLeftRight, AlertCircle
 } from 'lucide-react';
 
 const STATUS_COLORS = {
-  SCHEDULED: 'var(--az-accent)',
-  IN_PROGRESS: 'var(--az-success)',
-  COMPLETED: 'var(--az-text-muted)',
-  NO_SHOW: 'var(--az-danger)',
-  CANCELLED: 'var(--az-text-muted)',
+  SCHEDULED: 'var(--f-tint-color)',
+  IN_PROGRESS: 'var(--f-ok)',
+  COMPLETED: 'var(--f-text-3)',
+  NO_SHOW: 'var(--f-bad)',
+  CANCELLED: 'var(--f-text-3)',
 };
 
 const SWAP_STATUS_COLORS = {
-  PENDING: 'var(--az-warning)',
-  APPROVED: 'var(--az-success)',
-  REJECTED: 'var(--az-danger)',
-  CLAIMED: 'var(--az-accent)',
+  PENDING: 'var(--f-warn)',
+  APPROVED: 'var(--f-ok)',
+  REJECTED: 'var(--f-bad)',
+  CLAIMED: 'var(--f-tint-color)',
 };
 
 function formatDate(dateStr) {
@@ -255,7 +255,7 @@ export default function Scheduling() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold">Scheduling</h1>
-          <p className="text-sm text-[var(--az-text-muted)] mt-1">Manage shifts, swaps, and team scheduling.</p>
+          <p className="text-sm text-[var(--f-text-3)] mt-1">Manage shifts, swaps, and team scheduling.</p>
         </div>
         <div className="flex gap-2">
           {hasPermission('shifts.create') && <Button onClick={() => { resetForm(); setEditShift(null); setAddOpen(true); }} size="md"><Plus className="w-4 h-4 mr-1" /> Add Shift</Button>}
@@ -265,9 +265,9 @@ export default function Scheduling() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard label="This Week" value={shifts.length} sub="scheduled shifts" icon={Calendar} />
-        <StatCard label="Pending Swaps" value={pendingSwaps.length} sub="awaiting approval" icon={ArrowLeftRight} color="var(--az-warning)" />
-        <StatCard label="On Duty" value={onDuty.length} sub="clocked in now" icon={Clock} color="var(--az-success)" />
-        <StatCard label="No-Shows" value={shifts.filter(s => s.status === 'NO_SHOW').length} sub="this week" icon={AlertCircle} color="var(--az-danger)" />
+        <StatCard label="Pending Swaps" value={pendingSwaps.length} sub="awaiting approval" icon={ArrowLeftRight} color="var(--f-warn)" />
+        <StatCard label="On Duty" value={onDuty.length} sub="clocked in now" icon={Clock} color="var(--f-ok)" />
+        <StatCard label="No-Shows" value={shifts.filter(s => s.status === 'NO_SHOW').length} sub="this week" icon={AlertCircle} color="var(--f-bad)" />
       </div>
 
       <Tabs value={tab} onChange={setTab} items={tabs.map(t => t.label)} />
@@ -294,33 +294,33 @@ export default function Scheduling() {
                 const isToday = date.toDateString() === new Date().toDateString();
                 return (
                   <div key={idx} className="space-y-2">
-                    <div className={`text-center pb-2 border-b ${isToday ? 'border-[var(--az-accent)]' : 'border-[var(--az-border)]'}`}>
-                      <p className="text-xs text-[var(--az-text-muted)]">{DAY_NAMES[idx]}</p>
-                      <p className={`text-lg font-bold ${isToday ? 'text-[var(--az-accent)]' : ''}`}>{date.getDate()}</p>
+                    <div className={`text-center pb-2 border-b ${isToday ? 'border-[var(--f-tint-color)]' : 'border-[var(--f-line)]'}`}>
+                      <p className="text-xs text-[var(--f-text-3)]">{DAY_NAMES[idx]}</p>
+                      <p className={`text-lg font-bold ${isToday ? 'text-[var(--f-tint-color)]' : ''}`}>{date.getDate()}</p>
                     </div>
                     <div className="space-y-2">
                       {dayShifts.length === 0 ? (
-                        <p className="text-xs text-[var(--az-text-muted)] text-center py-2">No shifts</p>
+                        <p className="text-xs text-[var(--f-text-3)] text-center py-2">No shifts</p>
                       ) : (
                         dayShifts.sort((a, b) => new Date(a.startTime) - new Date(b.startTime)).map(shift => (
                           <Card key={shift.id} className="p-2.5 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => openEdit(shift)}>
                             <div className="flex items-start justify-between gap-1">
                               <div className="min-w-0 flex-1">
                                 <p className="text-xs font-medium truncate">{employeeName(shift)}</p>
-                                <p className="text-[10px] text-[var(--az-text-muted)] mt-0.5">
+                                <p className="text-[10px] text-[var(--f-text-3)] mt-0.5">
                                   {formatTime(shift.startTime)} – {formatTime(shift.endTime)}
                                 </p>
                               </div>
-                              <Badge color={STATUS_COLORS[shift.status] || 'var(--az-text-muted)'} className="text-[9px] px-1.5 py-0.5">
+                              <Badge color={STATUS_COLORS[shift.status] || 'var(--f-text-3)'} className="text-[9px] px-1.5 py-0.5">
                                 {shift.status === 'IN_PROGRESS' ? 'ACTIVE' : shift.status}
                               </Badge>
                             </div>
-                            {shift.shiftLabel && <p className="text-[10px] text-[var(--az-accent)] mt-1">{shift.shiftLabel}</p>}
+                            {shift.shiftLabel && <p className="text-[10px] text-[var(--f-tint-color)] mt-1">{shift.shiftLabel}</p>}
                             {canManage(shift) && shift.status === 'SCHEDULED' && (
                               <div className="flex gap-1 mt-1.5">
-                                <button onClick={(e) => { e.stopPropagation(); openEdit(shift); }} className="text-[var(--az-text-muted)] hover:text-[var(--az-accent)]"><Edit2 className="w-3 h-3" /></button>
-                                <button onClick={(e) => { e.stopPropagation(); handleDelete(shift.id); }} className="text-[var(--az-text-muted)] hover:text-[var(--az-danger)]"><Trash2 className="w-3 h-3" /></button>
-                                <button onClick={(e) => { e.stopPropagation(); handleNoShow(shift.id); }} className="text-[var(--az-text-muted)] hover:text-[var(--az-warning)]"><AlertCircle className="w-3 h-3" /></button>
+                                <button onClick={(e) => { e.stopPropagation(); openEdit(shift); }} className="text-[var(--f-text-3)] hover:text-[var(--f-tint-color)]"><Edit2 className="w-3 h-3" /></button>
+                                <button onClick={(e) => { e.stopPropagation(); handleDelete(shift.id); }} className="text-[var(--f-text-3)] hover:text-[var(--f-bad)]"><Trash2 className="w-3 h-3" /></button>
+                                <button onClick={(e) => { e.stopPropagation(); handleNoShow(shift.id); }} className="text-[var(--f-text-3)] hover:text-[var(--f-warn)]"><AlertCircle className="w-3 h-3" /></button>
                               </div>
                             )}
                           </Card>
@@ -343,7 +343,7 @@ export default function Scheduling() {
             <>
               {pendingSwaps.length > 0 && (
                 <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-[var(--az-warning)]">Pending Approval</h3>
+                  <h3 className="text-sm font-semibold text-[var(--f-warn)]">Pending Approval</h3>
                   {pendingSwaps.map(swap => (
                     <Card key={swap.id} className="p-4">
                       <div className="flex items-start justify-between">
@@ -352,12 +352,12 @@ export default function Scheduling() {
                             <Avatar size="sm" name={swap.requestingShift?.employee?.user?.fullName || 'Employee'} src={swap.requestingShift?.employee?.user?.avatarUrl} />
                             <div>
                               <p className="text-sm font-medium">{swap.requestingShift?.employee?.user?.fullName || 'Unknown'}</p>
-                              <p className="text-xs text-[var(--az-text-muted)]">
+                              <p className="text-xs text-[var(--f-text-3)]">
                                 {formatDate(swap.requestingShift?.shiftDate)} · {formatTimeRange(swap.requestingShift?.startTime, swap.requestingShift?.endTime)}
                               </p>
                             </div>
                           </div>
-                          {swap.reason && <p className="text-xs text-[var(--az-text-muted)] mt-2">Reason: {swap.reason}</p>}
+                          {swap.reason && <p className="text-xs text-[var(--f-text-3)] mt-2">Reason: {swap.reason}</p>}
                         </div>
                         {hasPermission('shifts.approve_swap') && (
                           <div className="flex gap-2">
@@ -372,15 +372,15 @@ export default function Scheduling() {
               )}
               {pastSwaps.length > 0 && (
                 <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-[var(--az-text-muted)]">History</h3>
+                  <h3 className="text-sm font-semibold text-[var(--f-text-3)]">History</h3>
                   {pastSwaps.slice(0, 10).map(swap => (
                     <Card key={swap.id} className="p-3 opacity-70">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <span className="text-sm">{swap.requestingShift?.employee?.user?.fullName || 'Unknown'}</span>
-                          <Badge color={SWAP_STATUS_COLORS[swap.status] || 'var(--az-text-muted)'}>{swap.status}</Badge>
+                          <Badge color={SWAP_STATUS_COLORS[swap.status] || 'var(--f-text-3)'}>{swap.status}</Badge>
                         </div>
-                        <span className="text-xs text-[var(--az-text-muted)]">{formatDate(swap.requestedAt)}</span>
+                        <span className="text-xs text-[var(--f-text-3)]">{formatDate(swap.requestedAt)}</span>
                       </div>
                     </Card>
                   ))}
@@ -402,15 +402,15 @@ export default function Scheduling() {
                   <div className="flex items-center gap-3">
                     <div className="relative">
                       <Avatar size="md" name={employeeName(shift)} src={shift.employee?.user?.avatarUrl} />
-                      <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[var(--az-success)] border-2 border-[var(--az-surface)]" />
+                      <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-[var(--f-ok)] border-2 border-[var(--f-surface)]" />
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium">{employeeName(shift)}</p>
-                      <p className="text-xs text-[var(--az-text-muted)]">Since {formatTime(shift.clockInTime || shift.startTime)}</p>
+                      <p className="text-xs text-[var(--f-text-3)]">Since {formatTime(shift.clockInTime || shift.startTime)}</p>
                     </div>
-                    <Badge color="var(--az-success)">ON DUTY</Badge>
+                    <Badge color="var(--f-ok)">ON DUTY</Badge>
                   </div>
-                  <div className="mt-3 text-xs text-[var(--az-text-muted)] space-y-1">
+                  <div className="mt-3 text-xs text-[var(--f-text-3)] space-y-1">
                     <p>Shift: {formatTimeRange(shift.startTime, shift.endTime)}</p>
                     <p>Duration: {shiftDuration(shift.clockInTime || shift.startTime, new Date().toISOString())}</p>
                   </div>
@@ -424,12 +424,12 @@ export default function Scheduling() {
       {tab === 3 && (
         <Card className="p-6">
           <div className="flex items-start gap-3 mb-4">
-            <div className="p-2 rounded-lg bg-[var(--az-accent)]/10">
-              <Repeat className="w-5 h-5 text-[var(--az-accent)]" />
+            <div className="p-2 rounded-lg bg-[var(--f-tint-color)]/10">
+              <Repeat className="w-5 h-5 text-[var(--f-tint-color)]" />
             </div>
             <div>
               <h3 className="text-sm font-semibold">Create Rotation Pattern</h3>
-              <p className="text-xs text-[var(--az-text-muted)] mt-1">Generate recurring shifts for an employee across multiple weeks.</p>
+              <p className="text-xs text-[var(--f-text-3)] mt-1">Generate recurring shifts for an employee across multiple weeks.</p>
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -441,7 +441,7 @@ export default function Scheduling() {
                 {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((label, idx) => (
                   <button key={idx} type="button"
                     onClick={() => setRotationForm(f => { const days = f.daysOfWeek.includes(idx) ? f.daysOfWeek.filter(d => d !== idx) : [...f.daysOfWeek, idx]; return { ...f, daysOfWeek: days }; })}
-                    className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${rotationForm.daysOfWeek.includes(idx) ? 'bg-[var(--az-accent)] text-white' : 'bg-[var(--az-bg-alt)] text-[var(--az-text-muted)]'}`}>
+                    className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${rotationForm.daysOfWeek.includes(idx) ? 'bg-[var(--f-tint-color)] text-white' : 'bg-[var(--f-surface-sunken)] text-[var(--f-text-3)]'}`}>
                     {label}
                   </button>
                 ))}
@@ -482,7 +482,7 @@ export default function Scheduling() {
 
       <Modal open={!!rejectSwap} onClose={() => setRejectSwap(null)} title="Reject Swap Request">
         <div className="space-y-4 p-2">
-          <p className="text-sm text-[var(--az-text-muted)]">Add a note explaining why this swap is rejected.</p>
+          <p className="text-sm text-[var(--f-text-3)]">Add a note explaining why this swap is rejected.</p>
           <Input label="Manager Note" value={rejectSwap?.note || ''} onChange={e => setRejectSwap(s => s ? { ...s, note: e.target.value } : s)} placeholder="Reason for rejection..." />
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="ghost" onClick={() => setRejectSwap(null)}>Cancel</Button>

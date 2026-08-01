@@ -32,7 +32,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoices as invoicesApi, locations as locApi } from '@/lib/api';
 import { bookingOpsApi } from '@/lib/marketplaceApi';
 import { Card, Badge, Button, Input, Textarea, Select, Empty, Skeleton, Modal, Tabs, Progress } from '@/components/ui';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/components/forge';
 // Widget replaced by KpiCard/Card
 import { fmtUSDC, fmt, formatDateTime, relativeTime, cn } from '@/lib/utils';
 import {
@@ -1021,7 +1021,7 @@ function InvoiceDetailModal({ invoiceId, onClose, onSend, onVoid, sending }) {
           if (!inv) return;
           const ok = await downloadServerPdf(inv.id, inv.invoiceRef);
           if (!ok) generateInvoicePDF(inv, bizProfile);
-        }} className="flex-1" style={{ background: "var(--az-accent-subtle)", color: "var(--f-tint-color)" }}>
+        }} className="flex-1" style={{ background: "var(--f-surface-sunken)", color: "var(--f-tint-color)" }}>
           <Receipt className="w-4 h-4 mr-1" /> Download PDF
         </Button>
         <Button variant="secondary" onClick={onClose} className="flex-1">Close</Button>

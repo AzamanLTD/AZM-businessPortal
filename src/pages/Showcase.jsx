@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/components/forge';
 import { request } from '@/lib/api';
 import { uploadImageToCloudinary } from '@/lib/cloudinary';
 import { PhonePreview } from '@/components/PhonePreview';
@@ -354,7 +354,7 @@ export default function Showcase() {
                       </button>
                       {canPublish && (
                         <button onClick={() => handleRemoveSlide(slide.id)}
-                          className="p-1.5 rounded-sm text-[var(--f-bad)]:bg-[var(--az-danger-subtle)]">
+                          className="p-1.5 rounded-sm text-[var(--f-bad)]:bg-[var(--f-bad-bg)]">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       )}
@@ -470,7 +470,7 @@ export default function Showcase() {
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-line">
               <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-10 h-10 rounded-sm" style={{ background: 'var(--az-accent-subtle)' }}>
+                <div className="flex items-center justify-center w-10 h-10 rounded-sm" style={{ background: 'var(--f-surface-sunken)' }}>
                   <History className="w-5 h-5" style={{ color: 'var(--f-tint-color)' }} />
                 </div>
                 <div>
@@ -504,7 +504,7 @@ export default function Showcase() {
                     {/* Version icon */}
                     <div className="flex flex-col items-center">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center ${idx === 0 ? 'text-[var(--f-text)]' : 'text-[var(--f-text-3)]'}`}
-                        style={{ background: idx === 0 ? 'var(--f-tint-color)' : 'var(--az-bg-alt)' }}>
+                        style={{ background: idx === 0 ? 'var(--f-tint-color)' : 'var(--f-surface-sunken)' }}>
                         {idx === 0 ? <CheckCircle className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
                       </div>
                       {idx < versions.length - 1 && <div className="w-0.5 h-8 bg-line mt-1" />}
@@ -528,7 +528,7 @@ export default function Showcase() {
                           onClick={() => handleRevert(v.id)}
                           disabled={revertingId === v.id}
                           className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-sm transition-colors"
-                          style={{ background: 'var(--az-accent-subtle)', color: 'var(--f-tint-color)' }}
+                          style={{ background: 'var(--f-surface-sunken)', color: 'var(--f-tint-color)' }}
                         >
                           <RefreshCw className={`w-3 h-3 ${revertingId === v.id ? 'animate-spin' : ''}`} />
                           {revertingId === v.id ? 'Reverting...' : 'Revert to this version'}

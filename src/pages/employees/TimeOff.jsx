@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { timeOffApi, feedbackApi, employeeApi } from '@/lib/marketplaceApi';
 import { usePermission } from '@/hooks/usePermission';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/components/forge';
 import {
   Card,
   Button,
@@ -63,17 +63,17 @@ function formatDate(dateString) {
 
 const TYPE_COLORS = {
   VACATION: { text: '#a855f7', bg: 'rgba(168, 85, 247, 0.1)' }, // purple/blue
-  SICK: { text: 'var(--az-danger)', bg: 'rgba(239, 68, 68, 0.1)' },
-  PERSONAL: { text: 'var(--az-warning)', bg: 'rgba(245, 158, 11, 0.1)' },
-  EMERGENCY: { text: 'var(--az-danger)', bg: 'rgba(239, 68, 68, 0.1)' },
-  UNPAID: { text: 'var(--az-text-muted)', bg: 'rgba(156, 163, 175, 0.1)' },
+  SICK: { text: 'var(--f-bad)', bg: 'rgba(239, 68, 68, 0.1)' },
+  PERSONAL: { text: 'var(--f-warn)', bg: 'rgba(245, 158, 11, 0.1)' },
+  EMERGENCY: { text: 'var(--f-bad)', bg: 'rgba(239, 68, 68, 0.1)' },
+  UNPAID: { text: 'var(--f-text-3)', bg: 'rgba(156, 163, 175, 0.1)' },
 };
 
 const STATUS_COLORS = {
-  PENDING: { text: 'var(--az-warning)', bg: 'rgba(245, 158, 11, 0.1)' },
-  APPROVED: { text: 'var(--az-success)', bg: 'rgba(16, 185, 129, 0.1)' },
-  REJECTED: { text: 'var(--az-danger)', bg: 'rgba(239, 68, 68, 0.1)' },
-  CANCELLED: { text: 'var(--az-text-muted)', bg: 'rgba(156, 163, 175, 0.1)' },
+  PENDING: { text: 'var(--f-warn)', bg: 'rgba(245, 158, 11, 0.1)' },
+  APPROVED: { text: 'var(--f-ok)', bg: 'rgba(16, 185, 129, 0.1)' },
+  REJECTED: { text: 'var(--f-bad)', bg: 'rgba(239, 68, 68, 0.1)' },
+  CANCELLED: { text: 'var(--f-text-3)', bg: 'rgba(156, 163, 175, 0.1)' },
 };
 
 export default function TimeOff() {
@@ -329,8 +329,8 @@ export default function TimeOff() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-[var(--az-text)]">Time Off & Feedback</h1>
-          <p className="text-sm text-[var(--az-text-muted)] mt-0.5">
+          <h1 className="text-xl font-bold text-[var(--f-text)]">Time Off & Feedback</h1>
+          <p className="text-sm text-[var(--f-text-3)] mt-0.5">
             Manage leaves, track team absences, and cultivate professional growth.
           </p>
         </div>
@@ -349,13 +349,13 @@ export default function TimeOff() {
       </div>
 
       {/* Tabs Switcher */}
-      <div className="flex border-b border-[var(--az-border)]">
+      <div className="flex border-b border-line">
         <button
           onClick={() => setActiveTab('timeoff')}
           className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors ${
             activeTab === 'timeoff'
-              ? 'border-[var(--az-accent)] text-[var(--az-text)]'
-              : 'border-transparent text-[var(--az-text-muted)] hover:text-[var(--az-text)]'
+              ? 'border-[var(--f-tint-color)] text-[var(--f-text)]'
+              : 'border-transparent text-[var(--f-text-3)] hover:text-[var(--f-text)]'
           }`}
         >
           Time-Off Requests
@@ -364,8 +364,8 @@ export default function TimeOff() {
           onClick={() => setActiveTab('feedback')}
           className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors ${
             activeTab === 'feedback'
-              ? 'border-[var(--az-accent)] text-[var(--az-text)]'
-              : 'border-transparent text-[var(--az-text-muted)] hover:text-[var(--az-text)]'
+              ? 'border-[var(--f-tint-color)] text-[var(--f-text)]'
+              : 'border-transparent text-[var(--f-text-3)] hover:text-[var(--f-text)]'
           }`}
         >
           Employee Feedback
@@ -381,28 +381,28 @@ export default function TimeOff() {
               label="Pending Requests"
               value={pendingCount}
               icon={Clock}
-              color="var(--az-warning)"
+              color="var(--f-warn)"
               loading={loadingTimeOff}
             />
             <StatCard
               label="Approved This Month"
               value={approvedThisMonthCount}
               icon={CheckCircle2}
-              color="var(--az-success)"
+              color="var(--f-ok)"
               loading={loadingTimeOff}
             />
             <StatCard
               label="Rejected This Month"
               value={rejectedThisMonthCount}
               icon={XCircle}
-              color="var(--az-danger)"
+              color="var(--f-bad)"
               loading={loadingTimeOff}
             />
             <StatCard
               label="Emergency Pending"
               value={emergencyPendingCount}
               icon={AlertCircle}
-              color="var(--az-danger)"
+              color="var(--f-bad)"
               loading={loadingTimeOff}
             />
           </div>
@@ -436,15 +436,15 @@ export default function TimeOff() {
                 />
               </div>
             </div>
-            <div className="text-xs text-[var(--az-text-muted)]">
+            <div className="text-xs text-[var(--f-text-3)]">
               Showing {filteredPendingRequests.length + filteredPastRequests.length} requests
             </div>
           </Card>
 
           {/* Pending Section */}
           <div className="space-y-4">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--az-text-muted)] flex items-center gap-2">
-              <Clock className="w-4 h-4 text-[var(--az-warning)]" />
+            <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--f-text-3)] flex items-center gap-2">
+              <Clock className="w-4 h-4 text-[var(--f-warn)]" />
               Pending Requests ({filteredPendingRequests.length})
             </h2>
 
@@ -462,7 +462,7 @@ export default function TimeOff() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {filteredPendingRequests.map((req) => {
-                  const typeClr = TYPE_COLORS[req.type] || { text: 'var(--az-accent)', bg: 'rgba(168, 85, 247, 0.1)' };
+                  const typeClr = TYPE_COLORS[req.type] || { text: 'var(--f-tint-color)', bg: 'rgba(168, 85, 247, 0.1)' };
                   return (
                     <Card key={req.id} className="relative flex flex-col justify-between">
                       <div>
@@ -475,10 +475,10 @@ export default function TimeOff() {
                               size="md"
                             />
                             <div>
-                              <h3 className="text-sm font-semibold text-[var(--az-text)]">
+                              <h3 className="text-sm font-semibold text-[var(--f-text)]">
                                 {req.employee?.user?.fullName || 'Unknown Employee'}
                               </h3>
-                              <p className="text-xs text-[var(--az-text-muted)]">
+                              <p className="text-xs text-[var(--f-text-3)]">
                                 {req.employee?.title || req.employee?.role || 'Staff'}
                               </p>
                             </div>
@@ -489,7 +489,7 @@ export default function TimeOff() {
                               {req.type}
                             </Badge>
                             {req.isEmergency && (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold text-[var(--az-danger)] bg-red-500/10 border border-red-500/20 animate-pulse">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold text-[var(--f-bad)] bg-red-500/10 border border-red-500/20 animate-pulse">
                                 <AlertCircle className="w-3.5 h-3.5" /> Emergency
                               </span>
                             )}
@@ -498,18 +498,18 @@ export default function TimeOff() {
 
                         {/* Request content */}
                         <div className="space-y-2 mb-4">
-                          <div className="flex items-center gap-1.5 text-xs text-[var(--az-text-muted)]">
+                          <div className="flex items-center gap-1.5 text-xs text-[var(--f-text-3)]">
                             <Calendar className="w-3.5 h-3.5" />
-                            <span className="font-semibold text-[var(--az-text)]">
+                            <span className="font-semibold text-[var(--f-text)]">
                               {formatDate(req.startDate)}
                             </span>
                             <span>to</span>
-                            <span className="font-semibold text-[var(--az-text)]">
+                            <span className="font-semibold text-[var(--f-text)]">
                               {formatDate(req.endDate)}
                             </span>
                           </div>
                           {req.reason && (
-                            <p className="text-sm text-[var(--az-text)] italic bg-[var(--az-black)] p-3 rounded-xl border border-[var(--az-border)]">
+                            <p className="text-sm text-[var(--f-text)] italic bg-[var(--f-ink-900)] p-3 rounded-xl border border-line">
                               "{req.reason}"
                             </p>
                           )}
@@ -518,11 +518,11 @@ export default function TimeOff() {
 
                       {/* Action buttons (Visible only if has shifts.approve_timeoff permission) */}
                       {canApproveTimeOff && (
-                        <div className="flex items-center gap-2 border-t border-[var(--az-border)] pt-4 mt-2">
+                        <div className="flex items-center gap-2 border-t border-line pt-4 mt-2">
                           <Button
                             variant="primary"
                             size="sm"
-                            className="flex-1 bg-[var(--az-success)] text-white hover:bg-emerald-600 border border-transparent"
+                            className="flex-1 bg-[var(--f-ok)] text-white hover:bg-emerald-600 border border-transparent"
                             onClick={() => handleApprove(req.id)}
                           >
                             <CheckCircle2 className="w-4 h-4" /> Approve
@@ -530,10 +530,10 @@ export default function TimeOff() {
                           <Button
                             variant="secondary"
                             size="sm"
-                            className="flex-1 hover:border-[var(--az-danger)] hover:text-[var(--az-danger)]"
+                            className="flex-1 hover:border-[var(--f-bad)] hover:text-[var(--f-bad)]"
                             onClick={() => handleOpenRejectModal(req)}
                           >
-                            <XCircle className="w-4 h-4 text-[var(--az-danger)]" /> Reject
+                            <XCircle className="w-4 h-4 text-[var(--f-bad)]" /> Reject
                           </Button>
                         </div>
                       )}
@@ -545,31 +545,31 @@ export default function TimeOff() {
           </div>
 
           {/* Past Requests Section (Accordion style) */}
-          <div className="border border-[var(--az-border)] rounded-2xl overflow-hidden bg-[var(--az-card)]">
+          <div className="border border-line rounded-2xl overflow-hidden bg-surface">
             <button
               onClick={() => setPastRequestsOpen(!pastRequestsOpen)}
-              className="w-full flex items-center justify-between px-5 py-4 text-sm font-semibold text-[var(--az-text)] hover:bg-[var(--az-border)]/30 transition-colors"
+              className="w-full flex items-center justify-between px-5 py-4 text-sm font-semibold text-[var(--f-text)] hover:bg-[var(--f-line)]/30 transition-colors"
             >
               <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-[var(--az-accent)]" />
+                <Calendar className="w-4 h-4 text-[var(--f-tint-color)]" />
                 <span>Past & Resolved Requests ({filteredPastRequests.length})</span>
               </div>
               {pastRequestsOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
             </button>
 
             {pastRequestsOpen && (
-              <div className="border-t border-[var(--az-border)] p-5 space-y-3 bg-[var(--az-black)]">
+              <div className="border-t border-line p-5 space-y-3 bg-[var(--f-ink-900)]">
                 {loadingTimeOff ? (
                   <Skeleton className="h-24" />
                 ) : filteredPastRequests.length === 0 ? (
-                  <div className="text-center py-6 text-sm text-[var(--az-text-muted)]">
+                  <div className="text-center py-6 text-sm text-[var(--f-text-3)]">
                     No past requests found matching active filters.
                   </div>
                 ) : (
-                  <div className="divide-y divide-[var(--az-border)]">
+                  <div className="divide-y divide-[var(--f-line)]">
                     {filteredPastRequests.map((req) => {
-                      const statusClr = STATUS_COLORS[req.status] || { text: 'var(--az-text-muted)', bg: 'rgba(156, 163, 175, 0.1)' };
-                      const typeClr = TYPE_COLORS[req.type] || { text: 'var(--az-accent)', bg: 'rgba(168, 85, 247, 0.1)' };
+                      const statusClr = STATUS_COLORS[req.status] || { text: 'var(--f-text-3)', bg: 'rgba(156, 163, 175, 0.1)' };
+                      const typeClr = TYPE_COLORS[req.type] || { text: 'var(--f-tint-color)', bg: 'rgba(168, 85, 247, 0.1)' };
                       return (
                         <div key={req.id} className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                           <div className="flex items-center gap-3">
@@ -580,19 +580,19 @@ export default function TimeOff() {
                             />
                             <div>
                               <div className="flex items-center gap-2">
-                                <span className="text-sm font-semibold text-[var(--az-text)]">
+                                <span className="text-sm font-semibold text-[var(--f-text)]">
                                   {req.employee?.user?.fullName || 'Unknown Employee'}
                                 </span>
                                 <Badge color={typeClr.text} bg={typeClr.bg}>
                                   {req.type}
                                 </Badge>
                               </div>
-                              <p className="text-xs text-[var(--az-text-muted)] mt-0.5">
+                              <p className="text-xs text-[var(--f-text-3)] mt-0.5">
                                 {formatDate(req.startDate)} - {formatDate(req.endDate)}
                               </p>
                               {req.managerNote && (
-                                <p className="text-xs text-[var(--az-text-muted)] mt-1.5 italic bg-[var(--az-surface)] p-2 rounded-lg border border-[var(--az-border)] max-w-lg">
-                                  <span className="font-semibold text-[var(--az-text)] not-italic block mb-0.5">Manager Note:</span>
+                                <p className="text-xs text-[var(--f-text-3)] mt-1.5 italic bg-[var(--f-surface)] p-2 rounded-lg border border-line max-w-lg">
+                                  <span className="font-semibold text-[var(--f-text)] not-italic block mb-0.5">Manager Note:</span>
                                   "{req.managerNote}"
                                 </p>
                               )}
@@ -601,7 +601,7 @@ export default function TimeOff() {
 
                           <div className="flex items-center gap-3 self-end sm:self-center">
                             {req.isEmergency && (
-                              <Badge color="var(--az-danger)" bg="rgba(239, 68, 68, 0.1)">Emergency</Badge>
+                              <Badge color="var(--f-bad)" bg="rgba(239, 68, 68, 0.1)">Emergency</Badge>
                             )}
                             <Badge color={statusClr.text} bg={statusClr.bg}>
                               {req.status}
@@ -639,21 +639,21 @@ export default function TimeOff() {
                   ]}
                 />
               </div>
-              <div className="hidden sm:block text-xs text-[var(--az-text-muted)]">
+              <div className="hidden sm:block text-xs text-[var(--f-text-3)]">
                 Loaded {filteredFeedbackList.length} feedback records
               </div>
             </Card>
 
             {/* Average Rating Display */}
             <Card className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-[var(--az-accent)]">
+              <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-[var(--f-tint-color)]">
                 <Star className="w-6 h-6 fill-current" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider">
+                <p className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">
                   Employee Rating
                 </p>
-                <p className="text-xl font-bold text-[var(--az-text)]">
+                <p className="text-xl font-bold text-[var(--f-text)]">
                   {feedbackEmployeeFilter === 'all'
                     ? 'Select an employee to see average'
                     : `${getAvgRatingForEmployee(feedbackEmployeeFilter)} / 5.0`}
@@ -664,8 +664,8 @@ export default function TimeOff() {
 
           {/* Feedback History List */}
           <div className="space-y-4">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--az-text-muted)] flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-[var(--az-accent)]" />
+            <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--f-text-3)] flex items-center gap-2">
+              <MessageSquare className="w-4 h-4 text-[var(--f-tint-color)]" />
               Feedback History
             </h2>
 
@@ -694,18 +694,18 @@ export default function TimeOff() {
                             fallback={fb.giver?.user?.fullName?.charAt(0) || 'G'}
                             size="sm"
                           />
-                          <span className="text-sm font-semibold text-[var(--az-text)]">
+                          <span className="text-sm font-semibold text-[var(--f-text)]">
                             {fb.giver?.user?.fullName || 'Manager'}
                           </span>
                         </div>
-                        <span className="text-xs text-[var(--az-text-muted)] font-bold">➔</span>
+                        <span className="text-xs text-[var(--f-text-3)] font-bold">➔</span>
                         <div className="flex items-center gap-2">
                           <Avatar
                             src={fb.receiver?.user?.avatarUrl}
                             fallback={fb.receiver?.user?.fullName?.charAt(0) || 'R'}
                             size="sm"
                           />
-                          <span className="text-sm font-semibold text-[var(--az-text)]">
+                          <span className="text-sm font-semibold text-[var(--f-text)]">
                             {fb.receiver?.user?.fullName || 'Employee'}
                           </span>
                         </div>
@@ -714,7 +714,7 @@ export default function TimeOff() {
                       {/* Rating & Period */}
                       <div className="flex items-center gap-4 self-end sm:self-center">
                         {fb.periodStart && fb.periodEnd && (
-                          <span className="text-xs text-[var(--az-text-muted)]">
+                          <span className="text-xs text-[var(--f-text-3)]">
                             Period: {formatDate(fb.periodStart)} - {formatDate(fb.periodEnd)}
                           </span>
                         )}
@@ -726,15 +726,15 @@ export default function TimeOff() {
                     </div>
 
                     {/* Comment */}
-                    <p className="text-sm text-[var(--az-text)] bg-[var(--az-black)] p-3 rounded-xl border border-[var(--az-border)] leading-relaxed">
+                    <p className="text-sm text-[var(--f-text)] bg-[var(--f-ink-900)] p-3 rounded-xl border border-line leading-relaxed">
                       "{fb.comment}"
                     </p>
 
                     {/* Multi-select Tags / Chips */}
                     {fb.tags && fb.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2 pt-2 border-t border-[var(--az-border)]">
+                      <div className="flex flex-wrap gap-2 pt-2 border-t border-line">
                         {fb.tags.map((tag) => (
-                          <Badge key={tag} color="var(--az-accent)">
+                          <Badge key={tag} color="var(--f-tint-color)">
                             {tag}
                           </Badge>
                         ))}
@@ -755,7 +755,7 @@ export default function TimeOff() {
         title="Reject Time-Off Request"
       >
         <div className="space-y-4">
-          <p className="text-sm text-[var(--az-text-muted)]">
+          <p className="text-sm text-[var(--f-text-3)]">
             Please provide a note or reason for rejecting this time-off request. This will be shared with the employee.
           </p>
           <Textarea
@@ -768,7 +768,7 @@ export default function TimeOff() {
             <Button variant="secondary" onClick={() => setRejectModalOpen(false)}>
               Cancel
             </Button>
-            <Button variant="primary" className="bg-[var(--az-danger)] text-white hover:bg-red-600" onClick={handleRejectSubmit}>
+            <Button variant="primary" className="bg-[var(--f-bad)] text-white hover:bg-red-600" onClick={handleRejectSubmit}>
               Confirm Reject
             </Button>
           </div>
@@ -802,8 +802,8 @@ export default function TimeOff() {
               onChange={(e) => setNewRequestForm({ ...newRequestForm, type: e.target.value })}
               options={TIME_OFF_TYPES}
             />
-            <div className="flex items-center justify-between border border-[var(--az-border)] rounded-xl px-4 bg-[var(--az-black)] h-[50px] mt-[22px]">
-              <span className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider">
+            <div className="flex items-center justify-between border border-line rounded-xl px-4 bg-[var(--f-ink-900)] h-[50px] mt-[22px]">
+              <span className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">
                 Emergency?
               </span>
               <Switch
@@ -835,7 +835,7 @@ export default function TimeOff() {
             onChange={(e) => setNewRequestForm({ ...newRequestForm, reason: e.target.value })}
           />
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--az-border)]">
+          <div className="flex justify-end gap-3 pt-4 border-t border-line">
             <Button variant="secondary" onClick={() => setNewRequestModalOpen(false)}>
               Cancel
             </Button>
@@ -868,7 +868,7 @@ export default function TimeOff() {
 
           {/* Rating Choice (1-5 Star Selection) */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider">
+            <label className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">
               Rating
             </label>
             <div className="flex items-center gap-2">
@@ -891,7 +891,7 @@ export default function TimeOff() {
 
           {/* Multi-select Tags Chips */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider">
+            <label className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">
               Review Tags (Multi-select)
             </label>
             <div className="flex flex-wrap gap-2">
@@ -904,8 +904,8 @@ export default function TimeOff() {
                     onClick={() => toggleTag(tag.value)}
                     className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
                       isSelected
-                        ? 'bg-[var(--az-accent)] text-[var(--az-black)] border-[var(--az-accent)]'
-                        : 'bg-[var(--az-black)] text-[var(--az-text-muted)] border-[var(--az-border)] hover:border-[var(--az-accent)]'
+                        ? 'bg-[var(--f-tint-color)] text-[var(--f-ink-900)] border-[var(--f-tint-color)]'
+                        : 'bg-[var(--f-ink-900)] text-[var(--f-text-3)] border-line hover:border-[var(--f-tint-color)]'
                     }`}
                   >
                     {tag.label}
@@ -937,7 +937,7 @@ export default function TimeOff() {
             onChange={(e) => setFeedbackForm({ ...feedbackForm, comment: e.target.value })}
           />
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--az-border)]">
+          <div className="flex justify-end gap-3 pt-4 border-t border-line">
             <Button variant="secondary" onClick={() => setGiveFeedbackModalOpen(false)}>
               Cancel
             </Button>

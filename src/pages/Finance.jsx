@@ -12,7 +12,7 @@ import { request } from '@/lib/apiCore';
 import { fmtUSDC, fmtUSDC as fmtUsd } from '@/lib/utils';
 import { usePermission } from '@/hooks/usePermission';
 import { useAuth } from '@/lib/AuthContext';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/components/forge';
 import {
   Card, Button, Badge, Input, Select, Modal, Empty, Skeleton, Switch
 } from '@/components/ui';

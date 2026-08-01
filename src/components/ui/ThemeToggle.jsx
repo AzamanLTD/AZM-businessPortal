@@ -9,7 +9,7 @@ export function AdminThemeToggle({ theme, setTheme }) {
   return (
     <button
       onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
-      className="az-btn az-btn-ghost p-2 rounded-lg"
+      className="p--2 rounded-lg hover:bg-surface-sunken text-ink-3 hover:text-ink transition-colors"
       aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
     >
       <AnimatePresence mode="wait" initial={false}>
@@ -44,7 +44,7 @@ export function BusinessThemeToggle({ isDark, onToggle }) {
   return (
     <button
       onClick={onToggle}
-      className="az-btn az-btn-ghost p-2 rounded-lg"
+      className="p--2 rounded-lg hover:bg-surface-sunken text-ink-3 hover:text-ink transition-colors"
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
     >
       <AnimatePresence mode="wait" initial={false}>

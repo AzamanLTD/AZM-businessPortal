@@ -9,7 +9,7 @@ import { request } from '@/lib/apiCore';
 import { storefrontApi } from '@/services/storefrontApi';
 import { useAuth } from '@/lib/AuthContext';
 import { toast } from 'sonner';
-import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Card } from '@/components/forge';
 import {
   Globe, QrCode, Eye, Download, ExternalLink, CheckCircle2,
   Copy, Check, Zap, Info, Image as ImageIcon, RefreshCw
@@ -23,7 +23,7 @@ function CopyBtn({ text }) {
   return (
     <button onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
       className="p-1.5 rounded-lg transition-colors flex-shrink-0"
-      style={{ color: copied ? 'var(--az-success)' : 'var(--az-text-muted)' }}>
+      style={{ color: copied ? 'var(--f-ok)' : 'var(--f-text-3)' }}>
       {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
     </button>
   );
@@ -104,29 +104,29 @@ export default function WebOrdering() {
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--az-text)' }}>Web Ordering</h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--az-text-muted)' }}>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--f-text)' }}>Web Ordering</h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--f-text-3)' }}>
           A public page for customers to order without the Azaman app — just share the link or a QR code.
         </p>
       </div>
 
       <GlassPanel className="p-4 flex items-center gap-3">
-        <Globe className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--az-accent)' }} />
+        <Globe className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--f-tint-color)' }} />
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-wide mb-0.5" style={{ color: 'var(--az-text-muted)' }}>Public URL</p>
-          <p className="text-sm font-mono truncate" style={{ color: 'var(--az-text)' }}>{publicUrl}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide mb-0.5" style={{ color: 'var(--f-text-3)' }}>Public URL</p>
+          <p className="text-sm font-mono truncate" style={{ color: 'var(--f-text)' }}>{publicUrl}</p>
         </div>
         <CopyBtn text={publicUrl} />
-        <a href={publicUrl} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg" style={{ color: 'var(--az-text-muted)' }}>
+        <a href={publicUrl} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg" style={{ color: 'var(--f-text-3)' }}>
           <ExternalLink className="w-4 h-4" />
         </a>
       </GlassPanel>
 
-      <div className="flex gap-1 p-1 rounded-xl w-fit" style={{ background: 'var(--az-bg)' }}>
+      <div className="flex gap-1 p-1 rounded-xl w-fit" style={{ background: 'var(--f-bg)' }}>
         {TABS.map(t => (
           <button key={t} onClick={() => setActiveTab(t)}
             className="px-4 py-2 rounded-lg text-sm font-semibold capitalize transition-all"
-            style={activeTab === t ? { background: 'var(--az-accent)', color: '#fff' } : { color: 'var(--az-text-muted)' }}>
+            style={activeTab === t ? { background: 'var(--f-tint-color)', color: '#fff' } : { color: 'var(--f-text-3)' }}>
             {t === 'qr' ? 'QR Codes' : t}
           </button>
         ))}
@@ -138,47 +138,47 @@ export default function WebOrdering() {
             <GlassPanel className="p-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: enabled ? 'var(--az-success-subtle)' : 'var(--az-bg)' }}>
-                    <Zap className="w-5 h-5" style={{ color: enabled ? 'var(--az-success)' : 'var(--az-text-muted)' }} />
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: enabled ? 'var(--f-ok-bg)' : 'var(--f-bg)' }}>
+                    <Zap className="w-5 h-5" style={{ color: enabled ? 'var(--f-ok)' : 'var(--f-text-3)' }} />
                   </div>
                   <div>
-                    <p className="font-semibold" style={{ color: 'var(--az-text)' }}>Enable Web Ordering</p>
-                    <p className="text-xs" style={{ color: 'var(--az-text-muted)' }}>Makes your public page live for customers</p>
+                    <p className="font-semibold" style={{ color: 'var(--f-text)' }}>Enable Web Ordering</p>
+                    <p className="text-xs" style={{ color: 'var(--f-text-3)' }}>Makes your public page live for customers</p>
                   </div>
                 </div>
                 <button onClick={() => setEnabled(v => !v)}
                   className="relative w-12 h-6 rounded-full transition-colors"
-                  style={{ background: enabled ? 'var(--az-success)' : 'var(--az-border-strong)' }}>
-                  <span className="absolute top-0.5 left-0.5 w-5 h-5 bg-[var(--az-surface-1)] rounded-full shadow transition-transform"
+                  style={{ background: enabled ? 'var(--f-ok)' : 'var(--f-line-strong)' }}>
+                  <span className="absolute top-0.5 left-0.5 w-5 h-5 bg-[var(--f-surface)] rounded-full shadow transition-transform"
                     style={{ transform: enabled ? 'translateX(24px)' : 'translateX(0)' }} />
                 </button>
               </div>
             </GlassPanel>
 
             <GlassPanel className="p-5 space-y-4">
-              <h3 className="font-bold" style={{ color: 'var(--az-text)' }}>Page Branding</h3>
+              <h3 className="font-bold" style={{ color: 'var(--f-text)' }}>Page Branding</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--az-text-muted)' }}>Accent Color</label>
+                  <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--f-text-3)' }}>Accent Color</label>
                   <div className="flex items-center gap-3">
                     <input type="color" value={accentColor} onChange={e => setAccentColor(e.target.value)}
-                      className="w-12 h-12 rounded-xl border cursor-pointer" style={{ borderColor: 'var(--az-border)' }} />
+                      className="w-12 h-12 rounded-xl border cursor-pointer" style={{ borderColor: 'var(--f-line)' }} />
                     <div>
-                      <p className="text-sm font-mono font-semibold" style={{ color: 'var(--az-text)' }}>{accentColor}</p>
-                      <p className="text-xs" style={{ color: 'var(--az-text-muted)' }}>Buttons and highlights</p>
+                      <p className="text-sm font-mono font-semibold" style={{ color: 'var(--f-text)' }}>{accentColor}</p>
+                      <p className="text-xs" style={{ color: 'var(--f-text-3)' }}>Buttons and highlights</p>
                     </div>
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--az-text-muted)' }}>Logo</label>
+                  <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--f-text-3)' }}>Logo</label>
                   <div className="flex items-center gap-3">
                     {bizProfile?.logoUrl
-                      ? <img src={bizProfile.logoUrl} alt="Logo" className="w-12 h-12 rounded-xl object-cover border" style={{ borderColor: 'var(--az-border)' }} />
-                      : <div className="w-12 h-12 rounded-xl border flex items-center justify-center" style={{ borderColor: 'var(--az-border)', background: 'var(--az-bg)' }}>
-                          <ImageIcon className="w-5 h-5" style={{ color: 'var(--az-text-muted)' }} />
+                      ? <img src={bizProfile.logoUrl} alt="Logo" className="w-12 h-12 rounded-xl object-cover border" style={{ borderColor: 'var(--f-line)' }} />
+                      : <div className="w-12 h-12 rounded-xl border flex items-center justify-center" style={{ borderColor: 'var(--f-line)', background: 'var(--f-bg)' }}>
+                          <ImageIcon className="w-5 h-5" style={{ color: 'var(--f-text-3)' }} />
                         </div>
                     }
-                    <p className="text-xs" style={{ color: 'var(--az-text-muted)' }}>Set in Settings → Business Info</p>
+                    <p className="text-xs" style={{ color: 'var(--f-text-3)' }}>Set in Settings → Business Info</p>
                   </div>
                 </div>
               </div>
@@ -186,7 +186,7 @@ export default function WebOrdering() {
 
             <button onClick={handleSave} disabled={saving}
               className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
-              style={{ background: 'var(--az-accent)' }}>
+              style={{ background: 'var(--f-tint-color)' }}>
               {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
               Save Settings
             </button>
@@ -198,26 +198,26 @@ export default function WebOrdering() {
             <GlassPanel className="p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-bold" style={{ color: 'var(--az-text)' }}>QR Codes</h3>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--az-text-muted)' }}>Print and place at each table, room, or vehicle</p>
+                  <h3 className="font-bold" style={{ color: 'var(--f-text)' }}>QR Codes</h3>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--f-text-3)' }}>Print and place at each table, room, or vehicle</p>
                 </div>
                 <button onClick={() => toast.success('Preparing PDF…')}
                   className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-white"
-                  style={{ background: 'var(--az-accent)' }}>
+                  style={{ background: 'var(--f-tint-color)' }}>
                   <Download className="w-3.5 h-3.5" /> Download All
                 </button>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {qrItems.map(item => (
                   <div key={item.id} className="flex flex-col items-center gap-2 p-4 rounded-2xl border group transition-all hover:shadow-md"
-                    style={{ borderColor: 'var(--az-border)', background: 'white' }}>
+                    style={{ borderColor: 'var(--f-line)', background: 'white' }}>
                     <div className="rounded-xl overflow-hidden border-4 border-white shadow">
                       <QRCode value={item.url} size={80} fgColor={accentColor} bgColor="#ffffff" level="M" includeMargin={false} />
                     </div>
-                    <p className="text-xs font-semibold" style={{ color: 'var(--az-text)' }}>{item.label}</p>
+                    <p className="text-xs font-semibold" style={{ color: 'var(--f-text)' }}>{item.label}</p>
                     <button onClick={() => toast.success(`QR for ${item.label} ready`)}
                       className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{ background: 'var(--az-accent-subtle)', color: 'var(--az-accent)' }}>
+                      style={{ background: 'var(--f-surface-sunken)', color: 'var(--f-tint-color)' }}>
                       <Download className="w-3 h-3" /> Download
                     </button>
                   </div>
@@ -226,8 +226,8 @@ export default function WebOrdering() {
             </GlassPanel>
 
             <div className="flex items-start gap-3 p-4 rounded-xl border" style={{ background: 'rgba(61,116,219,0.06)', borderColor: 'rgba(61,116,219,0.2)' }}>
-              <Info className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--az-info)' }} />
-              <p className="text-xs" style={{ color: 'var(--az-text-secondary)' }}>
+              <Info className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--f-info)' }} />
+              <p className="text-xs" style={{ color: 'var(--f-text-2)' }}>
                 Customers scan these QR codes to open your branded ordering page directly — no app download, no account required for browsing.
                 Account creation (phone + OTP) is only prompted at checkout.
               </p>
@@ -238,15 +238,15 @@ export default function WebOrdering() {
         {activeTab === 'preview' && (
           <motion.div key="preview" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
             <GlassPanel className="p-5 space-y-4">
-              <h3 className="font-bold" style={{ color: 'var(--az-text)' }}>Mobile Preview</h3>
+              <h3 className="font-bold" style={{ color: 'var(--f-text)' }}>Mobile Preview</h3>
               <div className="flex justify-center">
                 <div className="rounded-[36px] border-8 overflow-hidden shadow-2xl" style={{ borderColor: '#111', width: 280 }}>
-                  <div className="bg-[var(--az-surface-1)]" style={{ minHeight: 500 }}>
+                  <div className="bg-[var(--f-surface)]" style={{ minHeight: 500 }}>
                     <div className="h-28 flex items-end pb-4 px-4 text-white"
                       style={{ background: `linear-gradient(135deg, ${accentColor}, ${accentColor}99)` }}>
                       {bizProfile?.logoUrl
                         ? <img src={bizProfile.logoUrl} alt="" className="w-10 h-10 rounded-xl mr-3 border-2 border-white/40 object-cover" />
-                        : <div className="w-10 h-10 rounded-xl mr-3 bg-[var(--az-surface-1)]/20 flex items-center justify-center text-white font-bold">{(bizProfile?.businessName || 'B').charAt(0)}</div>
+                        : <div className="w-10 h-10 rounded-xl mr-3 bg-[var(--f-surface)]/20 flex items-center justify-center text-white font-bold">{(bizProfile?.businessName || 'B').charAt(0)}</div>
                       }
                       <div>
                         <p className="font-bold leading-tight">{bizProfile?.businessName || 'Your Business'}</p>
@@ -269,7 +269,7 @@ export default function WebOrdering() {
                   </div>
                 </div>
               </div>
-              <p className="text-xs text-center" style={{ color: 'var(--az-text-muted)' }}>
+              <p className="text-xs text-center" style={{ color: 'var(--f-text-3)' }}>
                 Accent color updates live above. Save your settings to publish changes.
               </p>
             </GlassPanel>

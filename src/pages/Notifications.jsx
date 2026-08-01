@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { notifications as notifApi } from '@/lib/api';
 import { Card, Button, Badge, Skeleton, Empty } from '@/components/ui';
 import { useBizNotifications } from '@/hooks/useBizNotifications';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/components/forge';
 import { cn, relativeTime } from '@/lib/utils';
 import {
   Bell, CheckCheck, ShoppingBag, Wallet, AlertTriangle,
@@ -154,7 +154,7 @@ export default function Notifications() {
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold text-[var(--f-text)] tracking-tight">Notifications Center</h1>
             {unreadCount > 0 && (
-              <Tag variant="neutral" bg="var(--az-accent-subtle)">
+              <Tag variant="neutral" bg="var(--f-surface-sunken)">
                 {unreadCount} Unread
               </Tag>
             )}
@@ -189,7 +189,7 @@ export default function Notifications() {
               className={cn(
                 'px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border',
                 active
-                  ? 'bg-[var(--az-accent-subtle)] text-[var(--f-tint-color)] border-[var(--f-tint-color)]'
+                  ? 'bg-[var(--f-surface-sunken)] text-[var(--f-tint-color)] border-[var(--f-tint-color)]'
                   : 'bg-[var(--f-surface)] text-[var(--f-text-3)] border-[var(--f-line)]:text-[var(--f-text)]'
               )}
             >
@@ -247,8 +247,8 @@ export default function Notifications() {
                       key={n.id}
                       onClick={() => handleNotificationClick(n)}
                       className={cn(
-                        'flex items-start gap-4 p-5:bg-[var(--az-bg-alt)] cursor-pointer transition-all relative',
-                        !n.isRead && 'bg-[var(--az-accent-subtle)]/30'
+                        'flex items-start gap-4 p-5:bg-[var(--f-surface-sunken)] cursor-pointer transition-all relative',
+                        !n.isRead && 'bg-[var(--f-surface-sunken)]/30'
                       )}
                     >
                       {/* Left border indicator for unread */}

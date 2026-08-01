@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { Eye, EyeOff, AlertCircle, LogIn } from 'lucide-react';
 import { Button, Input } from '@/components/ui';
-import ParticleField from '@/components/ui/ParticleField';
+// ParticleField removed in Forge purge
 import { spring } from '@/lib/motion';
 
 export default function Login() {
@@ -37,14 +37,14 @@ export default function Login() {
 
       {/* Left panel — branding with particle field */}
       <div className="hidden lg:flex flex-col justify-between w-[420px] flex-shrink-0 p-10 border-r relative overflow-hidden"
-        style={{ borderColor: 'var(--f-line)', background: 'var(--az-bg-alt)' }}>
+        style={{ borderColor: 'var(--f-line)', background: 'var(--f-surface-sunken)' }}>
 
         {/* Particle field */}
         <ParticleField color="#6C4FD1" count={400} />
 
         {/* Vignette */}
         <div className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at center, transparent 0%, var(--az-bg-alt) 85%)' }} />
+          style={{ background: 'radial-gradient(ellipse at center, transparent 0%, var(--f-surface-sunken) 85%)' }} />
 
         <div className="relative z-10">
           {/* Logo */}
@@ -147,7 +147,7 @@ export default function Login() {
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   autoComplete="current-password"
-                  className="az-input pr-10"
+                  className="f-input pr-10"
                 />
                 <button
                   type="button"
@@ -166,7 +166,7 @@ export default function Login() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={spring.snappy}
                 className="flex items-center gap-2 p-3 rounded-xl"
-                style={{ background: 'var(--az-danger-subtle)', border: '1px solid var(--az-danger-subtle)' }}
+                style={{ background: 'var(--f-bad-bg)', border: '1px solid var(--f-bad-bg)' }}
               >
                 <AlertCircle className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--f-bad)' }} />
                 <p className="text-xs font-medium" style={{ color: 'var(--f-bad)' }}>{error}</p>

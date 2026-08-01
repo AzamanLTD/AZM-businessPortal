@@ -227,7 +227,7 @@ function OverviewTab({ lowStockItems, loading }) {
             {lowStockItems.map(item => (
               <div key={item.id} className="flex items-center justify-between bg-surface rounded-lg p-3 border border-line/30">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[var(--az-warning-subtle)] flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-[var(--f-warn-bg)] flex items-center justify-center flex-shrink-0">
                     <AlertTriangle className="w-4 h-4 text-[var(--f-warn)]" />
                   </div>
                   <div>
@@ -459,7 +459,7 @@ function PurchaseOrdersTab({ suppliers }) {
         </Button>
       </div>
       {suppliers.length === 0 && (
-        <div className="bg-[var(--az-warning-subtle)] border border-amber-500/30 rounded-lg p-3 flex items-center gap-2">
+        <div className="bg-[var(--f-warn-bg)] border border-amber-500/30 rounded-lg p-3 flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 text-[var(--f-warn)]" />
           <p className="text-xs text-amber-300">Add at least one supplier before creating purchase orders.</p>
         </div>
@@ -736,7 +736,7 @@ function StockCountTab() {
             )}
           </Card>
           {activeCount.status === 'RECONCILED' && (
-            <div className="bg-[var(--az-success-subtle)] border border-emerald-500/30 rounded-lg p-3 flex items-center gap-2">
+            <div className="bg-[var(--f-ok-bg)] border border-emerald-500/30 rounded-lg p-3 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-[var(--f-ok)]" />
               <p className="text-xs text-emerald-300">
                 Stock count reconciled. Product stock quantities updated.

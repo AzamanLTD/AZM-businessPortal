@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
-import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Card } from '@/components/forge';
 import { business as businessApi, products as productsApi } from '@/lib/api';
 import {
   CheckCircle2, Circle, ChevronDown, ChevronUp,

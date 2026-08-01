@@ -1,5 +1,5 @@
 // src/components/storefront/VersionHistorySidebar.jsx
-import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Card } from '@/components/forge';
 import { Badge } from '@/components/ui';
 import { History, RotateCcw, X } from 'lucide-react';
 import { useEffect, useState } from 'react';

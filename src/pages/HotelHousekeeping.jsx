@@ -12,7 +12,7 @@ import {
   Avatar,
   StatCard
 } from '@/components/ui';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/components/forge';
 import { Switch } from '@/components/ui/Switch';
 import { usePermission } from '@/hooks/usePermission';
 import { request } from '@/lib/apiCore';

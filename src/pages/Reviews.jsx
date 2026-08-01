@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/components/forge';
 import { request } from '@/lib/api';
 import { Card, Button, Badge, Skeleton, Empty, Tabs } from '@/components/ui';
 import { DonutChartCard, AreaChartCard } from '@/components/charts';
@@ -321,7 +321,7 @@ export default function Reviews() {
           <div className="flex items-center gap-1.5 overflow-x-auto">
             <button
               onClick={() => { setActiveTab('all'); setPage(0); }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'all' ? 'bg-[var(--az-accent-subtle)] text-[var(--f-tint-color)] border border-[var(--f-tint-color)]' : 'text-[var(--f-text-3)]:bg-[var(--az-bg-alt)]'}`}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'all' ? 'bg-[var(--f-surface-sunken)] text-[var(--f-tint-color)] border border-[var(--f-tint-color)]' : 'text-[var(--f-text-3)]:bg-[var(--f-surface-sunken)]'}`}
             >
               All Ratings
             </button>
@@ -329,7 +329,7 @@ export default function Reviews() {
               <button
                 key={star}
                 onClick={() => { setActiveTab(String(star)); setPage(0); }}
-                className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activeTab === String(star) ? 'bg-[var(--f-warn)]/10 text-[var(--f-warn)] border border-[var(--f-warn)]/30' : 'text-[var(--f-text-3)]:bg-[var(--az-bg-alt)]'}`}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${activeTab === String(star) ? 'bg-[var(--f-warn)]/10 text-[var(--f-warn)] border border-[var(--f-warn)]/30' : 'text-[var(--f-text-3)]:bg-[var(--f-surface-sunken)]'}`}
               >
                 {star} ★
               </button>
@@ -374,7 +374,7 @@ export default function Reviews() {
               <Card key={review.id} className="border border-[var(--f-line)] bg-[var(--f-surface)] p-5 space-y-4">
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-full bg-[var(--az-accent-subtle)] flex items-center justify-center font-black text-[var(--f-tint-color)]">
+                    <div className="w-12 h-12 rounded-full bg-[var(--f-surface-sunken)] flex items-center justify-center font-black text-[var(--f-tint-color)]">
                       {(review.customerName || review.customerAzamanId || '?').charAt(0).toUpperCase()}
                     </div>
                     <div>

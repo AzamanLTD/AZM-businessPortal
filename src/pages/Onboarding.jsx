@@ -71,7 +71,7 @@ export default function Onboarding() {
 
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-[var(--az-accent-subtle)] border border-[var(--f-tint-color)] flex items-center justify-center az-glow-emerald">
+          <div className="w-10 h-10 rounded-xl bg-[var(--f-surface-sunken)] border border-[var(--f-tint-color)] flex items-center justify-center az-glow-emerald">
             <Store className="w-5 h-5 text-[var(--f-tint-color)]" />
           </div>
           <div>
@@ -87,7 +87,7 @@ export default function Onboarding() {
               <div
                 className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all"
                 style={s <= step
-                  ? { background: 'var(--az-accent-subtle)', border: '1.5px solid #00d97e', color: 'var(--f-tint-color)' }
+                  ? { background: 'var(--f-surface-sunken)', border: '1.5px solid #00d97e', color: 'var(--f-tint-color)' }
                   : { background: 'transparent', border: '1.5px solid #2a2a3e', color: 'var(--f-text-3)' }
                 }
               >

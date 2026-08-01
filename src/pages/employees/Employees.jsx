@@ -17,7 +17,7 @@ import {
   StatCard,
   Textarea
 } from '@/components/ui';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/components/forge';
 import { VirtualizedGrid } from '@/components/ui/VirtualizedGrid';
 import {
   Users,
@@ -57,9 +57,9 @@ const PAYROLL_TYPES = [
 ];
 
 const STATUS_COLORS = {
-  ACTIVE: 'var(--az-accent)',
-  SUSPENDED: 'var(--az-warning)',
-  TERMINATED: 'var(--az-danger)',
+  ACTIVE: 'var(--f-tint-color)',
+  SUSPENDED: 'var(--f-warn)',
+  TERMINATED: 'var(--f-bad)',
 };
 
 const AVAILABLE_PERMISSIONS = [
@@ -287,8 +287,8 @@ export default function Employees() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-[var(--az-text)]">Employees</h1>
-          <p className="text-sm text-[var(--az-text-muted)] mt-0.5">
+          <h1 className="text-xl font-bold text-[var(--f-text)]">Employees</h1>
+          <p className="text-sm text-[var(--f-text-3)] mt-0.5">
             Manage roles, compensation, schedules, and permissions
           </p>
         </div>
@@ -311,21 +311,21 @@ export default function Employees() {
           label="Active Now"
           value={activeCount}
           icon={CheckCircle2}
-          color="var(--az-accent)"
+          color="var(--f-tint-color)"
           loading={loading}
         />
         <StatCard
           label="Suspended"
           value={suspendedCount}
           icon={Ban}
-          color="var(--az-warning)"
+          color="var(--f-warn)"
           loading={loading}
         />
         <StatCard
           label="Avg Rating"
           value={avgRating > 0 ? `${avgRating.toFixed(1)} ★` : '—'}
           icon={Star}
-          color="var(--az-warning)"
+          color="var(--f-warn)"
           loading={loading}
         />
       </div>
@@ -333,7 +333,7 @@ export default function Employees() {
       {/* Filter Bar */}
       <Card className="flex flex-col md:flex-row gap-4 items-center">
         <div className="relative w-full md:flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--az-text-muted)]" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--f-text-3)]" />
           <Input
             placeholder="Search by name or email..."
             className="pl-10"
@@ -400,10 +400,10 @@ export default function Employees() {
                         size="lg"
                       />
                       <div>
-                        <h3 className="font-bold text-[var(--az-text)] truncate max-w-[150px]">
+                        <h3 className="font-bold text-[var(--f-text)] truncate max-w-[150px]">
                           {user.fullName || user.username || 'Unnamed'}
                         </h3>
-                        <p className="text-xs text-[var(--az-text-muted)] truncate max-w-[150px]">
+                        <p className="text-xs text-[var(--f-text-3)] truncate max-w-[150px]">
                           {emp.title || 'No Title'}
                         </p>
                       </div>
@@ -412,7 +412,7 @@ export default function Employees() {
                     <div onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu
                         trigger={
-                          <button className="p-1.5 rounded-lg hover:bg-[var(--az-bg-alt)] text-[var(--az-text-muted)]">
+                          <button className="p-1.5 rounded-lg hover:bg-[var(--f-surface-sunken)] text-[var(--f-text-3)]">
                             <MoreVertical className="w-4 h-4" />
                           </button>
                         }
@@ -457,35 +457,35 @@ export default function Employees() {
                   </div>
 
                   <div className="flex flex-wrap gap-2 mb-4">
-                    <Badge color={STATUS_COLORS[emp.status] || 'var(--az-text-muted)'}>
+                    <Badge color={STATUS_COLORS[emp.status] || 'var(--f-text-3)'}>
                       {emp.status}
                     </Badge>
-                    <Badge color="var(--az-accent)">{emp.role}</Badge>
+                    <Badge color="var(--f-tint-color)">{emp.role}</Badge>
                     {emp.department && (
-                      <Badge color="var(--az-text-muted)">{emp.department}</Badge>
+                      <Badge color="var(--f-text-3)">{emp.department}</Badge>
                     )}
                   </div>
                 </div>
 
-                <div className="border-t border-[var(--az-border)] pt-4 mt-auto space-y-2">
+                <div className="border-t border-[var(--f-line)] pt-4 mt-auto space-y-2">
                   <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="flex items-center gap-1.5 text-[var(--az-text-muted)]">
+                    <div className="flex items-center gap-1.5 text-[var(--f-text-3)]">
                       <Clock className="w-3.5 h-3.5" />
                       <span>{emp.totalHours || 0} hrs worked</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-[var(--az-text-muted)] justify-end">
-                      <Star className="w-3.5 h-3.5 text-[var(--az-warning)]" />
-                      <span className="font-semibold text-[var(--az-text)]">
+                    <div className="flex items-center gap-1.5 text-[var(--f-text-3)] justify-end">
+                      <Star className="w-3.5 h-3.5 text-[var(--f-warn)]" />
+                      <span className="font-semibold text-[var(--f-text)]">
                         {emp.rating ? emp.rating.toFixed(1) : '—'}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-[var(--az-text-muted)]">
+                    <div className="flex items-center gap-1.5 text-[var(--f-text-3)]">
                       <Calendar className="w-3.5 h-3.5" />
                       <span>{emp.totalShifts || 0} shifts</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-[var(--az-text-muted)] justify-end">
+                    <div className="flex items-center gap-1.5 text-[var(--f-text-3)] justify-end">
                       <DollarSign className="w-3.5 h-3.5" />
-                      <span className="font-semibold text-[var(--az-text)]">
+                      <span className="font-semibold text-[var(--f-text)]">
                         {emp.payrollType === 'SALARY'
                           ? `${emp.salaryAmount || 0}/mo`
                           : `${emp.hourlyRate || 0}/hr`}
@@ -515,78 +515,78 @@ export default function Employees() {
                 size="lg"
               />
               <div>
-                <h2 className="text-lg font-bold text-[var(--az-text)]">
+                <h2 className="text-lg font-bold text-[var(--f-text)]">
                   {selectedEmployee.user?.fullName || selectedEmployee.user?.username}
                 </h2>
-                <p className="text-sm text-[var(--az-text-muted)]">
+                <p className="text-sm text-[var(--f-text-3)]">
                   {selectedEmployee.title} • {selectedEmployee.department}
                 </p>
                 <div className="flex items-center gap-2 mt-1.5">
                   <Badge color={STATUS_COLORS[selectedEmployee.status]}>
                     {selectedEmployee.status}
                   </Badge>
-                  <Badge color="var(--az-accent)">{selectedEmployee.role}</Badge>
+                  <Badge color="var(--f-tint-color)">{selectedEmployee.role}</Badge>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 border-t border-b border-[var(--az-border)] py-4">
+            <div className="grid grid-cols-2 gap-4 border-t border-b border-[var(--f-line)] py-4">
               <div className="space-y-1">
-                <span className="text-xs text-[var(--az-text-muted)] block uppercase font-semibold">
+                <span className="text-xs text-[var(--f-text-3)] block uppercase font-semibold">
                   Compensation
                 </span>
-                <span className="text-sm text-[var(--az-text)] font-semibold">
+                <span className="text-sm text-[var(--f-text)] font-semibold">
                   {selectedEmployee.payrollType === 'SALARY'
                     ? `${selectedEmployee.salaryAmount || 0} USDC / month`
                     : `${selectedEmployee.hourlyRate || 0} USDC / hour`}
                 </span>
               </div>
               <div className="space-y-1">
-                <span className="text-xs text-[var(--az-text-muted)] block uppercase font-semibold">
+                <span className="text-xs text-[var(--f-text-3)] block uppercase font-semibold">
                   Hire Date
                 </span>
-                <span className="text-sm text-[var(--az-text)]">
+                <span className="text-sm text-[var(--f-text)]">
                   {selectedEmployee.hireDate
                     ? new Date(selectedEmployee.hireDate).toLocaleDateString()
                     : '—'}
                 </span>
               </div>
               <div className="space-y-1">
-                <span className="text-xs text-[var(--az-text-muted)] block uppercase font-semibold">
+                <span className="text-xs text-[var(--f-text-3)] block uppercase font-semibold">
                   Email
                 </span>
-                <span className="text-sm text-[var(--az-text)] flex items-center gap-1 truncate">
-                  <Mail className="w-3.5 h-3.5 text-[var(--az-text-muted)]" />
+                <span className="text-sm text-[var(--f-text)] flex items-center gap-1 truncate">
+                  <Mail className="w-3.5 h-3.5 text-[var(--f-text-3)]" />
                   {selectedEmployee.user?.email || '—'}
                 </span>
               </div>
               <div className="space-y-1">
-                <span className="text-xs text-[var(--az-text-muted)] block uppercase font-semibold">
+                <span className="text-xs text-[var(--f-text-3)] block uppercase font-semibold">
                   Rating
                 </span>
-                <span className="text-sm text-[var(--az-warning)] flex items-center gap-1 font-semibold">
-                  <Star className="w-3.5 h-3.5 fill-[var(--az-warning)]" />
+                <span className="text-sm text-[var(--f-warn)] flex items-center gap-1 font-semibold">
+                  <Star className="w-3.5 h-3.5 fill-[var(--f-warn)]" />
                   {selectedEmployee.rating ? selectedEmployee.rating.toFixed(1) : 'No reviews'}
                 </span>
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-4">
-              <div className="text-center p-3 rounded-xl bg-[var(--az-surface)] border border-[var(--az-border)]">
-                <p className="text-xs text-[var(--az-text-muted)] font-semibold">SHIFTS</p>
-                <p className="text-lg font-bold text-[var(--az-text)] mt-1">
+              <div className="text-center p-3 rounded-xl bg-[var(--f-surface)] border border-[var(--f-line)]">
+                <p className="text-xs text-[var(--f-text-3)] font-semibold">SHIFTS</p>
+                <p className="text-lg font-bold text-[var(--f-text)] mt-1">
                   {selectedEmployee.totalShifts || 0}
                 </p>
               </div>
-              <div className="text-center p-3 rounded-xl bg-[var(--az-surface)] border border-[var(--az-border)]">
-                <p className="text-xs text-[var(--az-text-muted)] font-semibold">HOURS</p>
-                <p className="text-lg font-bold text-[var(--az-text)] mt-1">
+              <div className="text-center p-3 rounded-xl bg-[var(--f-surface)] border border-[var(--f-line)]">
+                <p className="text-xs text-[var(--f-text-3)] font-semibold">HOURS</p>
+                <p className="text-lg font-bold text-[var(--f-text)] mt-1">
                   {selectedEmployee.totalHours || 0}
                 </p>
               </div>
-              <div className="text-center p-3 rounded-xl bg-[var(--az-surface)] border border-[var(--az-border)]">
-                <p className="text-xs text-[var(--az-text-muted)] font-semibold">DELAYS</p>
-                <p className="text-lg font-bold text-[var(--az-danger)] mt-1">
+              <div className="text-center p-3 rounded-xl bg-[var(--f-surface)] border border-[var(--f-line)]">
+                <p className="text-xs text-[var(--f-text-3)] font-semibold">DELAYS</p>
+                <p className="text-lg font-bold text-[var(--f-bad)] mt-1">
                   {selectedEmployee.lateCount || 0} Late / {selectedEmployee.noShowCount || 0} No-Show
                 </p>
               </div>
@@ -594,12 +594,12 @@ export default function Employees() {
 
             {selectedEmployee.permissions && selectedEmployee.permissions.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs text-[var(--az-text-muted)] uppercase font-semibold">
+                <p className="text-xs text-[var(--f-text-3)] uppercase font-semibold">
                   Permissions
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {selectedEmployee.permissions.map((perm) => (
-                    <Badge key={perm} color="var(--az-accent)">
+                    <Badge key={perm} color="var(--f-tint-color)">
                       {perm}
                     </Badge>
                   ))}
@@ -680,7 +680,7 @@ export default function Employees() {
             />
           )}
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--az-border)]">
+          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--f-line)]">
             <Button variant="secondary" onClick={() => setIsAddOpen(false)}>
               Cancel
             </Button>
@@ -742,7 +742,7 @@ export default function Employees() {
             />
           )}
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--az-border)]">
+          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--f-line)]">
             <Button variant="secondary" onClick={() => setIsEditOpen(false)}>
               Cancel
             </Button>
@@ -758,7 +758,7 @@ export default function Employees() {
         title="Update Employee Permissions"
       >
         <div className="space-y-4">
-          <p className="text-xs text-[var(--az-text-muted)] mb-4">
+          <p className="text-xs text-[var(--f-text-3)] mb-4">
             Grant or restrict explicit permissions for {selectedEmployee?.user?.fullName || selectedEmployee?.user?.username}.
           </p>
 
@@ -768,13 +768,13 @@ export default function Employees() {
               return (
                 <div
                   key={perm.value}
-                  className="flex items-center justify-between p-3 rounded-xl bg-[var(--az-surface)] border border-[var(--az-border)]"
+                  className="flex items-center justify-between p-3 rounded-xl bg-[var(--f-surface)] border border-[var(--f-line)]"
                 >
                   <div>
-                    <p className="text-sm font-semibold text-[var(--az-text)]">
+                    <p className="text-sm font-semibold text-[var(--f-text)]">
                       {perm.label}
                     </p>
-                    <p className="text-xs text-[var(--az-text-muted)]">
+                    <p className="text-xs text-[var(--f-text-3)]">
                       {perm.value}
                     </p>
                   </div>
@@ -787,7 +787,7 @@ export default function Employees() {
             })}
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--az-border)]">
+          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--f-line)]">
             <Button variant="secondary" onClick={() => setIsPermsOpen(false)}>
               Cancel
             </Button>

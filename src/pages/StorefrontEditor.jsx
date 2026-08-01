@@ -145,7 +145,7 @@ export default function StorefrontEditor() {
         <div className="flex items-center gap-2">
           <button onClick={() => setShowPreview(p => !p)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-all"
-            style={{ color: 'var(--f-text)', borderColor: 'var(--f-line)', background: showPreview ? 'var(--az-accent-subtle)' : 'transparent' }}>
+            style={{ color: 'var(--f-text)', borderColor: 'var(--f-line)', background: showPreview ? 'var(--f-surface-sunken)' : 'transparent' }}>
             {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             {showPreview ? 'Hide' : 'Show'} Preview
           </button>
@@ -181,7 +181,7 @@ export default function StorefrontEditor() {
           {published && (
             <button onClick={() => setShowQR(q => !q)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-all"
-              style={{ color: 'var(--f-text)', borderColor: 'var(--f-line)', background: showQR ? 'var(--az-accent-subtle)' : 'transparent' }}>
+              style={{ color: 'var(--f-text)', borderColor: 'var(--f-line)', background: showQR ? 'var(--f-surface-sunken)' : 'transparent' }}>
               <QrCode className="w-4 h-4" />QR
             </button>
           )}
@@ -222,7 +222,7 @@ export default function StorefrontEditor() {
       {/* ── Error Banner ── */}
       {error && (
         <div className="mx-4 mt-3 px-4 py-3 rounded-xl flex items-center gap-2 text-sm"
-          style={{ background: 'var(--az-danger-subtle)', color: 'var(--f-bad)' }}>
+          style={{ background: 'var(--f-bad-bg)', color: 'var(--f-bad)' }}>
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           <span className="flex-1">{error}</span>
           <button onClick={() => setError(null)} className="p-1 rounded-lg">
@@ -235,7 +235,7 @@ export default function StorefrontEditor() {
       <div className="flex flex-1 overflow-hidden">
 
         {/* Left: Widget Palette */}
-        <div className="w-64 flex-shrink-0 overflow-y-auto border-r" style={{ background: 'var(--az-bg-alt)', borderColor: 'var(--f-line)' }}>
+        <div className="w-64 flex-shrink-0 overflow-y-auto border-r" style={{ background: 'var(--f-surface-sunken)', borderColor: 'var(--f-line)' }}>
           <div className="p-3 border-b" style={{ borderColor: 'var(--f-line)' }}>
             <MagicLayout businessType={bizType} widgets={widgets} themes={themes} draft={draft} onApply={handleMagicLayout} disabled={loading} />
           </div>
@@ -269,7 +269,7 @@ export default function StorefrontEditor() {
         </div>
 
         {/* Right: Config + Preview */}
-        <div className="w-80 flex-shrink-0 overflow-y-auto border-l" style={{ background: 'var(--az-bg-alt)', borderColor: 'var(--f-line)' }}>
+        <div className="w-80 flex-shrink-0 overflow-y-auto border-l" style={{ background: 'var(--f-surface-sunken)', borderColor: 'var(--f-line)' }}>
           {selectedTile && selectedWidget ? (
             <TileConfigPanel
               tile={selectedTile}

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { transit as transitApi, transitOpsApi } from '@/lib/marketplaceApi';
 // Widget replaced by KpiCard/Card
-import { StatusCard } from '@/components/ui/StatusCard';
+import { Card } from '@/components/forge';
 import { DataTable } from '@/components/ui/DataTable';
 import { Button, Badge, Input, Select, Modal, Empty, Skeleton } from '@/components/ui';
 import { fmtUSDC, fmt, formatDateTime, cn } from '@/lib/utils';
@@ -435,7 +435,7 @@ export default function TransitTrips() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {templates.map(t => (
                 <div key={t.id} className="p-3.5 rounded-xl bg-[var(--f-surface)] border border-[var(--f-line)] relative group">
-                  <button onClick={() => handleDeleteTemplate(t.id)} className="absolute top-3.5 right-3.5 p-1 rounded:bg-[var(--az-danger-subtle)] text-[var(--f-text-3)]:text-[var(--f-bad)] transition-colors">
+                  <button onClick={() => handleDeleteTemplate(t.id)} className="absolute top-3.5 right-3.5 p-1 rounded:bg-[var(--f-bad-bg)] text-[var(--f-text-3)]:text-[var(--f-bad)] transition-colors">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                   <p className="font-bold text-xs text-[var(--f-text)]">{t.name}</p>
@@ -478,7 +478,7 @@ export default function TransitTrips() {
       <Modal open={!!modal} onClose={closeModal} title={modal === 'create' ? 'Schedule New Run' : 'Edit Scheduled Run'}>
         <form onSubmit={handleSubmit} className="space-y-4">
           {formError && (
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--az-danger-subtle)] border border-[var(--f-bad)] text-xs text-[var(--f-bad)]">
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--f-bad-bg)] border border-[var(--f-bad)] text-xs text-[var(--f-bad)]">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               <span>{formError}</span>
             </div>
@@ -612,7 +612,7 @@ export default function TransitTrips() {
       {/* Modal - Cancellation Refund Preview & Confirmation */}
       <Modal open={cancelPreviewOpen} onClose={() => setCancelPreviewOpen(false)} title="Confirm Trip Cancellation & Refunds">
         <div className="space-y-4 text-xs">
-          <div className="p-3 bg-[var(--az-danger-subtle)] border border-red-500/30 rounded-xl text-[var(--f-bad)] flex items-start gap-2">
+          <div className="p-3 bg-[var(--f-bad-bg)] border border-red-500/30 rounded-xl text-[var(--f-bad)] flex items-start gap-2">
             <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             <div>
               <p className="font-bold">Irreversible Action Warning</p>
@@ -667,9 +667,9 @@ export default function TransitTrips() {
 // ── Seat Map Editor ──────────────────────────────────────────────────────────
 const SEAT_TIERS = ['ECONOMY', 'STANDARD', 'VIP'];
 const TIER_COLORS = {
-  ECONOMY:  { bg: 'var(--az-accent-subtle))', border: 'var(--f-tint-color)', text: 'var(--f-tint-color)' },
-  STANDARD: { bg: 'var(--az-info-subtle))', border: 'var(--f-info)', text: 'var(--f-info)' },
-  VIP:      { bg: 'var(--az-warning-subtle))', border: 'var(--f-warn)', text: 'var(--f-warn)' },
+  ECONOMY:  { bg: 'var(--f-surface-sunken))', border: 'var(--f-tint-color)', text: 'var(--f-tint-color)' },
+  STANDARD: { bg: 'var(--f-info-bg))', border: 'var(--f-info)', text: 'var(--f-info)' },
+  VIP:      { bg: 'var(--f-warn-bg))', border: 'var(--f-warn)', text: 'var(--f-warn)' },
 };
 
 function SeatMapEditor({ trip, onClose }) {

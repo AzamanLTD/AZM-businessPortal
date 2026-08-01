@@ -2,7 +2,7 @@
 // Real, per-widget preview that mirrors how Flutter renders each tile.
 // Every widget type has its own mini-renderer that uses the tile's actual props.
 // Widget types aligned with backend seedWidgetCatalog.js
-import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Card } from '@/components/forge';
 import { Smartphone, Star, MapPin, Phone, MessageCircle, ShoppingBag, Image, Users, Clock, ChevronRight, Play, ExternalLink, Globe, BarChart, Hash, Code, Sparkles, Instagram, TrendingUp } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────

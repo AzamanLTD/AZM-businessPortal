@@ -119,7 +119,7 @@ export default function CheckIn() {
                 onClick={() => setMode('scan')}
                 className={cn(
                   'flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition-all',
-                  mode === 'scan' ? 'bg-[var(--az-accent-subtle)] text-[var(--f-tint-color)]' : 'text-[var(--f-text-3)]:text-[var(--f-text-3)]'
+                  mode === 'scan' ? 'bg-[var(--f-surface-sunken)] text-[var(--f-tint-color)]' : 'text-[var(--f-text-3)]:text-[var(--f-text-3)]'
                 )}
               >
                 <QrCode className="w-3.5 h-3.5" /> QR Token
@@ -128,7 +128,7 @@ export default function CheckIn() {
                 onClick={() => setMode('search')}
                 className={cn(
                   'flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition-all',
-                  mode === 'search' ? 'bg-[var(--az-accent-subtle)] text-[var(--f-tint-color)]' : 'text-[var(--f-text-3)]:text-[var(--f-text-3)]'
+                  mode === 'search' ? 'bg-[var(--f-surface-sunken)] text-[var(--f-tint-color)]' : 'text-[var(--f-text-3)]:text-[var(--f-text-3)]'
                 )}
               >
                 <Search className="w-3.5 h-3.5" /> AZM-ID
@@ -256,7 +256,7 @@ export default function CheckIn() {
       <Modal open={checkInResult !== null} onClose={() => setCheckInResult(null)} title="Check-In Successful" className="max-w-md">
         {checkInResult && (
           <div className="flex flex-col items-center text-center py-4">
-            <div className="w-16 h-16 rounded-2xl bg-[var(--az-accent-subtle)] border border-[var(--f-tint-color)] flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-[var(--f-surface-sunken)] border border-[var(--f-tint-color)] flex items-center justify-center mb-4">
               <CheckCircle2 className="w-8 h-8 text-[var(--f-tint-color)]" />
             </div>
             <p className="text-lg font-bold text-[var(--f-text)]">{checkInResult.customerName || checkInResult.azamanId}</p>

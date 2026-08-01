@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { cargoApi, transit as transitApi } from '@/lib/marketplaceApi';
 import { Card, Button, Badge, Skeleton, Empty, Modal, Input, Select } from '@/components/ui';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/components/forge';
 import { fmtUSDC, cn } from '@/lib/utils';
 import { Package, Plus, Clock, MapPin, AlertCircle, CheckCircle2, Truck, Link, Filter } from 'lucide-react';
 

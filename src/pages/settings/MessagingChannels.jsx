@@ -10,7 +10,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { request } from '@/lib/apiCore';
 import { useAuth } from '@/lib/AuthContext';
 import { toast } from 'sonner';
-import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Card } from '@/components/forge';
 import {
   MessageSquare, Phone, CheckCircle2, XCircle, AlertTriangle, RefreshCw,
   Send, Settings, Eye, EyeOff, Plus, Trash2,
@@ -40,7 +40,7 @@ function CopyButton({ text }) {
   const [copied, setCopied] = useState(false);
   return (
     <button onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-      className="p-1 rounded transition-colors" style={{ color: copied ? 'var(--az-success)' : 'var(--az-text-muted)' }}>
+      className="p-1 rounded transition-colors" style={{ color: copied ? 'var(--f-ok)' : 'var(--f-text-3)' }}>
       {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
     </button>
   );
@@ -49,7 +49,7 @@ function CopyButton({ text }) {
 function StatusBadge({ connected }) {
   return (
     <span className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full"
-      style={connected ? { background: 'var(--az-success-subtle)', color: 'var(--az-success)' } : { background: 'var(--az-danger-subtle)', color: 'var(--az-danger)' }}>
+      style={connected ? { background: 'var(--f-ok-bg)', color: 'var(--f-ok)' } : { background: 'var(--f-bad-bg)', color: 'var(--f-bad)' }}>
       {connected ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
       {connected ? 'Connected' : 'Not connected'}
     </span>
@@ -198,22 +198,22 @@ export default function MessagingChannels() {
     <div className="max-w-4xl mx-auto p-6 space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--az-text)' }}>Messaging Channels</h1>
-        <p className="text-sm mt-1" style={{ color: 'var(--az-text-muted)' }}>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--f-text)' }}>Messaging Channels</h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--f-text-3)' }}>
           Connect WhatsApp Business and SMS to send automated confirmations, alerts, and broadcasts directly to customers.
         </p>
       </div>
 
       {/* ── WhatsApp ── */}
       <GlassPanel className="overflow-hidden p-0">
-        <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--az-border)' }}>
+        <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--f-line)' }}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: '#25D36620' }}>
               <WhatsAppIcon className="w-5 h-5" style={{ color: '#25D366' }} />
             </div>
             <div>
-              <h2 className="font-bold" style={{ color: 'var(--az-text)' }}>WhatsApp Business</h2>
-              <p className="text-xs" style={{ color: 'var(--az-text-muted)' }}>Send booking confirmations, order alerts, and broadcasts</p>
+              <h2 className="font-bold" style={{ color: 'var(--f-text)' }}>WhatsApp Business</h2>
+              <p className="text-xs" style={{ color: 'var(--f-text-3)' }}>Send booking confirmations, order alerts, and broadcasts</p>
             </div>
           </div>
           <StatusBadge connected={waConnected} />
@@ -222,19 +222,19 @@ export default function MessagingChannels() {
         <div className="p-6 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--az-text-muted)' }}>WhatsApp Business Number</label>
-              <div className="flex items-center gap-2 bg-[var(--az-surface-1)] border rounded-xl px-4 py-3" style={{ borderColor: 'var(--az-border)' }}>
-                <Phone className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--az-text-muted)' }} />
+              <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--f-text-3)' }}>WhatsApp Business Number</label>
+              <div className="flex items-center gap-2 bg-[var(--f-surface)] border rounded-xl px-4 py-3" style={{ borderColor: 'var(--f-line)' }}>
+                <Phone className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--f-text-3)' }} />
                 <input value={waNumber} onChange={e => setWaNumber(e.target.value)} placeholder="+233 20 000 0000"
-                  className="flex-1 text-sm bg-transparent focus:outline-none" style={{ color: 'var(--az-text)' }} />
+                  className="flex-1 text-sm bg-transparent focus:outline-none" style={{ color: 'var(--f-text)' }} />
               </div>
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--az-text-muted)' }}>API Key / Access Token</label>
-              <div className="flex items-center gap-2 bg-[var(--az-surface-1)] border rounded-xl px-4 py-3" style={{ borderColor: 'var(--az-border)' }}>
+              <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--f-text-3)' }}>API Key / Access Token</label>
+              <div className="flex items-center gap-2 bg-[var(--f-surface)] border rounded-xl px-4 py-3" style={{ borderColor: 'var(--f-line)' }}>
                 <input value={waApiKey} onChange={e => setWaApiKey(e.target.value)} type={showWaKey ? 'text' : 'password'} placeholder="••••••••••••••••"
-                  className="flex-1 text-sm bg-transparent focus:outline-none font-mono" style={{ color: 'var(--az-text)' }} />
-                <button onClick={() => setShowWaKey(v => !v)} style={{ color: 'var(--az-text-muted)' }}>
+                  className="flex-1 text-sm bg-transparent focus:outline-none font-mono" style={{ color: 'var(--f-text)' }} />
+                <button onClick={() => setShowWaKey(v => !v)} style={{ color: 'var(--f-text-3)' }}>
                   {showWaKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
@@ -242,8 +242,8 @@ export default function MessagingChannels() {
           </div>
 
           <div className="flex items-center gap-3 p-3 rounded-xl border" style={{ background: 'rgba(61,116,219,0.06)', borderColor: 'rgba(61,116,219,0.2)' }}>
-            <Info className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--az-info)' }} />
-            <p className="text-xs" style={{ color: 'var(--az-text-secondary)' }}>
+            <Info className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--f-info)' }} />
+            <p className="text-xs" style={{ color: 'var(--f-text-2)' }}>
               Requires a WhatsApp Business API account (Meta Cloud API or a provider like Twilio, Vonage, or WhatsTool). 
               WhatsApp charges per conversation — see your provider's pricing.
             </p>
@@ -252,7 +252,7 @@ export default function MessagingChannels() {
           <button onClick={waConnected ? async () => { await request('/api/business-os/messaging-config/whatsapp', 'POST', { action: 'disconnect' }); setWaConnected(false); toast.success('WhatsApp disconnected'); } : handleConnectWA}
             disabled={waConnecting}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50"
-            style={{ background: waConnected ? 'var(--az-danger)' : '#25D366' }}>
+            style={{ background: waConnected ? 'var(--f-bad)' : '#25D366' }}>
             {waConnecting ? <RefreshCw className="w-4 h-4 animate-spin" /> : waConnected ? <XCircle className="w-4 h-4" /> : <WhatsAppIcon className="w-4 h-4" />}
             {waConnected ? 'Disconnect' : waConnecting ? 'Connecting…' : 'Connect WhatsApp'}
           </button>
@@ -261,14 +261,14 @@ export default function MessagingChannels() {
 
       {/* ── SMS ── */}
       <GlassPanel className="overflow-hidden p-0">
-        <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--az-border)' }}>
+        <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--f-line)' }}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--az-info)', opacity: 0.9 }}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--f-info)', opacity: 0.9 }}>
               <MessageSquare className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="font-bold" style={{ color: 'var(--az-text)' }}>SMS Gateway</h2>
-              <p className="text-xs" style={{ color: 'var(--az-text-muted)' }}>Reach customers who aren't on WhatsApp</p>
+              <h2 className="font-bold" style={{ color: 'var(--f-text)' }}>SMS Gateway</h2>
+              <p className="text-xs" style={{ color: 'var(--f-text-3)' }}>Reach customers who aren't on WhatsApp</p>
             </div>
           </div>
           <StatusBadge connected={smsConnected} />
@@ -277,16 +277,16 @@ export default function MessagingChannels() {
         <div className="p-6 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--az-text-muted)' }}>Sender ID / From Name</label>
+              <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--f-text-3)' }}>Sender ID / From Name</label>
               <input value={smsSenderId} onChange={e => setSmsSenderId(e.target.value)} placeholder="AzamanBiz"
-                className="w-full bg-[var(--az-surface-1)] border rounded-xl px-4 py-3 text-sm focus:outline-none" style={{ borderColor: 'var(--az-border)', color: 'var(--az-text)' }} />
+                className="w-full bg-[var(--f-surface)] border rounded-xl px-4 py-3 text-sm focus:outline-none" style={{ borderColor: 'var(--f-line)', color: 'var(--f-text)' }} />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--az-text-muted)' }}>API Key</label>
-              <div className="flex items-center gap-2 bg-[var(--az-surface-1)] border rounded-xl px-4 py-3" style={{ borderColor: 'var(--az-border)' }}>
+              <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--f-text-3)' }}>API Key</label>
+              <div className="flex items-center gap-2 bg-[var(--f-surface)] border rounded-xl px-4 py-3" style={{ borderColor: 'var(--f-line)' }}>
                 <input value={smsApiKey} onChange={e => setSmsApiKey(e.target.value)} type={showSmsKey ? 'text' : 'password'} placeholder="••••••••••••••••"
-                  className="flex-1 text-sm bg-transparent focus:outline-none font-mono" style={{ color: 'var(--az-text)' }} />
-                <button onClick={() => setShowSmsKey(v => !v)} style={{ color: 'var(--az-text-muted)' }}>
+                  className="flex-1 text-sm bg-transparent focus:outline-none font-mono" style={{ color: 'var(--f-text)' }} />
+                <button onClick={() => setShowSmsKey(v => !v)} style={{ color: 'var(--f-text-3)' }}>
                   {showSmsKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
@@ -295,7 +295,7 @@ export default function MessagingChannels() {
           <button onClick={smsConnected ? async () => { await request('/api/business-os/messaging-config/sms', 'POST', { action: 'disconnect' }); setSmsConnected(false); toast.success('SMS gateway disconnected'); } : handleConnectSMS}
             disabled={smsConnecting}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50"
-            style={{ background: smsConnected ? 'var(--az-danger)' : 'var(--az-info)' }}>
+            style={{ background: smsConnected ? 'var(--f-bad)' : 'var(--f-info)' }}>
             {smsConnecting ? <RefreshCw className="w-4 h-4 animate-spin" /> : smsConnected ? <XCircle className="w-4 h-4" /> : <MessageSquare className="w-4 h-4" />}
             {smsConnected ? 'Disconnect' : smsConnecting ? 'Connecting…' : 'Connect SMS'}
           </button>
@@ -305,18 +305,18 @@ export default function MessagingChannels() {
       {/* ── Test send ── */}
       {(waConnected || smsConnected) && (
         <GlassPanel className="p-5 space-y-4">
-          <h3 className="font-bold" style={{ color: 'var(--az-text)' }}>Test Message</h3>
+          <h3 className="font-bold" style={{ color: 'var(--f-text)' }}>Test Message</h3>
           <div className="flex gap-3">
             <input value={testNumber} onChange={e => setTestNumber(e.target.value)} placeholder="+233 20 000 0000"
-              className="flex-1 bg-[var(--az-surface-1)] border rounded-xl px-4 py-2.5 text-sm focus:outline-none" style={{ borderColor: 'var(--az-border)', color: 'var(--az-text)' }} />
+              className="flex-1 bg-[var(--f-surface)] border rounded-xl px-4 py-2.5 text-sm focus:outline-none" style={{ borderColor: 'var(--f-line)', color: 'var(--f-text)' }} />
             <button onClick={handleTestSend} disabled={testing}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
-              style={{ background: 'var(--az-accent)' }}>
+              style={{ background: 'var(--f-tint-color)' }}>
               {testing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               Send Test
             </button>
           </div>
-          <p className="text-xs" style={{ color: 'var(--az-text-muted)' }}>Sends a test "Hello from {bizProfile?.businessName || 'Azaman Business'}" message to verify your connection.</p>
+          <p className="text-xs" style={{ color: 'var(--f-text-3)' }}>Sends a test "Hello from {bizProfile?.businessName || 'Azaman Business'}" message to verify your connection.</p>
         </GlassPanel>
       )}
 
@@ -324,32 +324,32 @@ export default function MessagingChannels() {
       {(waConnected || smsConnected) && (
         <GlassPanel className="p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold" style={{ color: 'var(--az-text)' }}>This Month's Messaging Cost</h3>
-            <span className="text-xs px-2 py-1 rounded-md" style={{ background: 'var(--az-bg)', color: 'var(--az-text-muted)', border: '1px solid var(--az-border)' }}>
+            <h3 className="font-bold" style={{ color: 'var(--f-text)' }}>This Month's Messaging Cost</h3>
+            <span className="text-xs px-2 py-1 rounded-md" style={{ background: 'var(--f-bg)', color: 'var(--f-text-3)', border: '1px solid var(--f-line)' }}>
               {new Date().toLocaleDateString('en-GH', { month: 'long', year: 'numeric' })}
             </span>
           </div>
           {costLoading ? (
-            <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--az-text-muted)' }}>
+            <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--f-text-3)' }}>
               <RefreshCw className="w-4 h-4 animate-spin" /> Loading messaging stats…
             </div>
           ) : monthlyCost ? (
             <div className="grid grid-cols-3 gap-4">
               {[
                 { label: 'WhatsApp', value: `GHS ${(monthlyCost.whatsapp || 0).toFixed(2)}`, color: '#25D366' },
-                { label: 'SMS', value: `GHS ${(monthlyCost.sms || 0).toFixed(2)}`, color: 'var(--az-info)' },
-                { label: 'Total Messages', value: (monthlyCost.messages || 0).toString(), color: 'var(--az-accent)' },
+                { label: 'SMS', value: `GHS ${(monthlyCost.sms || 0).toFixed(2)}`, color: 'var(--f-info)' },
+                { label: 'Total Messages', value: (monthlyCost.messages || 0).toString(), color: 'var(--f-tint-color)' },
               ].map(item => (
-                <div key={item.label} className="text-center p-3 rounded-xl border" style={{ borderColor: 'var(--az-border)', background: 'var(--az-bg)' }}>
+                <div key={item.label} className="text-center p-3 rounded-xl border" style={{ borderColor: 'var(--f-line)', background: 'var(--f-bg)' }}>
                   <div className="text-xl font-bold tabular-nums" style={{ color: item.color }}>{item.value}</div>
-                  <div className="text-xs mt-1" style={{ color: 'var(--az-text-muted)' }}>{item.label}</div>
+                  <div className="text-xs mt-1" style={{ color: 'var(--f-text-3)' }}>{item.label}</div>
                 </div>
               ))}
             </div>
           ) : (
             <div className="text-center py-6">
-              <p className="text-sm" style={{ color: 'var(--az-text-muted)' }}>No messaging data yet this month.</p>
-              <p className="text-xs mt-1" style={{ color: 'var(--az-text-muted)' }}>Stats will appear once you start sending messages.</p>
+              <p className="text-sm" style={{ color: 'var(--f-text-3)' }}>No messaging data yet this month.</p>
+              <p className="text-xs mt-1" style={{ color: 'var(--f-text-3)' }}>Stats will appear once you start sending messages.</p>
             </div>
           )}
         </GlassPanel>
@@ -357,25 +357,25 @@ export default function MessagingChannels() {
 
       {/* ── Notification routing ── */}
       <GlassPanel className="overflow-hidden p-0">
-        <div className="px-6 py-4 border-b" style={{ borderColor: 'var(--az-border)' }}>
-          <h3 className="font-bold" style={{ color: 'var(--az-text)' }}>Notification Routing</h3>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--az-text-muted)' }}>Choose which channel each notification type uses</p>
+        <div className="px-6 py-4 border-b" style={{ borderColor: 'var(--f-line)' }}>
+          <h3 className="font-bold" style={{ color: 'var(--f-text)' }}>Notification Routing</h3>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--f-text-3)' }}>Choose which channel each notification type uses</p>
         </div>
-        <div className="divide-y" style={{ borderColor: 'var(--az-border)' }}>
+        <div className="divide-y" style={{ borderColor: 'var(--f-line)' }}>
           {/* Header row */}
           <div className="grid grid-cols-4 px-6 py-2">
-            <div className="text-xs font-bold uppercase tracking-wide col-span-1" style={{ color: 'var(--az-text-muted)' }}>Notification</div>
+            <div className="text-xs font-bold uppercase tracking-wide col-span-1" style={{ color: 'var(--f-text-3)' }}>Notification</div>
             {CHANNELS.map(ch => (
-              <div key={ch} className="text-xs font-bold uppercase tracking-wide text-center" style={{ color: 'var(--az-text-muted)' }}>{CHANNEL_LABELS[ch]}</div>
+              <div key={ch} className="text-xs font-bold uppercase tracking-wide text-center" style={{ color: 'var(--f-text-3)' }}>{CHANNEL_LABELS[ch]}</div>
             ))}
           </div>
           {NOTIF_TYPES.map(type => (
             <div key={type.id} className="grid grid-cols-4 items-center px-6 py-3.5 hover:bg-az-bg/40 transition-colors">
               <div className="flex items-center gap-2.5 col-span-1">
-                <type.icon className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--az-accent)' }} />
+                <type.icon className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--f-tint-color)' }} />
                 <div>
-                  <div className="text-sm font-medium" style={{ color: 'var(--az-text)' }}>{type.label}</div>
-                  <div className="text-xs" style={{ color: 'var(--az-text-muted)' }}>{type.desc}</div>
+                  <div className="text-sm font-medium" style={{ color: 'var(--f-text)' }}>{type.label}</div>
+                  <div className="text-xs" style={{ color: 'var(--f-text-3)' }}>{type.desc}</div>
                 </div>
               </div>
               {CHANNELS.map(ch => (
@@ -385,8 +385,8 @@ export default function MessagingChannels() {
                     disabled={ch === 'app'} // app notifications always on
                     className="w-5 h-5 rounded border-2 flex items-center justify-center transition-all disabled:cursor-default"
                     style={notifPrefs[type.id]?.[ch]
-                      ? { background: 'var(--az-accent)', borderColor: 'var(--az-accent)' }
-                      : { background: 'white', borderColor: 'var(--az-border)' }}>
+                      ? { background: 'var(--f-tint-color)', borderColor: 'var(--f-tint-color)' }
+                      : { background: 'white', borderColor: 'var(--f-line)' }}>
                     {notifPrefs[type.id]?.[ch] && <Check className="w-3 h-3 text-white" />}
                   </button>
                 </div>
@@ -394,10 +394,10 @@ export default function MessagingChannels() {
             </div>
           ))}
         </div>
-        <div className="px-6 py-4 border-t flex justify-end" style={{ borderColor: 'var(--az-border)' }}>
+        <div className="px-6 py-4 border-t flex justify-end" style={{ borderColor: 'var(--f-line)' }}>
           <button onClick={() => toast.success('Notification preferences saved')}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
-            style={{ background: 'var(--az-accent)' }}>
+            style={{ background: 'var(--f-tint-color)' }}>
             <CheckCircle2 className="w-4 h-4" /> Save Preferences
           </button>
         </div>

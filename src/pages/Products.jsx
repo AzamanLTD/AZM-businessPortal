@@ -1353,7 +1353,7 @@ export default function Products() {
       <style>{`
         .product-catalog-page {
           --az-black: #09090b;
-          --az-card: #18181b;
+          --f-surface: var(--f-surface);
         }
         .product-catalog-page select option {
           background-color: var(--f-surface) !important;

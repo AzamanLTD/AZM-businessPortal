@@ -17,11 +17,11 @@ import { Users, UserPlus, Shield, Trash2, Pencil, Crown, Mail, ChevronDown, Chev
 import { toast } from 'sonner';
 
 const ROLE_INFO = {
-  OWNER:          { label: 'Owner',          icon: Crown,  color: 'var(--az-accent)' },
-  ADMIN:          { label: 'Admin',           icon: Shield, color: 'var(--az-accent)' },
-  GENERAL_MANAGER:{ label: 'General Manager', icon: Shield, color: 'var(--az-accent)' },
-  BRANCH_MANAGER: { label: 'Branch Manager',  icon: Users,  color: 'var(--az-text)' },
-  EMPLOYEE:       { label: 'Employee',        icon: Users,  color: 'var(--az-text-muted)' },
+  OWNER:          { label: 'Owner',          icon: Crown,  color: 'var(--f-tint-color)' },
+  ADMIN:          { label: 'Admin',           icon: Shield, color: 'var(--f-tint-color)' },
+  GENERAL_MANAGER:{ label: 'General Manager', icon: Shield, color: 'var(--f-tint-color)' },
+  BRANCH_MANAGER: { label: 'Branch Manager',  icon: Users,  color: 'var(--f-text)' },
+  EMPLOYEE:       { label: 'Employee',        icon: Users,  color: 'var(--f-text-3)' },
 };
 
 export default function TeamAccess() {
@@ -99,9 +99,9 @@ export default function TeamAccess() {
   if (!canManage) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <Lock className="w-10 h-10 text-[var(--az-text-muted)] opacity-40 mb-3" />
-        <h3 className="font-semibold text-[var(--az-text)]">No Access</h3>
-        <p className="text-sm text-[var(--az-text-muted)] mt-1">
+        <Lock className="w-10 h-10 text-[var(--f-text-3)] opacity-40 mb-3" />
+        <h3 className="font-semibold text-[var(--f-text)]">No Access</h3>
+        <p className="text-sm text-[var(--f-text-3)] mt-1">
           You don't have permission to manage team access.
         </p>
       </div>
@@ -111,10 +111,10 @@ export default function TeamAccess() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <Users className="w-6 h-6 text-[var(--az-accent)]" />
+        <Users className="w-6 h-6 text-[var(--f-tint-color)]" />
         <div className="flex-1">
-          <h2 className="text-lg font-bold text-[var(--az-text)]">Team Access</h2>
-          <p className="text-sm text-[var(--az-text-muted)]">
+          <h2 className="text-lg font-bold text-[var(--f-text)]">Team Access</h2>
+          <p className="text-sm text-[var(--f-text-3)]">
             Manage who can access your business portal and what they can do.
           </p>
         </div>
@@ -124,15 +124,15 @@ export default function TeamAccess() {
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-12 text-[var(--az-text-muted)]">
-          <div className="w-6 h-6 border-2 border-[var(--az-border)] border-t-[var(--az-accent)] rounded-full animate-spin mr-3" />
+        <div className="flex items-center justify-center py-12 text-[var(--f-text-3)]">
+          <div className="w-6 h-6 border-2 border-[var(--f-line)] border-t-[var(--f-tint-color)] rounded-full animate-spin mr-3" />
           Loading team...
         </div>
       ) : employees.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <Users className="w-10 h-10 text-[var(--az-text-muted)] opacity-40 mb-3" />
-          <h3 className="font-semibold text-[var(--az-text)]">No Team Members Yet</h3>
-          <p className="text-sm text-[var(--az-text-muted)] mt-1">
+          <Users className="w-10 h-10 text-[var(--f-text-3)] opacity-40 mb-3" />
+          <h3 className="font-semibold text-[var(--f-text)]">No Team Members Yet</h3>
+          <p className="text-sm text-[var(--f-text-3)] mt-1">
             Add your first team member to grant them portal access.
           </p>
         </div>
@@ -141,7 +141,7 @@ export default function TeamAccess() {
           {/* Owners & Admins */}
           {owners.length > 0 && (
             <div className="space-y-2">
-              <h3 className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wide">Owners & Admins</h3>
+              <h3 className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wide">Owners & Admins</h3>
               {owners.map(emp => (
                 <TeamMemberRow
                   key={emp.id}
@@ -161,7 +161,7 @@ export default function TeamAccess() {
           {/* Staff */}
           {staff.length > 0 && (
             <div className="space-y-2">
-              <h3 className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wide">Staff</h3>
+              <h3 className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wide">Staff</h3>
               {staff.map(emp => (
                 <TeamMemberRow
                   key={emp.id}
@@ -183,7 +183,7 @@ export default function TeamAccess() {
       {/* Invite Modal */}
       <Modal open={showInvite} onClose={() => setShowInvite(false)} title="Add Team Member">
         <div className="space-y-4">
-          <p className="text-sm text-[var(--az-text-muted)]">
+          <p className="text-sm text-[var(--f-text-3)]">
             Add someone to your business portal. They'll need a AZM account with the same email.
           </p>
           <Input
@@ -193,9 +193,9 @@ export default function TeamAccess() {
             onChange={e => setInviteForm({ ...inviteForm, email: e.target.value })}
           />
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider">Role</label>
+            <label className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">Role</label>
             <select
-              className="w-full px-4 py-3 rounded-xl bg-[var(--az-black)] border border-[var(--az-border)] text-[var(--az-text)] text-sm outline-none focus:border-[var(--az-accent)]"
+              className="w-full px-4 py-3 rounded-xl bg-[var(--f-ink-900)] border border-[var(--f-line)] text-[var(--f-text)] text-sm outline-none focus:border-[var(--f-tint-color)]"
               value={inviteForm.role}
               onChange={e => {
                 const role = e.target.value;
@@ -206,7 +206,7 @@ export default function TeamAccess() {
               }}
             >
               {Object.entries(templates).map(([key, tpl]) => (
-                <option key={key} value={key} style={{ background: 'var(--az-surface)' }}>
+                <option key={key} value={key} style={{ background: 'var(--f-surface)' }}>
                   {tpl.label}
                 </option>
               ))}
@@ -214,16 +214,16 @@ export default function TeamAccess() {
           </div>
           {/* Selected permissions preview */}
           {inviteForm.permissions.length > 0 && (
-            <div className="p-3 rounded-lg border border-[var(--az-border)] bg-[var(--az-surface)]">
-              <p className="text-xs font-semibold text-[var(--az-text-muted)] mb-2">
+            <div className="p-3 rounded-lg border border-[var(--f-line)] bg-[var(--f-surface)]">
+              <p className="text-xs font-semibold text-[var(--f-text-3)] mb-2">
                 {inviteForm.permissions.includes('*') ? 'Full access' : `${inviteForm.permissions.length} permissions`}
               </p>
               <div className="flex flex-wrap gap-1">
                 {inviteForm.permissions.slice(0, 10).map(p => (
-                  <Badge key={p} color="var(--az-text-muted)" className="text-xs">{p}</Badge>
+                  <Badge key={p} color="var(--f-text-3)" className="text-xs">{p}</Badge>
                 ))}
                 {inviteForm.permissions.length > 10 && (
-                  <Badge color="var(--az-text-muted)" className="text-xs">+{inviteForm.permissions.length - 10} more</Badge>
+                  <Badge color="var(--f-text-3)" className="text-xs">+{inviteForm.permissions.length - 10} more</Badge>
                 )}
               </div>
             </div>
@@ -268,34 +268,34 @@ function TeamMemberRow({ emp, canManage, onUpdateRole, onRemove, expandedPerms, 
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <p className="text-sm font-semibold text-[var(--az-text)] truncate">
+            <p className="text-sm font-semibold text-[var(--f-text)] truncate">
               {emp.fullName || emp.email}
             </p>
             <Badge color={roleInfo.color} className="text-xs">{roleInfo.label}</Badge>
           </div>
-          <p className="text-xs text-[var(--az-text-muted)] truncate">{emp.email}</p>
+          <p className="text-xs text-[var(--f-text-3)] truncate">{emp.email}</p>
         </div>
         {/* Actions */}
         <div className="flex items-center gap-1">
           {perms.length > 0 && (
-            <button onClick={toggleExpanded} className="p-1.5 rounded-lg hover:bg-[var(--az-border)] text-[var(--az-text-muted)] hover:text-[var(--az-text)] transition-colors">
+            <button onClick={toggleExpanded} className="p-1.5 rounded-lg hover:bg-[var(--f-line)] text-[var(--f-text-3)] hover:text-[var(--f-text)] transition-colors">
               {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
           )}
           {canManage && emp.role !== 'OWNER' && (
             <>
               <select
-                className="bg-[var(--az-black)] border border-[var(--az-border)] rounded-lg px-2 py-1 text-xs text-[var(--az-text)] outline-none focus:border-[var(--az-accent)] cursor-pointer"
+                className="bg-[var(--f-ink-900)] border border-[var(--f-line)] rounded-lg px-2 py-1 text-xs text-[var(--f-text)] outline-none focus:border-[var(--f-tint-color)] cursor-pointer"
                 value={emp.role}
                 onChange={e => onUpdateRole(e.target.value)}
               >
                 {Object.entries(templates).map(([key, tpl]) => (
-                  <option key={key} value={key} style={{ background: 'var(--az-surface)' }}>{tpl.label}</option>
+                  <option key={key} value={key} style={{ background: 'var(--f-surface)' }}>{tpl.label}</option>
                 ))}
               </select>
               <button
                 onClick={onRemove}
-                className="p-1.5 rounded-lg hover:bg-[var(--az-danger)]/10 text-[var(--az-text-muted)] hover:text-[var(--az-danger)] transition-colors"
+                className="p-1.5 rounded-lg hover:bg-[var(--f-bad)]/10 text-[var(--f-text-3)] hover:text-[var(--f-bad)] transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -306,8 +306,8 @@ function TeamMemberRow({ emp, canManage, onUpdateRole, onRemove, expandedPerms, 
 
       {/* Expanded permissions */}
       {expanded && (
-        <div className="mt-3 pt-3 border-t border-[var(--az-border)] space-y-2">
-          <p className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wide">
+        <div className="mt-3 pt-3 border-t border-[var(--f-line)] space-y-2">
+          <p className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wide">
             Permissions ({perms.includes('*') ? 'Full Access' : `${perms.length} keys`})
           </p>
           {perms.includes('*') ? (
@@ -315,7 +315,7 @@ function TeamMemberRow({ emp, canManage, onUpdateRole, onRemove, expandedPerms, 
           ) : (
             <div className="flex flex-wrap gap-1">
               {perms.map(p => (
-                <Badge key={p} color="var(--az-text-muted)" className="text-xs font-mono">{p}</Badge>
+                <Badge key={p} color="var(--f-text-3)" className="text-xs font-mono">{p}</Badge>
               ))}
             </div>
           )}

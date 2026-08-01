@@ -13,7 +13,6 @@ import {
   Switch,
   useToast
 } from '@/components/ui';
-import { StatusCard } from '@/components/ui/StatusCard';
 
 import {
   BedDouble,

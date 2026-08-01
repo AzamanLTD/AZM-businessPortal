@@ -397,7 +397,7 @@ function LocationCard({ loc, onEdit, onDelete, expandedTables, setExpandedTables
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-[var(--az-accent-subtle)] border border-[#00d97e30] flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-[var(--f-surface-sunken)] border border-[#00d97e30] flex items-center justify-center flex-shrink-0">
             <MapPin className="w-5 h-5 text-[var(--f-tint-color)]" />
           </div>
           <div className="min-w-0">
@@ -411,7 +411,7 @@ function LocationCard({ loc, onEdit, onDelete, expandedTables, setExpandedTables
             )}
           </div>
         </div>
-        <Tag color={loc.isActive ? 'var(--f-tint-color)' : 'var(--f-text-3)'} bg={loc.isActive ? 'var(--az-accent-subtle)' : '#7b7b9a1a'}>
+        <Tag color={loc.isActive ? 'var(--f-tint-color)' : 'var(--f-text-3)'} bg={loc.isActive ? 'var(--f-surface-sunken)' : '#7b7b9a1a'}>
           {loc.isActive ? 'Active' : 'Inactive'}
         </Tag>
       </div>

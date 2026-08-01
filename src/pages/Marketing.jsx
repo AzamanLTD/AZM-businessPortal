@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/components/forge';
 import { request } from '@/lib/api';
 import { uploadImageToCloudinary } from '@/lib/cloudinary';
 import {
@@ -403,13 +403,13 @@ export default function Marketing() {
 
         {/* Quick Follower KPI Card */}
         <div className="flex items-center gap-4 bg-[var(--f-surface)] border border-[var(--f-line)] rounded-2xl p-4 md:w-80 shadow-md">
-          <div className="w-12 h-12 rounded-xl bg-[var(--az-accent-subtle)] flex items-center justify-center text-[var(--f-tint-color)]">
+          <div className="w-12 h-12 rounded-xl bg-[var(--f-surface-sunken)] flex items-center justify-center text-[var(--f-tint-color)]">
             <Radio className="w-6 h-6 animate-pulse" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
               <span className="text-2xl font-black tracking-tight">{followerStats.followerCount}</span>
-              <Tag variant="neutral" bg="var(--az-accent-subtle)" className="text-[10px] px-1.5 py-0">
+              <Tag variant="neutral" bg="var(--f-surface-sunken)" className="text-[10px] px-1.5 py-0">
                 +{followerStats.growthRate}%
               </Tag>
             </div>
@@ -480,7 +480,7 @@ export default function Marketing() {
                     </thead>
                     <tbody className="divide-y divide-[var(--f-line)] text-sm font-medium">
                       {promotions.map((promo) => (
-                        <tr key={promo.id} className="hover:bg-[var(--az-bg-alt)] transition-colors">
+                        <tr key={promo.id} className="hover:bg-[var(--f-surface-sunken)] transition-colors">
                           <td className="px-6 py-4">
                             <p className="font-extrabold text-[var(--f-tint-color)] tracking-wide">{promo.code}</p>
                             <p className="text-xs text-[var(--f-text-3)] mt-0.5">{promo.name}</p>
@@ -658,7 +658,7 @@ export default function Marketing() {
                   <h4 className="text-xs font-bold text-[var(--f-text-3)] uppercase tracking-wider mb-2">Live Marketplace Ad Feed Preview</h4>
                   <div className="rounded-3xl border border-[var(--f-line)] bg-[var(--f-ink-900)] p-4 max-w-sm mx-auto shadow-2xl overflow-hidden">
                     <div className="flex items-center gap-2 mb-3">
-                      <div className="w-8 h-8 rounded-full bg-[var(--az-accent-subtle)] flex items-center justify-center font-black text-xs text-[var(--f-tint-color)]">
+                      <div className="w-8 h-8 rounded-full bg-[var(--f-surface-sunken)] flex items-center justify-center font-black text-xs text-[var(--f-tint-color)]">
                         {bizProfile?.businessName?.charAt(0) || 'A'}
                       </div>
                       <div className="flex-1 min-w-0">

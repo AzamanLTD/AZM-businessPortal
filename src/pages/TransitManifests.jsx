@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { transitOpsApi, cargoApi } from '@/lib/marketplaceApi';
 import { Card, Button, Badge, Empty, Avatar, Sheet, Select } from '@/components/ui';
 import { Progress } from '@/components/ui/Progress';
-import { useToast } from '@/components/ui/Toast';
+import { useToast } from '@/components/forge';
 import {
   Ticket, Users, DollarSign, QrCode, MapPin, Package, AlertTriangle,
   CheckCircle2, Clock, Plus, Truck, Scale, Phone, ArrowRight, RefreshCw,
@@ -141,8 +141,8 @@ export default function TransitManifests() {
         {selectedTrip && (
           <button
             onClick={() => { setShowIrops(true); loadVehicles(); }}
-            className="btn-sentry flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold"
-            style={{ background: 'var(--az-danger-subtle)', color: 'var(--f-bad)', border: '1px solid var(--f-bad)' }}
+            className="bg-tint text-ink font-bold hover:bg-tint/90 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold"
+            style={{ background: 'var(--f-bad-bg)', color: 'var(--f-bad)', border: '1px solid var(--f-bad)' }}
           >
             <AlertTriangle className="w-4 h-4" />
             Emergency
@@ -159,7 +159,7 @@ export default function TransitManifests() {
           <button
             key={trip.id}
             onClick={() => loadManifest(trip.id)}
-            className={`px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all ${selectedTrip === trip.id ? 'bg-[var(--az-accent-subtle)] text-[var(--f-tint-color)] border-[var(--f-tint-color)]' : 'text-[var(--f-text-3)] border-[var(--f-line)]:bg-[var(--az-bg-alt)]'}`}
+            className={`px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all ${selectedTrip === trip.id ? 'bg-[var(--f-surface-sunken)] text-[var(--f-tint-color)] border-[var(--f-tint-color)]' : 'text-[var(--f-text-3)] border-[var(--f-line)]:bg-[var(--f-surface-sunken)]'}`}
           >
             <MapPin className="w-3.5 h-3.5 inline mr-1.5" />
             {trip.origin} → {trip.destination}
@@ -176,7 +176,7 @@ export default function TransitManifests() {
         <>
           {/* Countdown */}
           {countdown && countdown !== 'Departed' && (
-            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl" style={{ background: 'var(--az-accent-subtle)', border: '1px solid var(--f-tint-color)' }}>
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl" style={{ background: 'var(--f-surface-sunken)', border: '1px solid var(--f-tint-color)' }}>
               <Clock className="w-4 h-4 text-[var(--f-tint-color)]" />
               <span className="text-sm font-semibold text-[var(--f-tint-color)]">Departs in {countdown}</span>
             </div>
@@ -261,7 +261,7 @@ export default function TransitManifests() {
               </div>
 
               <div className="flex justify-end">
-                <Button onClick={() => setShowCargoModal(true)} className="btn-sentry flex items-center gap-2">
+                <Button onClick={() => setShowCargoModal(true)} className="bg-tint text-ink font-bold hover:bg-tint/90 flex items-center gap-2">
                   <Plus className="w-4 h-4" />
                   Add Cargo Parcel
                 </Button>
@@ -293,7 +293,7 @@ export default function TransitManifests() {
                           {canAdvance && (
                             <button
                               onClick={() => advanceCargoStatus(parcel.id, parcel.status)}
-                              className="p-1.5 rounded-lg:bg-[var(--az-bg-alt)] text-[var(--f-tint-color)]"
+                              className="p-1.5 rounded-lg:bg-[var(--f-surface-sunken)] text-[var(--f-tint-color)]"
                               title="Advance status"
                             >
                               <ArrowRight className="w-4 h-4" />
@@ -350,7 +350,7 @@ export default function TransitManifests() {
             </label>
             <div className="flex gap-2 pt-2">
               <Button variant="ghost" onClick={() => setShowCargoModal(false)} className="flex-1">Cancel</Button>
-              <Button onClick={handleAddCargo} className="btn-sentry flex-1">Add Parcel</Button>
+              <Button onClick={handleAddCargo} className="bg-tint text-ink font-bold hover:bg-tint/90 flex-1">Add Parcel</Button>
             </div>
           </div>
         </Sheet>
@@ -360,7 +360,7 @@ export default function TransitManifests() {
       {showIrops && (
         <Sheet open={showIrops} onClose={() => setShowIrops(false)} title="Emergency Reassignment">
           <div className="space-y-4 px-1">
-            <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'var(--az-danger-subtle)', border: '1px solid var(--f-bad)' }}>
+            <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'var(--f-bad-bg)', border: '1px solid var(--f-bad)' }}>
               <AlertTriangle className="w-5 h-5 text-[var(--f-bad)]" />
               <div>
                 <p className="text-sm font-bold text-[var(--f-bad)]">Vehicle Breakdown</p>
@@ -381,7 +381,7 @@ export default function TransitManifests() {
               <Button
                 onClick={handleIropsReassign}
                 disabled={iropsLoading || !iropsVehicle}
-                className="btn-sentry flex-1"
+                className="bg-tint text-ink font-bold hover:bg-tint/90 flex-1"
                 style={{ background: 'var(--f-bad)', color: 'white' }}
               >
                 {iropsLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Truck className="w-4 h-4" />}

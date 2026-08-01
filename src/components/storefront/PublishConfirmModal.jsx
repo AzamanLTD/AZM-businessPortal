@@ -1,5 +1,5 @@
 // src/components/storefront/PublishConfirmModal.jsx
-import { GlassPanel } from '@/components/ui/GlassPanel';
+import { Card } from '@/components/forge';
 import { Rocket, AlertCircle } from 'lucide-react';
 
 export default function PublishConfirmModal({ draft, published, onConfirm, onCancel }) {

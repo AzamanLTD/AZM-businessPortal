@@ -1,6 +1,6 @@
 // src/components/storefront/NitroUpsellBanner.jsx
-import { GlassPanel } from '@/components/ui/GlassPanel';
-import { useToast } from '@/components/ui/Toast';
+import { Card } from '@/components/forge';
+import { useToast } from '@/components/forge';
 import { Zap, TrendingUp } from 'lucide-react';
 
 export default function NitroUpsellBanner({ eligibility, onStakeClick }) {

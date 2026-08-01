@@ -230,7 +230,7 @@ export default function StorefrontAnalytics() {
             )}
 
             {ctaData.length > 0 && (
-              <div className="bg-[var(--az-surface-1)] border border-line rounded-lg shadow-sm p-6">
+              <div className="bg-[var(--f-surface)] border border-line rounded-lg shadow-sm p-6">
                 <h3 className="text-sm font-bold text-ink mb-4">CTA Action Breakdown</h3>
                 <DonutChartCard
                   data={ctaData}
@@ -243,7 +243,7 @@ export default function StorefrontAnalytics() {
           {/* Traffic Sources + Summary Stats */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {trafficData.length > 0 && (
-              <div className="bg-[var(--az-surface-1)] border border-line rounded-lg shadow-sm p-6">
+              <div className="bg-[var(--f-surface)] border border-line rounded-lg shadow-sm p-6">
                 <h3 className="text-sm font-bold text-ink mb-4">Traffic Sources</h3>
                 <div className="space-y-2">
                   {trafficData.map(source => {
@@ -256,7 +256,7 @@ export default function StorefrontAnalytics() {
                             <span className="text-xs font-medium" style={{ color: 'var(--f-text)' }}>{source.name}</span>
                             <span className="text-xs" style={{ color: 'var(--f-text-3)' }}>{source.value} ({pct}%)</span>
                           </div>
-                          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--az-bg-alt)' }}>
+                          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--f-surface-sunken)' }}>
                             <div className="h-full rounded-full" style={{ width: `${pct}%`, background: 'var(--f-tint-color)' }} />
                           </div>
                         </div>
@@ -267,7 +267,7 @@ export default function StorefrontAnalytics() {
               </div>
             )}
 
-            <div className="bg-[var(--az-surface-1)] border border-line rounded-lg shadow-sm p-6">
+            <div className="bg-[var(--f-surface)] border border-line rounded-lg shadow-sm p-6">
               <h3 className="text-sm font-bold text-ink mb-4 flex items-center gap-2">
                 <TrendingUp className="w-4 h-4" style={{ color: 'var(--f-tint-color)' }} />
                 Event Summary

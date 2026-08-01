@@ -633,7 +633,7 @@ export default function RestaurantTables() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleNotifyWaitlist(item)}
-                          className="px-2 py-1 text-[10px] bg-[var(--az-accent-subtle)] text-[var(--f-tint-color)] border border-[var(--f-tint-color)]/20"
+                          className="px-2 py-1 text-[10px] bg-[var(--f-surface-sunken)] text-[var(--f-tint-color)] border border-[var(--f-tint-color)]/20"
                         >
                           Notify
                         </Button>
@@ -708,7 +708,7 @@ export default function RestaurantTables() {
                       onClick={() => handleDirectStatusUpdate(statusKey)}
                       className={`py-1 px-1.5 text-center rounded-lg text-[10px] font-bold border transition-all ${
                         activeTabTable.status === statusKey
-                          ? 'border-[var(--f-tint-color)] bg-[var(--az-accent-subtle)]'
+                          ? 'border-[var(--f-tint-color)] bg-[var(--f-surface-sunken)]'
                           : 'border-[var(--f-line)] bg-transparent:border-[var(--f-text-3)]'
                       }`}
                     >
@@ -905,7 +905,7 @@ export default function RestaurantTables() {
                 type="button"
                 className={`py-2 px-3 border rounded-xl text-xs font-semibold transition-all ${
                   configForm.shape === 'rectangle'
-                    ? 'border-[var(--f-tint-color)] bg-[var(--az-accent-subtle)]'
+                    ? 'border-[var(--f-tint-color)] bg-[var(--f-surface-sunken)]'
                     : 'border-[var(--f-line)]:border-[var(--f-text-3)]'
                 }`}
                 onClick={() => setConfigForm({ ...configForm, shape: 'rectangle' })}
@@ -916,7 +916,7 @@ export default function RestaurantTables() {
                 type="button"
                 className={`py-2 px-3 border rounded-xl text-xs font-semibold transition-all ${
                   configForm.shape === 'round'
-                    ? 'border-[var(--f-tint-color)] bg-[var(--az-accent-subtle)]'
+                    ? 'border-[var(--f-tint-color)] bg-[var(--f-surface-sunken)]'
                     : 'border-[var(--f-line)]:border-[var(--f-text-3)]'
                 }`}
                 onClick={() => setConfigForm({ ...configForm, shape: 'round' })}

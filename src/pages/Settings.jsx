@@ -125,7 +125,7 @@ export default function Settings() {
             <div className="w-20 h-20 rounded-2xl overflow-hidden border border-[var(--f-line)] flex-shrink-0">
               {form.logoUrl
                 ? <img src={form.logoUrl} alt="logo" className="w-full h-full object-cover" />
-                : <div className="w-full h-full flex items-center justify-center bg-[var(--az-accent-subtle)]">
+                : <div className="w-full h-full flex items-center justify-center bg-[var(--f-surface-sunken)]">
                     <span className="text-2xl font-black text-[var(--f-tint-color)]">{(form.businessName || 'B').charAt(0)}</span>
                   </div>
               }

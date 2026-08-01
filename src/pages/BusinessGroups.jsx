@@ -64,7 +64,7 @@ export default function BusinessGroups() {
   if (businesses.length <= 1 && !isAdmin) {
     return (
       <div className="max-w-2xl mx-auto p-6 flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center">
-        <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: 'var(--az-accent-subtle)' }}>
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: 'var(--f-surface-sunken)' }}>
           <Layers className="w-8 h-8" style={{ color: 'var(--f-tint-color)' }} />
         </div>
         <h2 className="text-xl font-bold" style={{ color: 'var(--f-text)' }}>Business Groups</h2>
@@ -83,7 +83,7 @@ export default function BusinessGroups() {
   if (isError && !groupStats) {
     return (
       <div className="max-w-2xl mx-auto p-6 flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center">
-        <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: 'var(--az-danger-subtle, rgba(239,68,68,0.1))' }}>
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center" style={{ background: 'var(--f-bad-bg)' }}>
           <AlertCircle className="w-8 h-8" style={{ color: 'var(--f-bad)' }} />
         </div>
         <h2 className="text-xl font-bold" style={{ color: 'var(--f-text)' }}>Couldn't load group stats</h2>
@@ -161,8 +161,8 @@ export default function BusinessGroups() {
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'var(--f-text-3)' }} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'var(--f-text-3)' }} tickFormatter={fmtShort} />
                 <Tooltip
-                  contentStyle={{ background: 'var(--az-surface-solid)', border: '1px solid var(--f-line)', borderRadius: 10, color: 'var(--f-text)' }}
-                  cursor={{ fill: 'var(--az-accent-subtle)' }}
+                  contentStyle={{ background: 'var(--f-surface-raised)', border: '1px solid var(--f-line)', borderRadius: 10, color: 'var(--f-text)' }}
+                  cursor={{ fill: 'var(--f-surface-sunken)' }}
                 />
                 <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                   {chartData.map((entry, i) => (

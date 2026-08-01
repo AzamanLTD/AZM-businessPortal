@@ -1,8 +1,8 @@
 // src/components/storefront/TemplateGallery.jsx
 // Pre-designed storefront layouts per business type — businesses browse,
 // preview, and apply with one click.
-import { GlassPanel } from '@/components/ui/GlassPanel';
-import { useToast } from '@/components/ui/Toast';
+import { Card } from '@/components/forge';
+import { useToast } from '@/components/forge';
 import { LayoutTemplate, Check, Sparkles, Star, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { getWidgetDefaults } from '@/lib/businessTypes';

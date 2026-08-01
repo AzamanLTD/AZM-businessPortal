@@ -80,8 +80,8 @@ export default function BusinessMeta({ meta, setMeta, category, canManage }) {
   return (
     <Card className="space-y-4">
       <div className="flex items-center gap-2">
-        <MetaIcon className="w-4 h-4 text-[var(--az-accent)]" />
-        <h3 className="text-sm font-semibold text-[var(--az-text)]">{config.label}</h3>
+        <MetaIcon className="w-4 h-4 text-[var(--f-tint-color)]" />
+        <h3 className="text-sm font-semibold text-[var(--f-text)]">{config.label}</h3>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {config.fields.map(field => {
@@ -91,7 +91,7 @@ export default function BusinessMeta({ meta, setMeta, category, canManage }) {
             case 'switch':
               return (
                 <div key={field.key} className="flex items-center justify-between py-2">
-                  <span className="text-sm text-[var(--az-text)]">{field.label}</span>
+                  <span className="text-sm text-[var(--f-text)]">{field.label}</span>
                   <Switch
                     checked={!!value}
                     onChange={(v) => updateField(field.key, v)}
@@ -103,16 +103,16 @@ export default function BusinessMeta({ meta, setMeta, category, canManage }) {
             case 'select':
               return (
                 <div key={field.key} className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-[var(--az-text-muted)] uppercase tracking-wider">{field.label}</label>
+                  <label className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">{field.label}</label>
                   <select
-                    className="w-full px-4 py-3 rounded-xl bg-[var(--az-black)] border border-[var(--az-border)] text-[var(--az-text)] text-sm outline-none focus:border-[var(--az-accent)] disabled:opacity-50"
+                    className="w-full px-4 py-3 rounded-xl bg-[var(--f-ink-900)] border border-[var(--f-line)] text-[var(--f-text)] text-sm outline-none focus:border-[var(--f-tint-color)] disabled:opacity-50"
                     value={value || ''}
                     onChange={e => updateField(field.key, e.target.value)}
                     disabled={!canManage}
                   >
                     <option value="">{field.placeholder || 'Select...'}</option>
                     {field.options.map(opt => (
-                      <option key={opt} value={opt} style={{ background: 'var(--az-surface)' }}>
+                      <option key={opt} value={opt} style={{ background: 'var(--f-surface)' }}>
                         {field.key === 'starRating' ? `${'★'.repeat(opt)} ${opt} Star${opt > 1 ? 's' : ''}` : opt}
                       </option>
                     ))}

@@ -76,9 +76,9 @@ export default function ActivityLog() {
   if (!canView) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <History className="w-10 h-10 text-[var(--az-text-muted)] opacity-40 mb-3" />
-        <h3 className="font-semibold text-[var(--az-text)]">No Access</h3>
-        <p className="text-sm text-[var(--az-text-muted)] mt-1">
+        <History className="w-10 h-10 text-[var(--f-text-3)] opacity-40 mb-3" />
+        <h3 className="font-semibold text-[var(--f-text)]">No Access</h3>
+        <p className="text-sm text-[var(--f-text-3)] mt-1">
           You don't have permission to view the activity log.
         </p>
       </div>
@@ -88,10 +88,10 @@ export default function ActivityLog() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <History className="w-6 h-6 text-[var(--az-accent)]" />
+        <History className="w-6 h-6 text-[var(--f-tint-color)]" />
         <div>
-          <h2 className="text-lg font-bold text-[var(--az-text)]">Activity Log</h2>
-          <p className="text-sm text-[var(--az-text-muted)]">
+          <h2 className="text-lg font-bold text-[var(--f-text)]">Activity Log</h2>
+          <p className="text-sm text-[var(--f-text-3)]">
             Every important action in your business, logged for accountability.
           </p>
         </div>
@@ -99,7 +99,7 @@ export default function ActivityLog() {
 
       {/* Filters */}
       <Card className="p-4">
-        <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-[var(--az-text)]">
+        <div className="flex items-center gap-2 mb-3 text-sm font-semibold text-[var(--f-text)]">
           <Filter className="w-4 h-4" /> Filters
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -132,15 +132,15 @@ export default function ActivityLog() {
 
       {/* Log entries */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-12 text-[var(--az-text-muted)]">
-          <div className="w-6 h-6 border-2 border-[var(--az-border)] border-t-[var(--az-accent)] rounded-full animate-spin mr-3" />
+        <div className="flex items-center justify-center py-12 text-[var(--f-text-3)]">
+          <div className="w-6 h-6 border-2 border-[var(--f-line)] border-t-[var(--f-tint-color)] rounded-full animate-spin mr-3" />
           Loading activity log...
         </div>
       ) : entries.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          <History className="w-10 h-10 text-[var(--az-text-muted)] opacity-40 mb-3" />
-          <h3 className="font-semibold text-[var(--az-text)]">No Activity Yet</h3>
-          <p className="text-sm text-[var(--az-text-muted)] mt-1">
+          <History className="w-10 h-10 text-[var(--f-text-3)] opacity-40 mb-3" />
+          <h3 className="font-semibold text-[var(--f-text)]">No Activity Yet</h3>
+          <p className="text-sm text-[var(--f-text-3)] mt-1">
             Actions like terminating employees, voiding invoices, or changing settings will appear here.
           </p>
         </div>
@@ -149,18 +149,18 @@ export default function ActivityLog() {
           {entries.map((entry) => (
             <Card key={entry.id} className="p-4">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-medium text-sm text-[var(--az-text)]">
+                <span className="font-medium text-sm text-[var(--f-text)]">
                   {entry.actorName || 'System'}
                 </span>
                 <Badge className="text-xs">
                   {ACTION_LABELS[entry.action] || entry.action}
                 </Badge>
-                <span className="text-xs text-[var(--az-text-muted)] ml-auto">
+                <span className="text-xs text-[var(--f-text-3)] ml-auto">
                   {timeAgo(entry.createdAt)}
                 </span>
               </div>
               {entry.metadata && (
-                <div className="mt-2 text-xs text-[var(--az-text-muted)]">
+                <div className="mt-2 text-xs text-[var(--f-text-3)]">
                   {Object.entries(entry.metadata)
                     .filter(([k]) => k !== '_bizAudit' && k !== 'businessProfileId')
                     .slice(0, 4)
@@ -171,7 +171,7 @@ export default function ActivityLog() {
                     ))}
                 </div>
               )}
-              <div className="mt-1 text-xs text-[var(--az-text-muted)] opacity-60">
+              <div className="mt-1 text-xs text-[var(--f-text-3)] opacity-60">
                 {entry.targetType} → {entry.targetId?.slice(0, 8)}
               </div>
             </Card>
@@ -182,7 +182,7 @@ export default function ActivityLog() {
       {/* Pagination */}
       {pagination.pages > 1 && (
         <div className="flex items-center justify-between">
-          <span className="text-sm text-[var(--az-text-muted)]">
+          <span className="text-sm text-[var(--f-text-3)]">
             Page {pagination.page} of {pagination.pages} ({pagination.total} entries)
           </span>
           <div className="flex gap-2">
