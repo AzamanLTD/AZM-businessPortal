@@ -1,6 +1,6 @@
 // src/components/storefront/WidgetPalette.jsx
 import { Card } from '@/components/instrument';
-import { Badge } from '@/components/instrument';
+import { Tag } from '@/components/instrument';
 import { Lock, Plus, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

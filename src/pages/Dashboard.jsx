@@ -1,7 +1,7 @@
 /**
  * Command Center — INSTRUMENT design system (Phase 2 cutover).
  *
- * All Forge imports replaced with Instrument components.
+ * All Instrument components.
  * motion → m (motion/react) under LazyMotion strict.
  * All data fetching, business logic, and route structure preserved.
  */
@@ -125,7 +125,7 @@ function AtRiskWidget() {
   );
 }
 
-// ── Inline header (replaces Forge PageHeader) ────────────────────────────────
+// ── Inline header (recedes inline header) ────────────────────────────────
 function PageHeader({ title, subtitle, actions }) {
   return (
     <header style={{ marginBottom: 16 }}>

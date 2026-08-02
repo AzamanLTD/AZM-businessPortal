@@ -1,5 +1,5 @@
 /**
- * FORGE NAV — the SINGLE source of truth for navigation.
+ * NAV — the SINGLE source of truth for navigation.
  * Delete ALL_NAVIGATION_ITEMS from Layout.jsx and the parallel navItems arrays
  * in businessTypes.js.
  */

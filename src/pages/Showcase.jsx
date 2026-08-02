@@ -423,7 +423,7 @@ export default function Showcase() {
                 className="px-3 py-2 rounded-sm bg-surface-raise border border-line text-sm text-[var(--text)]">
                 <option value="Award">Trust Award</option>
                 <option value="Certificate">Certificate</option>
-                <option value="Specialty">Specialty Badge</option>
+                <option value="Specialty">Specialty Tag</option>
               </select>
               <Button type="submit" disabled={!canPublish} size="sm">Add Trust Highlight</Button>
             </form>

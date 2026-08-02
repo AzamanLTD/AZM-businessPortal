@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { Eye, EyeOff, AlertCircle, LogIn } from 'lucide-react';
 import { Button, Input } from '@/components/instrument';
-import { ParticleField } from "@/components/forge/ParticleField";
+import { ParticleField } from "@/components/ParticleField";
 import { spring } from '@/lib/motion';
 
 export default function Login() {
@@ -48,7 +48,7 @@ export default function Login() {
 
         <div className="relative z-10">
           {/* Logo */}
-          <motion.div
+          <m.div
             initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
@@ -60,9 +60,9 @@ export default function Login() {
               <p className="text-base font-bold tracking-tight" style={{ color: 'var(--text)' }}>AZAMAN</p>
               <p className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Business Portal</p>
             </div>
-          </motion.div>
+          </m.div>
 
-          <motion.h1
+          <m.h1
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
@@ -71,8 +71,8 @@ export default function Login() {
           >
             Manage your<br />
             <span style={{ color: 'var(--accent)' }}>business</span> with ease
-          </motion.h1>
-          <motion.p
+          </m.h1>
+          <m.p
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.25 }}
@@ -80,11 +80,11 @@ export default function Login() {
             style={{ color: 'var(--text-3)' }}
           >
             List products, receive payments, track orders, and grow your business on Ghana's most trusted P2P platform.
-          </motion.p>
+          </m.p>
         </div>
 
         {/* Feature list */}
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
@@ -103,14 +103,14 @@ export default function Login() {
               </div>
             </div>
           ))}
-        </motion.div>
+        </m.div>
 
         <p className="text-xs relative z-10" style={{ color: 'var(--text-3)' }}>© 2026 Azaman. All rights reserved.</p>
       </div>
 
       {/* Right panel — form */}
       <div className="flex-1 flex items-center justify-center p-6" style={{ background: 'var(--f-bg)' }}>
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 16, filter: 'blur(8px)' }}
           animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
@@ -161,7 +161,7 @@ export default function Login() {
             </div>
 
             {error && (
-              <motion.div
+              <m.div
                 initial={{ opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={spring.press}
@@ -170,21 +170,21 @@ export default function Login() {
               >
                 <AlertCircle className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--stop)' }} />
                 <p className="text-xs font-medium" style={{ color: 'var(--stop)' }}>{error}</p>
-              </motion.div>
+              </m.div>
             )}
 
-            <motion.div whileTap={{ scale: 0.98 }} transition={{ duration: 0.08 }}>
+            <m.div whileTap={{ scale: 0.98 }} transition={{ duration: 0.08 }}>
               <Button type="submit" className="w-full mt-2"
                 style={{ background: 'var(--accent)', color: '#fff' }}>
                 {loading ? null : <div className="flex items-center gap-2"><LogIn className="w-4 h-4" />Sign In</div>}
               </Button>
-            </motion.div>
+            </m.div>
           </form>
 
           <p className="text-xs text-center mt-6" style={{ color: 'var(--text-3)' }}>
             Need access? Contact your Azaman account manager.
           </p>
-        </motion.div>
+        </m.div>
       </div>
     </div>
   );

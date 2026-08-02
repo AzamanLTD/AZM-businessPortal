@@ -2,7 +2,7 @@
 // Schema-driven tile configuration panel — reads the widget's configSchema
 // from the backend catalog and renders the appropriate input for each property.
 import { Card } from '@/components/instrument';
-import { Badge } from '@/components/instrument';
+import { Tag } from '@/components/instrument';
 import { Trash2, Settings, Upload, Loader2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { storefrontApi } from '@/services/storefrontApi';

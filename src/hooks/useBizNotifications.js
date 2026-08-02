@@ -20,7 +20,7 @@ import { notifications as notifApi } from '@/lib/api';
  * changes) so re-renders never stack duplicate handlers.
  *
  * Returns { data } where data contains the unread notification count,
- * so the ForgeLayout sidebar badge can render correctly.
+ * so the sidebar badge can render correctly.
  */
 const ORDER_EVENTS = new Set([
   'NEW_ORDER', 'ORDER_FUNDED', 'ORDER_SATISFIED',

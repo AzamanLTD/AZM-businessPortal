@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'motion/react';
 import { 
   LayoutDashboard, ShoppingBag, LineChart, Users, BedDouble, ChefHat, 
   ShoppingCart, Package, Settings, Search, PlusCircle, UserPlus, FileText, ArrowRight
@@ -172,7 +172,7 @@ export function CommandPalette({ isOpen, onClose }) {
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-start justify-center pt-[10vh] px-4">
           {/* Backdrop */}
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -181,7 +181,7 @@ export function CommandPalette({ isOpen, onClose }) {
           />
 
           {/* Centered glass panel */}
-          <motion.div
+          <m.div
             initial={{ scale: 0.96, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.96, opacity: 0 }}
@@ -244,7 +244,7 @@ export function CommandPalette({ isOpen, onClose }) {
                 )}
               </div>
             </GlassPanel>
-          </motion.div>
+          </m.div>
         </div>
       )}
     </AnimatePresence>

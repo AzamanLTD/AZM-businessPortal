@@ -1,7 +1,7 @@
 /**
  * Orders — INSTRUMENT design system (Phase 2 cutover, screen 2).
  *
- * All Forge components replaced with Instrument equivalents.
+ * All Instrument components.
  * Kanban + table views, bulk actions, and filter bar preserved.
  */
 import { useState } from 'react';
@@ -29,7 +29,7 @@ const STATUSES = [
 
 const KANBAN_COLUMNS = ['AWAITING_PAYMENT', 'PAID', 'DELIVERED', 'COMPLETED', 'CANCELLED'];
 
-// Map Forge tag variants to Instrument tones
+// Map tag variants to Instrument tones
 const STATUS_TONE = {
   AWAITING_PAYMENT: 'hold',
   PAID: 'info',

@@ -4,7 +4,7 @@
  */
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'motion/react';
 import { products as productsApi } from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
@@ -39,7 +39,7 @@ function ReceiptModal({ order, bizName, onClose }) {
   const now = new Date().toLocaleString('en-GH', { dateStyle: 'medium', timeStyle: 'short' });
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <motion.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}
+      <m.div initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}
         className="bg-[var(--f-surface)] rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden">
         <div style={{ background: 'var(--f-tint-color)' }} className="p-6 text-center text-[var(--f-text)]">
           <div className="text-2xl font-bold">{bizName || 'AZM POS'}</div>
@@ -77,7 +77,7 @@ function ReceiptModal({ order, bizName, onClose }) {
             <CheckCircle2 className="w-4 h-4" /> Done
           </button>
         </div>
-      </motion.div>
+      </m.div>
     </div>
   );
 }
@@ -98,7 +98,7 @@ function PaymentModal({ total, onClose, onConfirm, isLoading }) {
   ];
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <motion.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }}
+      <m.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }}
         style={{ background: 'var(--f-surface-sunken)', borderColor: 'var(--f-line)' }}
         className="border rounded-2xl shadow-2xl w-full max-w-md">
         <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b" style={{ borderColor: 'var(--f-line)' }}>
@@ -145,7 +145,7 @@ function PaymentModal({ total, onClose, onConfirm, isLoading }) {
             Confirm Payment
           </button>
         </div>
-      </motion.div>
+      </m.div>
     </div>
   );
 }
@@ -296,12 +296,12 @@ export default function POS() {
               <Package className="w-12 h-12 opacity-30" /><p className="text-sm">No items found</p>
             </div>
           ) : (
-            <motion.div variants={{ show: { transition: { staggerChildren: 0.03 } } }} initial="hidden" animate="show"
+            <m.div variants={{ show: { transition: { staggerChildren: 0.03 } } }} initial="hidden" animate="show"
               className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {visibleProducts.map(product => {
                 const cartItem = cart.find(i => i.id === product.id);
                 return (
-                  <motion.button key={product.id}
+                  <m.button key={product.id}
                     variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
                     onClick={() => addToCart(product)}
                     className="group relative flex flex-col bg-[var(--f-surface)] border rounded-2xl overflow-hidden shadow-sm:shadow-md transition-all active:scale-[0.97] text-left"
@@ -329,10 +329,10 @@ export default function POS() {
                         )}
                       </div>
                     </div>
-                  </motion.button>
+                  </m.button>
                 );
               })}
-            </motion.div>
+            </m.div>
           )}
         </div>
       </div>
@@ -365,7 +365,7 @@ export default function POS() {
                 <p className="text-sm text-center">Tap items on the left<br/>to add them here</p>
               </div>
             ) : cart.map(item => (
-              <motion.div key={item.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+              <m.div key={item.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
                 className="flex items-center gap-3 bg-[var(--f-surface)] border rounded-xl p-3" style={{ borderColor: 'var(--f-line)' }}>
                 <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0" style={{ background: 'var(--f-bg)' }}>
                   {item.imageUrl
@@ -389,7 +389,7 @@ export default function POS() {
                   </button>
                 </div>
                 <span className="text-sm font-bold tabular-nums w-16 text-right" style={{ color: 'var(--f-text)' }}>{fmt(item.price * item.qty)}</span>
-              </motion.div>
+              </m.div>
             ))}
           </AnimatePresence>
         </div>

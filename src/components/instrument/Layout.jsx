@@ -1,6 +1,6 @@
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useMemo } from 'react';
-import { Shell, CommandPalette, TooltipProvider } from '@/components/forge';
+import { Shell, CommandPalette, TooltipProvider, ProfileMenu } from '@/components/instrument';
 import { CommandProvider } from '@/lib/command';
 import { ThemeProvider } from '@/lib/theme';
 import { useAuth } from '@/lib/AuthContext';
@@ -8,7 +8,7 @@ import { getBusinessType } from '@/lib/businessTypes';
 import { usePermission } from '@/hooks/usePermission';
 import { useBizNotifications } from '@/hooks/useBizNotifications';
 
-export function ForgeLayout() {
+export function Layout() {
   const { bizProfile, isOwner, user, logout } = useAuth();
   const { hasPermission } = usePermission();
   const { data: notifData } = useBizNotifications();
@@ -44,6 +44,7 @@ export function ForgeLayout() {
             user={user}
             onLogout={logout}
             onNavigateSettings={() => navigate('/settings')}
+            ProfileMenu={ProfileMenu}
           >
             <Outlet />
           </Shell>

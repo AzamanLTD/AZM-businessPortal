@@ -1,6 +1,6 @@
 // src/components/storefront/VersionHistorySidebar.jsx
 import { Card } from '@/components/instrument';
-import { Badge } from '@/components/instrument';
+import { Tag } from '@/components/instrument';
 import { History, RotateCcw, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { storefrontApi } from '@/services/storefrontApi';

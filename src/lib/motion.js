@@ -7,8 +7,8 @@
  *   import { m } from 'motion/react'
  *   import { SPRING, V } from '@/lib/motion'
  *
- * Existing FORGE components use the legacy exports (spring, rowsV, etc.)
- * which are preserved below as backward-compat until Phase 3 (Delete Forge).
+ * Legacy compat exports (spring, rowsV, etc.)
+ * preserved for backward-compat.
  */
 
 // ── INSTRUMENT Spring lexicon (§2.2) ────────────────────────────────────────
@@ -83,8 +83,8 @@ export const DUR = {
 };
 
 // ════════════════════════════════════════════════════════════════════════════
-// FORGE COMPAT LAYER — preserved until Phase 3 (Delete Forge)
-// Existing Forge components import these. Do NOT remove until all Forge
+// COMPAT LAYER — preserved for backward-compat
+// Legacy components import these.
 // screens are cut over to Instrument.
 // ════════════════════════════════════════════════════════════════════════════
 

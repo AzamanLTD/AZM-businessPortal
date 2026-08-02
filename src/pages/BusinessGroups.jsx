@@ -5,7 +5,7 @@
  */
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
+import { m } from 'motion/react';
 import { useAuth } from '@/lib/AuthContext';
 import { request } from '@/lib/apiCore';
 import { cn } from '@/lib/utils';
@@ -115,7 +115,7 @@ export default function BusinessGroups() {
       </div>
 
       {/* Group KPI summary */}
-      <motion.div variants={containerVariants} initial="hidden" animate="show"
+      <m.div variants={containerVariants} initial="hidden" animate="show"
         className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { label: 'Total Revenue', value: groupStats?.totalRevenue || 0, format: fmt, icon: DollarSign, color: 'var(--go)' },
@@ -123,7 +123,7 @@ export default function BusinessGroups() {
           { label: 'Total Staff', value: groupStats?.totalEmployees || 0, format: String, icon: Users, color: 'var(--info)' },
           { label: 'Avg Rating', value: groupStats?.avgRating || 0, format: v => Number(v).toFixed(1), icon: Star, color: 'var(--hold)' },
         ].map(kpi => (
-          <motion.div key={kpi.label} variants={itemVariants}>
+          <m.div key={kpi.label} variants={itemVariants}>
             <Card className="p-5 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>{kpi.label}</span>
@@ -135,9 +135,9 @@ export default function BusinessGroups() {
                 <AnimatedNumber value={kpi.value} formatter={kpi.format} />
               </div>
             </Card>
-          </motion.div>
+          </m.div>
         ))}
-      </motion.div>
+      </m.div>
 
       {/* Side-by-side comparison */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">

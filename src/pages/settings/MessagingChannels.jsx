@@ -5,7 +5,7 @@
  * View monthly send cost.
  */
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'motion/react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { request } from '@/lib/apiCore';
 import { useAuth } from '@/lib/AuthContext';

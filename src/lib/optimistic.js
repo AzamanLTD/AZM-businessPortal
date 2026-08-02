@@ -1,7 +1,7 @@
 // src/lib/optimistic.js
 import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { notify } from '@/components/forge/toast';
+import { notify } from '@/lib/toast';
 
 /**
  * Every user-initiated state change in the product goes through this.

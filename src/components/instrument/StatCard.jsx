@@ -1,11 +1,11 @@
-import { motion } from 'framer-motion';
+import { m } from 'motion/react';
 
 const EASE = [0.22, 1, 0.36, 1];
 
 export function StatCard({ label, value, delta, tone = 'neutral', icon: Icon, loading }) {
   const color = tone === 'go' ? 'var(--go)' : tone === 'stop' ? 'var(--stop)' : tone === 'hold' ? 'var(--hold)' : 'var(--accent)';
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: EASE }}
@@ -35,6 +35,6 @@ export function StatCard({ label, value, delta, tone = 'neutral', icon: Icon, lo
           {delta >= 0 ? '+' : ''}{delta}%
         </span>
       )}
-    </motion.div>
+    </m.div>
   );
 }

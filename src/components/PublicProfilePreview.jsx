@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { business as businessApi, products as productsApi } from '@/lib/api';
-import { Dialog, Skel, Badge } from '@/components/instrument';
+import { Dialog, Skel, Tag } from '@/components/instrument';
 import { fmtUSDC, fmt } from '@/lib/utils';
 import { BadgeCheck, Globe, Package, ShoppingBag, Star } from 'lucide-react';
 

@@ -625,7 +625,7 @@ export default function Reservations() {
                               {res.reference || 'No Ref'}
                             </Tag>
                             
-                            {/* Reschedule Proposal Indicator Badge */}
+                            {/* Reschedule Proposal Indicator Tag */}
                             {hasProposedReschedule && (
                               <Tag tone="neutral" className="animate-pulse text-[10px]">
                                 Reschedule Proposed

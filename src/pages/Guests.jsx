@@ -1,7 +1,7 @@
 /**
  * Guests (Customer Intelligence) — INSTRUMENT design system (Phase 2, screen 3).
  *
- * All Forge components replaced with Instrument equivalents.
+ * All Instrument components.
  * Guest detail drawer → Instrument Sheet. All CSS → Instrument variables.
  */
 import { useState, useEffect } from 'react';

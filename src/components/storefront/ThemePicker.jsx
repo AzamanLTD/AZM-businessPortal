@@ -1,5 +1,5 @@
 // src/components/storefront/ThemePicker.jsx
-import { Badge } from '@/components/instrument';
+import { Tag } from '@/components/instrument';
 import { Lock, Check, Palette, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 

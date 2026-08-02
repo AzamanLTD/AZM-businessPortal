@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, m } from 'motion/react';
 import { createPortal } from 'react-dom';
 import { toastV, spring } from '@/lib/motion';
 import { X, Check, AlertTriangle, Info } from 'lucide-react';
@@ -42,7 +42,7 @@ export function ToastProvider({ children }) {
         <div className="f-toast-stack" aria-live="polite" aria-atomic="false">
           <AnimatePresence>
             {toasts.map(t => (
-              <motion.div key={t.id} layout
+              <m.div key={t.id} layout
                 variants={toastV} initial="initial" animate="animate" exit="exit"
                 transition={spring.toast}
                 className={`f-toast f-toast--${t.variant}`}>
@@ -64,7 +64,7 @@ export function ToastProvider({ children }) {
                 <button className="f-toast__close" onClick={() => remove(t.id)} aria-label="Dismiss">
                   <X className="h-3.5 w-3.5" />
                 </button>
-              </motion.div>
+              </m.div>
             ))}
           </AnimatePresence>
         </div>,

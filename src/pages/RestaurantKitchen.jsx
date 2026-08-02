@@ -46,7 +46,7 @@ const ORDER_STATUS_COLORS = {
   CANCELLED: 'var(--stop)'
 };
 
-// KDS styles moved to forge.css — no more dangerouslySetInnerHTML
+// KDS styles in instrument.css — no more dangerouslySetInnerHTML
 const PulseAlert = () => null;
 
 // Helper to play synthesized beep sounds or Web Audio alerts

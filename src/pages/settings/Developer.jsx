@@ -5,7 +5,7 @@
  */
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'motion/react';
 import { request } from '@/lib/apiCore';
 import { usePermission } from '@/hooks/usePermission';
 import { toast } from 'sonner';
@@ -74,7 +74,7 @@ function CreateKeyModal({ onClose, onCreate }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center f-scrim p-4">
-      <motion.div initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
+      <m.div initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
         className="rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
         style={{ background: 'var(--f-surface-sunken)', border: '1px solid var(--f-line)' }}>
         <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b" style={{ borderColor: 'var(--f-line)' }}>
@@ -119,7 +119,7 @@ function CreateKeyModal({ onClose, onCreate }) {
             Generate Key
           </button>
         </div>
-      </motion.div>
+      </m.div>
     </div>
   );
 }
@@ -143,7 +143,7 @@ function CreateWebhookModal({ onClose, onCreate }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center f-scrim p-4">
-      <motion.div initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
+      <m.div initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
         className="rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden"
         style={{ background: 'var(--f-surface-sunken)', border: '1px solid var(--f-line)' }}>
         <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b" style={{ borderColor: 'var(--f-line)' }}>
@@ -183,7 +183,7 @@ function CreateWebhookModal({ onClose, onCreate }) {
             Create Webhook
           </button>
         </div>
-      </motion.div>
+      </m.div>
     </div>
   );
 }
@@ -233,7 +233,7 @@ export default function Developer() {
       {/* New key reveal banner */}
       <AnimatePresence>
         {newKey && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+          <m.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
             className="rounded-xl p-4 border" style={{ background: 'var(--f-ok-bg)', borderColor: 'var(--f-ok)' }}>
             <div className="flex items-start gap-3">
               <Shield className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: 'var(--f-ok)' }} />
@@ -246,7 +246,7 @@ export default function Developer() {
               </div>
               <button onClick={() => setNewKey(null)} style={{ color: 'var(--f-text-3)' }}><XCircle className="w-4 h-4" /></button>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
 

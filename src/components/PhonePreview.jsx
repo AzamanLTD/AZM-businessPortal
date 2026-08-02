@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { motion, useDragControls } from 'framer-motion';
+import { m, useDragControls } from 'motion/react';
 import { X, Battery, Wifi, Signal, Star, MapPin, Clock, ChevronRight, Search, Bus, UtensilsCrossed, BedDouble, ShoppingBag, Smartphone, Minus, Move } from 'lucide-react';
 import { getTypeConfig } from '@/lib/businessTypes';
 
@@ -48,7 +48,7 @@ export function PhonePreview({ business, onClose }) {
   return (
     <div ref={constraintsRef} className="fixed inset-0 z-[100] pointer-events-none">
       {minimized ? (
-        <motion.button
+        <m.button
           drag
           dragControls={dragControls}
           dragMomentum={false}
@@ -62,9 +62,9 @@ export function PhonePreview({ business, onClose }) {
           title="Show live preview"
         >
           <Smartphone className="w-6 h-6 text-[var(--f-text)]" />
-        </motion.button>
+        </m.button>
       ) : (
-        <motion.div
+        <m.div
           drag
           dragListener={false}
           dragControls={dragControls}
@@ -180,7 +180,7 @@ export function PhonePreview({ business, onClose }) {
             />
           </div>
         </div>
-      </motion.div>
+      </m.div>
       )}
     </div>
   );

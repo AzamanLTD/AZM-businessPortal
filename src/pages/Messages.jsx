@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { getSocket } from '@/lib/socket';
 import { VirtualizedList } from '@/components/instrument';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 
 const DEFAULT_QUICK_REPLIES = [
@@ -311,7 +311,7 @@ export default function Messages() {
             {/* Quick replies settings overlay */}
             <AnimatePresence>
               {showSettings && (
-                <motion.div 
+                <m.div 
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
@@ -340,7 +340,7 @@ export default function Messages() {
                     />
                     <button onClick={addTemplate} className="px-3 py-1.5 bg-tint text-[var(--text)] text-xs font-semibold rounded:brightness-110 transition-all">Add</button>
                   </div>
-                </motion.div>
+                </m.div>
               )}
             </AnimatePresence>
 
@@ -356,7 +356,7 @@ export default function Messages() {
                 </button>
                 <AnimatePresence>
                   {showTemplates && (
-                    <motion.div 
+                    <m.div 
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
@@ -374,7 +374,7 @@ export default function Messages() {
                           {reply}
                         </button>
                       ))}
-                    </motion.div>
+                    </m.div>
                   )}
                 </AnimatePresence>
               </div>

@@ -12,8 +12,8 @@
 import { useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
-import { Card, Input, Textarea, Switch, Badge } from '@/components/instrument';
-import { Building, Utensils, Bus, ShoppingBag, Star, Clock, Tag } from 'lucide-react';
+import { Card, Input, Textarea, Switch, Tag } from '@/components/instrument';
+import { Building, Utensils, Bus, ShoppingBag, Star, Clock, Tag as TagIcon } from 'lucide-react';
 
 // ── Category-specific field configs ────────────────────────────────────────
 const CATEGORY_FIELDS = {

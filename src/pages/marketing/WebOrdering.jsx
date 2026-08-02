@@ -4,7 +4,7 @@
  */
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'motion/react';
 import { request } from '@/lib/apiCore';
 import { storefrontApi } from '@/services/storefrontApi';
 import { useAuth } from '@/lib/AuthContext';
@@ -134,7 +134,7 @@ export default function WebOrdering() {
 
       <AnimatePresence mode="wait">
         {activeTab === 'setup' && (
-          <motion.div key="setup" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-5">
+          <m.div key="setup" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-5">
             <GlassPanel className="p-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -190,11 +190,11 @@ export default function WebOrdering() {
               {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
               Save Settings
             </button>
-          </motion.div>
+          </m.div>
         )}
 
         {activeTab === 'qr' && (
-          <motion.div key="qr" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-5">
+          <m.div key="qr" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-5">
             <GlassPanel className="p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -232,11 +232,11 @@ export default function WebOrdering() {
                 Account creation (phone + OTP) is only prompted at checkout.
               </p>
             </div>
-          </motion.div>
+          </m.div>
         )}
 
         {activeTab === 'preview' && (
-          <motion.div key="preview" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+          <m.div key="preview" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
             <GlassPanel className="p-5 space-y-4">
               <h3 className="font-bold" style={{ color: 'var(--f-text)' }}>Mobile Preview</h3>
               <div className="flex justify-center">
@@ -273,7 +273,7 @@ export default function WebOrdering() {
                 Accent color updates live above. Save your settings to publish changes.
               </p>
             </GlassPanel>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

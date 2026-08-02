@@ -592,7 +592,7 @@ export default function HotelRooms() {
                     className="hover:scale-[1.01] transition-all relative flex flex-col justify-between"
                   >
                     <div>
-                      {/* Badge / Meta */}
+                      {/* Tag / Meta */}
                       <div className="flex items-center justify-between mb-3">
                         <span className="text-xs font-bold text-[var(--text-3)]">
                           FLOOR {room.floor}

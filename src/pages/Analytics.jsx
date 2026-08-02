@@ -8,7 +8,7 @@
  */
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
+import { m } from 'motion/react';
 import { useAuth } from '@/lib/AuthContext';
 import { Card } from '@/components/instrument';
 import { orders as ordersApi, analytics as analyticsApi } from '@/lib/api';
@@ -173,10 +173,10 @@ export default function Analytics() {
 
   return (
     <ErrorBoundary>
-      <motion.div variants={container} initial="hidden" animate="show" className="p-6 space-y-6 max-w-7xl mx-auto">
+      <m.div variants={container} initial="hidden" animate="show" className="p-6 space-y-6 max-w-7xl mx-auto">
 
         {/* Header */}
-        <motion.div variants={item}>
+        <m.div variants={item}>
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-ink">Analytics</h1>
@@ -187,10 +187,10 @@ export default function Analytics() {
               <span>All insights show their reasoning — <Info className="w-3 h-3 inline" /> for details</span>
             </div>
           </div>
-        </motion.div>
+        </m.div>
 
         {/* KPI row */}
-        <motion.div variants={item} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <m.div variants={item} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {ordersLoading ? [1,2,3,4].map(i => <Card key={i} className="p-5"><Sk className="h-4 w-20 mb-2" /><Sk className="h-8 w-28" /></Card>) : [
             { label: '30-day Revenue', value: fmtUSDC(totalRevenue30), delta: revDelta, icon: TrendingUp },
             { label: '30-day Orders',  value: fmt(totalOrders30, 0),    delta: null, icon: ShoppingBag },
@@ -212,10 +212,10 @@ export default function Analytics() {
               )}
             </Card>
           ))}
-        </motion.div>
+        </m.div>
 
         {/* Revenue trend */}
-        <motion.div variants={item}>
+        <m.div variants={item}>
           <Card className="p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
@@ -241,10 +241,10 @@ export default function Analytics() {
               </ResponsiveContainer>
             )}
           </Card>
-        </motion.div>
+        </m.div>
 
         {/* Demand forecast + Day of week */}
-        <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <m.div variants={item} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* 7-day forecast */}
           <Card className="p-6">
             <div className="flex items-center justify-between mb-1">
@@ -262,7 +262,7 @@ export default function Analytics() {
                 <div key={i} className="flex items-center gap-3">
                   <span className="text-[11px] text-ink-3 w-28 shrink-0">{f.date}</span>
                   <div className="flex-1 h-2 bg-line rounded-full overflow-hidden">
-                    <motion.div
+                    <m.div
                       className="h-full rounded-full"
                       style={{ background: 'var(--accent)' }}
                       initial={{ width: 0 }}
@@ -296,10 +296,10 @@ export default function Analytics() {
               </ResponsiveContainer>
             )}
           </Card>
-        </motion.div>
+        </m.div>
 
         {/* Churn risk */}
-        <motion.div variants={item}>
+        <m.div variants={item}>
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -347,10 +347,10 @@ export default function Analytics() {
               </div>
             )}
           </Card>
-        </motion.div>
+        </m.div>
 
         {/* ── Comparative View: This Week vs Last Week ──────────────────────── */}
-        <motion.div variants={item}>
+        <m.div variants={item}>
           <Card className="p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
@@ -433,10 +433,10 @@ export default function Analytics() {
               );
             })()}
           </Card>
-        </motion.div>
+        </m.div>
 
         {/* ── Top Items by Volume ───────────────────────────────────────────── */}
-        <motion.div variants={item}>
+        <m.div variants={item}>
           <Card className="p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
@@ -481,9 +481,9 @@ export default function Analytics() {
               );
             })()}
           </Card>
-        </motion.div>
+        </m.div>
 
-      </motion.div>
+      </m.div>
     </ErrorBoundary>
   );
 }

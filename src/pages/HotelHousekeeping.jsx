@@ -583,7 +583,7 @@ export default function HotelHousekeeping() {
                         }}
                         className="p-4 border-[var(--line)]:border-[var(--accent)] flex flex-col gap-3 shadow-md"
                       >
-                        {/* Title & Priority Badge */}
+                        {/* Title & Priority Tag */}
                         <div className="flex items-start justify-between">
                           <div>
                             <h3 className="font-bold text-sm tracking-tight text-[var(--text)]">
