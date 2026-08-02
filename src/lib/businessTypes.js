@@ -61,11 +61,16 @@ export const BUSINESS_TYPES = {
 /** Map a business category to a business type */
 export function getBusinessType(category) {
   const map = {
+    // Direct matches (backend returns these directly from Flutter registration)
+    'HOTEL': 'HOTEL',
+    'RESTAURANT': 'RESTAURANT',
+    'TRANSIT': 'TRANSIT',
+    'RETAIL': 'RETAIL',
+    // Legacy category names
     'LOGISTICS': 'TRANSIT',
     'FOOD_BEVERAGE': 'RESTAURANT',
     'REAL_ESTATE': 'HOTEL',
     'HOSPITALITY': 'HOTEL',
-    'RETAIL': 'RETAIL',
     'FREELANCE_SERVICES': 'SERVICES',
     'TECHNOLOGY': 'GENERAL',
     'EDUCATION': 'SERVICES',
@@ -74,7 +79,7 @@ export function getBusinessType(category) {
     'FINANCIAL_SERVICES': 'GENERAL',
     'OTHER': 'GENERAL',
   };
-  return map[category] || 'GENERAL';
+  return map[category?.toUpperCase()] || 'GENERAL';
 }
 
 /** Get the type config for a business profile */

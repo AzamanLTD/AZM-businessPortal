@@ -4,6 +4,7 @@ import { Shell, CommandPalette, TooltipProvider } from '@/components/forge';
 import { CommandProvider } from '@/lib/command';
 import { ThemeProvider } from '@/lib/theme';
 import { useAuth } from '@/lib/AuthContext';
+import { getBusinessType } from '@/lib/businessTypes';
 import { usePermission } from '@/hooks/usePermission';
 import { useBizNotifications } from '@/hooks/useBizNotifications';
 
@@ -14,7 +15,7 @@ export function ForgeLayout() {
   const navigate = useNavigate();
 
   const navProps = useMemo(() => ({
-    businessType: bizProfile?.business_type || 'GENERAL',
+    businessType: getBusinessType(bizProfile?.category || bizProfile?.businessType || bizProfile?.business_type || 'GENERAL'),
     hasPermission,
     isOwner,
     counts: {
