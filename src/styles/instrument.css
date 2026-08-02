@@ -1,28 +1,6 @@
-/* ============================================================================
-   INSTRUMENT — Azaman Business Portal design system, v2.
-   The ONLY file in the repository allowed to define a colour, a shadow,
-   a radius, a duration or a type size.
-   ----------------------------------------------------------------------------
-   Philosophy
-   1. Paper and graphite, not "dashboard blue". Warm neutral ramp, hue 70.
-   2. Chroma is DATA. Chrome is achromatic. If it is not telling you a fact,
-      it is grey.
-   3. Depth is a physical lip (1-2px hard edge), never a soft glow.
-   4. Numbers are typeset, not rendered: tabular, mono, optically aligned.
-   5. Motion is mass. Everything that moves has weight and can be interrupted.
-   ========================================================================== */
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* ── 0. Typefaces ─────────────────────────────────────────────────────────
-   Geist Variable + Geist Mono Variable, self-hosted (no FOUT, no CDN).
-   Inter is deliberately removed: it is the single strongest visual signal
-   of a generated interface. */
+/* INSTRUMENT — Azaman Business Portal design system, v2. */
 @import '@fontsource-variable/geist';
 @import '@fontsource-variable/geist-mono';
-
 /* ==========================================================================
    1. PRIMITIVE SCALES  (never referenced by components directly)
    ========================================================================== */

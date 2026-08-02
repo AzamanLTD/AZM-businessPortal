@@ -1,9 +1,11 @@
-import { motion } from 'framer-motion';
 /**
- * Dashboard — Forge design system rebuild.
- * Title is "Command Center" — no greeting string.
- * Uses Forge primitives: PageHeader, KpiCard, Card, Tag, DataTable.
+ * Command Center — INSTRUMENT design system (Phase 2 cutover).
+ *
+ * All Forge imports replaced with Instrument components.
+ * motion → m (motion/react) under LazyMotion strict.
+ * All data fetching, business logic, and route structure preserved.
  */
+import { m } from 'motion/react';
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -17,9 +19,11 @@ import {
 import { orders as ordersApi, invoices as invoicesApi, request } from '@/lib/api';
 import { reservations as resApi, transit as transitApi, checkIn as checkInApi, reviews as reviewsApi } from '@/lib/marketplaceApi';
 import { useAuth } from '@/lib/AuthContext';
-import { fmtUSDC, fmt, ORDER_STATUS_META, KYB_STATUS_META, cn } from '@/lib/utils';
+import { fmtUSDC, fmt, ORDER_STATUS_META, KYB_STATUS_META } from '@/lib/utils';
 import { getTypeConfig } from '@/lib/businessTypes';
-import { PageHeader, KpiCard, Card, CardHead, CardTitle, CardBody, Tag, Button, Skel } from '@/components/forge';
+
+// Instrument components
+import { Card, CardHead, CardBody, Tag, Button, Skel, Empty, Metric, Spark } from '@/components/instrument';
 import { ContainerV, ItemV } from '@/lib/motion';
 
 // ── Revenue computation (unchanged) ──────────────────────────────────────────
@@ -67,11 +71,13 @@ function AtRiskWidget() {
   if (isLoading) return <Skel h={120} />;
   if (!items.length) return (
     <Card>
-      <CardBody className="flex items-center gap-3 py-4">
-        <div className="f-icon-wrap f-icon-wrap--ok"><CheckCircle2 className="h-4 w-4" /></div>
-        <div>
-          <p className="text-sm font-semibold text-ink">All clear</p>
-          <p className="text-xs text-ink-3">No urgent items need your attention.</p>
+      <CardBody>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '4px 0' }}>
+          <div className="i-tag i-tag--go" style={{ flex: 'none' }}><i /></div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>All clear</div>
+            <div style={{ fontSize: 12, color: 'var(--text-3)' }}>No urgent items need your attention.</div>
+          </div>
         </div>
       </CardBody>
     </Card>
@@ -83,30 +89,80 @@ function AtRiskWidget() {
   return (
     <Card>
       <CardHead>
-        <CardTitle>Needs Attention</CardTitle>
-        <div className="flex gap-2">
-          {urgent > 0 && <Tag variant="bad">{urgent} urgent</Tag>}
-          {warnings > 0 && <Tag variant="warn">{warnings} warning{warnings > 1 ? 's' : ''}</Tag>}
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Needs Attention</span>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {urgent > 0 && <Tag tone="stop">{urgent} urgent</Tag>}
+          {warnings > 0 && <Tag tone="hold">{warnings} warning{warnings > 1 ? 's' : ''}</Tag>}
         </div>
       </CardHead>
-      <CardBody className="space-y-1">
-        {items.map((item, i) => {
-          const Icon = RISK_ICONS[item.type] || AlertTriangle;
-          return (
-            <Link key={i} to={item.link || '#'}
-                  className="flex items-center gap-3 p-2 rounded-md:bg-surface-sunken transition-colors">
-              <div className={cn('f-icon-wrap', item.severity === 'urgent' ? 'f-icon-wrap--bad' : 'f-icon-wrap--warn')}>
-                <Icon className="h-3.5 w-3.5" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-ink truncate">{item.title}</p>
-                <p className="text-[11px] text-ink-3 truncate">{item.subtitle}</p>
-              </div>
-              <ArrowRight className="h-3 w-3 text-ink-3" />
-            </Link>
-          );
-        })}
+      <CardBody>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {items.map((item, i) => {
+            const Icon = RISK_ICONS[item.type] || AlertTriangle;
+            return (
+              <Link key={i} to={item.link || '#'}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 10px',
+                  borderRadius: 'var(--r2)', background: 'var(--surface-sunk)', textDecoration: 'none' }}>
+                <div style={{
+                  width: 26, height: 26, borderRadius: 'var(--r2)',
+                  display: 'grid', placeItems: 'center', flex: 'none',
+                  background: item.severity === 'urgent' ? 'var(--stop-bg)' : 'var(--hold-bg)',
+                }}>
+                  <Icon size={13} strokeWidth={1.75}
+                    color={item.severity === 'urgent' ? 'var(--stop)' : 'var(--hold)'} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.subtitle}</div>
+                </div>
+                <ArrowRight size={13} color="var(--text-3)" />
+              </Link>
+            );
+          })}
+        </div>
       </CardBody>
+    </Card>
+  );
+}
+
+// ── Inline header (replaces Forge PageHeader) ────────────────────────────────
+function PageHeader({ title, subtitle, actions }) {
+  return (
+    <header style={{ marginBottom: 16 }}>
+      <div style={{ height: 2, width: 40, borderRadius: 2, background: 'var(--accent)', marginBottom: 12 }} />
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+        <div style={{ minWidth: 0 }}>
+          <h1 style={{ fontSize: 19, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.022em', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</h1>
+          {subtitle && <p style={{ marginTop: 4, fontSize: 12, color: 'var(--text-3)' }}>{subtitle}</p>}
+        </div>
+        {actions && <div style={{ display: 'flex', flexShrink: 0, alignItems: 'center', gap: 8 }}>{actions}</div>}
+      </div>
+    </header>
+  );
+}
+
+// ── Instrument KPI card wrapper (maps old KpiCard API to Instrument) ─────────
+function KpiCard({ label, value, delta, deltaLabel, deltaTone, icon: KpiIcon, loading }) {
+  if (loading) return <Metric label={label} value={0} loading />;
+  const numVal = typeof value === 'string' ? value : Number(value) || 0;
+  const deltaNum = delta != null && typeof delta === 'number' ? delta : null;
+  const deltaStr = deltaLabel || (deltaNum != null ? `${Math.abs(deltaNum)}%` : null);
+
+  return (
+    <Card style={{ padding: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 8 }}>
+        {KpiIcon && <KpiIcon size={11} strokeWidth={1.75} color="var(--text-3)" />}
+        <span className="i-eyebrow">{label}</span>
+      </div>
+      <div className="i-num i-num--metric">{numVal}</div>
+      {deltaStr && (
+        <div style={{
+          marginTop: 8, fontSize: 11,
+          color: deltaTone === 'down' ? 'var(--stop)' : deltaTone === 'up' ? 'var(--go)' : 'var(--text-3)',
+        }}>
+          {deltaStr}
+        </div>
+      )}
     </Card>
   );
 }
@@ -180,23 +236,26 @@ export default function Dashboard() {
       return acc;
     }, {});
     return (
-      <div className="f-content">
+      <div>
         <PageHeader title="Marketplace Overview" subtitle="Select a business to manage their portal." />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <KpiCard label="Total" value={String(adminBusinesses.length)} />
-          <KpiCard label="Restaurants" value={String(grouped['FOOD_BEVERAGE']?.length || 0)} />
-          <KpiCard label="Hotels" value={String(grouped['REAL_ESTATE']?.length || 0)} />
-          <KpiCard label="Transit" value={String(grouped['LOGISTICS']?.length || 0)} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16, marginBottom: 24 }}>
+          <Metric label="Total" value={adminBusinesses.length} />
+          <Metric label="Restaurants" value={grouped['FOOD_BEVERAGE']?.length || 0} />
+          <Metric label="Hotels" value={grouped['REAL_ESTATE']?.length || 0} />
+          <Metric label="Transit" value={grouped['LOGISTICS']?.length || 0} />
         </div>
         {Object.entries(grouped).map(([category, businesses]) => (
-          <div key={category} className="mb-6">
-            <p className="f-eyebrow mb-3">{category}</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div key={category} style={{ marginBottom: 24 }}>
+            <div className="i-eyebrow" style={{ marginBottom: 12 }}>{category}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
               {businesses.map(b => (
                 <button key={b.id} onClick={() => selectBusiness(b.id)}
-                  className="f-card p-4 text-left:shadow-md transition-shadow cursor-pointer">
-                  <p className="text-sm font-semibold text-ink">{b.name}</p>
-                  <p className="text-xs text-ink-3 mt-1">{b.business_type || 'General'}</p>
+                  style={{ textAlign: 'left', cursor: 'pointer', padding: 16, borderRadius: 'var(--r3)',
+                    background: 'var(--surface)', border: '1px solid var(--line)', transition: 'box-shadow 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.boxShadow = 'var(--d2)'}
+                  onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{b.name}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>{b.business_type || 'General'}</div>
                 </button>
               ))}
             </div>
@@ -229,7 +288,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="f-content">
+    <div>
       <PageHeader title="Command Center"
         subtitle={typeConfig.label}
         actions={
@@ -241,56 +300,64 @@ export default function Dashboard() {
 
       {/* KYB banner */}
       {needsKyb && (
-        <Link to="/kyb" className="block mb-4">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer">
-            <CardBody className="flex items-center gap-3 py-3">
-              <div className="f-icon-wrap f-icon-wrap--warn"><FileCheck className="h-4 w-4" /></div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-ink">
-                  {bizProfile?.kybStatus === 'UNVERIFIED' && 'Complete your business verification'}
-                  {bizProfile?.kybStatus === 'PENDING' && 'Verification is under review'}
-                  {bizProfile?.kybStatus === 'REJECTED' && 'Verification rejected — resubmit'}
-                </p>
-                <p className="text-xs text-ink-3 mt-0.5">
-                  {bizProfile?.kybStatus === 'UNVERIFIED' && 'Upload documents to receive orders publicly.'}
-                  {bizProfile?.kybStatus === 'PENDING' && 'Usually takes 24–48 hours.'}
-                  {bizProfile?.kybStatus === 'REJECTED' && 'Review feedback and upload corrected documents.'}
-                </p>
+        <Link to="/kyb" style={{ display: 'block', marginBottom: 16, textDecoration: 'none' }}>
+          <Card>
+            <CardBody>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '4px 0' }}>
+                <div style={{ width: 28, height: 28, borderRadius: 'var(--r2)', background: 'var(--hold-bg)', display: 'grid', placeItems: 'center', flex: 'none' }}>
+                  <FileCheck size={14} strokeWidth={1.75} color="var(--hold)" />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
+                    {bizProfile?.kybStatus === 'UNVERIFIED' && 'Complete your business verification'}
+                    {bizProfile?.kybStatus === 'PENDING' && 'Verification is under review'}
+                    {bizProfile?.kybStatus === 'REJECTED' && 'Verification rejected — resubmit'}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>
+                    {bizProfile?.kybStatus === 'UNVERIFIED' && 'Upload documents to receive orders publicly.'}
+                    {bizProfile?.kybStatus === 'PENDING' && 'Usually takes 24–48 hours.'}
+                    {bizProfile?.kybStatus === 'REJECTED' && 'Review feedback and upload corrected documents.'}
+                  </div>
+                </div>
+                <Tag tone={bizProfile?.kybStatus === 'REJECTED' ? 'stop' : 'hold'}>
+                  {kybMeta?.label || bizProfile?.kybStatus}
+                </Tag>
               </div>
-              <Tag variant={bizProfile?.kybStatus === 'REJECTED' ? 'bad' : 'warn'}>
-                {kybMeta?.label || bizProfile?.kybStatus}
-              </Tag>
             </CardBody>
           </Card>
         </Link>
       )}
 
       {/* Employee KPIs */}
-      <motion.div variants={ContainerV} initial="hidden" animate="show"
-                  className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-        <motion.div variants={ItemV}><KpiCard label="Total Employees" value={employeeStatsLoading ? '—' : String(employeeStats.totalEmployees)} delta={employeeStats.totalEmployees > 0 ? `${employeeStats.totalEmployees} active` : 'No employees yet'} icon={Users} /></motion.div>
-        <motion.div variants={ItemV}><KpiCard label="Active Shifts" value={employeeStatsLoading ? '—' : String(employeeStats.activeShifts)} delta={employeeStats.activeShifts > 0 ? 'On duty' : 'None'} deltaTone={employeeStats.activeShifts > 0 ? 'up' : 'flat'} icon={Clock} /></motion.div>
-        <motion.div variants={ItemV}><KpiCard label="Time Off Requests" value={employeeStatsLoading ? '—' : String(employeeStats.pendingTimeOff)} delta={employeeStats.pendingTimeOff > 0 ? 'Pending' : 'All clear'} deltaTone={employeeStats.pendingTimeOff > 0 ? 'down' : 'up'} icon={CalendarCheck} /></motion.div>
-        <motion.div variants={ItemV}><KpiCard label="Monthly Payroll" value={employeeStatsLoading ? '—' : `${Number(employeeStats.monthlyPayroll).toLocaleString()} USDC`} delta="This month" icon={DollarSign} /></motion.div>
-      </motion.div>
+      <m.div variants={ContainerV} initial="hidden" animate="visible"
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 16 }}>
+        <m.div variants={ItemV}><KpiCard label="Total Employees" value={employeeStatsLoading ? '—' : String(employeeStats.totalEmployees)} deltaLabel={employeeStats.totalEmployees > 0 ? `${employeeStats.totalEmployees} active` : 'No employees yet'} icon={Users} loading={employeeStatsLoading} /></m.div>
+        <m.div variants={ItemV}><KpiCard label="Active Shifts" value={employeeStatsLoading ? '—' : String(employeeStats.activeShifts)} deltaLabel={employeeStats.activeShifts > 0 ? 'On duty' : 'None'} deltaTone={employeeStats.activeShifts > 0 ? 'up' : 'flat'} icon={Clock} loading={employeeStatsLoading} /></m.div>
+        <m.div variants={ItemV}><KpiCard label="Time Off Requests" value={employeeStatsLoading ? '—' : String(employeeStats.pendingTimeOff)} deltaLabel={employeeStats.pendingTimeOff > 0 ? 'Pending' : 'All clear'} deltaTone={employeeStats.pendingTimeOff > 0 ? 'down' : 'up'} icon={CalendarCheck} loading={employeeStatsLoading} /></m.div>
+        <m.div variants={ItemV}><KpiCard label="Monthly Payroll" value={employeeStatsLoading ? '—' : `${Number(employeeStats.monthlyPayroll).toLocaleString()} USDC`} deltaLabel="This month" icon={DollarSign} loading={employeeStatsLoading} /></m.div>
+      </m.div>
 
       {/* Quick action cards by type */}
       {quickActions.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 16 }}>
           {quickActions.map(a => {
             const Icon = a.icon;
             return (
-              <Link key={a.to} to={a.to}>
-                <Card className="h-full:shadow-md transition-shadow">
-                  <CardBody className="flex flex-col justify-between h-full">
-                    <div>
-                      <div className="f-icon-wrap mb-3"><Icon className="h-4 w-4" /></div>
-                      <h3 className="text-sm font-semibold text-ink">{a.label}</h3>
-                      <p className="text-xs text-ink-3 mt-1">{a.desc}</p>
+              <Link key={a.to} to={a.to} style={{ textDecoration: 'none' }}>
+                <Card style={{ height: '100%', cursor: 'pointer' }}>
+                  <CardBody>
+                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
+                      <div>
+                        <div style={{ width: 32, height: 32, borderRadius: 'var(--r2)', background: 'var(--surface-sunk)', display: 'grid', placeItems: 'center', marginBottom: 12 }}>
+                          <Icon size={15} strokeWidth={1.75} color="var(--text-2)" />
+                        </div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{a.label}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>{a.desc}</div>
+                      </div>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: 'var(--accent)', marginTop: 16 }}>
+                        Open <ArrowUpRight size={12} />
+                      </span>
                     </div>
-                    <span className="flex items-center gap-1 text-xs font-semibold text-tint mt-4">
-                      Open <ArrowUpRight className="h-3 w-3" />
-                    </span>
                   </CardBody>
                 </Card>
               </Link>
@@ -300,7 +367,7 @@ export default function Dashboard() {
       )}
 
       {/* Quick action buttons */}
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
         <Link to="/reservations?new=true"><Button variant="ghost" size="sm" icon={CalendarPlus}>New Reservation</Button></Link>
         <Link to="/products?new=true"><Button variant="ghost" size="sm" icon={Plus}>Add Product</Button></Link>
         <Link to="/employees?invite=true"><Button variant="ghost" size="sm" icon={UserPlus}>Invite Employee</Button></Link>
@@ -308,138 +375,147 @@ export default function Dashboard() {
       </div>
 
       {/* At-risk widget */}
-      <div className="mb-4"><AtRiskWidget /></div>
+      <div style={{ marginBottom: 16 }}><AtRiskWidget /></div>
 
       {/* Core KPIs */}
-      <motion.div variants={ContainerV} initial="hidden" animate="show"
-                  className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-        <motion.div variants={ItemV}><KpiCard label="Total Orders" value={fmt(stats.totalOrders || 0, 0)} delta="All time" icon={ShoppingBag} /></motion.div>
-        <motion.div variants={ItemV}><KpiCard label="Revenue" value={fmtUSDC(stats.totalRevenue || 0)} delta="Completed" icon={TrendingUp} /></motion.div>
-        <motion.div variants={ItemV}><KpiCard label="Pending" value={fmt(stats.pendingOrders || 0, 0)} delta="Awaiting action" icon={Clock} /></motion.div>
-        <motion.div variants={ItemV}><KpiCard label="Completed" value={fmt(stats.completedOrders || 0, 0)} delta="All time" icon={CheckCircle2} /></motion.div>
-      </motion.div>
+      <m.div variants={ContainerV} initial="hidden" animate="visible"
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 16 }}>
+        <m.div variants={ItemV}><KpiCard label="Total Orders" value={fmt(stats.totalOrders || 0, 0)} deltaLabel="All time" icon={ShoppingBag} loading={statsLoading} /></m.div>
+        <m.div variants={ItemV}><KpiCard label="Revenue" value={fmtUSDC(stats.totalRevenue || 0)} deltaLabel="Completed" icon={TrendingUp} loading={statsLoading} /></m.div>
+        <m.div variants={ItemV}><KpiCard label="Pending" value={fmt(stats.pendingOrders || 0, 0)} deltaLabel="Awaiting action" icon={Clock} loading={statsLoading} /></m.div>
+        <m.div variants={ItemV}><KpiCard label="Completed" value={fmt(stats.completedOrders || 0, 0)} deltaLabel="All time" icon={CheckCircle2} loading={statsLoading} /></m.div>
+      </m.div>
 
       {/* Type-specific KPIs */}
       {typeConfig.type === 'TRANSIT' && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-          <KpiCard label="Active Trips" value={fmt(trips.filter(t => ['SCHEDULED','BOARDING'].includes(t.status)).length, 0)} delta="Scheduled + boarding" icon={Bus} />
-          <KpiCard label="Seats Sold" value={fmt(trips.reduce((s, t) => s + (t._count?.seats || 0), 0), 0)} delta="All trips" icon={Users} />
-          <KpiCard label="Check-Ins Today" value={fmt(checkInStats.todayCount || 0, 0)} delta="Passengers" icon={QrCode} />
-          <KpiCard label="Transit Revenue" value={fmtUSDC(trips.reduce((s, t) => s + (t._count?.seats || 0) * (Number(t.fareUsdc) || 0), 0))} delta="From bookings" icon={DollarSign} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 16 }}>
+          <KpiCard label="Active Trips" value={fmt(trips.filter(t => ['SCHEDULED','BOARDING'].includes(t.status)).length, 0)} deltaLabel="Scheduled + boarding" icon={Bus} />
+          <KpiCard label="Seats Sold" value={fmt(trips.reduce((s, t) => s + (t._count?.seats || 0), 0), 0)} deltaLabel="All trips" icon={Users} />
+          <KpiCard label="Check-Ins Today" value={fmt(checkInStats.todayCount || 0, 0)} deltaLabel="Passengers" icon={QrCode} />
+          <KpiCard label="Transit Revenue" value={fmtUSDC(trips.reduce((s, t) => s + (t._count?.seats || 0) * (Number(t.fareUsdc) || 0), 0))} deltaLabel="From bookings" icon={DollarSign} />
         </div>
       )}
       {['RESTAURANT','HOTEL','SERVICES'].includes(typeConfig.type) && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-          <KpiCard label="Reservations" value={fmt(resStats.total || 0, 0)} delta="All bookings" icon={CalendarCheck} />
-          <KpiCard label="Pending" value={fmt(resStats.pending || 0, 0)} delta="Awaiting confirmation" icon={Clock} />
-          <KpiCard label="Checked In" value={fmt(checkInStats.todayCount || 0, 0)} delta="Today" icon={CheckCircle2} />
-          <KpiCard label="No-Shows" value={fmt(resStats.noShows || 0, 0)} delta="Penalized" deltaTone="down" icon={AlertTriangle} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 16 }}>
+          <KpiCard label="Reservations" value={fmt(resStats.total || 0, 0)} deltaLabel="All bookings" icon={CalendarCheck} />
+          <KpiCard label="Pending" value={fmt(resStats.pending || 0, 0)} deltaLabel="Awaiting confirmation" icon={Clock} />
+          <KpiCard label="Checked In" value={fmt(checkInStats.todayCount || 0, 0)} deltaLabel="Today" icon={CheckCircle2} />
+          <KpiCard label="No-Shows" value={fmt(resStats.noShows || 0, 0)} deltaLabel="Penalized" deltaTone="down" icon={AlertTriangle} />
         </div>
       )}
 
       {/* Invoice KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-        <KpiCard label="Invoices Sent" value={fmt(invoiceStats.sent, 0)} delta="Awaiting payment" icon={Receipt} />
-        <KpiCard label="Invoices Paid" value={fmt(invoiceStats.paid, 0)} delta="Settled" icon={CheckCircle2} />
-        <KpiCard label="Invoice Revenue" value={fmtUSDC(invoiceStats.paidRevenue)} delta="From paid invoices" icon={DollarSign} />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 16 }}>
+        <KpiCard label="Invoices Sent" value={fmt(invoiceStats.sent, 0)} deltaLabel="Awaiting payment" icon={Receipt} />
+        <KpiCard label="Invoices Paid" value={fmt(invoiceStats.paid, 0)} deltaLabel="Settled" icon={CheckCircle2} />
+        <KpiCard label="Invoice Revenue" value={fmtUSDC(invoiceStats.paidRevenue)} deltaLabel="From paid invoices" icon={DollarSign} />
       </div>
 
-      {/* Revenue trend + Order funnel */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-        {/* Revenue trend */}
-        <Card className="lg:col-span-2">
+      {/* Revenue chart */}
+      {hasRevenue && (
+        <Card style={{ marginBottom: 16 }}>
           <CardHead>
-            <CardTitle>Revenue Trend</CardTitle>
-            <Tag variant="neutral">Last 30 days</Tag>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Revenue · Last 30 days</span>
           </CardHead>
           <CardBody>
-            {!hasRevenue ? (
-              <div className="h-[200px] flex flex-col items-center justify-center">
-                <Package className="h-8 w-8 text-ink-3 mb-2" />
-                <p className="text-sm text-ink-3">No completed orders yet.</p>
-              </div>
-            ) : (
-              <div className="h-[200px]">
-                <ResponsiveRevenueChart data={dailyRevenue} />
-              </div>
-            )}
+            <div style={{ height: 180 }}>
+              <ResponsiveRevenueChart data={dailyRevenue} />
+            </div>
           </CardBody>
         </Card>
+      )}
 
-        {/* Order funnel */}
+      {/* Order funnel */}
+      <div style={{ marginBottom: 16 }}>
         <Card>
-          <CardHead><CardTitle>Order Funnel</CardTitle></CardHead>
-          <CardBody className="space-y-3">
-            {funnel.map(stage => (
-              <div key={stage.label}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="f-eyebrow">{stage.label}</span>
-                  <span className="f-num text-sm font-semibold text-ink">{stage.count}</span>
+          <CardHead>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Order Funnel</span>
+          </CardHead>
+          <CardBody>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {funnel.map((stage, i) => (
+                <div key={i}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
+                    <span style={{ color: 'var(--text-2)' }}>{stage.label}</span>
+                    <span className="i-num" style={{ color: 'var(--text)' }}>{stage.count}</span>
+                  </div>
+                  <div style={{ height: 6, borderRadius: 3, background: 'var(--surface-sunk)', overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%', borderRadius: 3,
+                      width: `${(stage.count / funnelMax) * 100}%`,
+                      background: 'var(--accent)',
+                      transition: 'width 0.5s var(--e-io)',
+                    }} />
+                  </div>
                 </div>
-                <div className="h-1.5 rounded-full bg-surface-sunken overflow-hidden">
-                  <div className="h-full rounded-full bg-tint transition-all duration-500"
-                       style={{ width: `${(stage.count / funnelMax) * 100}%` }} />
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </CardBody>
         </Card>
       </div>
 
       {/* Recent orders + Reviews */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
         {/* Recent Orders */}
-        <Card className="lg:col-span-1">
+        <Card>
           <CardHead>
-            <CardTitle>Recent Orders</CardTitle>
-            <Link to="/orders"><Button variant="ghost" size="sm" icon={ArrowRight}>All</Button></Link>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Recent Orders</span>
+            <Link to="/orders"><Button variant="ghost" size="xs" icon={ArrowRight}>All</Button></Link>
           </CardHead>
-          <CardBody className="space-y-1">
+          <CardBody>
             {recentLoading ? <Skel h={120} /> :
              recent.length === 0 ? (
-              <p className="text-sm text-ink-3 py-4 text-center">No orders yet.</p>
+              <Empty title="No orders yet" body="Orders will appear here once customers start buying." />
             ) : (
-              recent.map(o => {
-                const meta = ORDER_STATUS_META[o.status] || {};
-                return (
-                  <Link key={o.id} to={`/orders/${o.id}`}
-                    className="flex items-center justify-between gap-2 p-2 rounded-md:bg-surface-sunken transition-colors">
-                    <div className="min-w-0">
-                      <p className="text-xs font-medium text-ink truncate">
-                        {o.items?.length || 0} item{(o.items?.length || 0) !== 1 ? 's' : ''}
-                      </p>
-                      <p className="text-[11px] text-ink-3">{fmtUSDC(o.amountUsdc)}</p>
-                    </div>
-                    <Tag variant={meta.tagVariant || 'neutral'}>{meta.label || o.status}</Tag>
-                  </Link>
-                );
-              })
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {recent.map(o => {
+                  const meta = ORDER_STATUS_META[o.status] || {};
+                  return (
+                    <Link key={o.id} to={`/orders/${o.id}`}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+                        padding: '8px 10px', borderRadius: 'var(--r2)', background: 'var(--surface-sunk)',
+                        textDecoration: 'none' }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {o.items?.length || 0} item{(o.items?.length || 0) !== 1 ? 's' : ''}
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{fmtUSDC(o.amountUsdc)}</div>
+                      </div>
+                      <Tag tone={meta.tagVariant === 'bad' ? 'stop' : meta.tagVariant === 'warn' ? 'hold' : meta.tagVariant === 'ok' ? 'go' : 'neutral'}>
+                        {meta.label || o.status}
+                      </Tag>
+                    </Link>
+                  );
+                })}
+              </div>
             )}
           </CardBody>
         </Card>
 
         {/* Customer Rating */}
         <Card>
-          <CardHead><CardTitle>Customer Rating</CardTitle></CardHead>
+          <CardHead><span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Customer Rating</span></CardHead>
           <CardBody>
-            <div className="flex items-baseline gap-2">
-              <span className="f-num text-2xl font-bold text-ink">{fmt(reviewStats.avgRating || 0, 1)}</span>
-              <div className="flex">
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+              <span className="i-num i-num--metric">{fmt(reviewStats.avgRating || 0, 1)}</span>
+              <div style={{ display: 'flex' }}>
                 {[1,2,3,4,5].map(s => (
-                  <Star key={s} className={cn('h-3.5 w-3.5', s <= Math.round(reviewStats.avgRating || 0) ? 'text-tint fill-tint' : 'text-line-strong')} />
+                  <Star key={s} size={14}
+                    fill={s <= Math.round(reviewStats.avgRating || 0) ? 'var(--accent)' : 'none'}
+                    color={s <= Math.round(reviewStats.avgRating || 0) ? 'var(--accent)' : 'var(--line-firm)'} />
                 ))}
               </div>
             </div>
-            <p className="text-xs text-ink-3 mt-2">{reviewStats.total || 0} reviews</p>
+            <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 8 }}>{reviewStats.total || 0} reviews</div>
           </CardBody>
         </Card>
 
         {/* Reviews promoted */}
         <Card>
-          <CardHead><CardTitle>Stories Promoted</CardTitle></CardHead>
+          <CardHead><span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Stories Promoted</span></CardHead>
           <CardBody>
-            <p className="f-num text-2xl font-bold text-ink">{fmt(reviewStats.storiesPromoted || 0, 0)}</p>
-            <p className="text-xs text-ink-3 mt-2">From customer reviews</p>
+            <div className="i-num i-num--metric">{fmt(reviewStats.storiesPromoted || 0, 0)}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 8 }}>From customer reviews</div>
           </CardBody>
         </Card>
       </div>
@@ -449,21 +525,20 @@ export default function Dashboard() {
 
 // ── Inline revenue chart (lightweight, no recharts dependency for this) ──────
 function ResponsiveRevenueChart({ data }) {
-  // Use recharts AreaChart — imported dynamically to keep bundle small
   const { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } = require('recharts');
   return (
     <ResponsiveContainer width="100%" height="100%">
       <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
         <defs>
           <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--f-tint-color)" stopOpacity={0.2} />
-            <stop offset="100%" stopColor="var(--f-tint-color)" stopOpacity={0} />
+            <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.2} />
+            <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <XAxis dataKey="label" tick={{ fill: 'var(--f-text-3)', fontSize: 11 }} axisLine={false} tickLine={false} />
-        <YAxis tick={{ fill: 'var(--f-text-3)', fontSize: 11 }} axisLine={false} tickLine={false} width={40} />
-        <Tooltip contentStyle={{ background: 'var(--f-surface)', border: '1px solid var(--f-line-strong)', borderRadius: '8px', fontSize: '12px' }} />
-        <Area type="monotone" dataKey="revenue" stroke="var(--f-tint-color)" strokeWidth={2} fill="url(#revGrad)" />
+        <XAxis dataKey="label" tick={{ fill: 'var(--text-3)', fontSize: 11 }} axisLine={false} tickLine={false} />
+        <YAxis tick={{ fill: 'var(--text-3)', fontSize: 11 }} axisLine={false} tickLine={false} width={40} />
+        <Tooltip contentStyle={{ background: 'var(--surface)', border: '1px solid var(--line-firm)', borderRadius: 'var(--r3)', fontSize: 12 }} />
+        <Area type="monotone" dataKey="revenue" stroke="var(--accent)" strokeWidth={2} fill="url(#revGrad)" />
       </AreaChart>
     </ResponsiveContainer>
   );

@@ -12,7 +12,7 @@ export function Sheet({ open, onClose, side = 'right', width = 420, children, ti
           <m.div
             initial={{ x: isRight ? '100%' : '-100%' }}
             animate={{ x: 0, transition: SPRING.glide }}
-            exit={{ x: isRight ? '100%' : '-100%', transition: { duration: 0.2, ease: [0.4, 0, 0.2, 1] } }
+            exit={{ x: isRight ? '100%' : '-100%', transition: { duration: 0.2, ease: [0.4, 0, 0.2, 1] } }}
             style={{
               position: 'fixed', top: 0, bottom: 0,
               [isRight ? 'right' : 'left']: 0,
