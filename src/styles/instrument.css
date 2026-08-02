@@ -1,0 +1,562 @@
+/* ============================================================================
+   INSTRUMENT — Azaman Business Portal design system, v2.
+   The ONLY file in the repository allowed to define a colour, a shadow,
+   a radius, a duration or a type size.
+   ----------------------------------------------------------------------------
+   Philosophy
+   1. Paper and graphite, not "dashboard blue". Warm neutral ramp, hue 70.
+   2. Chroma is DATA. Chrome is achromatic. If it is not telling you a fact,
+      it is grey.
+   3. Depth is a physical lip (1-2px hard edge), never a soft glow.
+   4. Numbers are typeset, not rendered: tabular, mono, optically aligned.
+   5. Motion is mass. Everything that moves has weight and can be interrupted.
+   ========================================================================== */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── 0. Typefaces ─────────────────────────────────────────────────────────
+   Geist Variable + Geist Mono Variable, self-hosted (no FOUT, no CDN).
+   Inter is deliberately removed: it is the single strongest visual signal
+   of a generated interface. */
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
+
+/* ==========================================================================
+   1. PRIMITIVE SCALES  (never referenced by components directly)
+   ========================================================================== */
+:root {
+  /* Warm graphite ramp — OKLCH, perceptually even lightness steps of ~0.06 */
+  --p-ink-00: oklch(1     0     0);
+  --p-ink-02: oklch(0.988 0.002 80);
+  --p-ink-05: oklch(0.973 0.003 80);
+  --p-ink-10: oklch(0.951 0.004 80);
+  --p-ink-15: oklch(0.922 0.005 80);
+  --p-ink-20: oklch(0.885 0.006 78);
+  --p-ink-30: oklch(0.802 0.007 76);
+  --p-ink-40: oklch(0.690 0.008 74);
+  --p-ink-45: oklch(0.630 0.008 74);
+  --p-ink-50: oklch(0.575 0.009 72);
+  --p-ink-60: oklch(0.470 0.010 70);
+  --p-ink-70: oklch(0.372 0.011 68);
+  --p-ink-80: oklch(0.286 0.011 66);
+  --p-ink-88: oklch(0.222 0.010 64);
+  --p-ink-94: oklch(0.168 0.008 62);
+  --p-ink-97: oklch(0.128 0.006 60);
+  --p-ink-99: oklch(0.098 0.005 60);
+
+  /* Signal chromas — used for STATE and DATA only. */
+  --p-go:    oklch(0.545 0.128 155);   /* settled, paid, clear      */
+  --p-hold:  oklch(0.640 0.140 78);    /* aging, pending, warning   */
+  --p-stop:  oklch(0.540 0.180 25);    /* failed, overdue, disputed */
+  --p-cool:  oklch(0.520 0.120 245);   /* informational, scheduled  */
+  --p-flux:  oklch(0.560 0.130 300);   /* in-flight, syncing        */
+}
+
+/* ==========================================================================
+   2. SEMANTIC TOKENS — LIGHT ("Paper")
+   ========================================================================== */
+:root {
+  color-scheme: light;
+
+  /* surfaces: four planes only. If you need a fifth, you have a layout bug. */
+  --bg:            var(--p-ink-05);   /* the desk                       */
+  --surface:       var(--p-ink-00);   /* the card / sheet of paper      */
+  --surface-sunk:  var(--p-ink-10);   /* wells, inputs, table zebra     */
+  --surface-raise: var(--p-ink-00);   /* popovers, modals               */
+  --chrome:        var(--p-ink-97);   /* rail — near-black in both themes */
+  --chrome-text:   var(--p-ink-20);
+  --chrome-text-hi:var(--p-ink-02);
+
+  /* ink */
+  --text:    var(--p-ink-94);
+  --text-2:  var(--p-ink-60);
+  --text-3:  var(--p-ink-45);
+  --text-inv:var(--p-ink-02);
+
+  /* hairlines — three weights, no more */
+  --line:      oklch(0.885 0.005 78);
+  --line-firm: oklch(0.802 0.006 76);
+  --line-hard: var(--p-ink-94);
+
+  /* the only "brand" surface: near-black. Colour is never the primary CTA. */
+  --accent:      var(--p-ink-94);
+  --accent-text: var(--p-ink-02);
+
+  /* signal, resolved to fg / bg / edge triplets */
+  --go: var(--p-go);      --go-bg: oklch(0.960 0.030 155);  --go-edge: oklch(0.880 0.055 155);
+  --hold: var(--p-hold);  --hold-bg: oklch(0.968 0.038 82);  --hold-edge: oklch(0.898 0.070 82);
+  --stop: var(--p-stop);  --stop-bg: oklch(0.962 0.030 25);  --stop-edge: oklch(0.888 0.058 25);
+  --cool: var(--p-cool);  --cool-bg: oklch(0.960 0.028 245); --cool-edge: oklch(0.885 0.052 245);
+  --flux: var(--p-flux);  --flux-bg: oklch(0.962 0.026 300); --flux-edge: oklch(0.890 0.048 300);
+
+  /* vertical signature: HUE ONLY. Saturation and lightness are fixed by the
+     system so no vertical can ever be louder than another. */
+  --sig-h: 74; --sig-c: 0;
+  --sig: oklch(0.520 var(--sig-c) var(--sig-h));
+  --sig-bg: oklch(0.962 calc(var(--sig-c) * 0.22) var(--sig-h));
+  --sig-edge: oklch(0.880 calc(var(--sig-c) * 0.42) var(--sig-h));
+
+  /* depth: a lip + a short ambient. Never a blur halo. */
+  --lip: 0 1px 0 0 var(--line-firm);
+  --d0: inset 0 0 0 1px var(--line);
+  --d1: 0 1px 0 0 var(--line-firm), 0 1px 2px -1px oklch(0.22 0.01 64 / 0.10);
+  --d2: 0 1px 0 0 var(--line-firm), 0 2px 4px -2px oklch(0.22 0.01 64 / 0.12),
+        0 10px 20px -10px oklch(0.22 0.01 64 / 0.12);
+  --d3: 0 2px 0 0 var(--line-firm), 0 10px 16px -8px oklch(0.22 0.01 64 / 0.16),
+        0 32px 56px -28px oklch(0.22 0.01 64 / 0.22);
+  --bevel: inset 0 1px 0 0 oklch(1 0 0 / 0.75);
+  --etch:  inset 0 1px 2px -1px oklch(0.22 0.01 64 / 0.24);
+
+  /* focus: a two-part ring (halo + hard edge) so it reads on every surface */
+  --focus: 0 0 0 2px var(--surface), 0 0 0 4px var(--line-hard);
+}
+
+/* ==========================================================================
+   3. SEMANTIC TOKENS — DARK ("Slate")
+   Not an inversion. Dark mode gets its own contrast curve: surfaces lift,
+   hairlines get lighter rather than darker, signals gain lightness and lose
+   chroma so they don't vibrate on black.
+   ========================================================================== */
+.dark {
+  color-scheme: dark;
+
+  --bg:            oklch(0.112 0.004 70);
+  --surface:       oklch(0.186 0.006 70);
+  --surface-sunk:  oklch(0.164 0.005 70);
+  --surface-raise: oklch(0.216 0.007 70);
+  --chrome:        oklch(0.158 0.005 70);
+  --chrome-text:   oklch(0.620 0.008 70);
+  --chrome-text-hi:oklch(0.965 0.003 80);
+
+  --text:    oklch(0.958 0.003 80);
+  --text-2:  oklch(0.720 0.008 74);
+  --text-3:  oklch(0.560 0.008 72);
+  --text-inv:oklch(0.148 0.005 70);
+
+  --line:      oklch(0.278 0.007 70);
+  --line-firm: oklch(0.352 0.008 70);
+  --line-hard: oklch(0.958 0.003 80);
+
+  --accent:      oklch(0.958 0.003 80);
+  --accent-text: oklch(0.148 0.005 70);
+
+  --go:   oklch(0.760 0.140 158); --go-bg:   oklch(0.268 0.052 158); --go-edge:   oklch(0.372 0.078 158);
+  --hold: oklch(0.812 0.130 82);  --hold-bg: oklch(0.286 0.050 82);  --hold-edge: oklch(0.392 0.076 82);
+  --stop: oklch(0.740 0.150 25);  --stop-bg: oklch(0.282 0.062 25);  --stop-edge: oklch(0.392 0.090 25);
+  --cool: oklch(0.760 0.120 245); --cool-bg: oklch(0.272 0.050 245); --cool-edge: oklch(0.378 0.072 245);
+  --flux: oklch(0.770 0.120 300); --flux-bg: oklch(0.276 0.048 300); --flux-edge: oklch(0.382 0.070 300);
+
+  --sig:      oklch(0.740 var(--sig-c) var(--sig-h));
+  --sig-bg:   oklch(0.268 calc(var(--sig-c) * 0.34) var(--sig-h));
+  --sig-edge: oklch(0.382 calc(var(--sig-c) * 0.54) var(--sig-h));
+
+  --lip: 0 1px 0 0 oklch(0 0 0 / 0.9);
+  --d0: inset 0 0 0 1px var(--line);
+  --d1: 0 1px 0 0 oklch(0 0 0 / 0.85), 0 1px 2px -1px oklch(0 0 0 / 0.7);
+  --d2: 0 1px 0 0 oklch(0 0 0 / 0.85), 0 2px 4px -2px oklch(0 0 0 / 0.7),
+        0 10px 20px -10px oklch(0 0 0 / 0.65);
+  --d3: 0 2px 0 0 oklch(0 0 0 / 0.9), 0 10px 16px -8px oklch(0 0 0 / 0.75),
+        0 32px 56px -28px oklch(0 0 0 / 0.85);
+  --bevel: inset 0 1px 0 0 oklch(1 0 0 / 0.07);
+  --etch:  inset 0 1px 2px -1px oklch(0 0 0 / 0.6);
+  --focus: 0 0 0 2px var(--surface), 0 0 0 4px var(--line-hard);
+}
+
+/* Vertical signatures — hue + one chroma switch. That's the entire brand
+   variation surface. A hotel is 245°, a kitchen is 45°, nothing else changes. */
+[data-vertical="hotel"]      { --sig-h: 245; --sig-c: 0.115; }
+[data-vertical="restaurant"] { --sig-h: 45;  --sig-c: 0.130; }
+[data-vertical="transit"]    { --sig-h: 168; --sig-c: 0.110; }
+[data-vertical="retail"]     { --sig-h: 318; --sig-c: 0.105; }
+[data-vertical="services"]   { --sig-h: 205; --sig-c: 0.105; }
+[data-vertical="general"]    { --sig-h: 74;  --sig-c: 0; }
+/* achromatic vertical: the signature resolves to ink, so the marker is white/black */
+[data-vertical="general"]    { --sig: var(--text); }
+.dark [data-vertical="general"] { --sig: var(--text); }
+
+/* ==========================================================================
+   4. GEOMETRY, TYPE, MOTION
+   ========================================================================== */
+:root {
+  /* 4px base unit. Every dimension in the product is a multiple. */
+  --u: 4px;
+  --r1: 3px; --r2: 5px; --r3: 8px; --r4: 12px; --r5: 18px; --rp: 999px;
+
+  /* control heights — the density spine of the whole product */
+  --h-xs: 22px; --h-sm: 26px; --h-md: 30px; --h-lg: 36px; --h-xl: 44px;
+  --rail-w: 56px; --panel-w: 232px; --topbar-h: 46px; --statusbar-h: 24px;
+
+  --font: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --mono: 'Geist Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Type scale — 1.24 ratio, hand-corrected. Tracking tightens as size grows. */
+  --t-micro: 10px;  --lh-micro: 14px;  --tr-micro: 0.06em;
+  --t-xs:    11px;  --lh-xs:    16px;  --tr-xs:    0.01em;
+  --t-sm:    12px;  --lh-sm:    18px;  --tr-sm:    0.004em;
+  --t-md:    13px;  --lh-md:    20px;  --tr-md:    0em;
+  --t-lg:    15px;  --lh-lg:    22px;  --tr-lg:   -0.006em;
+  --t-xl:    19px;  --lh-xl:    26px;  --tr-xl:   -0.014em;
+  --t-2xl:   24px;  --lh-2xl:   30px;  --tr-2xl:  -0.020em;
+  --t-3xl:   32px;  --lh-3xl:   36px;  --tr-3xl:  -0.026em;
+  --t-4xl:   44px;  --lh-4xl:   46px;  --tr-4xl:  -0.032em;
+
+  /* Motion — durations are named for what they are, not how long they are. */
+  --e-out:   cubic-bezier(0.16, 1, 0.30, 1);      /* arrivals            */
+  --e-io:    cubic-bezier(0.45, 0, 0.20, 1);      /* moves               */
+  --e-in:    cubic-bezier(0.40, 0, 0.90, 0.35);   /* departures          */
+  --e-snap:  linear(0, 0.42 8%, 0.88 22%, 1.04 36%, 0.99 52%, 1); /* mechanical */
+  --t-press: 60ms;  --t-release: 130ms; --t-hover: 110ms;
+  --t-panel: 200ms; --t-page: 180ms;    --t-sheet: 320ms;
+}
+
+/* ==========================================================================
+   5. BASE
+   ========================================================================== */
+* { box-sizing: border-box; border-color: var(--line); }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: var(--t-md);
+  line-height: var(--lh-md);
+  font-feature-settings: 'cv01' 1, 'ss01' 1, 'calt' 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior: none;
+}
+
+::selection { background: color-mix(in oklab, var(--sig) 24%, transparent); }
+
+:where(button, [role='button'], a, input, select, textarea):focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+  border-radius: var(--r2);
+}
+
+/* Scrollbars: 8px, invisible until the region is hovered. */
+* { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-thumb { background: transparent; border-radius: var(--rp);
+  border: 2px solid transparent; background-clip: content-box; }
+:hover > *::-webkit-scrollbar-thumb, *:hover::-webkit-scrollbar-thumb {
+  background: var(--line-firm); background-clip: content-box; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important; animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important; scroll-behavior: auto !important;
+  }
+}
+
+/* ==========================================================================
+   6. TYPOGRAPHIC UTILITIES
+   ========================================================================== */
+.i-eyebrow {
+  font: 620 var(--t-micro)/var(--lh-micro) var(--font);
+  letter-spacing: var(--tr-micro); text-transform: uppercase;
+  color: var(--text-3);
+}
+/* Numerals. Every figure in the product goes through .i-num. */
+.i-num {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums slashed-zero;
+  font-weight: 480;
+  letter-spacing: -0.012em;
+}
+.i-num--display { font-size: var(--t-4xl); line-height: var(--lh-4xl);
+  letter-spacing: -0.034em; font-weight: 520; }
+.i-num--metric  { font-size: var(--t-2xl); line-height: var(--lh-2xl);
+  letter-spacing: -0.022em; font-weight: 500; }
+/* Currency minor units and suffixes get de-emphasised, never removed. */
+.i-num__minor { color: var(--text-3); font-weight: 440; }
+.i-title { font: 600 var(--t-lg)/var(--lh-lg) var(--font);
+  letter-spacing: var(--tr-lg); color: var(--text); }
+.i-h1 { font: 600 var(--t-2xl)/var(--lh-2xl) var(--font);
+  letter-spacing: var(--tr-2xl); color: var(--text); margin: 0; }
+.i-dim { color: var(--text-3); }
+
+/* Optical text truncation with a fade rather than an ellipsis — reads as
+   a physical mask, not a string operation. */
+.i-fade-r {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+  white-space: nowrap; overflow: hidden;
+}
+
+/* ==========================================================================
+   7. SURFACES
+   ========================================================================== */
+.i-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r3);
+  box-shadow: var(--d1);
+  position: relative;
+}
+.i-card--flush { box-shadow: none; }
+.i-card--raised { box-shadow: var(--d2); }
+.i-card__head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--u); height: 40px; padding: 0 12px;
+  border-bottom: 1px solid var(--line);
+}
+.i-card__body { padding: 12px; }
+
+/* A "well": recessed area for secondary content inside a card. */
+.i-well {
+  background: var(--surface-sunk);
+  border-radius: var(--r2);
+  box-shadow: var(--etch);
+}
+
+/* ==========================================================================
+   8. BUTTON — the physical control
+   Depth model: the button sits on a lip. Pressing removes the lip and
+   inverts the bevel into an etch. Travel is exactly the lip height.
+   ========================================================================== */
+.i-btn {
+  --btn-bg: var(--surface);
+  --btn-fg: var(--text);
+  --btn-line: var(--line-firm);
+  --btn-lip: 1.5px;
+
+  position: relative; display: inline-flex; align-items: center;
+  justify-content: center; gap: 6px;
+  height: var(--h-md); padding: 0 11px;
+  border: 1px solid var(--btn-line); border-radius: var(--r2);
+  background: var(--btn-bg); color: var(--btn-fg);
+  font: 560 var(--t-md)/1 var(--font); letter-spacing: -0.004em;
+  white-space: nowrap; cursor: pointer; user-select: none;
+  transform: translate3d(0, 0, 0);
+  box-shadow: 0 var(--btn-lip) 0 0 var(--btn-line), var(--bevel), var(--d1);
+  transition:
+    transform var(--t-release) var(--e-out),
+    box-shadow var(--t-release) var(--e-out),
+    background-color var(--t-hover) var(--e-io),
+    border-color var(--t-hover) var(--e-io);
+}
+.i-btn:hover { background: color-mix(in oklab, var(--btn-bg) 95%, var(--line-hard)); }
+.i-btn:active {
+  transform: translate3d(0, var(--btn-lip), 0);
+  box-shadow: 0 0 0 0 var(--btn-line), var(--etch);
+  transition: transform var(--t-press) var(--e-out), box-shadow var(--t-press) var(--e-out);
+}
+.i-btn:disabled { opacity: 0.42; pointer-events: none; }
+
+.i-btn--primary { --btn-bg: var(--accent); --btn-fg: var(--accent-text);
+  --btn-line: color-mix(in oklab, var(--accent) 60%, black); }
+.dark .i-btn--primary { --btn-line: oklch(0.62 0.006 70); }
+.i-btn--ghost { --btn-bg: transparent; --btn-line: transparent; --btn-lip: 0px;
+  box-shadow: none; }
+.i-btn--ghost:hover { background: var(--surface-sunk); box-shadow: none; }
+.i-btn--outline { --btn-bg: transparent; --btn-line: var(--line); }
+.i-btn--danger { --btn-bg: var(--stop-bg); --btn-fg: var(--stop);
+  --btn-line: var(--stop-edge); }
+.i-btn--xs { height: var(--h-xs); padding: 0 7px; font-size: var(--t-xs); }
+.i-btn--sm { height: var(--h-sm); padding: 0 9px; font-size: var(--t-sm); }
+.i-btn--lg { height: var(--h-lg); padding: 0 14px; font-size: var(--t-lg); }
+.i-btn--icon { width: var(--h-md); padding: 0; }
+.i-btn--icon.i-btn--sm { width: var(--h-sm); }
+
+/* Loading: the label stays, a hairline sweep runs under it. No spinner
+   replacing text — that causes layout shift and reads as a stall. */
+.i-btn[data-busy='true'] { pointer-events: none; }
+.i-btn[data-busy='true']::after {
+  content: ''; position: absolute; inset: auto 0 0 0; height: 1.5px;
+  background: currentColor; opacity: 0.5; transform-origin: left;
+  animation: i-sweep 900ms var(--e-io) infinite;
+}
+@keyframes i-sweep {
+  0%   { transform: scaleX(0); transform-origin: left; }
+  50%  { transform: scaleX(1); transform-origin: left; }
+  51%  { transform: scaleX(1); transform-origin: right; }
+  100% { transform: scaleX(0); transform-origin: right; }
+}
+
+/* ==========================================================================
+   9. TAG / STATUS — a status is a fact, so it may carry chroma
+   ========================================================================== */
+.i-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  height: 19px; padding: 0 6px 0 5px;
+  border: 1px solid transparent; border-radius: var(--r1);
+  font: 580 var(--t-xs)/1 var(--font); letter-spacing: 0.005em;
+  white-space: nowrap;
+}
+.i-tag > i { width: 5px; height: 5px; border-radius: 50%;
+  background: currentColor; flex: none; }
+.i-tag--neutral { color: var(--text-2); background: var(--surface-sunk);
+  border-color: var(--line); }
+.i-tag--go   { color: var(--go);   background: var(--go-bg);   border-color: var(--go-edge); }
+.i-tag--hold { color: var(--hold); background: var(--hold-bg); border-color: var(--hold-edge); }
+.i-tag--stop { color: var(--stop); background: var(--stop-bg); border-color: var(--stop-edge); }
+.i-tag--cool { color: var(--cool); background: var(--cool-bg); border-color: var(--cool-edge); }
+.i-tag--flux { color: var(--flux); background: var(--flux-bg); border-color: var(--flux-edge); }
+
+/* Live pulse for a state that is actively changing (in-flight order etc.) */
+.i-tag--live > i { animation: i-breathe 1.8s var(--e-io) infinite; }
+@keyframes i-breathe { 0%,100% { opacity: 1; transform: scale(1); }
+                       50%     { opacity: 0.35; transform: scale(0.78); } }
+
+/* ==========================================================================
+  10. KBD
+   ========================================================================== */
+.i-kbd {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 17px; height: 17px; padding: 0 4px;
+  border: 1px solid var(--line-firm); border-radius: var(--r1);
+  background: var(--surface);
+  box-shadow: 0 1.5px 0 0 var(--line-firm), var(--bevel);
+  font: 500 10px/1 var(--mono); color: var(--text-3);
+}
+
+/* ==========================================================================
+  11. TABLE — the most-used component in the product, so it gets the most care
+   ========================================================================== */
+.i-table { width: 100%; border-collapse: separate; border-spacing: 0;
+  font-size: var(--t-sm); }
+.i-table thead th {
+  position: sticky; top: 0; z-index: 2;
+  height: 28px; padding: 0 10px; text-align: left;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line-firm);
+  font: 560 var(--t-xs)/1 var(--font); letter-spacing: 0.02em;
+  color: var(--text-3); text-transform: uppercase;
+  white-space: nowrap; user-select: none;
+}
+.i-table thead th[data-numeric] { text-align: right; }
+.i-table tbody td {
+  height: 34px; padding: 0 10px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-2); vertical-align: middle;
+}
+.i-table tbody td[data-numeric] { text-align: right;
+  font-family: var(--mono); font-variant-numeric: tabular-nums slashed-zero;
+  color: var(--text); }
+.i-table tbody tr { transition: background-color var(--t-hover) var(--e-io); }
+.i-table tbody tr:hover { background: var(--surface-sunk); }
+/* Selected rows get a hard left rule, not a fill — fills fight with status. */
+.i-table tbody tr[data-selected='true'] { background: var(--sig-bg); }
+.i-table tbody tr[data-selected='true'] td:first-child {
+  box-shadow: inset 2px 0 0 0 var(--sig); }
+/* Keyboard cursor is distinct from selection. */
+.i-table tbody tr[data-cursor='true'] td { box-shadow: inset 0 -1px 0 0 var(--line-hard),
+  inset 0 1px 0 0 var(--line-hard); }
+
+/* ==========================================================================
+  12. RAIL / SHELL
+   ========================================================================== */
+.i-shell {
+  display: grid;
+  grid-template-columns: var(--panel-w) 1fr;
+  grid-template-rows: 100dvh;
+  background: var(--bg);
+}
+.i-shell[data-collapsed='true'] { grid-template-columns: var(--rail-w) 1fr; }
+
+.i-rail {
+  background: var(--chrome); color: var(--chrome-text);
+  box-shadow: inset -1px 0 0 oklch(1 0 0 / 0.06);
+  display: flex; flex-direction: column; min-height: 0;
+  border-right: 1px solid oklch(0 0 0 / 0.5);
+}
+.i-rail__item {
+  position: relative; display: flex; align-items: center; gap: 9px;
+  height: var(--h-md); margin: 0 6px; padding: 0 8px;
+  border-radius: var(--r2); color: var(--chrome-text);
+  font: 500 var(--t-sm)/1 var(--font);
+  transition: color var(--t-hover) var(--e-io), background-color var(--t-hover) var(--e-io);
+}
+.i-rail__item:hover { color: var(--chrome-text-hi); background: oklch(1 0 0 / 0.05); }
+.i-rail__item[data-active='true'] { color: var(--chrome-text-hi);
+  background: oklch(1 0 0 / 0.08); }
+/* The active marker is a single 2px bar that MOVES between items
+   (Motion layoutId="rail-marker") — it never fades in and out. */
+.i-rail { overflow: hidden; }
+.i-rail__marker {
+  position: absolute; left: -6px; top: 6px; bottom: 6px; width: 2px;
+  border-radius: 0 2px 2px 0;
+  /* falls back to plain white when the vertical has no chroma */
+  background: color-mix(in oklab, var(--sig) 100%, transparent);
+}
+.i-rail__badge {
+  margin-left: auto; min-width: 16px; height: 16px; padding: 0 4px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--rp); background: oklch(1 0 0 / 0.12);
+  font: 560 10px/1 var(--mono); color: var(--chrome-text-hi);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+  13. SKELETON — a measured placeholder, not a shimmering blob.
+   Sweep runs at 1.4s, 12% opacity, and only while the tab is visible.
+   ========================================================================== */
+.i-skel {
+  position: relative; overflow: hidden;
+  background: var(--surface-sunk); border-radius: var(--r2);
+}
+.i-skel::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, oklch(1 0 0 / 0.12) 45%, transparent);
+  transform: translateX(-100%);
+  animation: i-skel-sweep 1.4s var(--e-io) infinite;
+}
+.dark .i-skel::after { background: linear-gradient(90deg, transparent, oklch(1 0 0 / 0.05) 45%, transparent); }
+@keyframes i-skel-sweep { to { transform: translateX(100%); } }
+
+/* ==========================================================================
+  14. AGING — the single most valuable colour system in ops software.
+   `--age` is set inline as a 0..1 progress toward the SLA breach.
+   Colour interpolates in OKLCH so it never passes through mud.
+   ========================================================================== */
+.i-age {
+  --age: 0;
+  --age-col: oklch(
+    calc(0.545 + 0.00 * var(--age))
+    calc(0.128 + 0.052 * var(--age))
+    calc(155 - 130 * var(--age))
+  );
+  color: var(--age-col);
+}
+.i-age__bar {
+  height: 2px; border-radius: var(--rp); background: var(--line);
+  overflow: hidden;
+}
+.i-age__bar > span {
+  display: block; height: 100%; background: var(--age-col);
+  transform-origin: left; transform: scaleX(var(--age));
+  transition: transform 1s linear, background-color 1s linear;
+}
+
+/* ==========================================================================
+  15. STATUS BAR — the bottom instrument strip.
+   Connection, sync clock, active shift, unsynced mutation count.
+   ========================================================================== */
+.i-statusbar {
+  height: var(--statusbar-h);
+  display: flex; align-items: center; gap: 14px;
+  padding: 0 10px;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+  font: 500 var(--t-micro)/1 var(--mono);
+  color: var(--text-3); letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.i-statusbar__dot { width: 6px; height: 6px; border-radius: 50%; }
+
+/* ==========================================================================
+  16. PRINT — ops software gets printed. Docket, invoice, manifest.
+   ========================================================================== */
+@media print {
+  .i-rail, .i-topbar, .i-statusbar, [data-print='hide'] { display: none !important; }
+  .i-shell { display: block; }
+  .i-card { box-shadow: none; border: 1px solid #000; break-inside: avoid; }
+  body { background: #fff; color: #000; font-size: 10pt; }
+}

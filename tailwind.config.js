@@ -1,13 +1,22 @@
-// tailwind.config.js — Forge design system bridge
-// Phase 1: az-* aliases kept temporarily for backward compat with existing pages.
-// They map to Forge tokens and will be removed in Phase 8 (Purge).
+/**
+ * INSTRUMENT — Tailwind is used for layout utilities ONLY (flex, grid, gap, spacing).
+ * Color, shadow, radius, and typography come from instrument.css CSS custom properties.
+ * The Forge token bridge (--f-*) has been removed; Instrument components consume
+ * .i-* classes and CSS variables directly.
+ *
+ * Existing Forge screens still reference az-* and bg-* Tailwind color utilities,
+ * so we keep a thin compatibility shim that maps to the Forge CSS variables
+ * until Phase 3 (Delete Forge) completes the cutover.
+ */
 export default {
   darkMode: ['class'],
   content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     extend: {
+      // ── Forge compat shim (deleted in Phase 3) ──────────────────────────
+      // These exist so existing Forge screens keep rendering during the migration.
+      // New Instrument components must NOT use these — use .i-* classes instead.
       colors: {
-        // ── Forge tokens (the real system) ──
         bg:            'var(--f-bg)',
         surface:       'var(--f-surface)',
         'surface-sunken':'var(--f-surface-sunken)',
@@ -27,8 +36,6 @@ export default {
         warn:'var(--f-warn)','warn-bg':'var(--f-warn-bg)',
         bad:'var(--f-bad)','bad-bg':'var(--f-bad-bg)',
         info:'var(--f-info)','info-bg':'var(--f-info-bg)',
-
-        // ── Legacy az-* aliases (removed in Phase 8) ──
         'az-bg':             'var(--f-bg)',
         'az-bg-alt':         'var(--f-surface-sunken)',
         'az-surface':        'var(--f-surface)',
@@ -59,8 +66,6 @@ export default {
         'az-red':            'var(--f-bad)',
         'az-cyan':           'var(--f-info)',
         'az-teal':           'var(--f-info)',
-
-        // shadcn/ui compat (mapped to Forge)
         background: 'var(--f-bg)',
         foreground: 'var(--f-text)',
         card: { DEFAULT: 'var(--f-surface)', foreground: 'var(--f-text)' },
@@ -68,7 +73,6 @@ export default {
         primary: { DEFAULT: 'var(--f-accent)', foreground: 'var(--f-accent-text)' },
         secondary: { DEFAULT: 'var(--f-surface-sunken)', foreground: 'var(--f-text-2)' },
         muted: { DEFAULT: 'var(--f-surface-sunken)', foreground: 'var(--f-text-3)' },
-        accent: { DEFAULT: 'var(--f-surface-sunken)', foreground: 'var(--f-text)' },
         destructive: { DEFAULT: 'var(--f-bad)', foreground: '#fff' },
         border: 'var(--f-line)',
         input: 'var(--f-line-strong)',
@@ -94,7 +98,6 @@ export default {
       boxShadow: {
         flush:'var(--f-d-flush)', d1:'var(--f-d-1)',
         d2:'var(--f-d-2)', d3:'var(--f-d-3)', bevel:'var(--f-bevel)',
-        // legacy aliases
         'az-card':'var(--f-d-1)', 'az-card-hover':'var(--f-d-2)',
         'az-glass':'var(--f-d-2)', 'az-modal':'var(--f-d-3)',
         'az-focus':'0 0 0 3px color-mix(in oklab, var(--f-line-contrast) 14%, transparent)',

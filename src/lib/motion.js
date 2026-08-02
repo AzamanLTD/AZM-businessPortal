@@ -1,8 +1,92 @@
 /**
- * FORGE MOTION
- * The only place transitions are defined. Inline transition objects are a
- * lint error (see eslint rule `forge/no-inline-transition`).
+ * INSTRUMENT MOTION — §2 of the spec.
+ *
+ * Every animated element imports from here, never hand-writes a spring.
+ *
+ * New INSTRUMENT components use:
+ *   import { m } from 'motion/react'
+ *   import { SPRING, V } from '@/lib/motion'
+ *
+ * Existing FORGE components use the legacy exports (spring, rowsV, etc.)
+ * which are preserved below as backward-compat until Phase 3 (Delete Forge).
  */
+
+// ── INSTRUMENT Spring lexicon (§2.2) ────────────────────────────────────────
+export const SPRING = {
+  /** Snappy positional snap — rail markers, tab indicators, layout animations */
+  snap:    { type: 'spring', stiffness: 520, damping: 46, mass: 0.6 },
+
+  /** Content settle — sheets, dialogs, cards landing into place */
+  detent:  { type: 'spring', stiffness: 320, damping: 34, mass: 0.8 },
+
+  /** Heavier UI — sidebars sliding, panels rearranging */
+  glide:   { type: 'spring', stiffness: 220, damping: 30, mass: 1.0 },
+
+  /** Reassurance — a confirmation pulse, a success checkmark */
+  settle:  { type: 'spring', stiffness: 380, damping: 28, mass: 0.7 },
+
+  /** Interruptible — drag release, gesture-following */
+  follow:  { type: 'spring', stiffness: 180, damping: 22, mass: 1.0 },
+};
+
+// ── INSTRUMENT Variant presets (§2.4) ──────────────────────────────────────
+export const V = {
+  scrim: {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
+    transition: { duration: 0.15, ease: [0.4, 0, 0.2, 1] },
+  },
+  sheetUp: {
+    initial: { opacity: 0, y: 24 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: 16 },
+    transition: SPRING.detent,
+  },
+  dialog: {
+    initial: { opacity: 0, scale: 0.96 },
+    animate: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 0.98 },
+    transition: SPRING.detent,
+  },
+  palette: {
+    initial: { opacity: 0, y: -8, scale: 0.98 },
+    animate: { opacity: 1, y: 0, scale: 1 },
+    exit: { opacity: 0, y: -4, scale: 0.98 },
+    transition: SPRING.snap,
+  },
+  item: {
+    initial: { opacity: 0, y: 8 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -4 },
+    transition: { duration: 0.18, ease: [0.4, 0, 0.2, 1] },
+  },
+  toast: {
+    initial: { opacity: 0, x: 40, scale: 0.96 },
+    animate: { opacity: 1, x: 0, scale: 1 },
+    exit: { opacity: 0, x: 20, scale: 0.98 },
+    transition: SPRING.snap,
+  },
+};
+
+// ── INSTRUMENT Easing / Duration tokens ─────────────────────────────────────
+export const EASE = {
+  out: [0.0, 0.0, 0.2, 1],
+  io:  [0.4, 0.0, 0.2, 1],
+  in:  [0.4, 0.0, 1, 1],
+};
+
+export const DUR = {
+  hover: 0.12,
+  press: 0.06,
+  release: 0.16,
+};
+
+// ════════════════════════════════════════════════════════════════════════════
+// FORGE COMPAT LAYER — preserved until Phase 3 (Delete Forge)
+// Existing Forge components import these. Do NOT remove until all Forge
+// screens are cut over to Instrument.
+// ════════════════════════════════════════════════════════════════════════════
 
 export const ease = {
   out: [0.16, 1, 0.3, 1],
@@ -28,10 +112,6 @@ export const tween = {
   number: { duration:0.60, ease: 'easeOut' },
 };
 
-/* ---------- variants ---------- */
-
-// Page: opacity + 2px. No blur filter — filter animation forces repaint of
-// the entire subtree and is the #1 cause of route-change jank in the current app.
 export const pageV = {
   initial:{ opacity:0, y:2 },
   animate:{ opacity:1, y:0, transition: tween.page },
@@ -64,10 +144,6 @@ export const toastV = {
   exit:   { opacity:0, scale:0.97, transition: tween.fast },
 };
 
-/**
- * Row stagger. Deliberately tiny (18ms) and capped at 12 rows: a 50-row table
- * that cascades for 900ms feels slower than one that appears at once.
- */
 export const rowsV = {
   hidden:{},
   visible:{ transition:{ staggerChildren:0.018, delayChildren:0.02 } },
@@ -77,27 +153,7 @@ export const rowV = {
   visible:{ opacity:1, y:0, transition:{ duration:0.16, ease: ease.out } },
 };
 
-/* ---------- reduced motion ---------- */
-import { useReducedMotion } from 'framer-motion';
-
-/** Degrade spatial motion to opacity — never remove feedback entirely. */
-export function useForgeMotion() {
-  const reduce = useReducedMotion();
-  if (!reduce) return { pageV, popoverV, modalV, toastV, rowsV, rowV, spring, tween };
-  const fade = {
-    initial:{ opacity:0 }, animate:{ opacity:1, transition: tween.fast },
-    exit:{ opacity:0, transition: tween.fast },
-  };
-  return {
-    pageV: fade, popoverV: fade, modalV: fade, toastV: fade,
-    rowsV: { hidden:{}, visible:{} },
-    rowV:  { hidden:{opacity:0}, visible:{opacity:1} },
-    spring: Object.fromEntries(Object.keys(spring).map(k => [k, tween.fast])),
-    tween,
-  };
-}
-
-/* ---------- backward-compatible aliases (removed in Phase 8) ---------- */
+// backward-compatible aliases
 export const pageVariants = pageV;
 export const listVariants = rowsV;
 export const listItemVariants = rowV;
@@ -105,7 +161,5 @@ export const sidebarVariants = {
   hidden: { opacity: 0, x: -8 },
   visible: { opacity: 1, x: 0, transition: tween.page },
 };
-
-// Container/item stagger aliases for page-level motion
 export const ContainerV = { hidden: {}, visible: { transition: { staggerChildren: 0.03 } } };
 export const ItemV = { hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: ease.out } } };

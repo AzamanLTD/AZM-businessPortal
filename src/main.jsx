@@ -1,16 +1,17 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { MotionConfig } from 'framer-motion'
+import { LazyMotion, domAnimation } from 'motion/react'
 import App from './App.jsx'
 import { TooltipProvider } from '@/components/forge/Tooltip'
 import './styles/forge.css'
+import './styles/instrument.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <MotionConfig reducedMotion="user">
+    <LazyMotion features={domAnimation} strict>
       <TooltipProvider>
         <App />
       </TooltipProvider>
-    </MotionConfig>
+    </LazyMotion>
   </React.StrictMode>,
 )
