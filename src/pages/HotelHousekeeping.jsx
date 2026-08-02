@@ -3,16 +3,16 @@ import { hotelOpsApi, employeeApi } from '@/lib/marketplaceApi';
 import {
   Card,
   Button,
-  Badge,
-  Skeleton,
+  Tag,
+  Skel,
   Empty,
-  Modal,
+  Dialog,
   Input,
   Select,
   Avatar,
-  StatCard
-} from '@/components/forge';
-import { Switch } from '@/components/forge';
+  StatCard,
+  Switch
+} from '@/components/instrument';
 import { usePermission } from '@/hooks/usePermission';
 import { request } from '@/lib/apiCore';
 import {
@@ -36,11 +36,11 @@ import {
 import { toast } from 'sonner';
 
 const COLUMNS = [
-  { key: 'PENDING', label: 'Pending', color: 'var(--f-text-3)', bg: 'rgba(154, 160, 172, 0.15)', icon: Sparkles },
-  { key: 'IN_PROGRESS', label: 'In Progress', color: 'var(--f-info)', bg: 'rgba(0, 122, 255, 0.15)', icon: Bath },
-  { key: 'AWAITING_INSPECTION', label: 'Awaiting Inspection', color: 'var(--f-warn)', bg: 'rgba(255, 159, 10, 0.15)', icon: ClipboardList },
-  { key: 'COMPLETED', label: 'Completed', color: 'var(--f-ok)', bg: 'rgba(48, 209, 88, 0.15)', icon: CheckCircle2 },
-  { key: 'FAILED', label: 'Failed', color: 'var(--f-bad)', bg: 'rgba(255, 69, 58, 0.15)', icon: AlertTriangle }
+  { key: 'PENDING', label: 'Pending', color: 'var(--text-3)', bg: 'rgba(154, 160, 172, 0.15)', icon: Sparkles },
+  { key: 'IN_PROGRESS', label: 'In Progress', color: 'var(--info)', bg: 'rgba(0, 122, 255, 0.15)', icon: Bath },
+  { key: 'AWAITING_INSPECTION', label: 'Awaiting Inspection', color: 'var(--hold)', bg: 'rgba(255, 159, 10, 0.15)', icon: ClipboardList },
+  { key: 'COMPLETED', label: 'Completed', color: 'var(--go)', bg: 'rgba(48, 209, 88, 0.15)', icon: CheckCircle2 },
+  { key: 'FAILED', label: 'Failed', color: 'var(--stop)', bg: 'rgba(255, 69, 58, 0.15)', icon: AlertTriangle }
 ];
 
 const SLA_LIMITS = {
@@ -51,18 +51,18 @@ const SLA_LIMITS = {
 };
 
 const TASK_TYPE_META = {
-  CHECKOUT_CLEAN: { label: 'Checkout Clean', color: 'var(--f-warn)', sla: '45m' },
-  DAILY_REFRESH: { label: 'Daily Refresh', color: 'var(--f-info)', sla: '30m' },
-  DEEP_CLEAN: { label: 'Deep Clean', color: 'var(--f-tint-color)', sla: '90m' },
-  INSPECTION: { label: 'Inspection', color: 'var(--f-text-3)', sla: '20m' }
+  CHECKOUT_CLEAN: { label: 'Checkout Clean', color: 'var(--hold)', sla: '45m' },
+  DAILY_REFRESH: { label: 'Daily Refresh', color: 'var(--info)', sla: '30m' },
+  DEEP_CLEAN: { label: 'Deep Clean', color: 'var(--accent)', sla: '90m' },
+  INSPECTION: { label: 'Inspection', color: 'var(--text-3)', sla: '20m' }
 };
 
 const PRIORITY_META = {
-  1: { label: 'URGENT', color: 'var(--f-bad)' },
-  2: { label: 'HIGH', color: 'var(--f-warn)' },
-  3: { label: 'HIGH', color: 'var(--f-warn)' },
-  4: { label: 'HIGH', color: 'var(--f-warn)' },
-  5: { label: 'NORMAL', color: 'var(--f-text-3)' }
+  1: { label: 'URGENT', color: 'var(--stop)' },
+  2: { label: 'HIGH', color: 'var(--hold)' },
+  3: { label: 'HIGH', color: 'var(--hold)' },
+  4: { label: 'HIGH', color: 'var(--hold)' },
+  5: { label: 'NORMAL', color: 'var(--text-3)' }
 };
 
 function ElapsedTimer({ task }) {
@@ -86,11 +86,11 @@ function ElapsedTimer({ task }) {
   const slaMax = SLA_LIMITS[task.taskType] || SLA_LIMITS.INSPECTION;
   const isOverdue = elapsed > slaMax;
 
-  let timerColor = 'var(--f-ok)';
+  let timerColor = 'var(--go)';
   if (isOverdue) {
-    timerColor = 'var(--f-bad)';
+    timerColor = 'var(--stop)';
   } else if (elapsed > slaMax * 0.75) {
-    timerColor = 'var(--f-warn)';
+    timerColor = 'var(--hold)';
   }
 
   const formatTime = (secs) => {
@@ -106,7 +106,7 @@ function ElapsedTimer({ task }) {
       <Clock className="w-3.5 h-3.5" />
       <span className="text-xs font-mono font-medium">{formatTime(elapsed)}</span>
       {isOverdue && (
-        <span className="text-[10px] uppercase font-bold tracking-wider px-1 bg-[var(--f-bad)]/10 text-[var(--f-bad)] rounded">
+        <span className="text-[10px] uppercase font-bold tracking-wider px-1 bg-[var(--stop)]/10 text-[var(--stop)] rounded">
           Overdue
         </span>
       )}
@@ -460,13 +460,13 @@ export default function HotelHousekeeping() {
   }
 
   return (
-    <div className="space-y-6 p-6 min-h-screen text-[var(--f-text)]" style={{ background: 'var(--f-ink-900)' }}>
+    <div className="space-y-6 p-6 min-h-screen text-[var(--text)]" style={{ background: 'var(--f-ink-900)' }}>
       
       {/* Top Header & Stats */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Hotel Housekeeping</h1>
-          <p className="text-sm text-[var(--f-text-3)] mt-0.5">Manage daily refreshes, deep cleans, tasks, and room inspections.</p>
+          <p className="text-sm text-[var(--text-3)] mt-0.5">Manage daily refreshes, deep cleans, tasks, and room inspections.</p>
         </div>
         <Button variant="primary" onClick={() => setCreateModalOpen(true)} className="flex items-center gap-2 self-start md:self-auto">
           <Plus className="w-4 h-4" /> Create Task
@@ -475,17 +475,17 @@ export default function HotelHousekeeping() {
 
       {/* Stats row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Pending" value={totalPending} icon={Sparkles} color="var(--f-text-3)" />
-        <StatCard label="In Progress" value={totalInProgress} icon={Bath} color="var(--f-info)" />
-        <StatCard label="Awaiting Inspection" value={totalAwaiting} icon={ClipboardList} color="var(--f-warn)" />
-        <StatCard label="Overdue Tasks" value={totalOverdue} icon={AlertTriangle} color="var(--f-bad)" />
+        <StatCard label="Pending" value={totalPending} icon={Sparkles} color="var(--text-3)" />
+        <StatCard label="In Progress" value={totalInProgress} icon={Bath} color="var(--info)" />
+        <StatCard label="Awaiting Inspection" value={totalAwaiting} icon={ClipboardList} color="var(--hold)" />
+        <StatCard label="Overdue Tasks" value={totalOverdue} icon={AlertTriangle} color="var(--stop)" />
       </div>
 
       {/* Filter Bar */}
       <Card className="p-4 flex flex-wrap gap-4 items-center justify-between">
         <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-[var(--f-text-3)]" />
-          <span className="text-xs font-semibold uppercase tracking-wider text-[var(--f-text-3)]">Filters</span>
+          <Filter className="w-4 h-4 text-[var(--text-3)]" />
+          <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-3)]">Filters</span>
         </div>
         <div className="flex flex-wrap gap-3 flex-1 justify-end">
           <div className="w-40">
@@ -567,7 +567,7 @@ export default function HotelHousekeeping() {
                 </div>
 
                 {/* Column Tasks List */}
-                <div className="flex flex-col gap-3 min-h-[400px] rounded-xl bg-[var(--f-surface)]/30 p-2">
+                <div className="flex flex-col gap-3 min-h-[400px] rounded-xl bg-[var(--surface)]/30 p-2">
                   {colTasks.map(task => {
                     const typeMeta = TASK_TYPE_META[task.taskType] || TASK_TYPE_META.INSPECTION;
                     const priorityMeta = PRIORITY_META[task.priority] || PRIORITY_META[5];
@@ -581,15 +581,15 @@ export default function HotelHousekeeping() {
                           setSelectedTask(task);
                           setDetailModalOpen(true);
                         }}
-                        className="p-4 border-[var(--f-line)]:border-[var(--f-tint-color)] flex flex-col gap-3 shadow-md"
+                        className="p-4 border-[var(--line)]:border-[var(--accent)] flex flex-col gap-3 shadow-md"
                       >
                         {/* Title & Priority Badge */}
                         <div className="flex items-start justify-between">
                           <div>
-                            <h3 className="font-bold text-sm tracking-tight text-[var(--f-text)]">
+                            <h3 className="font-bold text-sm tracking-tight text-[var(--text)]">
                               Room {task.room?.roomNumber || 'N/A'}
                             </h3>
-                            <span className="text-[10px] text-[var(--f-text-3)] font-medium uppercase tracking-wider block">
+                            <span className="text-[10px] text-[var(--text-3)] font-medium uppercase tracking-wider block">
                               Floor {task.room?.roomNumber?.toString().substring(0, 1) || 'N/A'}
                             </span>
                           </div>
@@ -603,7 +603,7 @@ export default function HotelHousekeeping() {
                           <Tag color={typeMeta.color} className="text-[10px]">
                             {typeMeta.label}
                           </Tag>
-                          <span className="text-[10px] text-[var(--f-text-3)] flex items-center gap-1">
+                          <span className="text-[10px] text-[var(--text-3)] flex items-center gap-1">
                             <Clock className="w-3 h-3" /> SLA: {typeMeta.sla}
                           </span>
                         </div>
@@ -611,13 +611,13 @@ export default function HotelHousekeeping() {
                         {/* Checklist progress bar */}
                         {chkTotal > 0 && (
                           <div className="space-y-1">
-                            <div className="flex justify-between text-[10px] text-[var(--f-text-3)]">
+                            <div className="flex justify-between text-[10px] text-[var(--text-3)]">
                               <span>Checklist Progress</span>
                               <span>{chkDone}/{chkTotal} done</span>
                             </div>
-                            <div className="w-full h-1.5 bg-[var(--f-line)] rounded-full overflow-hidden">
+                            <div className="w-full h-1.5 bg-[var(--line)] rounded-full overflow-hidden">
                               <div
-                                className="h-full bg-[var(--f-tint-color)] transition-all duration-300"
+                                className="h-full bg-[var(--accent)] transition-all duration-300"
                                 style={{ width: `${(chkDone / chkTotal) * 100}%` }}
                               />
                             </div>
@@ -625,14 +625,14 @@ export default function HotelHousekeeping() {
                         )}
 
                         {/* Housekeeper Info */}
-                        <div className="flex items-center gap-2 pt-2 border-t border-[var(--f-line)]/50">
+                        <div className="flex items-center gap-2 pt-2 border-t border-[var(--line)]/50">
                           <Avatar
                             name={task.assignedTo?.user?.fullName || task.assignedTo?.name || 'Unassigned'}
                             size="xs"
                           />
                           <div className="text-xs truncate flex-1">
-                            <span className="text-[var(--f-text-3)]">By: </span>
-                            <span className="font-medium text-[var(--f-text)]">
+                            <span className="text-[var(--text-3)]">By: </span>
+                            <span className="font-medium text-[var(--text)]">
                               {task.assignedTo?.user?.fullName || task.assignedTo?.name || 'Unassigned'}
                             </span>
                           </div>
@@ -646,8 +646,8 @@ export default function HotelHousekeeping() {
 
                   {colTasks.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <col.icon className="w-6 h-6 text-[var(--f-text-3)] opacity-40 mb-2" />
-                      <p className="text-xs font-medium text-[var(--f-text-3)]">No tasks in {col.label}</p>
+                      <col.icon className="w-6 h-6 text-[var(--text-3)] opacity-40 mb-2" />
+                      <p className="text-xs font-medium text-[var(--text-3)]">No tasks in {col.label}</p>
                     </div>
                   )}
                 </div>
@@ -658,7 +658,7 @@ export default function HotelHousekeeping() {
       )}
 
       {/* Detail Modal */}
-      <Modal
+      <Dialog
         open={detailModalOpen}
         onClose={() => {
           setDetailModalOpen(false);
@@ -675,21 +675,21 @@ export default function HotelHousekeeping() {
             {/* Header info blocks */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <span className="text-[10px] text-[var(--f-text-3)] uppercase font-semibold">Task Type</span>
+                <span className="text-[10px] text-[var(--text-3)] uppercase font-semibold">Task Type</span>
                 <p className="font-bold text-sm mt-0.5">{TASK_TYPE_META[selectedTask.taskType]?.label || selectedTask.taskType}</p>
               </div>
               <div>
-                <span className="text-[10px] text-[var(--f-text-3)] uppercase font-semibold">Priority</span>
+                <span className="text-[10px] text-[var(--text-3)] uppercase font-semibold">Priority</span>
                 <p className="font-bold text-sm mt-0.5" style={{ color: PRIORITY_META[selectedTask.priority]?.color }}>
                   {PRIORITY_META[selectedTask.priority]?.label || 'NORMAL'}
                 </p>
               </div>
               <div>
-                <span className="text-[10px] text-[var(--f-text-3)] uppercase font-semibold">Room Status</span>
+                <span className="text-[10px] text-[var(--text-3)] uppercase font-semibold">Room Status</span>
                 <p className="font-bold text-sm mt-0.5 uppercase">{selectedTask.room?.status || 'N/A'}</p>
               </div>
               <div>
-                <span className="text-[10px] text-[var(--f-text-3)] uppercase font-semibold">Current SLA</span>
+                <span className="text-[10px] text-[var(--text-3)] uppercase font-semibold">Current SLA</span>
                 <p className="font-bold text-sm mt-0.5">{TASK_TYPE_META[selectedTask.taskType]?.sla || '20m'}</p>
               </div>
             </div>
@@ -698,32 +698,32 @@ export default function HotelHousekeeping() {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <h4 className="font-bold text-sm flex items-center gap-1.5">
-                  <ClipboardList className="w-4 h-4 text-[var(--f-tint-color)]" /> Checklist
+                  <ClipboardList className="w-4 h-4 text-[var(--accent)]" /> Checklist
                 </h4>
-                <span className="text-xs text-[var(--f-text-3)]">
+                <span className="text-xs text-[var(--text-3)]">
                   {selectedTask.checklist?.filter(i => i.completed).length || 0} of {selectedTask.checklist?.length || 0} items completed
                 </span>
               </div>
-              <div className="max-h-56 overflow-y-auto space-y-2 pr-1 border border-[var(--f-line)]/50 rounded-xl p-3 bg-[var(--f-ink-900)]">
+              <div className="max-h-56 overflow-y-auto space-y-2 pr-1 border border-[var(--line)]/50 rounded-xl p-3 bg-[var(--f-ink-900)]">
                 {selectedTask.checklist && selectedTask.checklist.length > 0 ? (
                   selectedTask.checklist.map((item, index) => (
                     <div
                       key={index}
                       onClick={() => handleToggleChecklistItem(index)}
-                      className="flex items-start gap-3 p-2 rounded-lg:bg-[var(--f-line)]/20 cursor-pointer transition-colors"
+                      className="flex items-start gap-3 p-2 rounded-lg:bg-[var(--line)]/20 cursor-pointer transition-colors"
                     >
                       {item.completed ? (
-                        <CheckSquare className="w-4 h-4 text-[var(--f-tint-color)] mt-0.5 flex-shrink-0" />
+                        <CheckSquare className="w-4 h-4 text-[var(--accent)] mt-0.5 flex-shrink-0" />
                       ) : (
-                        <Square className="w-4 h-4 text-[var(--f-text-3)] mt-0.5 flex-shrink-0" />
+                        <Square className="w-4 h-4 text-[var(--text-3)] mt-0.5 flex-shrink-0" />
                       )}
-                      <span className={`text-xs flex-1 ${item.completed ? 'line-through text-[var(--f-text-3)]' : 'text-[var(--f-text)]'}`}>
+                      <span className={`text-xs flex-1 ${item.completed ? 'line-through text-[var(--text-3)]' : 'text-[var(--text)]'}`}>
                         {item.item || item.name || `Task checklist item #${index + 1}`}
                       </span>
                     </div>
                   ))
                 ) : (
-                  <p className="text-xs text-[var(--f-text-3)] text-center py-4">No checklist items defined.</p>
+                  <p className="text-xs text-[var(--text-3)] text-center py-4">No checklist items defined.</p>
                 )}
               </div>
             </div>
@@ -731,7 +731,7 @@ export default function HotelHousekeeping() {
             {/* Assignment Section */}
             <div className="space-y-3">
               <h4 className="font-bold text-sm flex items-center gap-1.5">
-                <UserCheck className="w-4 h-4 text-[var(--f-tint-color)]" /> Assign Housekeeper
+                <UserCheck className="w-4 h-4 text-[var(--accent)]" /> Assign Housekeeper
               </h4>
               <div className="flex gap-2">
                 <div className="flex-1">
@@ -753,26 +753,26 @@ export default function HotelHousekeeping() {
             {/* Photos section */}
             <div className="space-y-3">
               <h4 className="font-bold text-sm flex items-center gap-1.5">
-                <Camera className="w-4 h-4 text-[var(--f-tint-color)]" /> Before / After Proof
+                <Camera className="w-4 h-4 text-[var(--accent)]" /> Before / After Proof
               </h4>
               <div className="grid grid-cols-2 gap-4">
-                <div className="border border-[var(--f-line)]/50 rounded-xl p-3 bg-[var(--f-ink-900)] text-center space-y-2">
-                  <span className="text-[10px] text-[var(--f-text-3)] uppercase block">Before Photo</span>
+                <div className="border border-[var(--line)]/50 rounded-xl p-3 bg-[var(--f-ink-900)] text-center space-y-2">
+                  <span className="text-[10px] text-[var(--text-3)] uppercase block">Before Photo</span>
                   {selectedTask.photoBeforeUrl ? (
                     <img src={selectedTask.photoBeforeUrl} alt="Before housekeeping" className="h-28 w-full object-cover rounded-lg" />
                   ) : (
-                    <div className="h-28 bg-[var(--f-surface)] rounded-lg flex items-center justify-center border border-dashed border-[var(--f-line)]">
-                      <Camera className="w-6 h-6 text-[var(--f-text-3)] opacity-40" />
+                    <div className="h-28 bg-[var(--surface)] rounded-lg flex items-center justify-center border border-dashed border-[var(--line)]">
+                      <Camera className="w-6 h-6 text-[var(--text-3)] opacity-40" />
                     </div>
                   )}
                 </div>
-                <div className="border border-[var(--f-line)]/50 rounded-xl p-3 bg-[var(--f-ink-900)] text-center space-y-2">
-                  <span className="text-[10px] text-[var(--f-text-3)] uppercase block">After Photo</span>
+                <div className="border border-[var(--line)]/50 rounded-xl p-3 bg-[var(--f-ink-900)] text-center space-y-2">
+                  <span className="text-[10px] text-[var(--text-3)] uppercase block">After Photo</span>
                   {selectedTask.photoProofUrl || selectedTask.photoAfterUrl ? (
                     <img src={selectedTask.photoProofUrl || selectedTask.photoAfterUrl} alt="After housekeeping" className="h-28 w-full object-cover rounded-lg" />
                   ) : (
-                    <div className="h-28 bg-[var(--f-surface)] rounded-lg flex items-center justify-center border border-dashed border-[var(--f-line)]">
-                      <Camera className="w-6 h-6 text-[var(--f-text-3)] opacity-40" />
+                    <div className="h-28 bg-[var(--surface)] rounded-lg flex items-center justify-center border border-dashed border-[var(--line)]">
+                      <Camera className="w-6 h-6 text-[var(--text-3)] opacity-40" />
                     </div>
                   )}
                 </div>
@@ -781,16 +781,16 @@ export default function HotelHousekeeping() {
 
             {/* Notes */}
             {selectedTask.notes && (
-              <div className="p-3 bg-[var(--f-line)]/10 rounded-xl border border-[var(--f-line)]/50">
-                <span className="text-[10px] text-[var(--f-text-3)] uppercase font-semibold flex items-center gap-1">
+              <div className="p-3 bg-[var(--line)]/10 rounded-xl border border-[var(--line)]/50">
+                <span className="text-[10px] text-[var(--text-3)] uppercase font-semibold flex items-center gap-1">
                   <Info className="w-3.5 h-3.5" /> Notes
                 </span>
-                <p className="text-xs mt-1 italic text-[var(--f-text)]">{selectedTask.notes}</p>
+                <p className="text-xs mt-1 italic text-[var(--text)]">{selectedTask.notes}</p>
               </div>
             )}
 
             {/* Status Actions */}
-            <div className="pt-4 border-t border-[var(--f-line)] flex flex-col gap-4">
+            <div className="pt-4 border-t border-[var(--line)] flex flex-col gap-4">
               <div className="flex flex-wrap gap-2 items-center justify-end">
                 {/* PENDING -> START TASK */}
                 {(selectedTask.status === 'PENDING') && (
@@ -825,13 +825,13 @@ export default function HotelHousekeeping() {
                     <div className="flex gap-2 justify-end">
                       <Button
                         onClick={() => handleInspection(selectedTask.id, false)}
-                        className="bg-[var(--f-bad)] text-[var(--f-text)]:bg-bad border-none px-4 py-2"
+                        className="bg-[var(--stop)] text-[var(--text)]:bg-bad border-none px-4 py-2"
                       >
                         Fail Inspection
                       </Button>
                       <Button
                         onClick={() => handleInspection(selectedTask.id, true)}
-                        className="bg-[var(--f-ok)] text-black:bg-ok border-none px-4 py-2"
+                        className="bg-[var(--go)] text-black:bg-ok border-none px-4 py-2"
                       >
                         Pass Inspection
                       </Button>
@@ -843,12 +843,12 @@ export default function HotelHousekeeping() {
                 {(selectedTask.status === 'FAILED' || selectedTask.status === 'COMPLETED' || selectedTask.status === 'DONE') && (
                   <div className="w-full flex flex-col gap-2">
                     {selectedTask.status === 'FAILED' && selectedTask.notes && (
-                      <div className="p-3 bg-[var(--f-bad)]/10 text-[var(--f-bad)] rounded-xl text-xs mb-2">
+                      <div className="p-3 bg-[var(--stop)]/10 text-[var(--stop)] rounded-xl text-xs mb-2">
                         <span className="font-bold">Failure Reason:</span> {selectedTask.notes}
                       </div>
                     )}
                     <div className="flex gap-2 justify-end items-center">
-                      <span className="text-xs text-[var(--f-text-3)] font-medium">Reassign to:</span>
+                      <span className="text-xs text-[var(--text-3)] font-medium">Reassign to:</span>
                       <div className="w-48">
                         <Select
                           value={selectedTask.assignedTo?.id || selectedTask.assignedToId || ''}
@@ -870,10 +870,10 @@ export default function HotelHousekeeping() {
 
           </div>
         )}
-      </Modal>
+      </Dialog>
 
       {/* Create Task Modal */}
-      <Modal
+      <Dialog
         open={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
         title="Create Housekeeping Task"
@@ -921,8 +921,8 @@ export default function HotelHousekeeping() {
             />
           </div>
 
-          <div className="flex items-center justify-between py-2 border-y border-[var(--f-line)]/50">
-            <span className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">Use Template Checklist</span>
+          <div className="flex items-center justify-between py-2 border-y border-[var(--line)]/50">
+            <span className="text-xs font-semibold text-[var(--text-3)] uppercase tracking-wider">Use Template Checklist</span>
             <Switch
               checked={createForm.useTemplateChecklist}
               onChange={(checked) => setCreateForm({ ...createForm, useTemplateChecklist: checked })}
@@ -931,15 +931,15 @@ export default function HotelHousekeeping() {
 
           {!createForm.useTemplateChecklist && (
             <div>
-              <label className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider block mb-1">Custom Checklist Items</label>
+              <label className="text-xs font-semibold text-[var(--text-3)] uppercase tracking-wider block mb-1">Custom Checklist Items</label>
               <textarea
-                className="w-full p-3 text-sm bg-[var(--f-ink-900)] border border-[var(--f-line)] rounded-xl outline-none focus:border-[var(--f-tint-color)] text-[var(--f-text)]"
+                className="w-full p-3 text-sm bg-[var(--f-ink-900)] border border-[var(--line)] rounded-xl outline-none focus:border-[var(--accent)] text-[var(--text)]"
                 rows={3}
                 placeholder="Item 1&#10;Item 2&#10;Item 3"
                 value={createForm.customChecklist}
                 onChange={(e) => setCreateForm({ ...createForm, customChecklist: e.target.value })}
               />
-              <p className="text-[10px] text-[var(--f-text-3)] mt-1">Write each checklist item on a new line.</p>
+              <p className="text-[10px] text-[var(--text-3)] mt-1">Write each checklist item on a new line.</p>
             </div>
           )}
 
@@ -961,7 +961,7 @@ export default function HotelHousekeeping() {
             </Button>
           </div>
         </form>
-      </Modal>
+      </Dialog>
 
     </div>
   );

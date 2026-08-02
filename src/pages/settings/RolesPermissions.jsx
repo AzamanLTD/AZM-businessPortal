@@ -11,7 +11,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { businessOS } from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
-import { Card, Button, Input, Badge, Switch, Tabs } from '@/components/forge';
+import { Card, Button, Input, Tag, Switch, Tabs } from '@/components/instrument';
 import { Shield, Save, Lock, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -84,9 +84,9 @@ export default function RolesPermissions() {
                 <p className="text-xs text-[var(--f-text-3)] mt-0.5">{tpl.description}</p>
               </div>
               {tpl.system ? (
-                <Badge className="text-xs"><Lock className="w-3 h-3 mr-1 inline" /> System</Badge>
+                <Tag className="text-xs"><Lock className="w-3 h-3 mr-1 inline" /> System</Tag>
               ) : (
-                <Badge color="var(--f-text-3)" className="text-xs">Custom</Badge>
+                <Tag color="var(--f-text-3)" className="text-xs">Custom</Tag>
               )}
             </div>
             <div className="flex items-center gap-2 text-xs text-[var(--f-text-3)]">
@@ -97,14 +97,14 @@ export default function RolesPermissions() {
             </div>
             <div className="flex flex-wrap gap-1">
               {tpl.permissions.includes('*') ? (
-                <Badge className="text-xs">Full Access</Badge>
+                <Tag className="text-xs">Full Access</Tag>
               ) : (
                 moduleNames.map(mod => {
                   const hasModulePerms = tpl.permissions.some(p =>
                     grouped[mod].some(k => k.key === p)
                   );
                   if (!hasModulePerms) return null;
-                  return <Badge key={mod} color="var(--f-text-3)" className="text-xs">{mod}</Badge>;
+                  return <Tag key={mod} color="var(--f-text-3)" className="text-xs">{mod}</Tag>;
                 })
               )}
             </div>
@@ -197,9 +197,9 @@ export default function RolesPermissions() {
                 <p className="text-xs text-[var(--f-text-3)] mt-0.5">{tpl.description}</p>
               </div>
               {tpl.system ? (
-                <Badge className="text-xs"><Lock className="w-3 h-3 mr-1 inline" /> System</Badge>
+                <Tag className="text-xs"><Lock className="w-3 h-3 mr-1 inline" /> System</Tag>
               ) : (
-                <Badge color="var(--f-text-3)" className="text-xs">Custom</Badge>
+                <Tag color="var(--f-text-3)" className="text-xs">Custom</Tag>
               )}
             </div>
             <div className="flex items-center gap-2 text-xs text-[var(--f-text-3)]">

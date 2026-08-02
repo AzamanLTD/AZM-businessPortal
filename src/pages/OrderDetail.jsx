@@ -2,7 +2,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { orders as ordersApi, escrow as escrowApi } from '@/lib/api';
 import { bookingOpsApi } from '@/lib/marketplaceApi';
-import { Card, Badge, Button, Skeleton, Textarea, Modal, Empty } from '@/components/forge';
+import { Card, Tag, Button, Skel, Textarea, Dialog, Empty } from '@/components/instrument';
 import { fmtUSDC, fmt, formatDateTime, relativeTime, ORDER_STATUS_META } from '@/lib/utils';
 import { 
   ArrowLeft, Truck, Package, User, Clock, CheckCircle2, AlertCircle, 
@@ -17,41 +17,41 @@ function ProgressStep({ label, done, active, color, timestamp }) {
   return (
     <div className="flex items-start gap-4 relative pb-8 last:pb-0">
       {/* Line connecting steps */}
-      <div className="absolute left-4 top-8 bottom-0 w-0.5 bg-[var(--f-line)] last:hidden" 
+      <div className="absolute left-4 top-8 bottom-0 w-0.5 bg-[var(--line)] last:hidden" 
         style={done ? { background: color } : {}} 
       />
       
       {/* Step circle */}
       <div
-        className="w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all z-10 bg-[var(--f-surface)]"
+        className="w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all z-10 bg-[var(--surface)]"
         style={done || active
           ? { background: `${color}1a`, borderColor: color }
-          : { background: 'transparent', borderColor: 'var(--f-line)' }
+          : { background: 'transparent', borderColor: 'var(--line)' }
         }
       >
         {done ? (
           <CheckCircle2 className="w-4 h-4" style={{ color }} />
         ) : (
-          <div className="w-2 h-2 rounded-full" style={{ background: active ? color : 'var(--f-line)' }} />
+          <div className="w-2 h-2 rounded-full" style={{ background: active ? color : 'var(--line)' }} />
         )}
       </div>
 
       {/* Step details */}
       <div className="flex-1 min-w-0 pt-0.5">
-        <p className="text-xs font-bold uppercase tracking-wider" style={{ color: done || active ? 'var(--f-text)' : 'var(--f-text-3)' }}>
+        <p className="text-xs font-bold uppercase tracking-wider" style={{ color: done || active ? 'var(--text)' : 'var(--text-3)' }}>
           {label}
         </p>
         {timestamp ? (
-          <p className="text-[11px] text-[var(--f-text-3)] mt-1 flex items-center gap-1">
+          <p className="text-[11px] text-[var(--text-3)] mt-1 flex items-center gap-1">
             <Clock className="w-3 h-3" />
             {formatDateTime(timestamp)} ({relativeTime(timestamp)})
           </p>
         ) : done ? (
-          <p className="text-[11px] text-[var(--f-text-3)] mt-1">Status reached</p>
+          <p className="text-[11px] text-[var(--text-3)] mt-1">Status reached</p>
         ) : active ? (
-          <p className="text-[11px] text-[var(--f-tint-color)] mt-1 font-semibold animate-pulse">Current Phase</p>
+          <p className="text-[11px] text-[var(--accent)] mt-1 font-semibold animate-pulse">Current Phase</p>
         ) : (
-          <p className="text-[11px] text-[var(--f-text-3)]/40 mt-1">Pending action</p>
+          <p className="text-[11px] text-[var(--text-3)]/40 mt-1">Pending action</p>
         )}
       </div>
     </div>
@@ -63,7 +63,7 @@ export default function OrderDetail() {
   const navigate = useNavigate();
   const qc = useQueryClient();
 
-  const [refundModal, setRefundModal] = useState(false);
+  const [refundDialog, setRefundModal] = useState(false);
   const [refundReason, setRefundReason] = useState('');
   const [deliveryNotes, setDeliveryNotes] = useState('');
   const [isEditingNotes, setIsEditingNotes] = useState(false);
@@ -156,7 +156,7 @@ export default function OrderDetail() {
   const currentStepIndex = STEPS.indexOf(currentStatus);
 
   // Status mappings for style colors
-  const statusMeta = ORDER_STATUS_META[currentStatus] || { label: currentStatus, color: 'var(--f-tint-color)' };
+  const statusMeta = ORDER_STATUS_META[currentStatus] || { label: currentStatus, color: 'var(--accent)' };
 
   // Calculate timelines based on timestamps from backend
   const timestamps = {
@@ -172,82 +172,82 @@ export default function OrderDetail() {
   const escrowAmount = order.escrowAmount || order.escrow?.amount || order.amount || 0;
 
   const escrowMeta = {
-    PAID: { label: 'Paid & Locked', color: 'var(--f-info)', icon: Lock, desc: 'Funds secured in safety escrow wallet' },
-    HELD: { label: 'Held on Hold', color: 'var(--f-warn)', icon: Lock, desc: 'Funds temporarily frozen for dispute or check' },
-    SATISFIED: { label: 'Satisfied & Released', color: 'var(--f-ok)', icon: ShieldCheck, desc: 'Fulfillment confirmed, payout distributed' },
-    DISPUTED: { label: 'Disputed', color: 'var(--f-bad)', icon: AlertTriangle, desc: 'Buyer raised issue. Awaiting merchant reply' },
-    REFUNDED: { label: 'Refunded', color: 'var(--f-tint-color)', icon: CornerUpLeft, desc: 'Escrow amount returned to buyer wallet' },
-    UNKNOWN: { label: 'No Active Escrow', color: 'var(--f-text-3)', icon: AlertCircle, desc: 'No escrow record found for this transaction' }
-  }[escrowState] || { label: escrowState, color: 'var(--f-tint-color)', icon: Lock, desc: 'Escrow status update pending' };
+    PAID: { label: 'Paid & Locked', color: 'var(--info)', icon: Lock, desc: 'Funds secured in safety escrow wallet' },
+    HELD: { label: 'Held on Hold', color: 'var(--hold)', icon: Lock, desc: 'Funds temporarily frozen for dispute or check' },
+    SATISFIED: { label: 'Satisfied & Released', color: 'var(--go)', icon: ShieldCheck, desc: 'Fulfillment confirmed, payout distributed' },
+    DISPUTED: { label: 'Disputed', color: 'var(--stop)', icon: AlertTriangle, desc: 'Buyer raised issue. Awaiting merchant reply' },
+    REFUNDED: { label: 'Refunded', color: 'var(--accent)', icon: CornerUpLeft, desc: 'Escrow amount returned to buyer wallet' },
+    UNKNOWN: { label: 'No Active Escrow', color: 'var(--text-3)', icon: AlertCircle, desc: 'No escrow record found for this transaction' }
+  }[escrowState] || { label: escrowState, color: 'var(--accent)', icon: Lock, desc: 'Escrow status update pending' };
 
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-6 ">
       {/* Back Header */}
       <div className="flex items-center justify-between">
-        <Link to="/orders" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--f-text-3)]:text-[var(--f-text)] transition-colors">
+        <Link to="/orders" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--text-3)]:text-[var(--text)] transition-colors">
           <ArrowLeft className="w-4 h-4" />
           Back to Orders
         </Link>
         <div className="flex items-center gap-2">
           {currentStatus === 'AWAITING_PAYMENT' && (
-            <Tag variant="neutral">Unpaid Order</Tag>
+            <Tag tone="neutral">Unpaid Order</Tag>
           )}
           {currentStatus === 'CANCELLED' && (
-            <Tag variant="neutral">Cancelled</Tag>
+            <Tag tone="neutral">Cancelled</Tag>
           )}
         </div>
       </div>
 
       {/* Main Order Header Block */}
-      <Card className="p-6 border-[var(--f-line)]">
+      <Card className="p-6 border-[var(--line)]">
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <h1 className="text-xl font-black text-[var(--f-text)] f-mono">
+              <h1 className="text-xl font-black text-[var(--text)] f-mono">
                 {order.orderRef || `#${order.id}`}
               </h1>
               <Tag color={statusMeta.color}>{statusMeta.label}</Tag>
             </div>
-            <p className="text-xs text-[var(--f-text-3)]">
+            <p className="text-xs text-[var(--text-3)]">
               Placed on {formatDateTime(order.created_date || order.createdAt)}
             </p>
           </div>
 
           <div className="flex flex-col items-start md:items-end gap-1.5">
-            <span className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">Total Value</span>
-            <span className="text-2xl font-bold text-[var(--f-text)] f-mono">
+            <span className="text-xs font-semibold text-[var(--text-3)] uppercase tracking-wider">Total Value</span>
+            <span className="text-2xl font-bold text-[var(--text)] f-mono">
               {fmtUSDC(order.amount)}
             </span>
           </div>
         </div>
 
         {/* Customer & Product Details split layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-[var(--f-line)]/50">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-[var(--line)]/50">
           <div className="flex gap-4">
-            <div className="w-10 h-10 rounded-xl bg-[var(--f-tint-color)]/10 border border-[var(--f-tint-color)]/20 flex items-center justify-center flex-shrink-0">
-              <User className="w-5 h-5 text-[var(--f-tint-color)]" />
+            <div className="w-10 h-10 rounded-xl bg-[var(--accent)]/10 border border-[var(--accent)]/20 flex items-center justify-center flex-shrink-0">
+              <User className="w-5 h-5 text-[var(--accent)]" />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-[var(--f-text-3)] uppercase tracking-wider">Buyer Customer Info</h3>
-              <p className="text-sm font-bold text-[var(--f-text)] mt-1">
+              <h3 className="text-xs font-bold text-[var(--text-3)] uppercase tracking-wider">Buyer Customer Info</h3>
+              <p className="text-sm font-bold text-[var(--text)] mt-1">
                 {order.customer?.name || order.customerName || 'Anonymous'}
               </p>
-              <p className="text-xs text-[var(--f-text-3)] f-mono mt-0.5">
+              <p className="text-xs text-[var(--text-3)] f-mono mt-0.5">
                 AZM-ID: {order.customer?.azamanId || 'N/A'}
               </p>
             </div>
           </div>
 
           <div className="flex gap-4">
-            <div className="w-10 h-10 rounded-xl bg-[var(--f-info)]/10 border border-[var(--f-info)]/20 flex items-center justify-center flex-shrink-0">
-              <Package className="w-5 h-5 text-[var(--f-info)]" />
+            <div className="w-10 h-10 rounded-xl bg-[var(--info)]/10 border border-[var(--info)]/20 flex items-center justify-center flex-shrink-0">
+              <Package className="w-5 h-5 text-[var(--info)]" />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-[var(--f-text-3)] uppercase tracking-wider">Fulfillment Product</h3>
-              <p className="text-sm font-bold text-[var(--f-text)] mt-1 line-clamp-1">
+              <h3 className="text-xs font-bold text-[var(--text-3)] uppercase tracking-wider">Fulfillment Product</h3>
+              <p className="text-sm font-bold text-[var(--text)] mt-1 line-clamp-1">
                 {order.product?.title || order.productTitle || 'N/A'}
               </p>
-              <p className="text-xs text-[var(--f-text-3)] mt-0.5">
+              <p className="text-xs text-[var(--text-3)] mt-0.5">
                 ID: {order.productId || 'N/A'}
               </p>
             </div>
@@ -261,8 +261,8 @@ export default function OrderDetail() {
           
           {/* Status Timeline Card */}
           <Card className="p-6">
-            <h2 className="text-sm font-black uppercase tracking-wider text-[var(--f-text)] mb-6 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-[var(--f-tint-color)]" />
+            <h2 className="text-sm font-black uppercase tracking-wider text-[var(--text)] mb-6 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-[var(--accent)]" />
               Visual Tracking Timeline
             </h2>
             <div className="space-y-1">
@@ -270,7 +270,7 @@ export default function OrderDetail() {
                 const done = idx <= currentStepIndex;
                 const active = idx === currentStepIndex;
                 const timestamp = timestamps[step];
-                const meta = ORDER_STATUS_META[step] || { label: step, color: 'var(--f-tint-color)' };
+                const meta = ORDER_STATUS_META[step] || { label: step, color: 'var(--accent)' };
                 
                 return (
                   <ProgressStep
@@ -289,7 +289,7 @@ export default function OrderDetail() {
                   label="CANCELLED"
                   done={true}
                   active={true}
-                  color="var(--f-bad)"
+                  color="var(--stop)"
                   timestamp={timestamps.CANCELLED}
                 />
               )}
@@ -299,8 +299,8 @@ export default function OrderDetail() {
           {/* Delivery Actions & Notes Card */}
           <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-black uppercase tracking-wider text-[var(--f-text)] flex items-center gap-2">
-                <Truck className="w-4 h-4 text-[var(--f-tint-color)]" />
+              <h2 className="text-sm font-black uppercase tracking-wider text-[var(--text)] flex items-center gap-2">
+                <Truck className="w-4 h-4 text-[var(--accent)]" />
                 Delivery & Fulfillment Details
               </h2>
               {currentStatus === 'PAID' && (
@@ -318,11 +318,11 @@ export default function OrderDetail() {
             <div className="space-y-4">
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">Fulfillment Dispatch Notes</label>
+                  <label className="text-xs font-semibold text-[var(--text-3)] uppercase tracking-wider">Fulfillment Dispatch Notes</label>
                   {!isEditingNotes ? (
                     <button 
                       onClick={() => setIsEditingNotes(true)} 
-                      className="text-xs text-[var(--f-tint-color)]:underline flex items-center gap-1"
+                      className="text-xs text-[var(--accent)]:underline flex items-center gap-1"
                     >
                       <Edit3 className="w-3 h-3" /> Edit
                     </button>
@@ -330,13 +330,13 @@ export default function OrderDetail() {
                     <div className="flex items-center gap-2">
                       <button 
                         onClick={() => setIsEditingNotes(false)} 
-                        className="text-xs text-[var(--f-text-3)]:underline"
+                        className="text-xs text-[var(--text-3)]:underline"
                       >
                         Cancel
                       </button>
                       <button 
                         onClick={() => saveNotesMutation.mutate(deliveryNotes)} 
-                        className="text-xs text-[var(--f-tint-color)]:underline font-bold"
+                        className="text-xs text-[var(--accent)]:underline font-bold"
                       >
                         Save
                       </button>
@@ -353,11 +353,11 @@ export default function OrderDetail() {
               </div>
 
               {currentStatus === 'DELIVERED' && (
-                <div className="p-4 rounded-xl border border-[var(--f-tint-color)]/20 bg-[var(--f-tint-color)]/5 text-xs text-[var(--f-tint-color)] flex items-start gap-2.5">
+                <div className="p-4 rounded-xl border border-[var(--accent)]/20 bg-[var(--accent)]/5 text-xs text-[var(--accent)] flex items-start gap-2.5">
                   <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <div>
                     <span className="font-bold">Awaiting Customer Confirmation</span>
-                    <p className="text-[var(--f-text-3)] mt-0.5">The order has been marked as delivered. Funds will unlock from escrow automatically once customer completes the booking, or when the platform release timer expires.</p>
+                    <p className="text-[var(--text-3)] mt-0.5">The order has been marked as delivered. Funds will unlock from escrow automatically once customer completes the booking, or when the platform release timer expires.</p>
                   </div>
                 </div>
               )}
@@ -369,30 +369,30 @@ export default function OrderDetail() {
         <div className="space-y-6">
           {/* Escrow Status Panel */}
           <Card className="p-6">
-            <h2 className="text-sm font-black uppercase tracking-wider text-[var(--f-text)] mb-4 flex items-center gap-2">
-              <Lock className="w-4 h-4 text-[var(--f-info)]" />
+            <h2 className="text-sm font-black uppercase tracking-wider text-[var(--text)] mb-4 flex items-center gap-2">
+              <Lock className="w-4 h-4 text-[var(--info)]" />
               Escrow Security Panel
             </h2>
 
             <div className="space-y-5">
-              <div className="flex items-center gap-3 p-3.5 rounded-xl border border-[var(--f-line)] bg-[var(--f-ink-900)]">
+              <div className="flex items-center gap-3 p-3.5 rounded-xl border border-[var(--line)] bg-[var(--f-ink-900)]">
                 <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${escrowMeta.color}1a` }}>
                   <escrowMeta.icon className="w-4 h-4" style={{ color: escrowMeta.color }} />
                 </div>
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wider" style={{ color: escrowMeta.color }}>{escrowMeta.label}</p>
-                  <p className="text-[10px] text-[var(--f-text-3)] mt-0.5">{escrowMeta.desc}</p>
+                  <p className="text-[10px] text-[var(--text-3)] mt-0.5">{escrowMeta.desc}</p>
                 </div>
               </div>
 
-              <div className="space-y-2 pb-4 border-b border-[var(--f-line)]/50">
+              <div className="space-y-2 pb-4 border-b border-[var(--line)]/50">
                 <div className="flex justify-between text-xs">
-                  <span className="text-[var(--f-text-3)]">Escrow Amount</span>
-                  <span className="font-bold f-mono text-[var(--f-text)]">{fmtUSDC(escrowAmount)}</span>
+                  <span className="text-[var(--text-3)]">Escrow Amount</span>
+                  <span className="font-bold f-mono text-[var(--text)]">{fmtUSDC(escrowAmount)}</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-[var(--f-text-3)]">Current Stage</span>
-                  <span className="font-medium text-[var(--f-text)] capitalize">{currentStatus.replace('_', ' ').toLowerCase()}</span>
+                  <span className="text-[var(--text-3)]">Current Stage</span>
+                  <span className="font-medium text-[var(--text)] capitalize">{currentStatus.replace('_', ' ').toLowerCase()}</span>
                 </div>
               </div>
 
@@ -400,7 +400,7 @@ export default function OrderDetail() {
               {['PAID', 'DELIVERED', 'HELD', 'DISPUTED'].includes(currentStatus) && (
                 <Button 
                   variant="danger" 
-                  className="w-full justify-center bg-transparent text-[var(--f-bad)] border-[var(--f-bad)]:bg-[var(--f-bad)]/10"
+                  className="w-full justify-center bg-transparent text-[var(--stop)] border-[var(--stop)]:bg-[var(--stop)]/10"
                   onClick={() => setRefundModal(true)}
                 >
                   <CornerUpLeft className="w-4 h-4" />
@@ -412,40 +412,40 @@ export default function OrderDetail() {
 
           {/* Audit Information Panel */}
           <Card className="p-6">
-            <h2 className="text-sm font-black uppercase tracking-wider text-[var(--f-text)] mb-4 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-[var(--f-tint-color)]" />
+            <h2 className="text-sm font-black uppercase tracking-wider text-[var(--text)] mb-4 flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-[var(--accent)]" />
               System Audit Metadata
             </h2>
 
             <div className="space-y-3.5 text-xs">
-              <div className="flex justify-between items-center pb-2.5 border-b border-[var(--f-line)]/30">
-                <span className="text-[var(--f-text-3)]">Order ID</span>
-                <span className="font-bold f-mono text-[var(--f-text)]">{order.id}</span>
+              <div className="flex justify-between items-center pb-2.5 border-b border-[var(--line)]/30">
+                <span className="text-[var(--text-3)]">Order ID</span>
+                <span className="font-bold f-mono text-[var(--text)]">{order.id}</span>
               </div>
-              <div className="flex justify-between items-center pb-2.5 border-b border-[var(--f-line)]/30">
-                <span className="text-[var(--f-text-3)]">Created Date</span>
-                <span className="text-[var(--f-text)]">{formatDateTime(order.created_date || order.createdAt)}</span>
+              <div className="flex justify-between items-center pb-2.5 border-b border-[var(--line)]/30">
+                <span className="text-[var(--text-3)]">Created Date</span>
+                <span className="text-[var(--text)]">{formatDateTime(order.created_date || order.createdAt)}</span>
               </div>
-              <div className="flex justify-between items-center pb-2.5 border-b border-[var(--f-line)]/30">
-                <span className="text-[var(--f-text-3)]">Last Updated</span>
-                <span className="text-[var(--f-text)]">{formatDateTime(order.updated_date || order.updatedAt)}</span>
+              <div className="flex justify-between items-center pb-2.5 border-b border-[var(--line)]/30">
+                <span className="text-[var(--text-3)]">Last Updated</span>
+                <span className="text-[var(--text)]">{formatDateTime(order.updated_date || order.updatedAt)}</span>
               </div>
               {timestamps.PAID && (
-                <div className="flex justify-between items-center pb-2.5 border-b border-[var(--f-line)]/30">
-                  <span className="text-[var(--f-text-3)]">Settled (Paid)</span>
-                  <span className="text-[var(--f-text)]">{formatDateTime(timestamps.PAID)}</span>
+                <div className="flex justify-between items-center pb-2.5 border-b border-[var(--line)]/30">
+                  <span className="text-[var(--text-3)]">Settled (Paid)</span>
+                  <span className="text-[var(--text)]">{formatDateTime(timestamps.PAID)}</span>
                 </div>
               )}
               {timestamps.DELIVERED && (
-                <div className="flex justify-between items-center pb-2.5 border-b border-[var(--f-line)]/30">
-                  <span className="text-[var(--f-text-3)]">Dispatched At</span>
-                  <span className="text-[var(--f-text)]">{formatDateTime(timestamps.DELIVERED)}</span>
+                <div className="flex justify-between items-center pb-2.5 border-b border-[var(--line)]/30">
+                  <span className="text-[var(--text-3)]">Dispatched At</span>
+                  <span className="text-[var(--text)]">{formatDateTime(timestamps.DELIVERED)}</span>
                 </div>
               )}
               {timestamps.COMPLETED && (
-                <div className="flex justify-between items-center pb-2.5 border-b border-[var(--f-line)]/30">
-                  <span className="text-[var(--f-text-3)]">Completed At</span>
-                  <span className="text-[var(--f-text)]">{formatDateTime(timestamps.COMPLETED)}</span>
+                <div className="flex justify-between items-center pb-2.5 border-b border-[var(--line)]/30">
+                  <span className="text-[var(--text-3)]">Completed At</span>
+                  <span className="text-[var(--text)]">{formatDateTime(timestamps.COMPLETED)}</span>
                 </div>
               )}
             </div>
@@ -454,22 +454,22 @@ export default function OrderDetail() {
       </div>
 
       {/* Refund Modal */}
-      <Modal 
+      <Dialog 
         open={refundModal} 
         onClose={() => setRefundModal(false)}
         title="Confirm Order Refund"
       >
         <div className="space-y-4">
-          <div className="p-4 rounded-xl border border-[var(--f-bad)]/20 bg-[var(--f-bad)]/5 text-xs text-[var(--f-bad)] flex items-start gap-2.5">
+          <div className="p-4 rounded-xl border border-[var(--stop)]/20 bg-[var(--stop)]/5 text-xs text-[var(--stop)] flex items-start gap-2.5">
             <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
             <div>
               <span className="font-bold">Irreversible Action Warning</span>
-              <p className="text-[var(--f-text-3)] mt-0.5">You are initiating a full refund of <strong className="text-[var(--f-text)] f-mono">{fmtUSDC(escrowAmount)}</strong> back to the buyer's wallet. This will close the escrow contract and cannot be undone.</p>
+              <p className="text-[var(--text-3)] mt-0.5">You are initiating a full refund of <strong className="text-[var(--text)] f-mono">{fmtUSDC(escrowAmount)}</strong> back to the buyer's wallet. This will close the escrow contract and cannot be undone.</p>
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">Refund Reason / Auditable Note</label>
+            <label className="text-xs font-semibold text-[var(--text-3)] uppercase tracking-wider">Refund Reason / Auditable Note</label>
             <Textarea
               value={refundReason}
               onChange={(e) => setRefundReason(e.target.value)}
@@ -490,7 +490,7 @@ export default function OrderDetail() {
             </Button>
           </div>
         </div>
-      </Modal>
+      </Dialog>
     </div>
   );
 }

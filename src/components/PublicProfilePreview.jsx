@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { business as businessApi, products as productsApi } from '@/lib/api';
-import { Modal, Skeleton, Badge } from '@/components/forge';
+import { Dialog, Skel, Badge } from '@/components/instrument';
 import { fmtUSDC, fmt } from '@/lib/utils';
 import { BadgeCheck, Globe, Package, ShoppingBag, Star } from 'lucide-react';
 
@@ -28,12 +28,12 @@ export default function PublicProfilePreview({ open, onClose, bizId }) {
   const products = (productData?.products || []).filter(p => p.isActive).slice(0, 6);
 
   return (
-    <Modal open={open} onClose={onClose} title="Public Profile Preview" className="max-w-md">
+    <Dialog open={open} onClose={onClose} title="Public Profile Preview" className="max-w-md">
       {isLoading ? (
         <div className="space-y-4">
-          <Skeleton className="h-24" />
-          <Skeleton className="h-16" />
-          <div className="grid grid-cols-3 gap-2">{[1, 2, 3].map(i => <Skeleton key={i} className="h-20" />)}</div>
+          <Skel className="h-24" />
+          <Skel className="h-16" />
+          <div className="grid grid-cols-3 gap-2">{[1, 2, 3].map(i => <Skel key={i} className="h-20" />)}</div>
         </div>
       ) : isError || !biz ? (
         <div className="py-10 text-center text-sm text-[var(--f-text-3)]">
@@ -47,10 +47,10 @@ export default function PublicProfilePreview({ open, onClose, bizId }) {
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
                 <h3 className="text-base font-bold text-[var(--f-text)] truncate">{biz.businessName}</h3>
-                {biz.isVerified && <BadgeCheck className="w-4 h-4 text-[var(--f-tint-color)] flex-shrink-0" />}
+                {biz.isVerified && <TagCheck className="w-4 h-4 text-[var(--f-tint-color)] flex-shrink-0" />}
               </div>
               {biz.category && (
-                <Badge color="var(--f-tint-color)" bg="var(--f-surface-sunken)" className="mt-1">{biz.category.replace(/_/g, ' ')}</Badge>
+                <Tag color="var(--f-tint-color)" bg="var(--f-surface-sunken)" className="mt-1">{biz.category.replace(/_/g, ' ')}</Tag>
               )}
             </div>
           </div>
@@ -106,7 +106,7 @@ export default function PublicProfilePreview({ open, onClose, bizId }) {
           </div>
         </div>
       )}
-    </Modal>
+    </Dialog>
   );
 }
 

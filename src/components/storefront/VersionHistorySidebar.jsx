@@ -1,6 +1,6 @@
 // src/components/storefront/VersionHistorySidebar.jsx
-import { Card } from '@/components/forge';
-import { Badge } from '@/components/forge';
+import { Card } from '@/components/instrument';
+import { Badge } from '@/components/instrument';
 import { History, RotateCcw, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { storefrontApi } from '@/services/storefrontApi';
@@ -46,7 +46,7 @@ export default function VersionHistorySidebar({ businessId, onRevert, onClose })
             {versions.map(v => (
               <GlassPanel key={v.id} className="p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <Badge variant="primary">v{v.version}</Badge>
+                  <Tag variant="primary">v{v.version}</Tag>
                   <span className="text-xs" style={{ color: 'var(--f-text-3)' }}>
                     {new Date(v.createdAt).toLocaleDateString()}
                   </span>

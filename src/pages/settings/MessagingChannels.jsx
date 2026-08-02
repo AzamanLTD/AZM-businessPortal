@@ -10,7 +10,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { request } from '@/lib/apiCore';
 import { useAuth } from '@/lib/AuthContext';
 import { toast } from 'sonner';
-import { Card } from '@/components/forge';
+import { Card } from '@/components/instrument';
 import {
   MessageSquare, Phone, CheckCircle2, XCircle, AlertTriangle, RefreshCw,
   Send, Settings, Eye, EyeOff, Plus, Trash2,

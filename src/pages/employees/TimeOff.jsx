@@ -4,18 +4,18 @@ import { usePermission } from '@/hooks/usePermission';
 import {
   Card,
   Button,
-  Badge,
+  Tag,
   Input,
   Select,
-  Modal,
+  Dialog,
   Empty,
-  Skeleton,
+  Skel,
   Avatar,
   StatCard,
   Textarea,
   Tooltip,
   Switch
-} from '@/components/forge';
+} from '@/components/instrument';
 import {
   Calendar,
   CheckCircle2,
@@ -449,8 +449,8 @@ export default function TimeOff() {
 
             {loadingTimeOff ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Skeleton className="h-40" />
-                <Skeleton className="h-40" />
+                <Skel className="h-40" />
+                <Skel className="h-40" />
               </div>
             ) : filteredPendingRequests.length === 0 ? (
               <Empty
@@ -484,9 +484,9 @@ export default function TimeOff() {
                           </div>
 
                           <div className="flex flex-col items-end gap-1.5">
-                            <Badge color={typeClr.text} bg={typeClr.bg}>
+                            <Tag color={typeClr.text} bg={typeClr.bg}>
                               {req.type}
-                            </Badge>
+                            </Tag>
                             {req.isEmergency && (
                               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold text-[var(--f-bad)] bg-red-500/10 border border-red-500/20 animate-pulse">
                                 <AlertCircle className="w-3.5 h-3.5" /> Emergency
@@ -559,7 +559,7 @@ export default function TimeOff() {
             {pastRequestsOpen && (
               <div className="border-t border-line p-5 space-y-3 bg-[var(--f-ink-900)]">
                 {loadingTimeOff ? (
-                  <Skeleton className="h-24" />
+                  <Skel className="h-24" />
                 ) : filteredPastRequests.length === 0 ? (
                   <div className="text-center py-6 text-sm text-[var(--f-text-3)]">
                     No past requests found matching active filters.
@@ -582,9 +582,9 @@ export default function TimeOff() {
                                 <span className="text-sm font-semibold text-[var(--f-text)]">
                                   {req.employee?.user?.fullName || 'Unknown Employee'}
                                 </span>
-                                <Badge color={typeClr.text} bg={typeClr.bg}>
+                                <Tag color={typeClr.text} bg={typeClr.bg}>
                                   {req.type}
-                                </Badge>
+                                </Tag>
                               </div>
                               <p className="text-xs text-[var(--f-text-3)] mt-0.5">
                                 {formatDate(req.startDate)} - {formatDate(req.endDate)}
@@ -600,11 +600,11 @@ export default function TimeOff() {
 
                           <div className="flex items-center gap-3 self-end sm:self-center">
                             {req.isEmergency && (
-                              <Badge color="var(--f-bad)" bg="rgba(239, 68, 68, 0.1)">Emergency</Badge>
+                              <Tag color="var(--f-bad)" bg="rgba(239, 68, 68, 0.1)">Emergency</Tag>
                             )}
-                            <Badge color={statusClr.text} bg={statusClr.bg}>
+                            <Tag color={statusClr.text} bg={statusClr.bg}>
                               {req.status}
-                            </Badge>
+                            </Tag>
                           </div>
                         </div>
                       );
@@ -670,8 +670,8 @@ export default function TimeOff() {
 
             {loadingFeedback ? (
               <div className="space-y-4">
-                <Skeleton className="h-32" />
-                <Skeleton className="h-32" />
+                <Skel className="h-32" />
+                <Skel className="h-32" />
               </div>
             ) : filteredFeedbackList.length === 0 ? (
               <Empty
@@ -733,9 +733,9 @@ export default function TimeOff() {
                     {fb.tags && fb.tags.length > 0 && (
                       <div className="flex flex-wrap gap-2 pt-2 border-t border-line">
                         {fb.tags.map((tag) => (
-                          <Badge key={tag} color="var(--f-tint-color)">
+                          <Tag key={tag} color="var(--f-tint-color)">
                             {tag}
-                          </Badge>
+                          </Tag>
                         ))}
                       </div>
                     )}
@@ -748,7 +748,7 @@ export default function TimeOff() {
       )}
 
       {/* Reject Modal with Manager Note */}
-      <Modal
+      <Dialog
         open={rejectModalOpen}
         onClose={() => setRejectModalOpen(false)}
         title="Reject Time-Off Request"
@@ -772,10 +772,10 @@ export default function TimeOff() {
             </Button>
           </div>
         </div>
-      </Modal>
+      </Dialog>
 
       {/* New Time-Off Request Modal (For Managers creating on behalf of employees) */}
-      <Modal
+      <Dialog
         open={newRequestModalOpen}
         onClose={() => setNewRequestModalOpen(false)}
         title="New Time-Off Request"
@@ -843,10 +843,10 @@ export default function TimeOff() {
             </Button>
           </div>
         </div>
-      </Modal>
+      </Dialog>
 
       {/* Give Feedback Modal */}
-      <Modal
+      <Dialog
         open={giveFeedbackModalOpen}
         onClose={() => setGiveFeedbackModalOpen(false)}
         title="Give Employee Feedback"
@@ -945,7 +945,7 @@ export default function TimeOff() {
             </Button>
           </div>
         </div>
-      </Modal>
+      </Dialog>
     </div>
   );
 }

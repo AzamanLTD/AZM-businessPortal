@@ -14,7 +14,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { businessOS } from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
-import { Card, Button, Input, Badge } from '@/components/forge';
+import { Card, Button, Input, Badge } from '@/components/instrument';
 import { AlertTriangle, Pause, Play, Download, Trash2, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -78,9 +78,9 @@ export default function DangerZone() {
                 : 'Temporarily stop accepting new orders and bookings without deleting any data. Your existing orders, employees, and settings are preserved.'}
             </p>
             {isPaused && (
-              <Badge color="var(--f-bad)" className="mt-2 text-xs">
+              <Tag color="var(--f-bad)" className="mt-2 text-xs">
                 Currently Paused
-              </Badge>
+              </Tag>
             )}
           </div>
           <Button

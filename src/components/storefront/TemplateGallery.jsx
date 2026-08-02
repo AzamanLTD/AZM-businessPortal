@@ -1,7 +1,7 @@
 // src/components/storefront/TemplateGallery.jsx
 // Pre-designed storefront layouts per business type — businesses browse,
 // preview, and apply with one click.
-import { Card } from '@/components/forge';
+import { Card } from '@/components/instrument';
 import { LayoutTemplate, Check, Sparkles, Star, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { getWidgetDefaults } from '@/lib/businessTypes';

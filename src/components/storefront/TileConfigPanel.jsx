@@ -1,8 +1,8 @@
 // src/components/storefront/TileConfigPanel.jsx
 // Schema-driven tile configuration panel — reads the widget's configSchema
 // from the backend catalog and renders the appropriate input for each property.
-import { Card } from '@/components/forge';
-import { Badge } from '@/components/forge';
+import { Card } from '@/components/instrument';
+import { Badge } from '@/components/instrument';
 import { Trash2, Settings, Upload, Loader2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { storefrontApi } from '@/services/storefrontApi';
@@ -291,7 +291,7 @@ export default function TileConfigPanel({ tile, widget, onUpdate, onRemove }) {
           <Settings className="w-4 h-4" style={{ color: 'var(--f-text-3)' }} />
           <h3 className="text-sm font-bold" style={{ color: 'var(--f-text)' }}>Configure</h3>
         </div>
-        <Badge variant="primary">{widget?.displayName || tile?.widgetType}</Badge>
+        <Tag variant="primary">{widget?.displayName || tile?.widgetType}</Tag>
       </div>
       <GlassPanel className="p-4 space-y-3">
         {editableKeys.length === 0 ? (

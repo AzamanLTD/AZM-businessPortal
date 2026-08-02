@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { notifications as notifApi } from '@/lib/api';
-import { Card, Button, Badge, Skeleton, Empty } from '@/components/forge';
+import { Card, Button, Tag, Skel, Empty } from '@/components/instrument';
 import { useBizNotifications } from '@/hooks/useBizNotifications';
 import { cn, relativeTime } from '@/lib/utils';
 import {
@@ -24,19 +24,19 @@ const FILTER_CHIPS = [
 ];
 
 const TYPE_META = {
-  NEW_ORDER: { icon: ShoppingBag, color: 'var(--f-tint-color)', label: 'Order' },
-  ORDER_FUNDED: { icon: Wallet, color: 'var(--f-info)', label: 'Payment' },
-  ORDER_SATISFIED: { icon: CheckCircle2, color: 'var(--f-tint-color)', label: 'Settlement' },
-  ORDER_DISPUTED: { icon: AlertTriangle, color: 'var(--f-bad)', label: 'Dispute' },
-  ORDER_SETTLED: { icon: CheckCircle2, color: 'var(--f-tint-color)', label: 'Settled' },
-  ORDER_REFUNDED: { icon: RotateCcw, color: 'var(--f-info)', label: 'Refund' },
-  ORDER_CANCELLED: { icon: XCircle, color: 'var(--f-text-3)', label: 'Cancelled' },
-  KYB_STATUS_CHANGED: { icon: ShieldCheck, color: 'var(--f-info)', label: 'Verification' },
-  INVENTORY_LOW: { icon: AlertTriangle, color: 'var(--f-warn)', label: 'Inventory' },
-  SHIFT_ALERT: { icon: Clock, color: 'var(--f-info)', label: 'Shift' },
-  REVIEW_NEW: { icon: HelpCircle, color: 'var(--f-tint-color)', label: 'Review' },
-  RESERVATION_PENDING: { icon: CalendarCheck, color: 'var(--f-info)', label: 'Reservation' },
-  MAINTENANCE: { icon: AlertTriangle, color: 'var(--f-bad)', label: 'Maintenance' },
+  NEW_ORDER: { icon: ShoppingBag, color: 'var(--accent)', label: 'Order' },
+  ORDER_FUNDED: { icon: Wallet, color: 'var(--info)', label: 'Payment' },
+  ORDER_SATISFIED: { icon: CheckCircle2, color: 'var(--accent)', label: 'Settlement' },
+  ORDER_DISPUTED: { icon: AlertTriangle, color: 'var(--stop)', label: 'Dispute' },
+  ORDER_SETTLED: { icon: CheckCircle2, color: 'var(--accent)', label: 'Settled' },
+  ORDER_REFUNDED: { icon: RotateCcw, color: 'var(--info)', label: 'Refund' },
+  ORDER_CANCELLED: { icon: XCircle, color: 'var(--text-3)', label: 'Cancelled' },
+  KYB_STATUS_CHANGED: { icon: ShieldCheck, color: 'var(--info)', label: 'Verification' },
+  INVENTORY_LOW: { icon: AlertTriangle, color: 'var(--hold)', label: 'Inventory' },
+  SHIFT_ALERT: { icon: Clock, color: 'var(--info)', label: 'Shift' },
+  REVIEW_NEW: { icon: HelpCircle, color: 'var(--accent)', label: 'Review' },
+  RESERVATION_PENDING: { icon: CalendarCheck, color: 'var(--info)', label: 'Reservation' },
+  MAINTENANCE: { icon: AlertTriangle, color: 'var(--stop)', label: 'Maintenance' },
 };
 
 export default function Notifications() {
@@ -148,17 +148,17 @@ export default function Notifications() {
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--f-line)] pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--line)] pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-[var(--f-text)] tracking-tight">Notifications Center</h1>
+            <h1 className="text-2xl font-bold text-[var(--text)] tracking-tight">Notifications Center</h1>
             {unreadCount > 0 && (
-              <Tag variant="neutral" bg="var(--f-surface-sunken)">
+              <Tag tone="neutral" bg="var(--surface-sunk)">
                 {unreadCount} Unread
               </Tag>
             )}
           </div>
-          <p className="text-sm text-[var(--f-text-3)] mt-1">
+          <p className="text-sm text-[var(--text-3)] mt-1">
             Real-time feed of your business events, alerts, and operational signals.
           </p>
         </div>
@@ -178,7 +178,7 @@ export default function Notifications() {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none border-b border-[var(--f-line)]">
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none border-b border-[var(--line)]">
         {FILTER_CHIPS.map((chip) => {
           const active = filter === chip.key;
           return (
@@ -188,8 +188,8 @@ export default function Notifications() {
               className={cn(
                 'px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border',
                 active
-                  ? 'bg-[var(--f-surface-sunken)] text-[var(--f-tint-color)] border-[var(--f-tint-color)]'
-                  : 'bg-[var(--f-surface)] text-[var(--f-text-3)] border-[var(--f-line)]:text-[var(--f-text)]'
+                  ? 'bg-[var(--surface-sunk)] text-[var(--accent)] border-[var(--accent)]'
+                  : 'bg-[var(--surface)] text-[var(--text-3)] border-[var(--line)]:text-[var(--text)]'
               )}
             >
               {chip.label}
@@ -212,10 +212,10 @@ export default function Notifications() {
           ))}
         </div>
       ) : error ? (
-        <Card className="flex flex-col items-center justify-center p-12 text-center border-dashed border-[var(--f-bad)]">
-          <AlertTriangle className="w-12 h-12 text-[var(--f-bad)] mb-4" />
+        <Card className="flex flex-col items-center justify-center p-12 text-center border-dashed border-[var(--stop)]">
+          <AlertTriangle className="w-12 h-12 text-[var(--stop)] mb-4" />
           <h3 className="text-lg font-bold">Failed to load notifications</h3>
-          <p className="text-sm text-[var(--f-text-3)] mt-1 max-w-sm">
+          <p className="text-sm text-[var(--text-3)] mt-1 max-w-sm">
             We couldn't retrieve your notifications from the backend API.
           </p>
           <Button className="mt-4" onClick={() => refetch()}>
@@ -234,25 +234,25 @@ export default function Notifications() {
         <div className="space-y-8">
           {groupedNotifications.map((group) => (
             <div key={group.title} className="space-y-3 animate-slide-in">
-              <h3 className="text-xs font-bold text-[var(--f-text-3)] uppercase tracking-wider pl-1">
+              <h3 className="text-xs font-bold text-[var(--text-3)] uppercase tracking-wider pl-1">
                 {group.title}
               </h3>
-              <div className="rounded-2xl border border-[var(--f-line)] overflow-hidden divide-y divide-[var(--f-line)] bg-[var(--f-surface)]">
+              <div className="rounded-2xl border border-[var(--line)] overflow-hidden divide-y divide-[var(--line)] bg-[var(--surface)]">
                 {group.items.map((n) => {
-                  const meta = TYPE_META[n.type] || { icon: Bell, color: 'var(--f-text-3)', label: 'Alert' };
+                  const meta = TYPE_META[n.type] || { icon: Bell, color: 'var(--text-3)', label: 'Alert' };
                   const Icon = meta.icon;
                   return (
                     <div
                       key={n.id}
                       onClick={() => handleNotificationClick(n)}
                       className={cn(
-                        'flex items-start gap-4 p-5:bg-[var(--f-surface-sunken)] cursor-pointer transition-all relative',
-                        !n.isRead && 'bg-[var(--f-surface-sunken)]/30'
+                        'flex items-start gap-4 p-5:bg-[var(--surface-sunk)] cursor-pointer transition-all relative',
+                        !n.isRead && 'bg-[var(--surface-sunk)]/30'
                       )}
                     >
                       {/* Left border indicator for unread */}
                       {!n.isRead && (
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--f-tint-color)]" />
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--accent)]" />
                       )}
 
                       {/* Icon */}
@@ -269,14 +269,14 @@ export default function Notifications() {
                           <span className="text-xs font-bold uppercase tracking-wider" style={{ color: meta.color }}>
                             {meta.label}
                           </span>
-                          <span className="text-[10px] text-[var(--f-text-3)]">
+                          <span className="text-[10px] text-[var(--text-3)]">
                             {relativeTime(n.createdAt || n.created_date)}
                           </span>
                         </div>
-                        <h4 className="text-sm font-semibold text-[var(--f-text)] mt-1">
+                        <h4 className="text-sm font-semibold text-[var(--text)] mt-1">
                           {n.title || 'Notification Alert'}
                         </h4>
-                        <p className="text-xs text-[var(--f-text-3)] mt-1 leading-relaxed">
+                        <p className="text-xs text-[var(--text-3)] mt-1 leading-relaxed">
                           {n.body || n.description}
                         </p>
                       </div>
@@ -289,7 +289,7 @@ export default function Notifications() {
                               e.stopPropagation();
                               markOne.mutate(n.id);
                             }}
-                            className="p-1.5 rounded-lg border border-[var(--f-line)] text-[var(--f-text-3)]:text-[var(--f-tint-color)]:border-[var(--f-tint-color)] transition-all bg-[var(--f-surface)]"
+                            className="p-1.5 rounded-lg border border-[var(--line)] text-[var(--text-3)]:text-[var(--accent)]:border-[var(--accent)] transition-all bg-[var(--surface)]"
                             title="Mark as read"
                           >
                             <Check className="w-4 h-4" />

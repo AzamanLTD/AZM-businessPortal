@@ -1,7 +1,7 @@
 // src/components/storefront/MagicLayout.jsx
 // One-click auto-layout generator — analyzes the business type and creates
 // an optimized storefront with the right widgets, order, defaults, and theme.
-import { Card } from '@/components/forge';
+import { Card } from '@/components/instrument';
 import { Sparkles, Wand2, Check, X } from 'lucide-react';
 import { useState } from 'react';
 import { getWidgetDefaults } from '@/lib/businessTypes';

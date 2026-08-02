@@ -12,7 +12,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { businessOSEmployees, businessOS } from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
-import { Card, Button, Input, Badge, Modal, Switch } from '@/components/forge';
+import { Card, Button, Input, Tag, Dialog, Switch } from '@/components/instrument';
 import { Users, UserPlus, Shield, Trash2, Pencil, Crown, Mail, ChevronDown, ChevronUp, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -181,7 +181,7 @@ export default function TeamAccess() {
       )}
 
       {/* Invite Modal */}
-      <Modal open={showInvite} onClose={() => setShowInvite(false)} title="Add Team Member">
+      <Dialog open={showInvite} onClose={() => setShowInvite(false)} title="Add Team Member">
         <div className="space-y-4">
           <p className="text-sm text-[var(--f-text-3)]">
             Add someone to your business portal. They'll need a AZM account with the same email.
@@ -220,10 +220,10 @@ export default function TeamAccess() {
               </p>
               <div className="flex flex-wrap gap-1">
                 {inviteForm.permissions.slice(0, 10).map(p => (
-                  <Badge key={p} color="var(--f-text-3)" className="text-xs">{p}</Badge>
+                  <Tag key={p} color="var(--f-text-3)" className="text-xs">{p}</Tag>
                 ))}
                 {inviteForm.permissions.length > 10 && (
-                  <Badge color="var(--f-text-3)" className="text-xs">+{inviteForm.permissions.length - 10} more</Badge>
+                  <Tag color="var(--f-text-3)" className="text-xs">+{inviteForm.permissions.length - 10} more</Tag>
                 )}
               </div>
             </div>
@@ -244,7 +244,7 @@ export default function TeamAccess() {
             <Mail className="w-4 h-4" /> Send Invite
           </Button>
         </div>
-      </Modal>
+      </Dialog>
     </div>
   );
 }
@@ -271,7 +271,7 @@ function TeamMemberRow({ emp, canManage, onUpdateRole, onRemove, expandedPerms, 
             <p className="text-sm font-semibold text-[var(--f-text)] truncate">
               {emp.fullName || emp.email}
             </p>
-            <Badge color={roleInfo.color} className="text-xs">{roleInfo.label}</Badge>
+            <Tag color={roleInfo.color} className="text-xs">{roleInfo.label}</Tag>
           </div>
           <p className="text-xs text-[var(--f-text-3)] truncate">{emp.email}</p>
         </div>
@@ -311,11 +311,11 @@ function TeamMemberRow({ emp, canManage, onUpdateRole, onRemove, expandedPerms, 
             Permissions ({perms.includes('*') ? 'Full Access' : `${perms.length} keys`})
           </p>
           {perms.includes('*') ? (
-            <Badge className="text-xs">Full Access</Badge>
+            <Tag className="text-xs">Full Access</Tag>
           ) : (
             <div className="flex flex-wrap gap-1">
               {perms.map(p => (
-                <Badge key={p} color="var(--f-text-3)" className="text-xs font-mono">{p}</Badge>
+                <Tag key={p} color="var(--f-text-3)" className="text-xs font-mono">{p}</Tag>
               ))}
             </div>
           )}

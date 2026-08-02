@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card } from '@/components/forge';
+import { Card } from '@/components/instrument';
 import { request } from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
 import { 
   MessageSquare, Send, Check, Settings as SettingsIcon, AlertCircle, RefreshCw, X, Plus
 } from 'lucide-react';
 import { getSocket } from '@/lib/socket';
-import { VirtualizedList } from '@/components/forge';
+import { VirtualizedList } from '@/components/instrument';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
@@ -157,11 +157,11 @@ export default function Messages() {
   if (isErrorInbox) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <AlertCircle className="w-12 h-12 text-[var(--f-bad)]" />
+        <AlertCircle className="w-12 h-12 text-[var(--stop)]" />
         <h2 className="text-lg font-semibold text-ink">Could not load messages</h2>
         <button 
           onClick={() => refetchInbox()} 
-          className="flex items-center gap-2 px-4 py-2 bg-tint text-[var(--f-text)] rounded-md font-semibold:brightness-110 transition-all"
+          className="flex items-center gap-2 px-4 py-2 bg-tint text-[var(--text)] rounded-md font-semibold:brightness-110 transition-all"
         >
           <RefreshCw className="w-4 h-4" /> Retry
         </button>
@@ -175,7 +175,7 @@ export default function Messages() {
       <Card className="w-72 flex flex-col h-full border border-line p-4 bg-surface/40">
         <div className="flex items-center justify-between mb-4 flex-shrink-0">
           <h2 className="text-lg font-bold text-ink">Messages</h2>
-          <button className="p-1.5 rounded-md bg-surface-sunken text-tint:brightness-95 transition-all" title="New Message">
+          <button className="p-1.5 rounded-md bg-surface-sunk text-tint:brightness-95 transition-all" title="New Message">
             <Plus className="w-4.5 h-4.5" />
           </button>
         </div>
@@ -184,10 +184,10 @@ export default function Messages() {
           {isLoadingInbox ? (
             Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="flex items-center gap-3 p-3 rounded-md border border-line/50 animate-pulse">
-                <div className="w-10 h-10 rounded-full bg-surface-sunken" />
+                <div className="w-10 h-10 rounded-full bg-surface-sunk" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-3.5 bg-surface-sunken rounded w-2/3" />
-                  <div className="h-3 bg-surface-sunken rounded w-1/2" />
+                  <div className="h-3.5 bg-surface-sunk rounded w-2/3" />
+                  <div className="h-3 bg-surface-sunk rounded w-1/2" />
                 </div>
               </div>
             ))
@@ -211,11 +211,11 @@ export default function Messages() {
                   onClick={() => setSelectedUser(u)}
                   className={`w-full flex items-center gap-3 p-3 rounded-md border transition-all text-left group relative ${
                     isSelected 
-                      ? 'bg-surface-sunken border-tint text-ink' 
-                      : 'border-line/50:bg-surface-sunken text-ink-2:text-ink'
+                      ? 'bg-surface-sunk border-tint text-ink' 
+                      : 'border-line/50:bg-surface-sunk text-ink-2:text-ink'
                   }`}
                 >
-                  <div className="w-10 h-10 rounded-full bg-surface-sunken text-tint border border-tint/15 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-surface-sunk text-tint border border-tint/15 flex items-center justify-center font-bold text-sm flex-shrink-0">
                     {(u.name || u.username || 'U').charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -226,7 +226,7 @@ export default function Messages() {
                     <p className="text-xs text-ink-2 truncate mt-0.5">{conv.lastMessage || 'No message content'}</p>
                   </div>
                   {conv.unreadCount > 0 && (
-                    <span className="absolute right-3 bottom-3 w-5 h-5 rounded-full bg-tint text-[var(--f-text)] font-bold text-[10px] flex items-center justify-center shadow-sm">
+                    <span className="absolute right-3 bottom-3 w-5 h-5 rounded-full bg-tint text-[var(--text)] font-bold text-[10px] flex items-center justify-center shadow-sm">
                       {conv.unreadCount}
                     </span>
                   )}
@@ -245,7 +245,7 @@ export default function Messages() {
             {/* Thread Header */}
             <div className="flex items-center justify-between border-b border-line pb-3 flex-shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-surface-sunken text-tint border border-tint/15 flex items-center justify-center font-bold text-sm">
+                <div className="w-10 h-10 rounded-full bg-surface-sunk text-tint border border-tint/15 flex items-center justify-center font-bold text-sm">
                   {(selectedUser.name || selectedUser.username || 'U').charAt(0).toUpperCase()}
                 </div>
                 <div>
@@ -257,7 +257,7 @@ export default function Messages() {
               {/* Settings cog for Quick Replies */}
               <button 
                 onClick={() => setShowSettings(!showSettings)} 
-                className="p-1.5 rounded-md text-ink-2:bg-surface-sunken:text-ink transition-colors"
+                className="p-1.5 rounded-md text-ink-2:bg-surface-sunk:text-ink transition-colors"
                 title="Quick reply templates"
               >
                 <SettingsIcon className="w-4.5 h-4.5" />
@@ -268,13 +268,13 @@ export default function Messages() {
             <div className="flex-1 overflow-y-auto py-4 space-y-3 pr-1 custom-scrollbar relative">
               {isLoadingThread ? (
                 <div className="space-y-4">
-                  <div className="flex justify-start"><div className="w-1/2 h-10 bg-surface-sunken rounded-md animate-pulse" /></div>
-                  <div className="flex justify-end"><div className="w-1/3 h-10 bg-surface-sunken rounded-md animate-pulse" /></div>
-                  <div className="flex justify-start"><div className="w-2/5 h-10 bg-surface-sunken rounded-md animate-pulse" /></div>
+                  <div className="flex justify-start"><div className="w-1/2 h-10 bg-surface-sunk rounded-md animate-pulse" /></div>
+                  <div className="flex justify-end"><div className="w-1/3 h-10 bg-surface-sunk rounded-md animate-pulse" /></div>
+                  <div className="flex justify-start"><div className="w-2/5 h-10 bg-surface-sunk rounded-md animate-pulse" /></div>
                 </div>
               ) : isErrorThread ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
-                  <AlertCircle className="w-8 h-8 text-[var(--f-bad)] mb-2" />
+                  <AlertCircle className="w-8 h-8 text-[var(--stop)] mb-2" />
                   <p className="text-sm text-ink">Could not load messages.</p>
                   <button onClick={() => refetchThread()} className="text-xs text-tint underline mt-1">Try again</button>
                 </div>
@@ -293,11 +293,11 @@ export default function Messages() {
                     >
                       <div className={`max-w-[70%] p-3 rounded-lg text-sm relative group ${
                         isSentByMe 
-                          ? 'bg-tint text-[var(--f-text)] rounded-br-none shadow-sm' 
+                          ? 'bg-tint text-[var(--text)] rounded-br-none shadow-sm' 
                           : 'bg-surface border border-line text-ink rounded-bl-none'
                       }`}>
                         <p className="leading-relaxed">{msg.text}</p>
-                        <div className={`text-[9px] mt-1 text-right ${isSentByMe ? 'text-[var(--f-text)]/70' : 'text-ink-3'}`}>
+                        <div className={`text-[9px] mt-1 text-right ${isSentByMe ? 'text-[var(--text)]/70' : 'text-ink-3'}`}>
                           {formatTime(msg.created_date || msg.createdAt)}
                         </div>
                       </div>
@@ -325,9 +325,9 @@ export default function Messages() {
                   </div>
                   <div className="flex-1 pr-1">
                     {quickReplies.map((reply, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-2 rounded bg-surface-sunken border border-line/40 text-sm">
+                      <div key={idx} className="flex items-center justify-between p-2 rounded bg-surface-sunk border border-line/40 text-sm">
                         <span className="truncate flex-1 text-ink-2">{reply}</span>
-                        <button onClick={() => removeTemplate(idx)} className="text-[var(--f-bad)]:text-red-600 text-xs font-semibold ml-2">Delete</button>
+                        <button onClick={() => removeTemplate(idx)} className="text-[var(--stop)]:text-red-600 text-xs font-semibold ml-2">Delete</button>
                       </div>
                     ))}
                   </div>
@@ -336,9 +336,9 @@ export default function Messages() {
                       value={newTemplateText}
                       onChange={e => setNewTemplateText(e.target.value)}
                       placeholder="Add custom template..."
-                      className="flex-1 text-xs bg-surface-sunken border border-line rounded px-2 py-1.5 outline-none text-ink focus:border-tint"
+                      className="flex-1 text-xs bg-surface-sunk border border-line rounded px-2 py-1.5 outline-none text-ink focus:border-tint"
                     />
-                    <button onClick={addTemplate} className="px-3 py-1.5 bg-tint text-[var(--f-text)] text-xs font-semibold rounded:brightness-110 transition-all">Add</button>
+                    <button onClick={addTemplate} className="px-3 py-1.5 bg-tint text-[var(--text)] text-xs font-semibold rounded:brightness-110 transition-all">Add</button>
                   </div>
                 </motion.div>
               )}
@@ -350,7 +350,7 @@ export default function Messages() {
               <div className="flex justify-between items-center">
                 <button 
                   onClick={() => setShowTemplates(!showTemplates)}
-                  className="text-xs text-tint font-semibold:underline flex items-center gap-1 bg-surface-sunken px-2 py-1 rounded"
+                  className="text-xs text-tint font-semibold:underline flex items-center gap-1 bg-surface-sunk px-2 py-1 rounded"
                 >
                   ⚡ Quick Reply
                 </button>
@@ -369,7 +369,7 @@ export default function Messages() {
                             setInputText(reply);
                             setShowTemplates(false);
                           }}
-                          className="w-full text-left text-xs p-2:bg-surface-sunken rounded text-ink-2:text-ink transition-colors truncate"
+                          className="w-full text-left text-xs p-2:bg-surface-sunk rounded text-ink-2:text-ink transition-colors truncate"
                         >
                           {reply}
                         </button>
@@ -385,12 +385,12 @@ export default function Messages() {
                   onChange={e => setInputText(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleSend()}
                   placeholder="Type your message..."
-                  className="flex-1 bg-surface-sunken border border-line rounded-md px-3 py-2 text-sm text-ink outline-none focus:border-tint placeholder:text-ink-3"
+                  className="flex-1 bg-surface-sunk border border-line rounded-md px-3 py-2 text-sm text-ink outline-none focus:border-tint placeholder:text-ink-3"
                 />
                 <button 
                   onClick={handleSend}
                   disabled={sendMessageMutation.isLoading || !inputText.trim()}
-                  className="px-4 py-2 bg-tint text-[var(--f-text)] rounded-md font-semibold:brightness-110 transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center"
+                  className="px-4 py-2 bg-tint text-[var(--text)] rounded-md font-semibold:brightness-110 transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center"
                 >
                   <Send className="w-4 h-4" />
                 </button>

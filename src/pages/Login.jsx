@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { Eye, EyeOff, AlertCircle, LogIn } from 'lucide-react';
-import { Button, Input } from '@/components/forge';
+import { Button, Input } from '@/components/instrument';
 import { ParticleField } from "@/components/forge/ParticleField";
 import { spring } from '@/lib/motion';
 
@@ -37,14 +37,14 @@ export default function Login() {
 
       {/* Left panel — branding with particle field */}
       <div className="hidden lg:flex flex-col justify-between w-[420px] flex-shrink-0 p-10 border-r relative overflow-hidden"
-        style={{ borderColor: 'var(--f-line)', background: 'var(--f-surface-sunken)' }}>
+        style={{ borderColor: 'var(--line)', background: 'var(--surface-sunk)' }}>
 
         {/* Particle field */}
         <ParticleField color="#6C4FD1" count={400} />
 
         {/* Vignette */}
         <div className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at center, transparent 0%, var(--f-surface-sunken) 85%)' }} />
+          style={{ background: 'radial-gradient(ellipse at center, transparent 0%, var(--surface-sunk) 85%)' }} />
 
         <div className="relative z-10">
           {/* Logo */}
@@ -57,8 +57,8 @@ export default function Login() {
             <img src="/azaman-logo.png" alt="Azaman" className="w-10 h-10 rounded-xl object-contain"
               style={{ filter: 'drop-shadow(0 0 8px rgba(108, 79, 209, 0.4))' }} />
             <div>
-              <p className="text-base font-bold tracking-tight" style={{ color: 'var(--f-text)' }}>AZAMAN</p>
-              <p className="text-xs font-medium" style={{ color: 'var(--f-tint-color)' }}>Business Portal</p>
+              <p className="text-base font-bold tracking-tight" style={{ color: 'var(--text)' }}>AZAMAN</p>
+              <p className="text-xs font-medium" style={{ color: 'var(--accent)' }}>Business Portal</p>
             </div>
           </motion.div>
 
@@ -67,17 +67,17 @@ export default function Login() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
             className="text-3xl font-bold leading-tight mb-4"
-            style={{ color: 'var(--f-text)' }}
+            style={{ color: 'var(--text)' }}
           >
             Manage your<br />
-            <span style={{ color: 'var(--f-tint-color)' }}>business</span> with ease
+            <span style={{ color: 'var(--accent)' }}>business</span> with ease
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.25 }}
             className="text-sm leading-relaxed"
-            style={{ color: 'var(--f-text-3)' }}
+            style={{ color: 'var(--text-3)' }}
           >
             List products, receive payments, track orders, and grow your business on Ghana's most trusted P2P platform.
           </motion.p>
@@ -96,16 +96,16 @@ export default function Login() {
             ['Instant Notifications',   'Get alerted the moment a customer pays'],
           ].map(([title, desc]) => (
             <div key={title} className="flex items-start gap-3">
-              <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ background: 'var(--f-tint-color)' }} />
+              <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ background: 'var(--accent)' }} />
               <div>
-                <p className="text-sm font-semibold" style={{ color: 'var(--f-text)' }}>{title}</p>
-                <p className="text-xs" style={{ color: 'var(--f-text-3)' }}>{desc}</p>
+                <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{title}</p>
+                <p className="text-xs" style={{ color: 'var(--text-3)' }}>{desc}</p>
               </div>
             </div>
           ))}
         </motion.div>
 
-        <p className="text-xs relative z-10" style={{ color: 'var(--f-text-3)' }}>© 2026 Azaman. All rights reserved.</p>
+        <p className="text-xs relative z-10" style={{ color: 'var(--text-3)' }}>© 2026 Azaman. All rights reserved.</p>
       </div>
 
       {/* Right panel — form */}
@@ -120,13 +120,13 @@ export default function Login() {
           <div className="flex items-center gap-3 mb-8 lg:hidden">
             <img src="/azaman-logo.png" alt="Azaman" className="w-9 h-9 rounded-xl object-contain" />
             <div>
-              <p className="text-sm font-bold" style={{ color: 'var(--f-text)' }}>AZAMAN</p>
-              <p className="text-xs" style={{ color: 'var(--f-tint-color)' }}>Business Portal</p>
+              <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>AZAMAN</p>
+              <p className="text-xs" style={{ color: 'var(--accent)' }}>Business Portal</p>
             </div>
           </div>
 
-          <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--f-text)' }}>Welcome back</h2>
-          <p className="text-sm mb-8" style={{ color: 'var(--f-text-3)' }}>Sign in to your business account</p>
+          <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--text)' }}>Welcome back</h2>
+          <p className="text-sm mb-8" style={{ color: 'var(--text-3)' }}>Sign in to your business account</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
@@ -139,7 +139,7 @@ export default function Login() {
             />
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--f-text-3)' }}>Password</label>
+              <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-3)' }}>Password</label>
               <div className="relative">
                 <input
                   type={showPw ? 'text' : 'password'}
@@ -153,7 +153,7 @@ export default function Login() {
                   type="button"
                   onClick={() => setShowPw(!showPw)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
-                  style={{ color: 'var(--f-text-3)' }}
+                  style={{ color: 'var(--text-3)' }}
                 >
                   {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -168,20 +168,20 @@ export default function Login() {
                 className="flex items-center gap-2 p-3 rounded-xl"
                 style={{ background: 'var(--f-bad-bg)', border: '1px solid var(--f-bad-bg)' }}
               >
-                <AlertCircle className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--f-bad)' }} />
-                <p className="text-xs font-medium" style={{ color: 'var(--f-bad)' }}>{error}</p>
+                <AlertCircle className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--stop)' }} />
+                <p className="text-xs font-medium" style={{ color: 'var(--stop)' }}>{error}</p>
               </motion.div>
             )}
 
             <motion.div whileTap={{ scale: 0.98 }} transition={{ duration: 0.08 }}>
               <Button type="submit" className="w-full mt-2"
-                style={{ background: 'var(--f-tint-color)', color: '#fff' }}>
+                style={{ background: 'var(--accent)', color: '#fff' }}>
                 {loading ? null : <div className="flex items-center gap-2"><LogIn className="w-4 h-4" />Sign In</div>}
               </Button>
             </motion.div>
           </form>
 
-          <p className="text-xs text-center mt-6" style={{ color: 'var(--f-text-3)' }}>
+          <p className="text-xs text-center mt-6" style={{ color: 'var(--text-3)' }}>
             Need access? Contact your Azaman account manager.
           </p>
         </motion.div>

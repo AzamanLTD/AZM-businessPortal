@@ -4,8 +4,8 @@ import { useAuth } from '@/lib/AuthContext';
 import { getTypeConfig, getWidgetDefaults } from '@/lib/businessTypes';
 import { useStorefront } from '@/hooks/useStorefront';
 import { useUndoRedo } from '@/hooks/useUndoRedo';
-import { Card } from '@/components/forge';
-import { Tag } from '@/components/forge';
+import { Card } from '@/components/instrument';
+import { Tag } from '@/components/instrument';
 import WidgetPalette from '@/components/storefront/WidgetPalette';
 import StorefrontCanvas from '@/components/storefront/StorefrontCanvas';
 import TileConfigPanel from '@/components/storefront/TileConfigPanel';
@@ -35,7 +35,7 @@ export default function StorefrontEditor() {
   const { pushSnapshot, undo, redo, canUndo, canRedo, clear: clearHistory } = useUndoRedo();
 
   const [selectedTileId, setSelectedTileId]       = useState(null);
-  const [showPublishModal, setShowPublishModal]     = useState(false);
+  const [showPublishDialog, setShowPublishModal]     = useState(false);
   const [showHistory, setShowHistory]               = useState(false);
   const navigate = useNavigate();
   const [showPreview, setShowPreview]               = useState(true);
@@ -95,9 +95,9 @@ export default function StorefrontEditor() {
   if (!businessId) return (
     <div className="flex items-center justify-center min-h-[60vh]">
       <Card className="p-8 text-center">
-        <Layout className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--f-text-3)' }} />
-        <p className="font-semibold" style={{ color: 'var(--f-text)' }}>No business profile found</p>
-        <p className="text-sm mt-1" style={{ color: 'var(--f-text-3)' }}>Connect a business profile to start editing your storefront.</p>
+        <Layout className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--text-3)' }} />
+        <p className="font-semibold" style={{ color: 'var(--text)' }}>No business profile found</p>
+        <p className="text-sm mt-1" style={{ color: 'var(--text-3)' }}>Connect a business profile to start editing your storefront.</p>
       </Card>
     </div>
   );
@@ -121,8 +121,8 @@ export default function StorefrontEditor() {
     <div className="flex items-center justify-center min-h-[60vh]">
       <div className="text-center">
         <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mx-auto mb-3"
-          style={{ borderColor: 'var(--f-tint-color)', borderTopColor: 'transparent' }} />
-        <p className="text-sm" style={{ color: 'var(--f-text-3)' }}>Loading storefront editor…</p>
+          style={{ borderColor: 'var(--accent)', borderTopColor: 'transparent' }} />
+        <p className="text-sm" style={{ color: 'var(--text-3)' }}>Loading storefront editor…</p>
       </div>
     </div>
   );
@@ -133,55 +133,55 @@ export default function StorefrontEditor() {
       {/* ── Toolbar ── */}
       <Card className="flex items-center justify-between px-4 py-3 rounded-none border-x-0 border-t-0 flex-shrink-0">
         <div className="flex items-center gap-3">
-          <Layout className="w-5 h-5" style={{ color: 'var(--f-tint-color)' }} />
-          <h1 className="text-base font-bold" style={{ color: 'var(--f-text)' }}>Storefront Editor</h1>
+          <Layout className="w-5 h-5" style={{ color: 'var(--accent)' }} />
+          <h1 className="text-base font-bold" style={{ color: 'var(--text)' }}>Storefront Editor</h1>
           {published && (
             <Tag variant="success">Published</Tag>
           )}
           {saving && (
-            <span className="text-xs" style={{ color: 'var(--f-text-3)' }}>Saving…</span>
+            <span className="text-xs" style={{ color: 'var(--text-3)' }}>Saving…</span>
           )}
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => setShowPreview(p => !p)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-all"
-            style={{ color: 'var(--f-text)', borderColor: 'var(--f-line)', background: showPreview ? 'var(--f-surface-sunken)' : 'transparent' }}>
+            style={{ color: 'var(--text)', borderColor: 'var(--line)', background: showPreview ? 'var(--surface-sunk)' : 'transparent' }}>
             {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             {showPreview ? 'Hide' : 'Show'} Preview
           </button>
           <button onClick={() => navigate('/storefront/analytics')}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-all"
-            style={{ color: 'var(--f-text)', borderColor: 'var(--f-line)' }}>
+            style={{ color: 'var(--text)', borderColor: 'var(--line)' }}>
             <BarChart3 className="w-4 h-4" />Analytics
           </button>
           <button onClick={() => setShowTemplates(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-all"
-            style={{ color: 'var(--f-text)', borderColor: 'var(--f-line)' }}>
+            style={{ color: 'var(--text)', borderColor: 'var(--line)' }}>
             <LayoutTemplate className="w-4 h-4" />Templates
           </button>
           <button onClick={() => { if (canUndo) undo(); }}
             disabled={!canUndo}
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-medium border transition-all disabled:opacity-30"
-            style={{ color: 'var(--f-text)', borderColor: 'var(--f-line)' }}
+            style={{ color: 'var(--text)', borderColor: 'var(--line)' }}
             title="Undo (Ctrl+Z)">
             <Undo2 className="w-4 h-4" />
           </button>
           <button onClick={() => { if (canRedo) redo(); }}
             disabled={!canRedo}
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-medium border transition-all disabled:opacity-30"
-            style={{ color: 'var(--f-text)', borderColor: 'var(--f-line)' }}
+            style={{ color: 'var(--text)', borderColor: 'var(--line)' }}
             title="Redo (Ctrl+Shift+Z)">
             <Redo2 className="w-4 h-4" />
           </button>
           <button onClick={() => setShowHistory(h => !h)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-all"
-            style={{ color: 'var(--f-text)', borderColor: 'var(--f-line)' }}>
+            style={{ color: 'var(--text)', borderColor: 'var(--line)' }}>
             <History className="w-4 h-4" />History
           </button>
           {published && (
             <button onClick={() => setShowQR(q => !q)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-all"
-              style={{ color: 'var(--f-text)', borderColor: 'var(--f-line)', background: showQR ? 'var(--f-surface-sunken)' : 'transparent' }}>
+              style={{ color: 'var(--text)', borderColor: 'var(--line)', background: showQR ? 'var(--surface-sunk)' : 'transparent' }}>
               <QrCode className="w-4 h-4" />QR
             </button>
           )}
@@ -192,18 +192,18 @@ export default function StorefrontEditor() {
               navigator.open?.(url, '_blank') || window.open(url, '_blank');
             }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-all"
-              style={{ color: 'var(--f-text)', borderColor: 'var(--f-line)' }}>
+              style={{ color: 'var(--text)', borderColor: 'var(--line)' }}>
               <ExternalLink className="w-4 h-4" />View Live
             </button>
           )}
           <button onClick={() => saveDraft(draft?.layoutJson, draft?.themeId)} disabled={saving}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold border transition-all disabled:opacity-50"
-            style={{ color: 'var(--f-text)', borderColor: 'var(--f-line)', background: 'var(--f-surface)' }}>
+            style={{ color: 'var(--text)', borderColor: 'var(--line)', background: 'var(--surface)' }}>
             <Save className="w-4 h-4" />Save Draft
           </button>
           <button onClick={() => setShowPublishModal(true)} disabled={saving}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all disabled:opacity-50"
-            style={{ background: 'var(--f-tint-color)', color: '#fff' }}>
+            style={{ background: 'var(--accent)', color: '#fff' }}>
             <Rocket className="w-4 h-4" />Publish
           </button>
         </div>
@@ -222,7 +222,7 @@ export default function StorefrontEditor() {
       {/* ── Error Banner ── */}
       {error && (
         <div className="mx-4 mt-3 px-4 py-3 rounded-xl flex items-center gap-2 text-sm"
-          style={{ background: 'var(--f-bad-bg)', color: 'var(--f-bad)' }}>
+          style={{ background: 'var(--f-bad-bg)', color: 'var(--stop)' }}>
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           <span className="flex-1">{error}</span>
           <button onClick={() => setError(null)} className="p-1 rounded-lg">
@@ -235,8 +235,8 @@ export default function StorefrontEditor() {
       <div className="flex flex-1 overflow-hidden">
 
         {/* Left: Widget Palette */}
-        <div className="w-64 flex-shrink-0 overflow-y-auto border-r" style={{ background: 'var(--f-surface-sunken)', borderColor: 'var(--f-line)' }}>
-          <div className="p-3 border-b" style={{ borderColor: 'var(--f-line)' }}>
+        <div className="w-64 flex-shrink-0 overflow-y-auto border-r" style={{ background: 'var(--surface-sunk)', borderColor: 'var(--line)' }}>
+          <div className="p-3 border-b" style={{ borderColor: 'var(--line)' }}>
             <MagicLayout businessType={bizType} widgets={widgets} themes={themes} draft={draft} onApply={handleMagicLayout} disabled={loading} />
           </div>
           <KpiCardPalette widgets={widgets} eligibility={eligibility} businessType={bizType} onAdd={(widgetType, defaultProps) => {
@@ -269,7 +269,7 @@ export default function StorefrontEditor() {
         </div>
 
         {/* Right: Config + Preview */}
-        <div className="w-80 flex-shrink-0 overflow-y-auto border-l" style={{ background: 'var(--f-surface-sunken)', borderColor: 'var(--f-line)' }}>
+        <div className="w-80 flex-shrink-0 overflow-y-auto border-l" style={{ background: 'var(--surface-sunk)', borderColor: 'var(--line)' }}>
           {selectedTile && selectedWidget ? (
             <TileConfigPanel
               tile={selectedTile}
@@ -294,7 +294,7 @@ export default function StorefrontEditor() {
 
           {/* Phone Preview inline in right panel */}
           {showPreview && (
-            <div className="p-4 border-t" style={{ borderColor: 'var(--f-line)' }}>
+            <div className="p-4 border-t" style={{ borderColor: 'var(--line)' }}>
               <StorefrontPhonePreview draft={draft} theme={theme} widgets={widgets} business={bizProfile} businessType={bizType} />
             </div>
           )}

@@ -9,7 +9,7 @@ import { request } from '@/lib/apiCore';
 import { storefrontApi } from '@/services/storefrontApi';
 import { useAuth } from '@/lib/AuthContext';
 import { toast } from 'sonner';
-import { Card } from '@/components/forge';
+import { Card } from '@/components/instrument';
 import {
   Globe, QrCode, Eye, Download, ExternalLink, CheckCircle2,
   Copy, Check, Zap, Info, Image as ImageIcon, RefreshCw

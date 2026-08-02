@@ -10,7 +10,7 @@ import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/AuthContext';
-import { Card } from '@/components/forge';
+import { Card } from '@/components/instrument';
 import { orders as ordersApi, analytics as analyticsApi } from '@/lib/api';
 import { fmtUSDC, fmt, cn } from '@/lib/utils';
 import {
@@ -116,7 +116,7 @@ function Sk({ className = '' }) {
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-surface-raised border border-line rounded-xl px-3 py-2 shadow-sm text-xs">
+    <div className="bg-surface-raise border border-line rounded-xl px-3 py-2 shadow-sm text-xs">
       <p className="text-ink-3 mb-1">{label}</p>
       {payload.map((p, i) => (
         <p key={i} style={{ color: p.color }} className="font-semibold">{p.name}: {p.value}</p>
@@ -182,7 +182,7 @@ export default function Analytics() {
               <h1 className="text-2xl font-bold text-ink">Analytics</h1>
               <p className="text-sm text-ink-3 mt-0.5">Demand forecasting, reorder alerts, and customer insights</p>
             </div>
-            <div className="flex items-center gap-2 text-xs text-ink-3 bg-surface-sunken border border-line-strong rounded-md px-3 py-2">
+            <div className="flex items-center gap-2 text-xs text-ink-3 bg-surface-sunk border border-line-firm rounded-md px-3 py-2">
               <Lightbulb className="w-3.5 h-3.5 text-tint" />
               <span>All insights show their reasoning — <Info className="w-3 h-3 inline" /> for details</span>
             </div>
@@ -200,7 +200,7 @@ export default function Analytics() {
             <Card key={label} className="p-5">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs text-ink-3 font-medium">{label}</p>
-                <div className={`w-7 h-7 rounded-sm flex items-center justify-center ${alert ? 'bg-bad-bg' : 'bg-surface-sunken'}`}>
+                <div className={`w-7 h-7 rounded-sm flex items-center justify-center ${alert ? 'bg-bad-bg' : 'bg-surface-sunk'}`}>
                   <Icon className={`w-3.5 h-3.5 ${alert ? 'text-bad' : 'text-tint'}`} />
                 </div>
               </div>
@@ -228,15 +228,15 @@ export default function Analytics() {
                 <AreaChart data={revenueData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--f-tint-color)" stopOpacity={0.2} />
-                      <stop offset="100%" stopColor="var(--f-tint-color)" stopOpacity={0} />
+                      <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.2} />
+                      <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid stroke="var(--f-line)" strokeOpacity={0.4} vertical={false} strokeDasharray="3 3" />
-                  <XAxis dataKey="date" tick={{ fill: 'var(--f-text-3)', fontSize: 10 }} tickLine={false} axisLine={false} interval={6} />
-                  <YAxis tick={{ fill: 'var(--f-text-3)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={v => v > 0 ? `$${(v/1).toFixed(0)}` : '0'} />
+                  <CartesianGrid stroke="var(--line)" strokeOpacity={0.4} vertical={false} strokeDasharray="3 3" />
+                  <XAxis dataKey="date" tick={{ fill: 'var(--text-3)', fontSize: 10 }} tickLine={false} axisLine={false} interval={6} />
+                  <YAxis tick={{ fill: 'var(--text-3)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={v => v > 0 ? `$${(v/1).toFixed(0)}` : '0'} />
                   <Tooltip content={<ChartTooltip />} />
-                  <Area type="monotone" dataKey="revenue" stroke="var(--f-tint-color)" strokeWidth={2} fill="url(#revGrad)" dot={false} name="Revenue" />
+                  <Area type="monotone" dataKey="revenue" stroke="var(--accent)" strokeWidth={2} fill="url(#revGrad)" dot={false} name="Revenue" />
                 </AreaChart>
               </ResponsiveContainer>
             )}
@@ -252,7 +252,7 @@ export default function Analytics() {
                 <h3 className="text-sm font-bold text-ink">7-Day Demand Forecast</h3>
                 <p className="text-xs text-ink-3 mt-0.5">Weighted moving average + day-of-week seasonality</p>
               </div>
-              <div className="flex items-center gap-1.5 text-[11px] text-ink-3 bg-surface-sunken rounded-sm px-2 py-1">
+              <div className="flex items-center gap-1.5 text-[11px] text-ink-3 bg-surface-sunk rounded-sm px-2 py-1">
                 <Info className="w-3 h-3 text-tint" />
                 Based on last 4 weeks
               </div>
@@ -264,7 +264,7 @@ export default function Analytics() {
                   <div className="flex-1 h-2 bg-line rounded-full overflow-hidden">
                     <motion.div
                       className="h-full rounded-full"
-                      style={{ background: 'var(--f-tint-color)' }}
+                      style={{ background: 'var(--accent)' }}
                       initial={{ width: 0 }}
                       animate={{ width: `${Math.min(100, (f.forecast / Math.max(...forecast.map(x => x.forecast), 1)) * 100)}%` }}
                       transition={{ delay: i * 0.07, duration: 0.5, ease: 'easeOut' }}
@@ -287,11 +287,11 @@ export default function Analytics() {
             {ordersLoading ? <Sk className="h-36 w-full" /> : (
               <ResponsiveContainer width="100%" height={150}>
                 <BarChart data={dowProfile} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                  <CartesianGrid stroke="var(--f-line)" strokeOpacity={0.4} vertical={false} strokeDasharray="3 3" />
-                  <XAxis dataKey="day" tick={{ fill: 'var(--f-text-3)', fontSize: 11 }} tickLine={false} axisLine={false} />
-                  <YAxis tick={{ fill: 'var(--f-text-3)', fontSize: 10 }} tickLine={false} axisLine={false} />
+                  <CartesianGrid stroke="var(--line)" strokeOpacity={0.4} vertical={false} strokeDasharray="3 3" />
+                  <XAxis dataKey="day" tick={{ fill: 'var(--text-3)', fontSize: 11 }} tickLine={false} axisLine={false} />
+                  <YAxis tick={{ fill: 'var(--text-3)', fontSize: 10 }} tickLine={false} axisLine={false} />
                   <Tooltip content={<ChartTooltip />} />
-                  <Bar dataKey="orders" fill="var(--f-tint-color)" radius={[4, 4, 0, 0]} name="Orders" />
+                  <Bar dataKey="orders" fill="var(--accent)" radius={[4, 4, 0, 0]} name="Orders" />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -306,7 +306,7 @@ export default function Analytics() {
                 <h3 className="text-sm font-bold text-ink">Customer Churn Risk</h3>
                 <p className="text-xs text-ink-3 mt-0.5">Customers overdue vs their usual visit frequency</p>
               </div>
-              <div className="flex items-center gap-1.5 text-[11px] text-ink-3 bg-surface-sunken rounded-sm px-2 py-1">
+              <div className="flex items-center gap-1.5 text-[11px] text-ink-3 bg-surface-sunk rounded-sm px-2 py-1">
                 <Info className="w-3 h-3 text-tint" />
                 Based on order history
               </div>
@@ -315,7 +315,7 @@ export default function Analytics() {
               <div className="space-y-2">{[1,2,3].map(i => <Sk key={i} className="h-10 w-full" />)}</div>
             ) : churnList.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-center">
-                <Users className="w-8 h-8 text-[color:var(--f-text-3)] mb-2" />
+                <Users className="w-8 h-8 text-[color:var(--text-3)] mb-2" />
                 <p className="text-sm text-ink-2">No churn risks detected</p>
                 <p className="text-xs text-ink-3 mt-1">Your regular customers are still active</p>
               </div>
@@ -323,10 +323,10 @@ export default function Analytics() {
               <div className="space-y-1.5">
                 {churnList.map((c, i) => {
                   const risk = c.churnScore > 3 ? 'high' : c.churnScore > 2 ? 'medium' : 'low';
-                  const riskColor = risk === 'high' ? 'var(--f-bad)' : risk === 'medium' ? 'var(--f-warn)' : 'var(--f-info)';
+                  const riskColor = risk === 'high' ? 'var(--stop)' : risk === 'medium' ? 'var(--hold)' : 'var(--info)';
                   return (
-                    <div key={c.uid} className="flex items-center gap-3 p-3 rounded-md border border-line:bg-surface-sunken transition-colors">
-                      <div className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center text-tint font-bold text-xs flex-shrink-0">
+                    <div key={c.uid} className="flex items-center gap-3 p-3 rounded-md border border-line:bg-surface-sunk transition-colors">
+                      <div className="w-8 h-8 rounded-full bg-surface-sunk flex items-center justify-center text-tint font-bold text-xs flex-shrink-0">
                         {c.name.slice(0,2).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -464,13 +464,13 @@ export default function Analytics() {
               return (
                 <div className="space-y-2">
                   {top.map((t, i) => (
-                    <div key={t.name} className="flex items-center gap-3 p-3 rounded-md border border-line:bg-surface-raised transition-colors">
+                    <div key={t.name} className="flex items-center gap-3 p-3 rounded-md border border-line:bg-surface-raise transition-colors">
                       <span className="text-lg font-bold text-ink-3 w-6 text-center flex-shrink-0">{i + 1}</span>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold text-ink truncate">{t.name}</p>
                         <div className="flex items-center gap-2 mt-1">
                           <div className="flex-1 h-1.5 bg-line rounded-full overflow-hidden">
-                            <div className="h-full rounded-full" style={{ width: `${(t.count / maxCount) * 100}%`, background: 'var(--f-tint-color)' }} />
+                            <div className="h-full rounded-full" style={{ width: `${(t.count / maxCount) * 100}%`, background: 'var(--accent)' }} />
                           </div>
                           <span className="text-[11px] text-ink-3 flex-shrink-0">{t.count} orders · {fmtUSDC(t.revenue)}</span>
                         </div>

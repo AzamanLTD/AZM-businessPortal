@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import { transitOpsApi } from '@/lib/marketplaceApi';
-import { Card, Button, Badge, Skeleton, Empty, Modal, Select, Input } from '@/components/forge';
+import { Card, Button, Tag, Skel, Empty, Dialog, Select, Input } from '@/components/instrument';
 import { Users, Bus, AlertCircle, Clock, CheckCircle2, XCircle, Calendar, Truck } from 'lucide-react';
 import { toast } from 'sonner';
 
 const DRIVER_STATUS = {
-  ASSIGNED: { label: 'Assigned', color: 'var(--f-text-3)' },
-  CHECKED_IN: { label: 'Checked In', color: 'var(--f-info)' },
-  ON_DUTY: { label: 'On Duty', color: 'var(--f-tint-color)' },
-  COMPLETED: { label: 'Completed', color: 'var(--f-ok)' },
-  NO_SHOW: { label: 'No Show', color: 'var(--f-bad)' },
+  ASSIGNED: { label: 'Assigned', color: 'var(--text-3)' },
+  CHECKED_IN: { label: 'Checked In', color: 'var(--info)' },
+  ON_DUTY: { label: 'On Duty', color: 'var(--accent)' },
+  COMPLETED: { label: 'Completed', color: 'var(--go)' },
+  NO_SHOW: { label: 'No Show', color: 'var(--stop)' },
 };
 
 const NEXT_DRIVER_STATUS = {
@@ -94,8 +94,8 @@ export default function TransitDrivers() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-[var(--f-text)]">Driver Dispatch</h1>
-          <p className="text-sm text-[var(--f-text-3)] mt-0.5">Manage driver assignments and emergency reassignment</p>
+          <h1 className="text-xl font-bold text-[var(--text)]">Driver Dispatch</h1>
+          <p className="text-sm text-[var(--text-3)] mt-0.5">Manage driver assignments and emergency reassignment</p>
         </div>
         <Button variant="destructive" onClick={() => setIropsOpen(true)}>
           <AlertCircle className="w-4 h-4" /> Emergency Reassign
@@ -104,11 +104,11 @@ export default function TransitDrivers() {
 
       {/* Dispatch Board */}
       <div className="space-y-4">
-        <h3 className="text-sm font-bold text-[var(--f-text)] flex items-center gap-2">
+        <h3 className="text-sm font-bold text-[var(--text)] flex items-center gap-2">
           <Clock className="w-4 h-4" /> Today's Dispatch Board
         </h3>
         {driverKeys.length === 0 && (
-          <EmptyState icon={Users} title="No driver assignments today" description="Assign drivers to trips to see them here" />
+          <Empty icon={Users} title="No driver assignments today" description="Assign drivers to trips to see them here" />
         )}
         {driverKeys.map(key => {
           const driver = byDriver[key];
@@ -116,15 +116,15 @@ export default function TransitDrivers() {
             <Card key={key} className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[var(--f-info)]/10 border border-[var(--f-info)]/30 flex items-center justify-center">
-                    <Bus className="w-5 h-5 text-[var(--f-info)]" />
+                  <div className="w-10 h-10 rounded-full bg-[var(--info)]/10 border border-[var(--info)]/30 flex items-center justify-center">
+                    <Bus className="w-5 h-5 text-[var(--info)]" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-[var(--f-text)]">{driver.name}</p>
-                    {driver.phone && <p className="text-xs text-[var(--f-text-3)]">{driver.phone}</p>}
+                    <p className="text-sm font-bold text-[var(--text)]">{driver.name}</p>
+                    {driver.phone && <p className="text-xs text-[var(--text-3)]">{driver.phone}</p>}
                   </div>
                 </div>
-                <span className="text-xs text-[var(--f-text-3)]">{driver.assignments.length} trip(s)</span>
+                <span className="text-xs text-[var(--text-3)]">{driver.assignments.length} trip(s)</span>
               </div>
               {/* Timeline */}
               <div className="flex items-center gap-2 overflow-x-auto pb-2">
@@ -132,25 +132,25 @@ export default function TransitDrivers() {
                   const st = a.status || 'ASSIGNED';
                   const stInfo = DRIVER_STATUS[st] || DRIVER_STATUS.ASSIGNED;
                   return (
-                    <div key={a.id} className="min-w-[200px] border border-[var(--f-line)] rounded-lg p-3 space-y-2" style={{ borderColor: stInfo.color + '40' }}>
+                    <div key={a.id} className="min-w-[200px] border border-[var(--line)] rounded-lg p-3 space-y-2" style={{ borderColor: stInfo.color + '40' }}>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-[var(--f-text)]">{a.trip?.routeName || 'Trip'}</span>
+                        <span className="text-xs font-bold text-[var(--text)]">{a.trip?.routeName || 'Trip'}</span>
                         <Tag color={stInfo.color}>{stInfo.label}</Tag>
                       </div>
-                      <div className="text-xs text-[var(--f-text-3)]">
+                      <div className="text-xs text-[var(--text-3)]">
                         {a.trip?.origin} → {a.trip?.destination}
                       </div>
-                      <div className="flex items-center gap-1 text-xs text-[var(--f-text-3)]">
+                      <div className="flex items-center gap-1 text-xs text-[var(--text-3)]">
                         <Clock className="w-3 h-3" />
                         {a.trip?.departureAt ? new Date(a.trip.departureAt).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' }) : 'TBD'}
                       </div>
                       {a.vehicle && (
-                        <div className="flex items-center gap-1 text-xs text-[var(--f-text-3)]">
+                        <div className="flex items-center gap-1 text-xs text-[var(--text-3)]">
                           <Truck className="w-3 h-3" /> {a.vehicle.make} {a.vehicle.model} ({a.vehicle.licensePlate || 'No plate'})
                         </div>
                       )}
                       {st === 'NO_SHOW' ? (
-                        <div className="flex items-center gap-1 text-xs text-[var(--f-bad)]">
+                        <div className="flex items-center gap-1 text-xs text-[var(--stop)]">
                           <XCircle className="w-3 h-3" /> No-show flagged
                         </div>
                       ) : NEXT_DRIVER_STATUS[st] ? (
@@ -158,7 +158,7 @@ export default function TransitDrivers() {
                           Advance to {NEXT_DRIVER_STATUS[st].replace('_', ' ')}
                         </Button>
                       ) : (
-                        <div className="flex items-center gap-1 text-xs text-[var(--f-ok)]">
+                        <div className="flex items-center gap-1 text-xs text-[var(--go)]">
                           <CheckCircle2 className="w-3 h-3" /> Completed
                         </div>
                       )}
@@ -174,18 +174,18 @@ export default function TransitDrivers() {
       {/* Monthly Calendar */}
       {calendar?.length > 0 && (
         <Card>
-          <h3 className="text-sm font-bold text-[var(--f-text)] mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-bold text-[var(--text)] mb-3 flex items-center gap-2">
             <Calendar className="w-4 h-4" /> Monthly Schedule ({viewMonth})
           </h3>
           <div className="grid grid-cols-7 gap-1">
             {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
-              <p key={d} className="text-[10px] text-center text-[var(--f-text-3)] font-bold uppercase pb-1">{d}</p>
+              <p key={d} className="text-[10px] text-center text-[var(--text-3)] font-bold uppercase pb-1">{d}</p>
             ))}
             {calendar.map(day => (
-              <div key={day.date} className={'rounded-lg p-2 min-h-[60px] border ' + (day.hasAssignment ? 'border-[var(--f-info)]/30 bg-[var(--f-info)]/5' : 'border-[var(--f-line)]')}>
-                <p className="text-xs font-bold text-[var(--f-text)]">{day.day}</p>
+              <div key={day.date} className={'rounded-lg p-2 min-h-[60px] border ' + (day.hasAssignment ? 'border-[var(--info)]/30 bg-[var(--info)]/5' : 'border-[var(--line)]')}>
+                <p className="text-xs font-bold text-[var(--text)]">{day.day}</p>
                 {day.assignments?.map(a => (
-                  <div key={a.id} className="mt-1 text-[10px] rounded px-1 py-0.5 bg-[var(--f-info)]/10 text-[var(--f-info)] truncate">
+                  <div key={a.id} className="mt-1 text-[10px] rounded px-1 py-0.5 bg-[var(--info)]/10 text-[var(--info)] truncate">
                     {a.driverName} → {a.route}
                   </div>
                 ))}
@@ -196,9 +196,9 @@ export default function TransitDrivers() {
       )}
 
       {/* IROPS Reassignment Modal */}
-      <Modal open={iropsOpen} onClose={() => setIropsOpen(false)} title="Emergency Vehicle Reassignment">
+      <Dialog open={iropsOpen} onClose={() => setIropsOpen(false)} title="Emergency Vehicle Reassignment">
         <div className="space-y-4">
-          <div className="flex items-center gap-2 text-[var(--f-bad)]">
+          <div className="flex items-center gap-2 text-[var(--stop)]">
             <AlertCircle className="w-4 h-4" />
             <p className="text-sm font-medium">Vehicle breakdown? Reassign all passengers and cargo to a replacement vehicle.</p>
           </div>
@@ -210,7 +210,7 @@ export default function TransitDrivers() {
             Execute Emergency Reassignment
           </Button>
         </div>
-      </Modal>
+      </Dialog>
     </div>
   );
 }

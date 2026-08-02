@@ -4,17 +4,17 @@ import { payrollApi, ewaApi, employeeApi } from '@/lib/marketplaceApi';
 import {
   Card,
   Button,
-  Badge,
+  Tag,
   Input,
   Select,
-  Modal,
+  Dialog,
   Empty,
-  Skeleton,
+  Skel,
   Avatar,
   StatCard,
   Tooltip,
   Progress
-} from '@/components/forge';
+} from '@/components/instrument';
 import {
   DollarSign,
   Wallet,
@@ -272,17 +272,17 @@ export default function Payroll() {
   const renderStatusBadge = (status) => {
     switch (status) {
       case 'PENDING':
-        return <Badge color="var(--f-warn)">Pending</Badge>;
+        return <Tag color="var(--f-warn)">Pending</Tag>;
       case 'PROCESSING':
-        return <Badge color="var(--f-info)">Processing</Badge>;
+        return <Tag color="var(--f-info)">Processing</Tag>;
       case 'READY':
-        return <Badge color="var(--f-tint-color)">Ready</Badge>;
+        return <Tag color="var(--f-tint-color)">Ready</Tag>;
       case 'PAID':
-        return <Badge color="var(--f-ok)">Paid</Badge>;
+        return <Tag color="var(--f-ok)">Paid</Tag>;
       case 'FAILED':
-        return <Badge color="var(--f-bad)">Failed</Badge>;
+        return <Tag color="var(--f-bad)">Failed</Tag>;
       default:
-        return <Badge color="var(--f-text-3)">{status}</Badge>;
+        return <Tag color="var(--f-text-3)">{status}</Tag>;
     }
   };
 
@@ -427,10 +427,10 @@ export default function Payroll() {
 
             {loadingPayroll ? (
               <div className="space-y-3 py-6">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-14 w-full" />
-                <Skeleton className="h-14 w-full" />
-                <Skeleton className="h-14 w-full" />
+                <Skel className="h-10 w-full" />
+                <Skel className="h-14 w-full" />
+                <Skel className="h-14 w-full" />
+                <Skel className="h-14 w-full" />
               </div>
             ) : payrollRecords.length === 0 ? (
               <Empty
@@ -471,7 +471,7 @@ export default function Payroll() {
                             </div>
                           </td>
                           <td className="py-4 px-4">
-                            <Badge color="var(--f-tint-color)">{record.payrollType || 'SALARY'}</Badge>
+                            <Tag color="var(--f-tint-color)">{record.payrollType || 'SALARY'}</Tag>
                           </td>
                           <td className="py-4 px-4 text-right font-medium f-mono">
                             ${(record.grossAmount || 0).toFixed(2)}
@@ -560,9 +560,9 @@ export default function Payroll() {
 
             {loadingEwa ? (
               <div className="space-y-3 py-6">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-14 w-full" />
-                <Skeleton className="h-14 w-full" />
+                <Skel className="h-10 w-full" />
+                <Skel className="h-14 w-full" />
+                <Skel className="h-14 w-full" />
               </div>
             ) : employees.length === 0 ? (
               <Empty
@@ -611,9 +611,9 @@ export default function Payroll() {
                           </td>
                           <td className="py-4 px-4 text-center">
                             {eligibility ? (
-                              <Badge color="var(--f-ok)">Eligible</Badge>
+                              <Tag color="var(--f-ok)">Eligible</Tag>
                             ) : (
-                              <Badge color="var(--f-bad)">Ineligible</Badge>
+                              <Tag color="var(--f-bad)">Ineligible</Tag>
                             )}
                           </td>
                           <td className="py-4 px-4 text-right">
@@ -637,7 +637,7 @@ export default function Payroll() {
       )}
 
       {/* MODAL 1: View Breakdown Modal */}
-      <Modal
+      <Dialog
         open={isBreakdownOpen}
         onClose={() => {
           setIsBreakdownOpen(false);
@@ -786,10 +786,10 @@ export default function Payroll() {
             </div>
           </div>
         )}
-      </Modal>
+      </Dialog>
 
       {/* MODAL 2: EWA Manage Modal */}
-      <Modal
+      <Dialog
         open={isEwaModalOpen}
         onClose={() => {
           setIsEwaModalOpen(false);
@@ -820,8 +820,8 @@ export default function Payroll() {
 
             {loadingEmployeeEwa ? (
               <div className="space-y-4 py-10">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-20 w-full" />
+                <Skel className="h-10 w-full" />
+                <Skel className="h-20 w-full" />
               </div>
             ) : (
               <div className="space-y-6">
@@ -862,9 +862,9 @@ export default function Payroll() {
                 <div className="flex items-center justify-between border-t border-b border-[var(--f-line)] py-3">
                   <span className="text-sm font-semibold">Current EWA Status</span>
                   {employeeEwaEligibility?.eligible ? (
-                    <Badge color="var(--f-ok)">Eligible for Withdrawal</Badge>
+                    <Tag color="var(--f-ok)">Eligible for Withdrawal</Tag>
                   ) : (
-                    <Badge color="var(--f-bad)">Locked / Ineligible</Badge>
+                    <Tag color="var(--f-bad)">Locked / Ineligible</Tag>
                   )}
                 </div>
 
@@ -921,7 +921,7 @@ export default function Payroll() {
                               {w.timestamp ? new Date(w.timestamp).toLocaleString() : 'Recent withdrawal'}
                             </p>
                           </div>
-                          <Badge color="var(--f-ok)">Processed</Badge>
+                          <Tag color="var(--f-ok)">Processed</Tag>
                         </div>
                       ))}
                     </div>
@@ -945,7 +945,7 @@ export default function Payroll() {
             </div>
           </div>
         )}
-      </Modal>
+      </Dialog>
     </div>
   );
 }

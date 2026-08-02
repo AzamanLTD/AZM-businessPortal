@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { kyb as kybApi } from '@/lib/api';
-import { Card, Badge, Button, Input, Empty } from '@/components/forge';
+import { Card, Tag, Button, Input, Empty } from '@/components/instrument';
 import { KYB_STATUS_META } from '@/lib/utils';
 import { FileCheck, Upload, CheckCircle2, Clock, XCircle, AlertCircle, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -17,9 +17,9 @@ const DOC_TYPES = [
 ];
 
 function statusIcon(status) {
-  if (status === 'APPROVED') return <CheckCircle2 className="w-4 h-4 text-[var(--f-tint-color)]" />;
-  if (status === 'REJECTED') return <XCircle className="w-4 h-4 text-[var(--f-bad)]" />;
-  return <Clock className="w-4 h-4 text-[var(--f-warn)]" />;
+  if (status === 'APPROVED') return <CheckCircle2 className="w-4 h-4 text-[var(--accent)]" />;
+  if (status === 'REJECTED') return <XCircle className="w-4 h-4 text-[var(--stop)]" />;
+  return <Clock className="w-4 h-4 text-[var(--hold)]" />;
 }
 
 export default function KYB() {
@@ -87,8 +87,8 @@ export default function KYB() {
     <div className="p-6 max-w-3xl mx-auto space-y-6 ">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-bold text-[var(--f-text)]">Business Verification</h1>
-        <p className="text-sm text-[var(--f-text-3)] mt-1">Upload your documents to verify your business and unlock full access.</p>
+        <h1 className="text-xl font-bold text-[var(--text)]">Business Verification</h1>
+        <p className="text-sm text-[var(--text-3)] mt-1">Upload your documents to verify your business and unlock full access.</p>
       </div>
 
       {/* Status card */}
@@ -102,10 +102,10 @@ export default function KYB() {
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-1">
-              <p className="text-base font-bold text-[var(--f-text)]">Verification Status</p>
+              <p className="text-base font-bold text-[var(--text)]">Verification Status</p>
               <Tag color={kybMeta.color} bg={kybMeta.bg}>{kybMeta.label}</Tag>
             </div>
-            <p className="text-sm text-[var(--f-text-3)]">
+            <p className="text-sm text-[var(--text-3)]">
               {kybStatus === 'UNVERIFIED' && 'Submit your documents below to start the verification process.'}
               {kybStatus === 'PENDING'    && 'Your documents are being reviewed. This usually takes 24–48 hours.'}
               {kybStatus === 'VERIFIED'   && 'Your business is verified. You can now receive orders publicly.'}
@@ -118,12 +118,12 @@ export default function KYB() {
       {/* Verified — full green state */}
       {kybStatus === 'VERIFIED' && (
         <Card className="flex flex-col items-center py-10 gap-4">
-          <div className="w-16 h-16 rounded-full bg-[var(--f-surface-sunken)] border border-[var(--f-tint-color)] flex items-center justify-center">
-            <CheckCircle2 className="w-8 h-8 text-[var(--f-tint-color)]" />
+          <div className="w-16 h-16 rounded-full bg-[var(--surface-sunk)] border border-[var(--accent)] flex items-center justify-center">
+            <CheckCircle2 className="w-8 h-8 text-[var(--accent)]" />
           </div>
           <div className="text-center">
-            <p className="text-lg font-bold text-[var(--f-tint-color)]">Business Verified</p>
-            <p className="text-sm text-[var(--f-text-3)] mt-1 max-w-xs">
+            <p className="text-lg font-bold text-[var(--accent)]">Business Verified</p>
+            <p className="text-sm text-[var(--text-3)] mt-1 max-w-xs">
               All your documents have been approved. Your business listing is publicly visible.
             </p>
           </div>
@@ -133,7 +133,7 @@ export default function KYB() {
       {/* Document list + upload */}
       {kybStatus !== 'VERIFIED' && (
         <div className="space-y-3">
-          <p className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">Required Documents</p>
+          <p className="text-xs font-semibold text-[var(--text-3)] uppercase tracking-wider">Required Documents</p>
 
           {DOC_TYPES.map(({ value, label, desc }) => {
             const existing = docMap[value];
@@ -148,49 +148,49 @@ export default function KYB() {
                 >
                   <div className="flex-shrink-0">
                     {existing ? statusIcon(existing.status) : (
-                      <div className="w-4 h-4 rounded-full border-2 border-[var(--f-line)]" />
+                      <div className="w-4 h-4 rounded-full border-2 border-[var(--line)]" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-[var(--f-text)]">{label}</p>
-                    <p className="text-xs text-[var(--f-text-3)] mt-0.5">{desc}</p>
+                    <p className="text-sm font-semibold text-[var(--text)]">{label}</p>
+                    <p className="text-xs text-[var(--text-3)] mt-0.5">{desc}</p>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {existing && (
                       <Tag
-                        color={existing.status === 'APPROVED' ? 'var(--f-tint-color)' : existing.status === 'REJECTED' ? 'var(--f-bad)' : 'var(--f-warn)'}
-                        bg={existing.status === 'APPROVED' ? 'var(--f-surface-sunken)' : existing.status === 'REJECTED' ? 'var(--f-bad)' : 'var(--f-warn)'}
+                        color={existing.status === 'APPROVED' ? 'var(--accent)' : existing.status === 'REJECTED' ? 'var(--stop)' : 'var(--hold)'}
+                        bg={existing.status === 'APPROVED' ? 'var(--surface-sunk)' : existing.status === 'REJECTED' ? 'var(--stop)' : 'var(--hold)'}
                       >
                         {existing.status}
                       </Tag>
                     )}
-                    {isExpanded ? <ChevronUp className="w-4 h-4 text-[var(--f-text-3)]" /> : <ChevronDown className="w-4 h-4 text-[var(--f-text-3)]" />}
+                    {isExpanded ? <ChevronUp className="w-4 h-4 text-[var(--text-3)]" /> : <ChevronDown className="w-4 h-4 text-[var(--text-3)]" />}
                   </div>
                 </button>
 
                 {/* Expanded — URL input */}
                 {isExpanded && (
-                  <div className="px-5 pb-4 border-t border-[var(--f-line)]">
+                  <div className="px-5 pb-4 border-t border-[var(--line)]">
                     <div className="pt-4 space-y-3">
                       {existing?.status === 'APPROVED' ? (
-                        <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--f-surface-sunken)] border border-[var(--f-ok)]">
-                          <CheckCircle2 className="w-4 h-4 text-[var(--f-tint-color)]" />
-                          <p className="text-xs text-[var(--f-tint-color)]">This document has been approved and cannot be replaced.</p>
+                        <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--surface-sunk)] border border-[var(--go)]">
+                          <CheckCircle2 className="w-4 h-4 text-[var(--accent)]" />
+                          <p className="text-xs text-[var(--accent)]">This document has been approved and cannot be replaced.</p>
                         </div>
                       ) : (
                         <>
                           {existing?.status === 'REJECTED' && existing.reviewNotes && (
-                            <div className="flex items-start gap-2 p-3 rounded-xl bg-[var(--f-bad)] border border-[var(--f-bad)]">
-                              <AlertCircle className="w-4 h-4 text-[var(--f-bad)] flex-shrink-0 mt-0.5" />
+                            <div className="flex items-start gap-2 p-3 rounded-xl bg-[var(--stop)] border border-[var(--stop)]">
+                              <AlertCircle className="w-4 h-4 text-[var(--stop)] flex-shrink-0 mt-0.5" />
                               <div>
-                                <p className="text-xs font-semibold text-[var(--f-bad)]">Rejection reason:</p>
-                                <p className="text-xs text-[var(--f-bad)] mt-0.5">{existing.reviewNotes}</p>
+                                <p className="text-xs font-semibold text-[var(--stop)]">Rejection reason:</p>
+                                <p className="text-xs text-[var(--stop)] mt-0.5">{existing.reviewNotes}</p>
                               </div>
                             </div>
                           )}
                           {isCloudinaryConfigured() && (
                             <div className="flex items-center gap-3">
-                              <label className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-semibold transition-colors ${uploadingType === value ? 'opacity-60 border-[var(--f-line)] text-[var(--f-text-3)]' : 'cursor-pointer border-[var(--f-tint-color)] text-[var(--f-tint-color)]:bg-[var(--f-ok-bg)]'}`}>
+                              <label className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-semibold transition-colors ${uploadingType === value ? 'opacity-60 border-[var(--line)] text-[var(--text-3)]' : 'cursor-pointer border-[var(--accent)] text-[var(--accent)]:bg-[var(--f-ok-bg)]'}`}>
                                 <input
                                   type="file"
                                   accept="image/jpeg,image/png,image/webp"
@@ -204,7 +204,7 @@ export default function KYB() {
                                 }
                               </label>
                               {urls[value] && uploadingType !== value && (
-                                <span className="flex items-center gap-1 text-xs text-[var(--f-tint-color)]">
+                                <span className="flex items-center gap-1 text-xs text-[var(--accent)]">
                                   <CheckCircle2 className="w-3.5 h-3.5" /> Ready to submit
                                 </span>
                               )}
@@ -216,7 +216,7 @@ export default function KYB() {
                             value={urls[value] || ''}
                             onChange={e => setUrls(u => ({ ...u, [value]: e.target.value }))}
                           />
-                          <p className="text-xs text-[var(--f-text-3)]">
+                          <p className="text-xs text-[var(--text-3)]">
                             {isCloudinaryConfigured()
                               ? 'Upload an image directly, or paste a Cloudinary URL (e.g. for PDFs).'
                               : 'Upload your document to Cloudinary first, then paste the URL here.'}

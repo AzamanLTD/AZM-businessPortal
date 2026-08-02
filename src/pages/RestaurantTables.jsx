@@ -4,7 +4,7 @@ import { restaurantOpsApi as restaurantApi, marketplaceApi } from '@/lib/marketp
 import { locations as locApi, products as productsApi } from '@/lib/api';
 import { usePermission } from '@/hooks/usePermission';
 import { useAuth } from '@/lib/AuthContext';
-import { Card, Button, Badge, Skeleton, Empty, Avatar, Input, Select, Modal } from '@/components/forge';
+import { Card, Button, Tag, Skel, Empty, Avatar, Input, Select, Dialog } from '@/components/instrument';
 import { toast } from 'sonner';
 import {
   Grid3x3, Clock, Users, Plus, Trash2, Edit2, Play, CheckCircle, HelpCircle,
@@ -12,12 +12,12 @@ import {
 } from 'lucide-react';
 
 const TABLE_STATUS = {
-  OPEN: { label: 'Open', color: 'var(--f-ok)' },
-  SEATED: { label: 'Seated', color: 'var(--f-info)' },
-  ORDERED: { label: 'Ordered', color: 'var(--f-warn)' },
-  EATING: { label: 'Eating', color: 'var(--f-tint-color)' },
-  BILLING: { label: 'Billing', color: 'var(--f-bad)' },
-  CLEANING: { label: 'Cleaning', color: 'var(--f-text-3)' },
+  OPEN: { label: 'Open', color: 'var(--go)' },
+  SEATED: { label: 'Seated', color: 'var(--info)' },
+  ORDERED: { label: 'Ordered', color: 'var(--hold)' },
+  EATING: { label: 'Eating', color: 'var(--accent)' },
+  BILLING: { label: 'Billing', color: 'var(--stop)' },
+  CLEANING: { label: 'Cleaning', color: 'var(--text-3)' },
 };
 
 export default function RestaurantTables() {
@@ -190,7 +190,7 @@ export default function RestaurantTables() {
     setDraggingTableId(null);
   };
 
-  // Modal State for Waitlist
+  // Dialog State for Waitlist
   const [waitlistModalOpen, setWaitlistModalOpen] = useState(false);
   const [waitlistForm, setWaitlistForm] = useState({ name: '', phone: '', partySize: 2, quotedWait: '15m' });
 
@@ -224,7 +224,7 @@ export default function RestaurantTables() {
     toast.success('Waitlist entry removed');
   };
 
-  // Modal State for adding/modifying table properties in layout editor
+  // Dialog State for adding/modifying table properties in layout editor
   const [tableConfigOpen, setTableConfigOpen] = useState(false);
   const [selectedConfigTable, setSelectedConfigTable] = useState(null);
   const [configForm, setConfigForm] = useState({ shape: 'rectangle', seats: 4 });
@@ -412,9 +412,9 @@ export default function RestaurantTables() {
   if (!canView) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center">
-        <AlertCircle className="w-12 h-12 text-[var(--f-bad)] mb-4" />
-        <h2 className="text-lg font-bold text-[var(--f-text)]">Access Denied</h2>
-        <p className="text-sm text-[var(--f-text-3)] max-w-sm mt-1">
+        <AlertCircle className="w-12 h-12 text-[var(--stop)] mb-4" />
+        <h2 className="text-lg font-bold text-[var(--text)]">Access Denied</h2>
+        <p className="text-sm text-[var(--text-3)] max-w-sm mt-1">
           You do not have the required permissions (tables.view) to inspect or modify restaurant tables.
         </p>
       </div>
@@ -422,12 +422,12 @@ export default function RestaurantTables() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto p-4 md:p-6 " style={{ color: 'var(--f-text)' }}>
+    <div className="space-y-6 max-w-7xl mx-auto p-4 md:p-6 " style={{ color: 'var(--text)' }}>
       {/* Header and Controls */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dine-In Floor Plan</h1>
-          <p className="text-sm text-[var(--f-text-3)] mt-0.5">
+          <p className="text-sm text-[var(--text-3)] mt-0.5">
             Visualize tables, handle seatings, manage reservations, and coordinate waitlists live.
           </p>
         </div>
@@ -438,9 +438,9 @@ export default function RestaurantTables() {
             <Skel className="w-48 h-10" />
           ) : (
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">Branch:</span>
+              <span className="text-xs font-semibold text-[var(--text-3)] uppercase tracking-wider">Branch:</span>
               <select
-                className="bg-[var(--f-surface)] border border-[var(--f-line)] text-sm rounded-xl px-3 py-2 outline-none focus:border-[var(--f-tint-color)] transition-colors cursor-pointer"
+                className="bg-[var(--surface)] border border-[var(--line)] text-sm rounded-xl px-3 py-2 outline-none focus:border-[var(--accent)] transition-colors cursor-pointer"
                 value={selectedLocId}
                 onChange={(e) => setSelectedLocId(e.target.value)}
               >
@@ -470,10 +470,10 @@ export default function RestaurantTables() {
         {Object.entries(TABLE_STATUS).map(([statusKey, meta]) => {
           const count = tables.filter(t => t.status === statusKey).length;
           return (
-            <Card key={statusKey} className="p-3 flex items-center justify-between border-[var(--f-line)]">
+            <Card key={statusKey} className="p-3 flex items-center justify-between border-[var(--line)]">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: meta.color }} />
-                <span className="text-xs font-medium text-[var(--f-text-3)]">{meta.label}</span>
+                <span className="text-xs font-medium text-[var(--text-3)]">{meta.label}</span>
               </div>
               <span className="text-lg font-bold f-mono">{count}</span>
             </Card>
@@ -485,18 +485,18 @@ export default function RestaurantTables() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Visual Floor Plan Editor/Canvas or Classic List Fallback */}
         <div className="lg:col-span-8 space-y-4">
-          <Card className="p-4 relative border-[var(--f-line)] overflow-hidden" style={{ minHeight: '520px' }}>
+          <Card className="p-4 relative border-[var(--line)] overflow-hidden" style={{ minHeight: '520px' }}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold">2D Floor Plan Canvas</span>
                 {layoutMode && (
-                  <Tag variant="neutral" className="animate-pulse">
+                  <Tag tone="neutral" className="animate-pulse">
                     Layout Edit Mode Active
                   </Tag>
                 )}
               </div>
               {layoutMode && (
-                <span className="text-xs text-[var(--f-text-3)]">
+                <span className="text-xs text-[var(--text-3)]">
                   Drag and drop tables. Right-click or tap to customize shape and seats.
                 </span>
               )}
@@ -505,8 +505,8 @@ export default function RestaurantTables() {
             {loadingTables ? (
               <div className="flex items-center justify-center h-96">
                 <div className="flex flex-col items-center gap-2">
-                  <div className="w-8 h-8 border-2 border-[var(--f-line)] border-t-[var(--f-tint-color)] rounded-full animate-spin" />
-                  <span className="text-xs text-[var(--f-text-3)]">Loading Floor Plan...</span>
+                  <div className="w-8 h-8 border-2 border-[var(--line)] border-t-[var(--accent)] rounded-full animate-spin" />
+                  <span className="text-xs text-[var(--text-3)]">Loading Floor Plan...</span>
                 </div>
               </div>
             ) : tables.length === 0 ? (
@@ -521,10 +521,10 @@ export default function RestaurantTables() {
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleDragEnd}
                 onMouseLeave={handleDragEnd}
-                className="relative w-full rounded-xl bg-[var(--f-ink-900)] border border-[var(--f-line)] overflow-hidden pattern-grid"
+                className="relative w-full rounded-xl bg-[var(--f-ink-900)] border border-[var(--line)] overflow-hidden pattern-grid"
                 style={{
                   height: '460px',
-                  backgroundImage: 'radial-gradient(var(--f-line) 1px, transparent 1px)',
+                  backgroundImage: 'radial-gradient(var(--line) 1px, transparent 1px)',
                   backgroundSize: '20px 20px',
                 }}
               >
@@ -551,7 +551,7 @@ export default function RestaurantTables() {
                         }
                       }}
                       className={`absolute select-none flex flex-col items-center justify-center border transition-shadow cursor-pointer ${
-                        layoutMode ? 'hover:shadow-lg:border-[var(--f-tint-color)] active:scale-95' : 'hover:scale-[1.03]'
+                        layoutMode ? 'hover:shadow-lg:border-[var(--accent)] active:scale-95' : 'hover:scale-[1.03]'
                       }`}
                       style={{
                         left: `${layout.x}px`,
@@ -559,8 +559,8 @@ export default function RestaurantTables() {
                         width: '100px',
                         height: '100px',
                         borderRadius: isRound ? '50%' : '12px',
-                        backgroundColor: layoutMode ? 'var(--f-surface)' : `${statusMeta.color}15`,
-                        borderColor: layoutMode ? 'var(--f-line)' : `${statusMeta.color}60`,
+                        backgroundColor: layoutMode ? 'var(--surface)' : `${statusMeta.color}15`,
+                        borderColor: layoutMode ? 'var(--line)' : `${statusMeta.color}60`,
                         borderWidth: '2px',
                         boxShadow: draggingTableId === table.id ? '0 10px 15px -3px rgba(0, 0, 0, 0.4)' : 'none',
                         zIndex: draggingTableId === table.id ? 50 : 10,
@@ -576,7 +576,7 @@ export default function RestaurantTables() {
                         </span>
                       )}
 
-                      <div className="flex items-center gap-1 text-[11px] text-[var(--f-text-3)] mt-1.5">
+                      <div className="flex items-center gap-1 text-[11px] text-[var(--text-3)] mt-1.5">
                         <Users className="w-3.5 h-3.5" />
                         <span>{layout.seats || table.capacity || 4}</span>
                       </div>
@@ -586,7 +586,7 @@ export default function RestaurantTables() {
                         <div className="absolute top-1.5 right-1.5 flex gap-1">
                           {/* Placeholder badge if there is a pending reservation in next 1 hour */}
                           {index % 5 === 2 && (
-                            <div className="w-2.5 h-2.5 rounded-full bg-[var(--f-tint-color)] animate-ping" title="Upcoming Reservation" />
+                            <div className="w-2.5 h-2.5 rounded-full bg-[var(--accent)] animate-ping" title="Upcoming Reservation" />
                           )}
                         </div>
                       )}
@@ -600,10 +600,10 @@ export default function RestaurantTables() {
           {/* Waitlist and Upcoming Reservations Overlays */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Waitlist Panel */}
-            <Card className="p-4 border-[var(--f-line)]">
+            <Card className="p-4 border-[var(--line)]">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-[var(--f-warn)]" />
+                  <Clock className="w-5 h-5 text-[var(--hold)]" />
                   <h3 className="font-bold text-sm">Hostess Waitlist</h3>
                 </div>
                 <Button variant="secondary" size="sm" onClick={() => setWaitlistModalOpen(true)}>
@@ -612,7 +612,7 @@ export default function RestaurantTables() {
               </div>
 
               {waitlist.length === 0 ? (
-                <div className="py-6 text-center text-xs text-[var(--f-text-3)]">
+                <div className="py-6 text-center text-xs text-[var(--text-3)]">
                   Waitlist is currently empty.
                 </div>
               ) : (
@@ -620,11 +620,11 @@ export default function RestaurantTables() {
                   {waitlist.map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center justify-between p-2 rounded-xl bg-[var(--f-ink-900)] border border-[var(--f-line)]"
+                      className="flex items-center justify-between p-2 rounded-xl bg-[var(--f-ink-900)] border border-[var(--line)]"
                     >
                       <div>
                         <p className="text-xs font-bold">{item.name} ({item.partySize} pax)</p>
-                        <p className="text-[10px] text-[var(--f-text-3)] mt-0.5">
+                        <p className="text-[10px] text-[var(--text-3)] mt-0.5">
                           Quoted: {item.quotedWait} • Added {item.addedAt}
                         </p>
                       </div>
@@ -633,13 +633,13 @@ export default function RestaurantTables() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleNotifyWaitlist(item)}
-                          className="px-2 py-1 text-[10px] bg-[var(--f-surface-sunken)] text-[var(--f-tint-color)] border border-[var(--f-tint-color)]/20"
+                          className="px-2 py-1 text-[10px] bg-[var(--surface-sunk)] text-[var(--accent)] border border-[var(--accent)]/20"
                         >
                           Notify
                         </Button>
                         <button
                           onClick={() => handleRemoveWaitlist(item.id)}
-                          className="p-1 text-[var(--f-text-3)]:text-[var(--f-bad)] transition-colors"
+                          className="p-1 text-[var(--text-3)]:text-[var(--stop)] transition-colors"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -651,27 +651,27 @@ export default function RestaurantTables() {
             </Card>
 
             {/* Upcoming Reservations List */}
-            <Card className="p-4 border-[var(--f-line)]">
+            <Card className="p-4 border-[var(--line)]">
               <div className="flex items-center gap-2 mb-3">
-                <Calendar className="w-5 h-5 text-[var(--f-tint-color)]" />
+                <Calendar className="w-5 h-5 text-[var(--accent)]" />
                 <h3 className="font-bold text-sm">Reservations Feed</h3>
               </div>
 
               <div className="space-y-2 max-h-48 overflow-y-auto">
-                <div className="p-2.5 rounded-xl bg-[var(--f-ink-900)] border border-[var(--f-line)] flex items-center justify-between opacity-85">
+                <div className="p-2.5 rounded-xl bg-[var(--f-ink-900)] border border-[var(--line)] flex items-center justify-between opacity-85">
                   <div>
                     <p className="text-xs font-bold">Johnathan Doe • Party of 4</p>
-                    <p className="text-[10px] text-[var(--f-text-3)] mt-0.5">Tonight at 7:30 PM • Table 3 Pre-allocated</p>
+                    <p className="text-[10px] text-[var(--text-3)] mt-0.5">Tonight at 7:30 PM • Table 3 Pre-allocated</p>
                   </div>
-                  <Tag variant="neutral">Confirmed</Tag>
+                  <Tag tone="neutral">Confirmed</Tag>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-[var(--f-ink-900)] border border-[var(--f-line)] flex items-center justify-between opacity-85">
+                <div className="p-2.5 rounded-xl bg-[var(--f-ink-900)] border border-[var(--line)] flex items-center justify-between opacity-85">
                   <div>
                     <p className="text-xs font-bold">Sarah Jenkins • Party of 2</p>
-                    <p className="text-[10px] text-[var(--f-text-3)] mt-0.5">Tonight at 8:00 PM • Window Booth request</p>
+                    <p className="text-[10px] text-[var(--text-3)] mt-0.5">Tonight at 8:00 PM • Window Booth request</p>
                   </div>
-                  <Tag variant="neutral">Pending VIP</Tag>
+                  <Tag tone="neutral">Pending VIP</Tag>
                 </div>
               </div>
             </Card>
@@ -682,15 +682,15 @@ export default function RestaurantTables() {
         <div className="lg:col-span-4 space-y-4">
           {/* Active Table Dine-In Control Hub */}
           {activeTabTable ? (
-            <Card className="p-4 border-[var(--f-line)] space-y-4">
-              <div className="flex items-center justify-between border-b border-[var(--f-line)] pb-3">
+            <Card className="p-4 border-[var(--line)] space-y-4">
+              <div className="flex items-center justify-between border-b border-[var(--line)] pb-3">
                 <div>
                   <h3 className="font-bold text-base">Table {activeTabTable.label || activeTabTable.tableNumber} Control</h3>
-                  <p className="text-xs text-[var(--f-text-3)] mt-0.5">Live dine-in controller</p>
+                  <p className="text-xs text-[var(--text-3)] mt-0.5">Live dine-in controller</p>
                 </div>
                 <button
                   onClick={() => setActiveTabTable(null)}
-                  className="p-1 rounded-lg:bg-[var(--f-line)] text-[var(--f-text-3)] transition-colors"
+                  className="p-1 rounded-lg:bg-[var(--line)] text-[var(--text-3)] transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -698,7 +698,7 @@ export default function RestaurantTables() {
 
               {/* Directly cycle state without tab */}
               <div className="space-y-1.5">
-                <span className="text-[10px] font-semibold text-[var(--f-text-3)] uppercase tracking-wider block">
+                <span className="text-[10px] font-semibold text-[var(--text-3)] uppercase tracking-wider block">
                   Quick Force Table Status
                 </span>
                 <div className="grid grid-cols-3 gap-1">
@@ -708,8 +708,8 @@ export default function RestaurantTables() {
                       onClick={() => handleDirectStatusUpdate(statusKey)}
                       className={`py-1 px-1.5 text-center rounded-lg text-[10px] font-bold border transition-all ${
                         activeTabTable.status === statusKey
-                          ? 'border-[var(--f-tint-color)] bg-[var(--f-surface-sunken)]'
-                          : 'border-[var(--f-line)] bg-transparent:border-[var(--f-text-3)]'
+                          ? 'border-[var(--accent)] bg-[var(--surface-sunk)]'
+                          : 'border-[var(--line)] bg-transparent:border-[var(--text-3)]'
                       }`}
                     >
                       <span className="block w-1.5 h-1.5 rounded-full mx-auto mb-1" style={{ backgroundColor: meta.color }} />
@@ -720,39 +720,39 @@ export default function RestaurantTables() {
               </div>
 
               {/* Tab Management Integration */}
-              <div className="border-t border-[var(--f-line)] pt-4 space-y-3">
-                <span className="text-[10px] font-semibold text-[var(--f-text-3)] uppercase tracking-wider block">
+              <div className="border-t border-[var(--line)] pt-4 space-y-3">
+                <span className="text-[10px] font-semibold text-[var(--text-3)] uppercase tracking-wider block">
                   Connected Guest Tab
                 </span>
 
                 {loadingTabDetails ? (
                   <Skel className="h-24 w-full" />
                 ) : !currentTabDetails ? (
-                  <div className="p-4 text-center border border-[var(--f-line)] rounded-xl bg-[var(--f-ink-900)]">
-                    <p className="text-xs text-[var(--f-text-3)] mb-3">No open dine-in session on this table.</p>
+                  <div className="p-4 text-center border border-[var(--line)] rounded-xl bg-[var(--f-ink-900)]">
+                    <p className="text-xs text-[var(--text-3)] mb-3">No open dine-in session on this table.</p>
                     <Button onClick={handleOpenNewTab} size="sm" className="w-full">
                       Open New Dine-In Tab
                     </Button>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <div className="flex justify-between items-center bg-[var(--f-ink-900)] p-2.5 rounded-xl border border-[var(--f-line)]">
+                    <div className="flex justify-between items-center bg-[var(--f-ink-900)] p-2.5 rounded-xl border border-[var(--line)]">
                       <div>
                         <p className="text-xs font-bold">Tab ID: {currentTabDetails.id.slice(-6).toUpperCase()}</p>
-                        <p className="text-[10px] text-[var(--f-text-3)] mt-0.5">Status: {currentTabDetails.status || 'OPEN'}</p>
+                        <p className="text-[10px] text-[var(--text-3)] mt-0.5">Status: {currentTabDetails.status || 'OPEN'}</p>
                       </div>
-                      <Tag variant="neutral">Active</Tag>
+                      <Tag tone="neutral">Active</Tag>
                     </div>
 
                     {/* Ordered Items List */}
                     <div className="space-y-1.5">
                       <span className="text-[11px] font-bold">Ordered Items</span>
-                      <div className="max-h-36 overflow-y-auto space-y-1 border border-[var(--f-line)] rounded-xl p-2 bg-[var(--f-ink-900)]">
+                      <div className="max-h-36 overflow-y-auto space-y-1 border border-[var(--line)] rounded-xl p-2 bg-[var(--f-ink-900)]">
                         {!currentTabDetails.items || currentTabDetails.items.length === 0 ? (
-                          <p className="text-[11px] text-[var(--f-text-3)] text-center py-2">No items ordered yet.</p>
+                          <p className="text-[11px] text-[var(--text-3)] text-center py-2">No items ordered yet.</p>
                         ) : (
                           currentTabDetails.items.map((item, idx) => (
-                            <div key={idx} className="flex justify-between text-xs py-1 border-b border-[var(--f-line)]/50 last:border-none">
+                            <div key={idx} className="flex justify-between text-xs py-1 border-b border-[var(--line)]/50 last:border-none">
                               <span>{item.quantity}x {item.name}</span>
                               <span className="f-mono">${(item.unitPriceUsdc * item.quantity).toFixed(2)}</span>
                             </div>
@@ -765,7 +765,7 @@ export default function RestaurantTables() {
                     <div className="grid grid-cols-12 gap-2">
                       <div className="col-span-8">
                         <select
-                          className="w-full bg-[var(--f-ink-900)] border border-[var(--f-line)] rounded-lg p-2 text-xs text-[var(--f-text)]"
+                          className="w-full bg-[var(--f-ink-900)] border border-[var(--line)] rounded-lg p-2 text-xs text-[var(--text)]"
                           value={selectedProduct}
                           onChange={(e) => setSelectedProduct(e.target.value)}
                         >
@@ -778,7 +778,7 @@ export default function RestaurantTables() {
                       <div className="col-span-2">
                         <input
                           type="number"
-                          className="w-full bg-[var(--f-ink-900)] border border-[var(--f-line)] rounded-lg p-2 text-xs text-[var(--f-text)]"
+                          className="w-full bg-[var(--f-ink-900)] border border-[var(--line)] rounded-lg p-2 text-xs text-[var(--text)]"
                           value={orderQuantity}
                           onChange={(e) => setOrderQuantity(e.target.value)}
                           min="1"
@@ -792,30 +792,30 @@ export default function RestaurantTables() {
                     </div>
 
                     {/* Bill Summary */}
-                    <div className="bg-[var(--f-ink-900)] p-3 rounded-xl border border-[var(--f-line)] text-xs space-y-1.5">
+                    <div className="bg-[var(--f-ink-900)] p-3 rounded-xl border border-[var(--line)] text-xs space-y-1.5">
                       <div className="flex justify-between">
-                        <span className="text-[var(--f-text-3)]">Subtotal</span>
+                        <span className="text-[var(--text-3)]">Subtotal</span>
                         <span className="f-mono">${(currentTabDetails.subtotalUsdc || 0).toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[var(--f-text-3)]">Tax Rate (%)</span>
+                        <span className="text-[var(--text-3)]">Tax Rate (%)</span>
                         <input
                           type="number"
-                          className="w-12 bg-transparent border border-[var(--f-line)] rounded px-1 text-right text-xs f-mono"
+                          className="w-12 bg-transparent border border-[var(--line)] rounded px-1 text-right text-xs f-mono"
                           value={taxRate}
                           onChange={(e) => setTaxRate(e.target.value)}
                         />
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[var(--f-text-3)]">Tip Amount ($)</span>
+                        <span className="text-[var(--text-3)]">Tip Amount ($)</span>
                         <input
                           type="number"
-                          className="w-16 bg-transparent border border-[var(--f-line)] rounded px-1 text-right text-xs f-mono"
+                          className="w-16 bg-transparent border border-[var(--line)] rounded px-1 text-right text-xs f-mono"
                           value={tipAmount}
                           onChange={(e) => setTipAmount(e.target.value)}
                         />
                       </div>
-                      <div className="flex justify-between font-bold pt-1.5 border-t border-[var(--f-line)]/50">
+                      <div className="flex justify-between font-bold pt-1.5 border-t border-[var(--line)]/50">
                         <span>Grand Total</span>
                         <span className="f-mono">${(currentTabDetails.grandTotalUsdc || currentTabDetails.subtotalUsdc || 0).toFixed(2)}</span>
                       </div>
@@ -835,10 +835,10 @@ export default function RestaurantTables() {
               </div>
             </Card>
           ) : (
-            <Card className="p-4 border-[var(--f-line)] text-center py-10">
-              <HelpCircle className="w-8 h-8 mx-auto text-[var(--f-text-3)] mb-2" />
+            <Card className="p-4 border-[var(--line)] text-center py-10">
+              <HelpCircle className="w-8 h-8 mx-auto text-[var(--text-3)] mb-2" />
               <p className="text-sm font-bold">No Table Selected</p>
-              <p className="text-xs text-[var(--f-text-3)] max-w-[200px] mx-auto mt-1">
+              <p className="text-xs text-[var(--text-3)] max-w-[200px] mx-auto mt-1">
                 Tap or right-click any table on the floor plan canvas to view and manage its current dine-in tab session.
               </p>
             </Card>
@@ -846,14 +846,14 @@ export default function RestaurantTables() {
 
           {/* Table Database Registry CRUD */}
           {canManage && (
-            <Card className="p-4 border-[var(--f-line)] space-y-4">
+            <Card className="p-4 border-[var(--line)] space-y-4">
               <h3 className="font-bold text-sm">Table Registry Control</h3>
 
               <div className="flex gap-2">
                 <input
                   type="text"
                   placeholder="e.g. Table 15"
-                  className="flex-1 bg-[var(--f-ink-900)] border border-[var(--f-line)] rounded-xl px-3 py-2 text-xs text-[var(--f-text)] placeholder:text-[var(--f-text-3)] outline-none focus:border-[var(--f-tint-color)]"
+                  className="flex-1 bg-[var(--f-ink-900)] border border-[var(--line)] rounded-xl px-3 py-2 text-xs text-[var(--text)] placeholder:text-[var(--text-3)] outline-none focus:border-[var(--accent)]"
                   value={newTableLabel}
                   onChange={(e) => setNewTableLabel(e.target.value)}
                 />
@@ -863,12 +863,12 @@ export default function RestaurantTables() {
               </div>
 
               {/* Small Registry Database List */}
-              <div className="space-y-1 max-h-56 overflow-y-auto border border-[var(--f-line)] rounded-xl p-2 bg-[var(--f-ink-900)]">
+              <div className="space-y-1 max-h-56 overflow-y-auto border border-[var(--line)] rounded-xl p-2 bg-[var(--f-ink-900)]">
                 {tables.length === 0 ? (
-                  <p className="text-xs text-[var(--f-text-3)] text-center py-2">No registered tables.</p>
+                  <p className="text-xs text-[var(--text-3)] text-center py-2">No registered tables.</p>
                 ) : (
                   tables.map(t => (
-                    <div key={t.id} className="flex items-center justify-between py-1 px-1.5 rounded-lg:bg-[var(--f-surface)]/50 text-xs">
+                    <div key={t.id} className="flex items-center justify-between py-1 px-1.5 rounded-lg:bg-[var(--surface)]/50 text-xs">
                       <span>{t.label || `Table ${t.tableNumber}`}</span>
                       <button
                         onClick={() => {
@@ -876,7 +876,7 @@ export default function RestaurantTables() {
                             deleteTableMut.mutate(t.id);
                           }
                         }}
-                        className="text-[var(--f-text-3)]:text-[var(--f-bad)] p-1"
+                        className="text-[var(--text-3)]:text-[var(--stop)] p-1"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -889,15 +889,15 @@ export default function RestaurantTables() {
         </div>
       </div>
 
-      {/* Modal - Config Table Dimensions and Seats */}
-      <Modal
+      {/* Dialog - Config Table Dimensions and Seats */}
+      <Dialog
         open={tableConfigOpen}
         onClose={() => setTableConfigOpen(false)}
         title="Customize Table Features"
       >
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider block mb-1">
+            <label className="text-xs font-semibold text-[var(--text-3)] uppercase tracking-wider block mb-1">
               Table Shape
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -905,8 +905,8 @@ export default function RestaurantTables() {
                 type="button"
                 className={`py-2 px-3 border rounded-xl text-xs font-semibold transition-all ${
                   configForm.shape === 'rectangle'
-                    ? 'border-[var(--f-tint-color)] bg-[var(--f-surface-sunken)]'
-                    : 'border-[var(--f-line)]:border-[var(--f-text-3)]'
+                    ? 'border-[var(--accent)] bg-[var(--surface-sunk)]'
+                    : 'border-[var(--line)]:border-[var(--text-3)]'
                 }`}
                 onClick={() => setConfigForm({ ...configForm, shape: 'rectangle' })}
               >
@@ -916,8 +916,8 @@ export default function RestaurantTables() {
                 type="button"
                 className={`py-2 px-3 border rounded-xl text-xs font-semibold transition-all ${
                   configForm.shape === 'round'
-                    ? 'border-[var(--f-tint-color)] bg-[var(--f-surface-sunken)]'
-                    : 'border-[var(--f-line)]:border-[var(--f-text-3)]'
+                    ? 'border-[var(--accent)] bg-[var(--surface-sunk)]'
+                    : 'border-[var(--line)]:border-[var(--text-3)]'
                 }`}
                 onClick={() => setConfigForm({ ...configForm, shape: 'round' })}
               >
@@ -944,10 +944,10 @@ export default function RestaurantTables() {
             </Button>
           </div>
         </div>
-      </Modal>
+      </Dialog>
 
-      {/* Modal - Add Guest to Hostess Waitlist */}
-      <Modal
+      {/* Dialog - Add Guest to Hostess Waitlist */}
+      <Dialog
         open={waitlistModalOpen}
         onClose={() => setWaitlistModalOpen(false)}
         title="Add to Waitlist"
@@ -990,13 +990,13 @@ export default function RestaurantTables() {
             </Button>
           </div>
         </div>
-      </Modal>
+      </Dialog>
 
       {/* Embedded inline CSS for custom grid layouts and backgrounds */}
       <style>{`
         .pattern-grid {
           background-size: 20px 20px;
-          background-image: radial-gradient(var(--f-line) 1px, transparent 1px);
+          background-image: radial-gradient(var(--line) 1px, transparent 1px);
         }
       `}</style>
     </div>

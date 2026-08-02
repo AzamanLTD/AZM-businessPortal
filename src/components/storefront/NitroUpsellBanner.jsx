@@ -1,5 +1,5 @@
 // src/components/storefront/NitroUpsellBanner.jsx
-import { Card } from '@/components/forge';
+import { Card } from '@/components/instrument';
 import { Zap, TrendingUp } from 'lucide-react';
 
 export default function NitroUpsellBanner({ eligibility, onStakeClick }) {

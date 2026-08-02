@@ -1,6 +1,6 @@
 // src/components/storefront/StorefrontHealthScore.jsx
 // Live storefront scoring panel — evaluates completeness and suggests improvements.
-import { Card } from '@/components/forge';
+import { Card } from '@/components/instrument';
 import { Check, X, TrendingUp, AlertTriangle, Lightbulb } from 'lucide-react';
 
 // ── Scoring Rules ─────────────────────────────────────────────────────

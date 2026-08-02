@@ -1,6 +1,6 @@
 // src/components/storefront/WidgetPalette.jsx
-import { Card } from '@/components/forge';
-import { Badge } from '@/components/forge';
+import { Card } from '@/components/instrument';
+import { Badge } from '@/components/instrument';
 import { Lock, Plus, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -173,9 +173,9 @@ export default function WidgetPalette({ widgets, eligibility, onAdd, isLocked, b
                       )}
                     </div>
                     {widget.minAzmStake > 0 && (
-                      <Badge variant={locked ? 'danger' : 'primary'}>
+                      <Tag variant={locked ? 'danger' : 'primary'}>
                         {(widget.tier || '').replace('NITRO_', '') || 'PRO'}
-                      </Badge>
+                      </Tag>
                     )}
                   </button>
                 );

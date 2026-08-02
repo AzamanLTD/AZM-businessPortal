@@ -4,20 +4,20 @@ import { usePermission } from '@/hooks/usePermission';
 import {
   Card,
   Button,
-  Badge,
+  Tag,
   Input,
   Select,
-  Modal,
+  Dialog,
   Empty,
-  Skeleton,
+  Skel,
   Avatar,
   DropdownMenu,
   Tooltip,
   Switch,
   StatCard,
   Textarea
-} from '@/components/forge';
-import { VirtualizedGrid } from '@/components/forge';
+} from '@/components/instrument';
+import { VirtualizedGrid } from '@/components/instrument';
 import {
   Users,
   UserPlus,
@@ -360,7 +360,7 @@ export default function Employees() {
       {loading ? (
         <div data-tour="employees-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-48" />
+            <Skel key={i} className="h-48" />
           ))}
         </div>
       ) : filteredEmployees.length === 0 ? (
@@ -456,12 +456,12 @@ export default function Employees() {
                   </div>
 
                   <div className="flex flex-wrap gap-2 mb-4">
-                    <Badge color={STATUS_COLORS[emp.status] || 'var(--f-text-3)'}>
+                    <Tag color={STATUS_COLORS[emp.status] || 'var(--f-text-3)'}>
                       {emp.status}
-                    </Badge>
-                    <Badge color="var(--f-tint-color)">{emp.role}</Badge>
+                    </Tag>
+                    <Tag color="var(--f-tint-color)">{emp.role}</Tag>
                     {emp.department && (
-                      <Badge color="var(--f-text-3)">{emp.department}</Badge>
+                      <Tag color="var(--f-text-3)">{emp.department}</Tag>
                     )}
                   </div>
                 </div>
@@ -500,7 +500,7 @@ export default function Employees() {
       )}
 
       {/* Details Modal */}
-      <Modal
+      <Dialog
         open={isSelectedOpen}
         onClose={() => setIsSelectedOpen(false)}
         title="Employee Details"
@@ -521,10 +521,10 @@ export default function Employees() {
                   {selectedEmployee.title} • {selectedEmployee.department}
                 </p>
                 <div className="flex items-center gap-2 mt-1.5">
-                  <Badge color={STATUS_COLORS[selectedEmployee.status]}>
+                  <Tag color={STATUS_COLORS[selectedEmployee.status]}>
                     {selectedEmployee.status}
-                  </Badge>
-                  <Badge color="var(--f-tint-color)">{selectedEmployee.role}</Badge>
+                  </Tag>
+                  <Tag color="var(--f-tint-color)">{selectedEmployee.role}</Tag>
                 </div>
               </div>
             </div>
@@ -598,9 +598,9 @@ export default function Employees() {
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {selectedEmployee.permissions.map((perm) => (
-                    <Badge key={perm} color="var(--f-tint-color)">
+                    <Tag key={perm} color="var(--f-tint-color)">
                       {perm}
-                    </Badge>
+                    </Tag>
                   ))}
                 </div>
               </div>
@@ -618,10 +618,10 @@ export default function Employees() {
             </div>
           </div>
         )}
-      </Modal>
+      </Dialog>
 
       {/* Add Modal */}
-      <Modal
+      <Dialog
         open={isAddOpen}
         onClose={() => setIsAddOpen(false)}
         title="Add New Employee"
@@ -686,10 +686,10 @@ export default function Employees() {
             <Button onClick={handleAddEmployee}>Create Employee</Button>
           </div>
         </div>
-      </Modal>
+      </Dialog>
 
       {/* Edit Modal */}
-      <Modal
+      <Dialog
         open={isEditOpen}
         onClose={() => setIsEditOpen(false)}
         title="Edit Employee Profile"
@@ -748,10 +748,10 @@ export default function Employees() {
             <Button onClick={handleEditEmployee}>Save Changes</Button>
           </div>
         </div>
-      </Modal>
+      </Dialog>
 
       {/* Permissions Modal */}
-      <Modal
+      <Dialog
         open={isPermsOpen}
         onClose={() => setIsPermsOpen(false)}
         title="Update Employee Permissions"
@@ -793,7 +793,7 @@ export default function Employees() {
             <Button onClick={handleUpdatePermissions}>Save Permissions</Button>
           </div>
         </div>
-      </Modal>
+      </Dialog>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 // src/components/storefront/PublishConfirmModal.jsx
-import { Card } from '@/components/forge';
+import { Card } from '@/components/instrument';
 import { Rocket, AlertCircle } from 'lucide-react';
 
 export default function PublishConfirmModal({ draft, published, onConfirm, onCancel }) {

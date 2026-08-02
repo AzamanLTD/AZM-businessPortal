@@ -11,7 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import { businessOS } from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
-import { Card, Button, Input, Badge, Select } from '@/components/forge';
+import { Card, Button, Input, Tag, Select } from '@/components/instrument';
 import { History, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const ACTION_LABELS = {
@@ -152,9 +152,9 @@ export default function ActivityLog() {
                 <span className="font-medium text-sm text-[var(--f-text)]">
                   {entry.actorName || 'System'}
                 </span>
-                <Badge className="text-xs">
+                <Tag className="text-xs">
                   {ACTION_LABELS[entry.action] || entry.action}
-                </Badge>
+                </Tag>
                 <span className="text-xs text-[var(--f-text-3)] ml-auto">
                   {timeAgo(entry.createdAt)}
                 </span>

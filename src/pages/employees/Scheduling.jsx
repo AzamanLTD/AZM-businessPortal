@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { shiftApi, employeeApi } from '@/lib/marketplaceApi';
 import { usePermission } from '@/hooks/usePermission';
-import { Card, Button, Badge, Input, Select, Modal, Empty, Skeleton, Avatar, StatCard, Tabs } from '@/components/forge';
+import { Card, Button, Tag, Input, Select, Dialog, Empty, Skel, Avatar, StatCard, Tabs } from '@/components/instrument';
 import {
   Calendar, Plus, ChevronLeft, ChevronRight, Clock, CheckCircle2, XCircle,
   Edit2, Trash2, Repeat, ArrowLeftRight, AlertCircle
@@ -284,7 +284,7 @@ export default function Scheduling() {
 
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
-              {[...Array(7)].map((_, i) => <Skeleton key={i} className="h-48 rounded-lg" />)}
+              {[...Array(7)].map((_, i) => <Skel key={i} className="h-48 rounded-lg" />)}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
@@ -310,9 +310,9 @@ export default function Scheduling() {
                                   {formatTime(shift.startTime)} – {formatTime(shift.endTime)}
                                 </p>
                               </div>
-                              <Badge color={STATUS_COLORS[shift.status] || 'var(--f-text-3)'} className="text-[9px] px-1.5 py-0.5">
+                              <Tag color={STATUS_COLORS[shift.status] || 'var(--f-text-3)'} className="text-[9px] px-1.5 py-0.5">
                                 {shift.status === 'IN_PROGRESS' ? 'ACTIVE' : shift.status}
-                              </Badge>
+                              </Tag>
                             </div>
                             {shift.shiftLabel && <p className="text-[10px] text-[var(--f-tint-color)] mt-1">{shift.shiftLabel}</p>}
                             {canManage(shift) && shift.status === 'SCHEDULED' && (
@@ -377,7 +377,7 @@ export default function Scheduling() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <span className="text-sm">{swap.requestingShift?.employee?.user?.fullName || 'Unknown'}</span>
-                          <Badge color={SWAP_STATUS_COLORS[swap.status] || 'var(--f-text-3)'}>{swap.status}</Badge>
+                          <Tag color={SWAP_STATUS_COLORS[swap.status] || 'var(--f-text-3)'}>{swap.status}</Tag>
                         </div>
                         <span className="text-xs text-[var(--f-text-3)]">{formatDate(swap.requestedAt)}</span>
                       </div>
@@ -392,7 +392,7 @@ export default function Scheduling() {
 
       {tab === 2 && (
         <div className="space-y-4">
-          {loading ? <Skeleton className="h-32 rounded-lg" /> : onDuty.length === 0 ? (
+          {loading ? <Skel className="h-32 rounded-lg" /> : onDuty.length === 0 ? (
             <Empty icon={Clock} title="No one on duty" description="Employees currently clocked in will appear here." />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -407,7 +407,7 @@ export default function Scheduling() {
                       <p className="text-sm font-medium">{employeeName(shift)}</p>
                       <p className="text-xs text-[var(--f-text-3)]">Since {formatTime(shift.clockInTime || shift.startTime)}</p>
                     </div>
-                    <Badge color="var(--f-ok)">ON DUTY</Badge>
+                    <Tag color="var(--f-ok)">ON DUTY</Tag>
                   </div>
                   <div className="mt-3 text-xs text-[var(--f-text-3)] space-y-1">
                     <p>Shift: {formatTimeRange(shift.startTime, shift.endTime)}</p>
@@ -458,7 +458,7 @@ export default function Scheduling() {
         </Card>
       )}
 
-      <Modal open={addOpen} onClose={() => { setAddOpen(false); setEditShift(null); }} title={editShift ? 'Edit Shift' : 'Add Shift'}>
+      <Dialog open={addOpen} onClose={() => { setAddOpen(false); setEditShift(null); }} title={editShift ? 'Edit Shift' : 'Add Shift'}>
         <div className="space-y-4 p-2">
           <Select label="Employee *" value={form.employeeId} onChange={e => setForm(f => ({ ...f, employeeId: e.target.value }))}
             options={[{ value: '', label: 'Select employee...' }, ...employees.map(emp => ({ value: emp.id, label: `${emp.user?.fullName || emp.user?.username || 'Unknown'}${emp.title ? ` — ${emp.title}` : ''}` }))]} />
@@ -477,9 +477,9 @@ export default function Scheduling() {
             <Button onClick={handleSave}>{editShift ? 'Update' : 'Create'} Shift</Button>
           </div>
         </div>
-      </Modal>
+      </Dialog>
 
-      <Modal open={!!rejectSwap} onClose={() => setRejectSwap(null)} title="Reject Swap Request">
+      <Dialog open={!!rejectSwap} onClose={() => setRejectSwap(null)} title="Reject Swap Request">
         <div className="space-y-4 p-2">
           <p className="text-sm text-[var(--f-text-3)]">Add a note explaining why this swap is rejected.</p>
           <Input label="Manager Note" value={rejectSwap?.note || ''} onChange={e => setRejectSwap(s => s ? { ...s, note: e.target.value } : s)} placeholder="Reason for rejection..." />
@@ -488,7 +488,7 @@ export default function Scheduling() {
             <Button variant="danger" onClick={handleRejectSwap}>Reject Swap</Button>
           </div>
         </div>
-      </Modal>
+      </Dialog>
     </div>
   );
 }
