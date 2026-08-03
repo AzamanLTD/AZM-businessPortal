@@ -13,7 +13,7 @@
  */
 import { io } from 'socket.io-client';
 
-const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const BACKEND_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://azm-backend.onrender.com' : 'http://localhost:3000');
 
 let socket = null;
 
