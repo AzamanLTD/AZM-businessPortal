@@ -9,7 +9,7 @@ import { usePermission } from '@/hooks/usePermission';
 import { useBizNotifications } from '@/hooks/useBizNotifications';
 
 export function Layout() {
-  const { bizProfile, isOwner, user, logout } = useAuth();
+  const { bizProfile, isOwner, user, logout, isAdmin } = useAuth();
   const { hasPermission } = usePermission();
   const { data: notifData } = useBizNotifications();
   const navigate = useNavigate();
@@ -18,6 +18,8 @@ export function Layout() {
     businessType: getBusinessType(bizProfile?.category || bizProfile?.businessType || bizProfile?.business_type || 'GENERAL'),
     hasPermission,
     isOwner,
+    isAdmin,
+    bizProfile,
     counts: {
       notifications: notifData?.count ?? notifData?.unreadCount,
       reservationsPending: notifData?.reservationsPending,
@@ -31,7 +33,7 @@ export function Layout() {
       timeOffPending: notifData?.timeOffPending,
       kybAction: notifData?.kybAction,
     },
-  }), [bizProfile, hasPermission, isOwner, notifData]);
+  }), [bizProfile, hasPermission, isOwner, isAdmin, notifData]);
 
   return (
     <ThemeProvider>
@@ -39,8 +41,8 @@ export function Layout() {
         <TooltipProvider>
           <Shell
             navProps={navProps}
-            brandName={bizProfile?.name || 'Azaman'}
-            brandShort={(bizProfile?.name || 'AZ').slice(0, 2).toUpperCase()}
+            brandName={bizProfile?.businessName || 'Azaman'}
+            brandShort={(bizProfile?.businessName || 'AZ').slice(0, 2).toUpperCase()}
             user={user}
             onLogout={logout}
             onNavigateSettings={() => navigate('/settings')}
