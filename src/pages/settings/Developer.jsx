@@ -8,7 +8,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { m, AnimatePresence } from 'motion/react';
 import { request } from '@/lib/apiCore';
 import { usePermission } from '@/hooks/usePermission';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 import {
   Key, Plus, Trash2, Copy, Eye, EyeOff, Check, RefreshCw,
   Webhook, Globe, AlertTriangle, ChevronDown, ChevronUp,
@@ -62,13 +62,13 @@ function CreateKeyModal({ onClose, onCreate }) {
   );
 
   const handleCreate = async () => {
-    if (!name.trim()) { toast.error('Enter a key name'); return; }
+    if (!name.trim()) { toast.stop('Enter a key name'); return; }
     setLoading(true);
     try {
       await onCreate({ name: name.trim(), scopes: mode === 'read' ? selectedScopes.filter(s => s.startsWith('read:')) : selectedScopes });
       onClose();
     } catch (e) {
-      toast.error(e.message);
+      toast.stop(e.message);
     } finally { setLoading(false); }
   };
 
@@ -131,13 +131,13 @@ function CreateWebhookModal({ onClose, onCreate }) {
   const toggleEvent = (e) => setEvents(prev => prev.includes(e) ? prev.filter(x => x !== e) : [...prev, e]);
 
   const handleCreate = async () => {
-    if (!url.trim() || !url.startsWith('https://')) { toast.error('Enter a valid HTTPS URL'); return; }
-    if (events.length === 0) { toast.error('Select at least one event'); return; }
+    if (!url.trim() || !url.startsWith('https://')) { toast.stop('Enter a valid HTTPS URL'); return; }
+    if (events.length === 0) { toast.stop('Select at least one event'); return; }
     setLoading(true);
     try {
       await onCreate({ url: url.trim(), events });
       onClose();
-    } catch (e) { toast.error(e.message); }
+    } catch (e) { toast.stop(e.message); }
     finally { setLoading(false); }
   };
 
@@ -209,16 +209,16 @@ export default function Developer() {
     const newEntry = { id: crypto.randomUUID(), name: data.name, scopes: data.scopes, createdAt: new Date().toISOString(), lastUsed: null, keyPreview: key.slice(0, 16) + '…' + key.slice(-4), _fullKey: key };
     setApiKeys(prev => [...prev, newEntry]);
     setNewKey(key);
-    toast.success('API key created — copy it now, it won\'t be shown again');
+    toast.go('API key created — copy it now, it won\'t be shown again');
   };
 
   const handleCreateWebhook = async (data) => {
     setWebhooks(prev => [...prev, { id: crypto.randomUUID(), url: data.url, events: data.events, status: 'active', lastDelivery: null, successCount: 0, failCount: 0, _secret: data.secret }]);
-    toast.success('Webhook registered');
+    toast.go('Webhook registered');
   };
 
-  const deleteKey = (id) => { setApiKeys(prev => prev.filter(k => k.id !== id)); toast.success('API key revoked'); };
-  const deleteWebhook = (id) => { setWebhooks(prev => prev.filter(w => w.id !== id)); toast.success('Webhook deleted'); };
+  const deleteKey = (id) => { setApiKeys(prev => prev.filter(k => k.id !== id)); toast.go('API key revoked'); };
+  const deleteWebhook = (id) => { setWebhooks(prev => prev.filter(w => w.id !== id)); toast.go('Webhook deleted'); };
 
   const rel = (dt) => dt ? new Date(dt).toLocaleString('en-GH', { dateStyle: 'short', timeStyle: 'short' }) : 'Never';
 

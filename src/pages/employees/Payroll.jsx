@@ -27,7 +27,7 @@ import {
   ArrowUpCircle,
   Calendar
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 export default function Payroll() {
   const { hasPermission } = usePermission();
@@ -94,7 +94,7 @@ export default function Payroll() {
       setPayrollRecords(recsRes?.data?.records || []);
     } catch (err) {
       console.error(err);
-      toast.error('Failed to load payroll details');
+      toast.stop('Failed to load payroll details');
     } finally {
       setLoadingPayroll(false);
     }
@@ -130,7 +130,7 @@ export default function Payroll() {
       setEmployees(augmentedEmployees);
     } catch (err) {
       console.error(err);
-      toast.error('Failed to load EWA dashboard');
+      toast.stop('Failed to load EWA dashboard');
     } finally {
       setLoadingEwa(false);
     }
@@ -147,17 +147,17 @@ export default function Payroll() {
   // Process Payroll Action
   const handleProcessPayroll = async () => {
     if (!canProcess) {
-      toast.error('You do not have permission to process payroll');
+      toast.stop('You do not have permission to process payroll');
       return;
     }
     setProcessingPayroll(true);
     try {
       await payrollApi.process({ period: currentPeriod });
-      toast.success(`Successfully processed payroll for period ${currentPeriod}`);
+      toast.go(`Successfully processed payroll for period ${currentPeriod}`);
       fetchPayrollData();
     } catch (err) {
       console.error(err);
-      toast.error('Failed to process payroll');
+      toast.stop('Failed to process payroll');
     } finally {
       setProcessingPayroll(false);
     }
@@ -166,17 +166,17 @@ export default function Payroll() {
   // Disburse Single Payroll
   const handleDisburseSingle = async (payrollId) => {
     if (!canDisburse) {
-      toast.error('You do not have permission to disburse payments');
+      toast.stop('You do not have permission to disburse payments');
       return;
     }
     setDisbursingId(payrollId);
     try {
       await payrollApi.disburse({ payrollId });
-      toast.success('Disbursement triggered successfully');
+      toast.go('Disbursement triggered successfully');
       fetchPayrollData();
     } catch (err) {
       console.error(err);
-      toast.error('Disbursement failed');
+      toast.stop('Disbursement failed');
     } finally {
       setDisbursingId(null);
     }
@@ -185,7 +185,7 @@ export default function Payroll() {
   // Disburse All Ready Payrolls
   const handleDisburseAll = async () => {
     if (!canDisburse) {
-      toast.error('You do not have permission to disburse payments');
+      toast.stop('You do not have permission to disburse payments');
       return;
     }
     const readyRecords = payrollRecords.filter(r => r.status === 'READY');
@@ -197,11 +197,11 @@ export default function Payroll() {
     setDisbursingAll(true);
     try {
       await Promise.all(readyRecords.map(r => payrollApi.disburse({ payrollId: r.id })));
-      toast.success('Successfully disbursed all ready payroll payments');
+      toast.go('Successfully disbursed all ready payroll payments');
       fetchPayrollData();
     } catch (err) {
       console.error(err);
-      toast.error('Failed to disburse some or all payments');
+      toast.stop('Failed to disburse some or all payments');
     } finally {
       setDisbursingAll(false);
     }
@@ -222,7 +222,7 @@ export default function Payroll() {
       setEmployeeEwaHistory(histRes?.data?.withdrawals || histRes?.withdrawals || []);
     } catch (err) {
       console.error(err);
-      toast.error('Failed to load EWA employee info');
+      toast.stop('Failed to load EWA employee info');
     } finally {
       setLoadingEmployeeEwa(false);
     }
@@ -232,24 +232,24 @@ export default function Payroll() {
   const handleWithdrawEwaSubmit = async (e) => {
     e.preventDefault();
     if (!canProcess) {
-      toast.error('You do not have permission to process withdrawals');
+      toast.stop('You do not have permission to process withdrawals');
       return;
     }
     const amountNum = parseFloat(withdrawAmount);
     if (isNaN(amountNum) || amountNum <= 0) {
-      toast.error('Please enter a valid amount');
+      toast.stop('Please enter a valid amount');
       return;
     }
     const maxVal = employeeEwaEligibility?.maxWithdrawal || 0;
     if (amountNum > maxVal) {
-      toast.error(`Amount exceeds maximum withdrawal limit of $${maxVal.toFixed(2)}`);
+      toast.stop(`Amount exceeds maximum withdrawal limit of $${maxVal.toFixed(2)}`);
       return;
     }
 
     setProcessingWithdrawal(true);
     try {
       await ewaApi.withdraw({ employeeId: selectedEmployee.id, amount: amountNum });
-      toast.success(`Successfully processed withdrawal of $${amountNum.toFixed(2)}`);
+      toast.go(`Successfully processed withdrawal of $${amountNum.toFixed(2)}`);
       
       // Refresh modal values and background data
       const [eligRes, histRes] = await Promise.all([
@@ -262,7 +262,7 @@ export default function Payroll() {
       fetchEwaData();
     } catch (err) {
       console.error(err);
-      toast.error('Failed to complete EWA withdrawal');
+      toast.stop('Failed to complete EWA withdrawal');
     } finally {
       setProcessingWithdrawal(false);
     }

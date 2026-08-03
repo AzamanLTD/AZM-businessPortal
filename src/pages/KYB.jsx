@@ -4,7 +4,7 @@ import { kyb as kybApi } from '@/lib/api';
 import { Card, Tag, Button, Input, Empty } from '@/components/instrument';
 import { KYB_STATUS_META } from '@/lib/utils';
 import { FileCheck, Upload, CheckCircle2, Clock, XCircle, AlertCircle, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 import { uploadImageToCloudinary, isCloudinaryConfigured, validateImageFile } from '@/lib/cloudinary';
 
 const DOC_TYPES = [
@@ -33,14 +33,14 @@ export default function KYB() {
     e.target.value = '';
     if (!file) return;
     const invalid = validateImageFile(file);
-    if (invalid) return toast.error(invalid);
+    if (invalid) return toast.stop(invalid);
     setUploadingType(documentType);
     try {
       const url = await uploadImageToCloudinary(file, 'azaman-kyb');
       setUrls(u => ({ ...u, [documentType]: url }));
-      toast.success('Document uploaded — submit to send for review');
+      toast.go('Document uploaded — submit to send for review');
     } catch (err) {
-      toast.error(err.message || 'Upload failed');
+      toast.stop(err.message || 'Upload failed');
     } finally {
       setUploadingType(null);
     }
@@ -54,11 +54,11 @@ export default function KYB() {
   const submitMutation = useMutation({
     mutationFn: (documents) => kybApi.submit(documents),
     onSuccess: (res) => {
-      toast.success(`${res.documents?.length || 0} document${res.documents?.length !== 1 ? 's' : ''} submitted for review`);
+      toast.go(`${res.documents?.length || 0} document${res.documents?.length !== 1 ? 's' : ''} submitted for review`);
       qc.invalidateQueries(['kyb-status']);
       setUrls({});
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => toast.stop(e.message),
   });
 
   const kybStatus   = data?.kybStatus || 'UNVERIFIED';
@@ -75,7 +75,7 @@ export default function KYB() {
       .map(([documentType, documentUrl]) => ({ documentType, documentUrl: documentUrl.trim() }));
 
     if (toSubmit.length === 0) {
-      toast.error('Please enter at least one document URL to submit.');
+      toast.stop('Please enter at least one document URL to submit.');
       return;
     }
     submitMutation.mutate(toSubmit);

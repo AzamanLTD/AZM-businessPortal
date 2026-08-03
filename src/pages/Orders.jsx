@@ -14,7 +14,7 @@ import {
   ShoppingBag, Search, ChevronRight, Truck, X, Grid, List,
   CheckSquare, Square, RefreshCw, DollarSign, AlertCircle, Clock,
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 import { Card, Tag, Button, Skel, Empty, DataTable, BulkBar } from '@/components/instrument';
 
@@ -76,12 +76,12 @@ export default function Orders() {
   const bulkStatusMutation = useMutation({
     mutationFn: ({ ids, status }) => bookingOpsApi.bulkOrderStatus(ids, status),
     onSuccess: (_, variables) => {
-      toast.success(`Updated ${variables.ids.length} orders to ${variables.status}`);
+      toast.go(`Updated ${variables.ids.length} orders to ${variables.status}`);
       qc.invalidateQueries(['orders']);
       qc.invalidateQueries(['orders-stats']);
       setSelectedIds([]);
     },
-    onError: (err) => toast.error(err.message || 'Failed to update orders'),
+    onError: (err) => toast.stop(err.message || 'Failed to update orders'),
   });
 
   const handleBulkAction = async (status) => {

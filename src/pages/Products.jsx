@@ -37,7 +37,7 @@ import {
   Link2,
   Tag as TagIcon
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 import { uploadImageToCloudinary, isCloudinaryConfigured, validateImageFile } from '@/lib/cloudinary';
 
 // Pre-defined food tags for quick chips
@@ -178,7 +178,7 @@ export default function Products() {
   const createSectionMutation = useMutation({
     mutationFn: (data) => request('/api/business/catalog/sections', { method: 'POST', body: JSON.stringify(data) }),
     onSuccess: () => {
-      toast.success('Catalog section created');
+      toast.go('Catalog section created');
       qc.invalidateQueries(['catalog-sections']);
       closeSectionModal();
     },
@@ -188,7 +188,7 @@ export default function Products() {
   const updateSectionMutation = useMutation({
     mutationFn: ({ id, data }) => request(`/api/business/catalog/sections/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
     onSuccess: () => {
-      toast.success('Catalog section updated');
+      toast.go('Catalog section updated');
       qc.invalidateQueries(['catalog-sections']);
       closeSectionModal();
     },
@@ -198,17 +198,17 @@ export default function Products() {
   const deleteSectionMutation = useMutation({
     mutationFn: (id) => request(`/api/business/catalog/sections/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
-      toast.success('Catalog section deleted');
+      toast.go('Catalog section deleted');
       qc.invalidateQueries(['catalog-sections']);
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => toast.stop(e.message),
   });
 
   // MUTATIONS - PRODUCTS
   const createProductMutation = useMutation({
     mutationFn: (data) => productsApi.create(data),
     onSuccess: (newProduct) => {
-      toast.success('Product created');
+      toast.go('Product created');
       handlePostSaveRecipe(newProduct.id);
       qc.invalidateQueries(['products']);
       closeProductModal();
@@ -219,7 +219,7 @@ export default function Products() {
   const updateProductMutation = useMutation({
     mutationFn: ({ id, data }) => productsApi.update(id, data),
     onSuccess: (_, { id }) => {
-      toast.success('Product updated');
+      toast.go('Product updated');
       handlePostSaveRecipe(id);
       qc.invalidateQueries(['products']);
       closeProductModal();
@@ -230,10 +230,10 @@ export default function Products() {
   const deleteProductMutation = useMutation({
     mutationFn: (id) => productsApi.remove(id),
     onSuccess: () => {
-      toast.success('Product deleted');
+      toast.go('Product deleted');
       qc.invalidateQueries(['products']);
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => toast.stop(e.message),
   });
 
   // MUTATION - SOLD OUT / 86'd
@@ -241,9 +241,9 @@ export default function Products() {
     mutationFn: ({ productId, isSoldOut }) => restaurantOpsApi.toggle86({ productId, isSoldOut }),
     onSuccess: () => {
       qc.invalidateQueries(['sold-out-items']);
-      toast.success('Availability status toggled');
+      toast.go('Availability status toggled');
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => toast.stop(e.message),
   });
 
   // Inline recipe ingredient mutations
@@ -274,18 +274,18 @@ export default function Products() {
   // Bulk Operations Actions
   const handleBulkPriceAdjustment = async () => {
     if (!bulkTargetSectionId) {
-      toast.error('Please select a target catalog section.');
+      toast.stop('Please select a target catalog section.');
       return;
     }
     const delta = Number(bulkPricePercent);
     if (isNaN(delta) || delta === 0) {
-      toast.error('Please specify a valid percentage delta.');
+      toast.stop('Please specify a valid percentage delta.');
       return;
     }
 
     const itemsToAdjust = productsList.filter(p => p.catalogSectionId === bulkTargetSectionId);
     if (itemsToAdjust.length === 0) {
-      toast.error('No items found in this catalog section.');
+      toast.stop('No items found in this catalog section.');
       return;
     }
 
@@ -302,7 +302,7 @@ export default function Products() {
       }
     }
 
-    toast.success(`Successfully adjusted prices for ${successCount} items!`);
+    toast.go(`Successfully adjusted prices for ${successCount} items!`);
     qc.invalidateQueries(['products']);
     setBulkModal(null);
     setBulkPricePercent('');
@@ -320,10 +320,10 @@ export default function Products() {
       delete duplicateData.updated_date;
 
       await productsApi.create(duplicateData);
-      toast.success(`Duplicated ${product.name}`);
+      toast.go(`Duplicated ${product.name}`);
       qc.invalidateQueries(['products']);
     } catch (err) {
-      toast.error(`Duplication failed: ${err.message}`);
+      toast.stop(`Duplication failed: ${err.message}`);
     }
   };
 
@@ -347,16 +347,16 @@ export default function Products() {
         method: 'PATCH',
         body: JSON.stringify({ displayOrder: originalOrder }),
       });
-      toast.success('Section order updated');
+      toast.go('Section order updated');
       qc.invalidateQueries(['catalog-sections']);
     } catch (err) {
-      toast.error('Failed to reorder sections');
+      toast.stop('Failed to reorder sections');
     }
   };
 
   // Form Modals Actions
   const openCreateProduct = () => {
-    if (!canManageProducts) return toast.error('Unauthorized');
+    if (!canManageProducts) return toast.stop('Unauthorized');
     setProductForm({
       ...BLANK_PRODUCT,
       locationId: selectedLocationId,
@@ -367,7 +367,7 @@ export default function Products() {
   };
 
   const openEditProduct = (p) => {
-    if (!canManageProducts) return toast.error('Unauthorized');
+    if (!canManageProducts) return toast.stop('Unauthorized');
     
     // Parse potentially nested string fields (e.g. variants and modifierGroups if stored as string JSON)
     let parsedVariants = [];
@@ -427,7 +427,7 @@ export default function Products() {
   };
 
   const openCreateSection = () => {
-    if (!canManageProducts) return toast.error('Unauthorized');
+    if (!canManageProducts) return toast.stop('Unauthorized');
     const maxOrder = sectionsList.reduce((max, s) => Math.max(max, s.displayOrder || 0), 0);
     setSectionForm({
       ...BLANK_SECTION,
@@ -439,7 +439,7 @@ export default function Products() {
   };
 
   const openEditSection = (s) => {
-    if (!canManageProducts) return toast.error('Unauthorized');
+    if (!canManageProducts) return toast.stop('Unauthorized');
     setSectionForm({
       name: s.name || '',
       description: s.description || '',
@@ -465,7 +465,7 @@ export default function Products() {
     e.target.value = ''; // Reset input selection
     if (!file) return;
     const invalid = validateImageFile(file);
-    if (invalid) return toast.error(invalid);
+    if (invalid) return toast.stop(invalid);
     setUploading(true);
     try {
       const url = await uploadImageToCloudinary(file);
@@ -474,9 +474,9 @@ export default function Products() {
       } else {
         setSectionForm(f => ({ ...f, imageUrl: url }));
       }
-      toast.success('Image uploaded');
+      toast.go('Image uploaded');
     } catch (err) {
-      toast.error(err.message || 'Upload failed');
+      toast.stop(err.message || 'Upload failed');
     } finally {
       setUploading(false);
     }

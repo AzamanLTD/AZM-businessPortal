@@ -12,7 +12,7 @@ import { checkIn as checkInApi } from '@/lib/marketplaceApi';
 // Widget replaced by KpiCard/Card
 import { Button, Tag, Input, Dialog, Skel } from '@/components/instrument';
 import { fmt, formatDateTime, relativeTime, cn } from '@/lib/utils';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 import {
   QrCode, Search, CheckCircle2, Users, Clock,
   UserCheck, ArrowRight, X, AlertCircle, Zap,
@@ -45,31 +45,31 @@ export default function CheckIn() {
     mutationFn: (t) => checkInApi.verifyToken(t),
     onSuccess: (data) => {
       setCheckInResult(data);
-      toast.success('Check-in successful!');
+      toast.go('Check-in successful!');
       qc.invalidateQueries(['checkin-stats']);
       qc.invalidateQueries(['checkin-recent']);
       setToken('');
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => toast.stop(e.message),
   });
 
   const searchMut = useMutation({
     mutationFn: (id) => checkInApi.searchByAzamanId(id),
     onSuccess: (data) => setSearchResults(data),
-    onError: (e) => toast.error(e.message),
+    onError: (e) => toast.stop(e.message),
   });
 
   const directCheckInMut = useMutation({
     mutationFn: (reservationId) => checkInApi.directCheckIn(reservationId),
     onSuccess: (data) => {
       setCheckInResult(data);
-      toast.success('Check-in successful!');
+      toast.go('Check-in successful!');
       qc.invalidateQueries(['checkin-stats']);
       qc.invalidateQueries(['checkin-recent']);
       setSearchResults(null);
       setAzamanId('');
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => toast.stop(e.message),
   });
 
   const handleVerify = () => {

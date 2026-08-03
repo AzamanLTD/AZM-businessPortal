@@ -8,7 +8,7 @@ import { m, AnimatePresence } from 'motion/react';
 import { request } from '@/lib/apiCore';
 import { storefrontApi } from '@/services/storefrontApi';
 import { useAuth } from '@/lib/AuthContext';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 import { Card } from '@/components/instrument';
 import {
   Globe, QrCode, Eye, Download, ExternalLink, CheckCircle2,
@@ -94,8 +94,8 @@ export default function WebOrdering() {
     setSaving(true);
     try {
       await request('/api/business/profile', { method: 'PATCH', body: JSON.stringify({ webOrderingEnabled: enabled, adAccentColor: accentColor }) });
-      toast.success('Settings saved');
-    } catch (e) { toast.error(e.message); }
+      toast.go('Settings saved');
+    } catch (e) { toast.stop(e.message); }
     finally { setSaving(false); }
   };
 
@@ -201,7 +201,7 @@ export default function WebOrdering() {
                   <h3 className="font-bold" style={{ color: 'var(--f-text)' }}>QR Codes</h3>
                   <p className="text-xs mt-0.5" style={{ color: 'var(--f-text-3)' }}>Print and place at each table, room, or vehicle</p>
                 </div>
-                <button onClick={() => toast.success('Preparing PDF…')}
+                <button onClick={() => toast.go('Preparing PDF…')}
                   className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-white"
                   style={{ background: 'var(--f-tint-color)' }}>
                   <Download className="w-3.5 h-3.5" /> Download All
@@ -215,7 +215,7 @@ export default function WebOrdering() {
                       <QRCode value={item.url} size={80} fgColor={accentColor} bgColor="#ffffff" level="M" includeMargin={false} />
                     </div>
                     <p className="text-xs font-semibold" style={{ color: 'var(--f-text)' }}>{item.label}</p>
-                    <button onClick={() => toast.success(`QR for ${item.label} ready`)}
+                    <button onClick={() => toast.go(`QR for ${item.label} ready`)}
                       className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg font-semibold opacity-0 group-hover:opacity-100 transition-opacity"
                       style={{ background: 'var(--f-surface-sunken)', color: 'var(--f-tint-color)' }}>
                       <Download className="w-3 h-3" /> Download

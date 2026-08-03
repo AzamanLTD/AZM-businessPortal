@@ -13,7 +13,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
 import { Card, Button, Input, Tag, Switch, Tabs } from '@/components/instrument';
 import { Shield, Save, Lock, Check } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 function groupByModule(permissionKeys) {
   const groups = {};
@@ -50,13 +50,13 @@ export default function RolesPermissions() {
   const saveTemplateMutation = useMutation({
     mutationFn: (data) => businessOS.savePermissionTemplate(data),
     onSuccess: () => {
-      toast.success('Custom template saved');
+      toast.go('Custom template saved');
       qc.invalidateQueries(['permission-templates']);
       setCustomTemplateName('');
       setCustomTemplateDesc('');
       setSelectedPerms(new Set());
     },
-    onError: (e) => toast.error('Failed to save: ' + e.message),
+    onError: (e) => toast.stop('Failed to save: ' + e.message),
   });
 
   const togglePerm = (key) => {
@@ -289,7 +289,7 @@ export default function RolesPermissions() {
         </span>
         <Button
           onClick={() => {
-            if (!customTemplateName.trim()) { toast.error('Template name is required'); return; }
+            if (!customTemplateName.trim()) { toast.stop('Template name is required'); return; }
             saveTemplateMutation.mutate({
               name: customTemplateName.trim(),
               description: customTemplateDesc.trim(),

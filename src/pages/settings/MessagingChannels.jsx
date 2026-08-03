@@ -9,7 +9,7 @@ import { m, AnimatePresence } from 'motion/react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { request } from '@/lib/apiCore';
 import { useAuth } from '@/lib/AuthContext';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 import { Card } from '@/components/instrument';
 import {
   MessageSquare, Phone, CheckCircle2, XCircle, AlertTriangle, RefreshCw,
@@ -133,53 +133,53 @@ export default function MessagingChannels() {
     mutationFn: async (prefs) => {
       return request('/api/business-os/messaging-config/preferences', 'PATCH', { preferences: prefs });
     },
-    onSuccess: () => toast.success('Routing preferences saved'),
-    onError: (e) => toast.error(e.message || 'Failed to save preferences'),
+    onSuccess: () => toast.go('Routing preferences saved'),
+    onError: (e) => toast.stop(e.message || 'Failed to save preferences'),
   });
 
   const handleConnectWA = async () => {
-    if (!waNumber || !waApiKey) { toast.error('Enter phone number and API key'); return; }
+    if (!waNumber || !waApiKey) { toast.stop('Enter phone number and API key'); return; }
     setWaConnecting(true);
     try {
       const r = await request('/api/business-os/messaging-config/whatsapp', 'POST', {
         action: 'connect', phoneNumber: waNumber, apiKey: waApiKey,
       });
       setWaConnected(true);
-      toast.success('WhatsApp Business connected');
+      toast.go('WhatsApp Business connected');
     } catch (e) {
-      toast.error(e.message || 'Failed to connect WhatsApp');
+      toast.stop(e.message || 'Failed to connect WhatsApp');
     } finally {
       setWaConnecting(false);
     }
   };
 
   const handleConnectSMS = async () => {
-    if (!smsApiKey || !smsSenderId) { toast.error('Enter API key and sender ID'); return; }
+    if (!smsApiKey || !smsSenderId) { toast.stop('Enter API key and sender ID'); return; }
     setSmsConnecting(true);
     try {
       const r = await request('/api/business-os/messaging-config/sms', 'POST', {
         action: 'connect', apiKey: smsApiKey, senderId: smsSenderId, provider: 'africas_talking',
       });
       setSmsConnected(true);
-      toast.success('SMS gateway connected');
+      toast.go('SMS gateway connected');
     } catch (e) {
-      toast.error(e.message || 'Failed to connect SMS gateway');
+      toast.stop(e.message || 'Failed to connect SMS gateway');
     } finally {
       setSmsConnecting(false);
     }
   };
 
   const handleTestSend = async () => {
-    if (!testNumber) { toast.error('Enter a phone number'); return; }
+    if (!testNumber) { toast.stop('Enter a phone number'); return; }
     setTesting(true);
     try {
       const channel = waConnected ? 'whatsapp' : 'sms';
       const r = await request('/api/business-os/messaging-config/test', 'POST', {
         phoneNumber: testNumber, channel,
       });
-      toast.success(`Test message sent to ${testNumber}`);
+      toast.go(`Test message sent to ${testNumber}`);
     } catch (e) {
-      toast.error(e.message || 'Failed to send test message');
+      toast.stop(e.message || 'Failed to send test message');
     } finally {
       setTesting(false);
     }
@@ -249,7 +249,7 @@ export default function MessagingChannels() {
             </p>
           </div>
 
-          <button onClick={waConnected ? async () => { await request('/api/business-os/messaging-config/whatsapp', 'POST', { action: 'disconnect' }); setWaConnected(false); toast.success('WhatsApp disconnected'); } : handleConnectWA}
+          <button onClick={waConnected ? async () => { await request('/api/business-os/messaging-config/whatsapp', 'POST', { action: 'disconnect' }); setWaConnected(false); toast.go('WhatsApp disconnected'); } : handleConnectWA}
             disabled={waConnecting}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50"
             style={{ background: waConnected ? 'var(--f-bad)' : '#25D366' }}>
@@ -292,7 +292,7 @@ export default function MessagingChannels() {
               </div>
             </div>
           </div>
-          <button onClick={smsConnected ? async () => { await request('/api/business-os/messaging-config/sms', 'POST', { action: 'disconnect' }); setSmsConnected(false); toast.success('SMS gateway disconnected'); } : handleConnectSMS}
+          <button onClick={smsConnected ? async () => { await request('/api/business-os/messaging-config/sms', 'POST', { action: 'disconnect' }); setSmsConnected(false); toast.go('SMS gateway disconnected'); } : handleConnectSMS}
             disabled={smsConnecting}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-50"
             style={{ background: smsConnected ? 'var(--f-bad)' : 'var(--f-info)' }}>
@@ -395,7 +395,7 @@ export default function MessagingChannels() {
           ))}
         </div>
         <div className="px-6 py-4 border-t flex justify-end" style={{ borderColor: 'var(--f-line)' }}>
-          <button onClick={() => toast.success('Notification preferences saved')}
+          <button onClick={() => toast.go('Notification preferences saved')}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white"
             style={{ background: 'var(--f-tint-color)' }}>
             <CheckCircle2 className="w-4 h-4" /> Save Preferences

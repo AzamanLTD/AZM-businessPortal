@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { restaurantOpsApi as restaurantApi, employeeApi } from '@/lib/marketplaceApi';
 import { Card, Button, Tag, Skel, Empty, Spinner } from '@/components/instrument';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 import { usePermission } from '@/hooks/usePermission';
 import { getSocket } from '@/lib/socket';
 import {
@@ -207,12 +207,12 @@ export default function RestaurantKitchen() {
   const bumpMutation = useMutation({
     mutationFn: (orderId) => restaurantApi.bumpKitchenOrder(orderId),
     onSuccess: () => {
-      toast.success('Order bumped successfully');
+      toast.go('Order bumped successfully');
       queryClient.invalidateQueries(['kitchenOrders']);
       queryClient.invalidateQueries(['kdsStats']);
     },
     onError: (err) => {
-      toast.error(`Failed to bump order: ${err.message}`);
+      toast.stop(`Failed to bump order: ${err.message}`);
     }
   });
 
@@ -223,28 +223,28 @@ export default function RestaurantKitchen() {
       queryClient.invalidateQueries(['kdsStats']);
     },
     onError: (err) => {
-      toast.error(`Failed to update item status: ${err.message}`);
+      toast.stop(`Failed to update item status: ${err.message}`);
     }
   });
 
   const assignChefMutation = useMutation({
     mutationFn: ({ orderId, chefId }) => restaurantApi.assignChef(orderId, chefId),
     onSuccess: () => {
-      toast.success('Chef assigned');
+      toast.go('Chef assigned');
       queryClient.invalidateQueries(['kitchenOrders']);
     },
     onError: (err) => {
-      toast.error(`Failed to assign chef: ${err.message}`);
+      toast.stop(`Failed to assign chef: ${err.message}`);
     }
   });
 
   const toggle86Mutation = useMutation({
     mutationFn: (data) => restaurantApi.toggle86(data),
     onSuccess: (res) => {
-      toast.success(res.message || '86 status toggled');
+      toast.go(res.message || '86 status toggled');
     },
     onError: (err) => {
-      toast.error(`Failed to toggle 86 item: ${err.message}`);
+      toast.stop(`Failed to toggle 86 item: ${err.message}`);
     }
   });
 
@@ -304,12 +304,12 @@ export default function RestaurantKitchen() {
     if (!newStationName.trim()) return;
     const cleanName = newStationName.trim().toUpperCase();
     if (customStations.includes(cleanName)) {
-      toast.error('Station already exists');
+      toast.stop('Station already exists');
       return;
     }
     setCustomStations([...customStations, cleanName]);
     setNewStationName('');
-    toast.success(`Station ${cleanName} added!`);
+    toast.go(`Station ${cleanName} added!`);
   };
 
   const handleRemoveStation = (stationToRemove) => {
@@ -317,12 +317,12 @@ export default function RestaurantKitchen() {
     if (selectedStation === stationToRemove) {
       setSelectedStation('ALL');
     }
-    toast.success(`Station ${stationToRemove} removed`);
+    toast.go(`Station ${stationToRemove} removed`);
   };
 
   const handleToggleItemStatus = (orderId, item) => {
     if (!canManage) {
-      toast.error('You do not have permission to manage the kitchen');
+      toast.stop('You do not have permission to manage the kitchen');
       return;
     }
     // Toggle: NEW -> PREPARING -> READY -> SERVED
@@ -412,7 +412,7 @@ export default function RestaurantKitchen() {
             onClick={() => {
               refetch();
               refetchStats();
-              toast.success('Board refreshed manually');
+              toast.go('Board refreshed manually');
             }}
           >
             <RefreshCw className="w-4 h-4" />
@@ -737,7 +737,7 @@ export default function RestaurantKitchen() {
                       value={order.employeeId || ''}
                       onChange={(e) => {
                         if (!canManage) {
-                          toast.error('Permission denied to assign chefs');
+                          toast.stop('Permission denied to assign chefs');
                           return;
                         }
                         assignChefMutation.mutate({ orderId: order._id || order.id, chefId: e.target.value });

@@ -5,7 +5,7 @@ import {
   Bus, Plus, Wrench, Gauge, Calendar, CheckCircle2, AlertTriangle, 
   MapPin, Grid, Shield, Eye, Trash2, Edit 
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 export default function TransitFleet() {
     
@@ -64,7 +64,7 @@ export default function TransitFleet() {
       setMaintenance(maintRes.data?.records || maintRes.records || []);
       setOverdueVehicles(overdueRes.data?.overdue || overdueRes.overdue || []);
     } catch (e) { 
-      toast.error('Failed to load fleet data'); 
+      toast.stop('Failed to load fleet data'); 
     }
   };
 
@@ -75,7 +75,7 @@ export default function TransitFleet() {
   const handleAddVehicle = async (e) => {
     e.preventDefault();
     if (!form.make || !form.model || !form.year || !form.licensePlate || !form.capacity) {
-      toast.error('Please fill in all required fields');
+      toast.stop('Please fill in all required fields');
       return;
     }
     try {
@@ -86,7 +86,7 @@ export default function TransitFleet() {
         isActive: form.status === 'ACTIVE'
       };
       await transitOpsApi.createVehicle(payload);
-      toast.success('Vehicle added successfully');
+      toast.go('Vehicle added successfully');
       setAddOpen(false);
       setForm({
         make: '', model: '', year: '', licensePlate: '', capacity: '',
@@ -94,14 +94,14 @@ export default function TransitFleet() {
       });
       load();
     } catch (e) { 
-      toast.error('Failed to add vehicle'); 
+      toast.stop('Failed to add vehicle'); 
     }
   };
 
   const handleAddMaintenance = async (e) => {
     e.preventDefault();
     if (!maintForm.vehicleId || !maintForm.scheduledDate || !maintForm.description) {
-      toast.error('Please fill in all required fields');
+      toast.stop('Please fill in all required fields');
       return;
     }
     try {
@@ -111,24 +111,24 @@ export default function TransitFleet() {
         scheduledDate: new Date(maintForm.scheduledDate).toISOString()
       };
       await transitOpsApi.createMaintenance(payload);
-      toast.success('Maintenance record scheduled');
+      toast.go('Maintenance record scheduled');
       setMaintOpen(false);
       setMaintForm({
         vehicleId: '', type: 'ROUTINE', description: '', scheduledDate: '', costUsdc: '', status: 'SCHEDULED'
       });
       load();
     } catch (e) {
-      toast.error('Failed to schedule maintenance');
+      toast.stop('Failed to schedule maintenance');
     }
   };
 
   const handleUpdateMaintStatus = async (id, status) => {
     try {
       await transitOpsApi.updateMaintenance(id, { status });
-      toast.success(`Maintenance updated to ${status}`);
+      toast.go(`Maintenance updated to ${status}`);
       load();
     } catch (e) {
-      toast.error('Failed to update maintenance status');
+      toast.stop('Failed to update maintenance status');
     }
   };
 
@@ -183,10 +183,10 @@ export default function TransitFleet() {
   const handleSaveSeatMap = async () => {
     if (!selectedVehicleForSeatMap) return;
     try {
-      toast.success('Vehicle seat map layout updated and saved');
+      toast.go('Vehicle seat map layout updated and saved');
       setSeatMapOpen(false);
     } catch (e) {
-      toast.error('Failed to save seat map');
+      toast.stop('Failed to save seat map');
     }
   };
 
@@ -339,7 +339,7 @@ export default function TransitFleet() {
                     </div>
 
                     {v.imageUrl && (
-                      <div className="w-full h-28 rounded-xl overflow-hidden mb-4 bg-surface-sunk">
+                      <div className="w-full h-28 rounded-xl overflow-hidden mb-4 bg-[var(--surface-sunk)]">
                         <img src={v.imageUrl} alt={v.model} className="w-full h-full object-cover" />
                       </div>
                     )}
@@ -393,7 +393,7 @@ export default function TransitFleet() {
             ) : (
               <div className="space-y-3">
                 {maintenance.map(m => (
-                  <div key={m.id} className="p-3 rounded-xl bg-surface-sunk border border-[var(--line)] space-y-2">
+                  <div key={m.id} className="p-3 rounded-xl bg-[var(--surface-sunk)] border border-[var(--line)] space-y-2">
                     <div className="flex items-center justify-between text-xs">
                       <span className="font-bold text-[var(--info)]">{m.vehicle?.licensePlate || 'Plate Unknown'}</span>
                       <Tag tone="neutral">{m.type}</Tag>
@@ -528,13 +528,13 @@ export default function TransitFleet() {
               <span>AISLE Seat</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-3.5 h-3.5 rounded border border-dashed border-[var(--line)] bg-surface-sunk" />
+              <div className="w-3.5 h-3.5 rounded border border-dashed border-[var(--line)] bg-[var(--surface-sunk)]" />
               <span>NONE (Empty space / walkway)</span>
             </div>
           </div>
 
           {/* Grid visual container */}
-          <div className="rounded-2xl border border-[var(--line)] p-5 max-w-sm mx-auto bg-surface-sunk">
+          <div className="rounded-2xl border border-[var(--line)] p-5 max-w-sm mx-auto bg-[var(--surface-sunk)]">
             <div className="flex justify-between items-center mb-4 pb-2 border-b border-[var(--line)] text-xs font-bold text-[var(--text-3)]">
               <span>FRONT (WINDSHIELD)</span>
               <span>DRIVER</span>
@@ -544,7 +544,7 @@ export default function TransitFleet() {
             <div className="grid gap-2.5" style={{ gridTemplateColumns: `repeat(${seatCols}, minmax(0, 1fr))` }}>
               {seatGrid.map((seat, index) => {
                 let cellColorClass = 'border-[var(--line)]:border-[var(--accent)] text-[var(--text)]';
-                let cellBg = 'bg-surface-sunk';
+                let cellBg = 'bg-[var(--surface-sunk)]';
                 
                 if (seat.type === 'WINDOW') {
                   cellBg = 'bg-[var(--accent)]/10';

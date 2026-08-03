@@ -6,7 +6,7 @@ import { Card } from '@/components/instrument';
 import { DataTable } from '@/components/instrument';
 import { Button, Tag, Input, Select, Dialog, Empty, Skel } from '@/components/instrument';
 import { fmtUSDC, fmt, formatDateTime, cn } from '@/lib/utils';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 import {
   Bus, Plus, Pencil, Trash2, Clock, MapPin, Users, DollarSign,
   Calendar, Route, Eye, Grid3x3, AlertCircle, CheckCircle2, XCircle, ChevronDown, ChevronUp, RefreshCw
@@ -98,20 +98,20 @@ export default function TransitTrips() {
 
   const createMut = useMutation({
     mutationFn: (d) => transitApi.create(d),
-    onSuccess: () => { toast.success('Trip created'); qc.invalidateQueries(['transit-trips']); closeModal(); },
+    onSuccess: () => { toast.go('Trip created'); qc.invalidateQueries(['transit-trips']); closeModal(); },
     onError: (e) => setFormError(e.message),
   });
 
   const updateMut = useMutation({
     mutationFn: ({ id, data }) => transitApi.update(id, data),
-    onSuccess: () => { toast.success('Trip updated'); qc.invalidateQueries(['transit-trips']); closeModal(); },
+    onSuccess: () => { toast.go('Trip updated'); qc.invalidateQueries(['transit-trips']); closeModal(); },
     onError: (e) => setFormError(e.message),
   });
 
   const deleteMut = useMutation({
     mutationFn: (id) => transitApi.remove(id),
-    onSuccess: () => { toast.success('Trip deleted'); qc.invalidateQueries(['transit-trips']); },
-    onError: (e) => toast.error(e.message),
+    onSuccess: () => { toast.go('Trip deleted'); qc.invalidateQueries(['transit-trips']); },
+    onError: (e) => toast.stop(e.message),
   });
 
   const openCreate = () => { setForm(BLANK_TRIP); setFormError(''); setModal('create'); };
@@ -169,12 +169,12 @@ export default function TransitTrips() {
         durationMins: Number(templateForm.durationMins)
       };
       await transitOpsApi.createRouteTemplate(payload);
-      toast.success('Route template created successfully');
+      toast.go('Route template created successfully');
       setTemplateModalOpen(false);
       setTemplateForm({ name: '', origin: '', destination: '', typicalFareUsdc: '', durationMins: '', departureTimes: '', vehicleId: '' });
       refetchTemplates();
     } catch (err) {
-      toast.error('Failed to create route template');
+      toast.stop('Failed to create route template');
     }
   };
 
@@ -182,10 +182,10 @@ export default function TransitTrips() {
     if (!confirm('Are you sure you want to delete this route template?')) return;
     try {
       await transitOpsApi.deleteRouteTemplate(id);
-      toast.success('Route template deleted');
+      toast.go('Route template deleted');
       refetchTemplates();
     } catch (err) {
-      toast.error('Failed to delete template');
+      toast.stop('Failed to delete template');
     }
   };
 
@@ -198,11 +198,11 @@ export default function TransitTrips() {
         daysAhead: Number(genForm.daysAhead)
       };
       await transitOpsApi.generateTrips(payload);
-      toast.success('Trips generated successfully');
+      toast.go('Trips generated successfully');
       setGenerateTripsOpen(false);
       qc.invalidateQueries(['transit-trips']);
     } catch (err) {
-      toast.error('Failed to generate trips');
+      toast.stop('Failed to generate trips');
     }
   };
 
@@ -216,7 +216,7 @@ export default function TransitTrips() {
       setCancellationPreviewData(res);
       setCancelPreviewOpen(true);
     } catch (err) {
-      toast.error('Failed to pre-check trip cancellation');
+      toast.stop('Failed to pre-check trip cancellation');
     }
   };
 
@@ -224,12 +224,12 @@ export default function TransitTrips() {
     if (!selectedTripToCancel) return;
     try {
       await transitOpsApi.cancelTrip(selectedTripToCancel.id);
-      toast.success('Trip cancelled and refunds processed');
+      toast.go('Trip cancelled and refunds processed');
       setCancelPreviewOpen(false);
       setSelectedTripToCancel(null);
       qc.invalidateQueries(['transit-trips']);
     } catch (err) {
-      toast.error('Failed to complete trip cancellation');
+      toast.stop('Failed to complete trip cancellation');
     }
   };
 
@@ -253,11 +253,11 @@ export default function TransitTrips() {
         arrivalAt: newArrival,
         routeName: `${selectedTripForDelay.routeName} (Delayed ${delayForm.delayMins}m)`
       });
-      toast.success('Trip marked as DELAYED with updated ETA');
+      toast.go('Trip marked as DELAYED with updated ETA');
       setDelayModalOpen(false);
       qc.invalidateQueries(['transit-trips']);
     } catch (err) {
-      toast.error('Failed to update trip delay info');
+      toast.stop('Failed to update trip delay info');
     }
   };
 
@@ -413,7 +413,7 @@ export default function TransitTrips() {
 
       {/* Collapsible Route Templates Section */}
       {templatesExpanded && (
-        <Card className="border-[var(--accent)]/20 bg-surface-sunk space-y-4">
+        <Card className="border-[var(--accent)]/20 bg-[var(--surface-sunk)] space-y-4">
           <div className="flex items-center justify-between border-b border-[var(--line)] pb-3">
             <div className="flex items-center gap-2">
               <Route className="w-4 h-4 text-[var(--accent)]" />
@@ -620,7 +620,7 @@ export default function TransitTrips() {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl border border-[var(--line)] bg-surface-sunk space-y-3">
+          <div className="p-4 rounded-xl border border-[var(--line)] bg-[var(--surface-sunk)] space-y-3">
             <p className="font-semibold text-xs border-b border-[var(--line)] pb-2 uppercase tracking-wide">Cancellation Impact Breakdown</p>
             <div className="flex justify-between">
               <span>Affected Bookings Count</span>
@@ -726,12 +726,12 @@ function SeatMapEditor({ trip, onClose }) {
       const rows = Math.max(...seats.map(s => s.row || 1), 1);
       const cols = Math.max(...seats.map(s => s.col || 1), 1);
       await transitApi.updateSeatMap(trip.id, { layout: seats, rows, cols, tierFares });
-      toast.success('Seat map saved');
+      toast.go('Seat map saved');
       qc.invalidateQueries(['transit-trips']);
       qc.invalidateQueries(['seat-map', trip.id]);
       onClose();
     } catch (e) {
-      toast.error(e.message);
+      toast.stop(e.message);
     }
     setSaving(false);
   };

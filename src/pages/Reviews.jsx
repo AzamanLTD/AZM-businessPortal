@@ -17,7 +17,7 @@ import {
   RefreshCw,
   Send
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 export default function Reviews() {
   const { hasPermission } = usePermission();
@@ -113,7 +113,7 @@ export default function Reviews() {
         });
       }
     } catch (err) {
-      toast.error('Failed to load reviews data');
+      toast.stop('Failed to load reviews data');
       console.error(err);
     } finally {
       setLoading(false);
@@ -136,7 +136,7 @@ export default function Reviews() {
   const handleSaveResponse = async (e) => {
     e.preventDefault();
     if (!canPublish) {
-      toast.error('You do not have permission to respond to reviews');
+      toast.stop('You do not have permission to respond to reviews');
       return;
     }
     setSubmitting(true);
@@ -145,11 +145,11 @@ export default function Reviews() {
         method: 'POST',
         body: JSON.stringify({ response: responseText })
       });
-      toast.success('Response published successfully');
+      toast.go('Response published successfully');
       setResponseModalOpen(false);
       fetchReviewsAndStats();
     } catch (err) {
-      toast.error(err.message || 'Failed to publish owner response');
+      toast.stop(err.message || 'Failed to publish owner response');
     } finally {
       setSubmitting(false);
     }
@@ -164,11 +164,11 @@ export default function Reviews() {
         method: 'POST',
         body: JSON.stringify({ reason: flagReason })
       });
-      toast.success('Review flagged for administrative moderation');
+      toast.go('Review flagged for administrative moderation');
       setFlagModalOpen(false);
       fetchReviewsAndStats();
     } catch (err) {
-      toast.error(err.message || 'Failed to flag review');
+      toast.stop(err.message || 'Failed to flag review');
     } finally {
       setSubmitting(false);
     }
@@ -180,9 +180,9 @@ export default function Reviews() {
       await request(`/api/marketplace/reviews/${review.id}/share-story`, {
         method: 'POST'
       });
-      toast.success('Review successfully shared to Marketplace Stories!');
+      toast.go('Review successfully shared to Marketplace Stories!');
     } catch (err) {
-      toast.error('Shared successfully as a customer showcase highlight');
+      toast.stop('Shared successfully as a customer showcase highlight');
     }
   };
 

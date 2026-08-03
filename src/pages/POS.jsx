@@ -10,12 +10,13 @@ import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
 import { request } from '@/lib/apiCore';
 import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
+import { Card, Button, Tag, Dialog, Empty, Skel, Input } from '@/components/instrument';
 import {
   ShoppingCart, Plus, Minus, X, Trash2, CreditCard, Banknote,
   SplitSquareHorizontal, CheckCircle2, Printer, Search,
   Wifi, WifiOff, Clock, Package, Utensils, Coffee,
-  ShoppingBag, Zap, RefreshCw, Tag
+  ShoppingBag, Zap, RefreshCw, TagIcon
 } from 'lucide-react';
 
 const fmt = (n) => `GHS ${Number(n || 0).toFixed(2)}`;
@@ -48,14 +49,14 @@ function ReceiptModal({ order, bizName, onClose }) {
         <div className="p-5 space-y-2">
           {order.items.map((item, i) => (
             <div key={i} className="flex justify-between text-sm">
-              <span className="text-ink-2">{item.qty}× {item.name}</span>
+              <span className="text-[var(--text-2)]">{item.qty}× {item.name}</span>
               <span className="font-semibold tabular-nums">{fmt(item.price * item.qty)}</span>
             </div>
           ))}
           <div className="border-t border-gray-200 my-2 pt-2 flex justify-between font-bold text-base">
             <span>Total</span><span className="tabular-nums" style={{ color: 'var(--f-tint-color)' }}>{fmt(order.total)}</span>
           </div>
-          <div className="flex justify-between text-sm text-ink-3">
+          <div className="flex justify-between text-sm text-[var(--text-3)]">
             <span>Payment</span><span className="font-medium capitalize">{order.paymentMethod || 'cash'}</span>
           </div>
           {order.cashGiven > 0 && order.cashGiven >= order.total && (
@@ -70,7 +71,7 @@ function ReceiptModal({ order, bizName, onClose }) {
           )}
         </div>
         <div className="px-5 pb-5 flex gap-2">
-          <button onClick={() => window.print()} className="flex-1 flex items-center justify-center gap-2 bg-surface-sunken:bg-surface-sunken text-ink-2 rounded-xl py-3 text-sm font-semibold transition-colors">
+          <button onClick={() => window.print()} className="flex-1 flex items-center justify-center gap-2 bg-[var(--surface-sunk)] text-[var(--text-2)] rounded-xl py-3 text-sm font-semibold transition-colors">
             <Printer className="w-4 h-4" /> Print
           </button>
           <button onClick={onClose} className="flex-1 flex items-center justify-center gap-2 text-[var(--f-text)] rounded-xl py-3 text-sm font-semibold transition-colors" style={{ background: 'var(--f-tint-color)' }}>
@@ -113,7 +114,7 @@ function PaymentModal({ total, onClose, onConfirm, isLoading }) {
           <div className="grid grid-cols-3 gap-2">
             {METHODS.map(m => (
               <button key={m.id} onClick={() => setMethod(m.id)}
-                className={cn('flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-xs font-semibold transition-all', method === m.id ? 'border-current' : 'border-gray-200 text-ink-3:border-gray-300')}
+                className={cn('flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-xs font-semibold transition-all', method === m.id ? 'border-current' : 'border-gray-200 text-[var(--text-3)]:border-gray-300')}
                 style={method === m.id ? { borderColor: 'var(--f-tint-color)', color: 'var(--f-tint-color)', background: 'var(--f-surface-sunken)' } : {}}>
                 <m.icon className="w-5 h-5" />{m.label}
               </button>
@@ -213,9 +214,9 @@ export default function POS() {
       setCompletedOrder({ items: cart, total, paymentMethod: vars.method, cashGiven: vars.cashGiven, offline: data?.offline || false });
       clearCart(); setShowPayment(false);
       qc.invalidateQueries({ queryKey: ['orders'] });
-      if (!data?.offline) toast.success('Order placed!');
+      if (!data?.offline) toast.go('Order placed!');
     },
-    onError: (err) => toast.error('Order failed: ' + err.message),
+    onError: (err) => toast.stop('Order failed: ' + err.message),
   });
 
   useEffect(() => {
@@ -237,8 +238,8 @@ export default function POS() {
         }
       }
       writeOutbox(remaining); refreshOutbox(); setSyncing(false);
-      if (synced > 0) { toast.success(`${synced} offline order(s) synced!`); qc.invalidateQueries({ queryKey: ['orders'] }); }
-      if (remaining.length > 0) toast.warning(`${remaining.length} order(s) failed to sync — will retry.`);
+      if (synced > 0) { toast.go(`${synced} offline order(s) synced!`); qc.invalidateQueries({ queryKey: ['orders'] }); }
+      if (remaining.length > 0) toast.stop(`${remaining.length} order(s) failed to sync — will retry.`);
     };
     syncOutbox();
   }, [online, outboxCount]);
@@ -270,7 +271,7 @@ export default function POS() {
         {/* Categories */}
         <div className="flex items-center gap-1.5 px-5 py-3 overflow-x-auto no-scrollbar border-b" style={{ borderColor: 'var(--f-line)', background: 'var(--f-surface-sunken)' }}>
           {categories.map(cat => {
-            const Icon = CAT_ICONS[cat] || Tag;
+            const Icon = CAT_ICONS[cat] || TagIcon;
             const isActive = activeCategory === cat;
             return (
               <button key={cat} onClick={() => setActiveCategory(cat)}

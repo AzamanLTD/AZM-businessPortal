@@ -32,7 +32,7 @@ import {
   Clock,
   Sparkles
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 export default function Marketing() {
   const { hasPermission } = usePermission();
@@ -112,7 +112,7 @@ export default function Marketing() {
         setAccentColor(bizProfile.accentColor);
       }
     } catch (err) {
-      toast.error('Failed to load marketing dashboard data');
+      toast.stop('Failed to load marketing dashboard data');
       console.error(err);
     } finally {
       setLoading(false);
@@ -207,7 +207,7 @@ export default function Marketing() {
   const handleSavePromo = async (e) => {
     e.preventDefault();
     if (!canPublish) {
-      toast.error('You do not have permission to publish promotions');
+      toast.stop('You do not have permission to publish promotions');
       return;
     }
 
@@ -223,18 +223,18 @@ export default function Marketing() {
           method: 'PATCH',
           body: JSON.stringify(payload)
         });
-        toast.success('Promotion updated successfully');
+        toast.go('Promotion updated successfully');
       } else {
         await request('/api/business-os/marketing/promotions', {
           method: 'POST',
           body: JSON.stringify(payload)
         });
-        toast.success('Promotion created successfully');
+        toast.go('Promotion created successfully');
       }
       setPromoModalOpen(false);
       fetchPromotions();
     } catch (err) {
-      toast.error(err.message || 'Failed to save promotion');
+      toast.stop(err.message || 'Failed to save promotion');
     }
   };
 
@@ -245,10 +245,10 @@ export default function Marketing() {
       await request(`/api/business-os/marketing/promotions/${id}`, {
         method: 'DELETE'
       });
-      toast.success('Promotion deleted successfully');
+      toast.go('Promotion deleted successfully');
       fetchPromotions();
     } catch (err) {
-      toast.error(err.message || 'Failed to delete promotion');
+      toast.stop(err.message || 'Failed to delete promotion');
     }
   };
 
@@ -259,10 +259,10 @@ export default function Marketing() {
         method: 'PATCH',
         body: JSON.stringify({ isActive: !promo.isActive })
       });
-      toast.success(`Promotion ${!promo.isActive ? 'activated' : 'deactivated'}`);
+      toast.go(`Promotion ${!promo.isActive ? 'activated' : 'deactivated'}`);
       fetchPromotions();
     } catch (err) {
-      toast.error('Failed to toggle status');
+      toast.stop('Failed to toggle status');
     }
   };
 
@@ -274,9 +274,9 @@ export default function Marketing() {
     try {
       const url = await uploadImageToCloudinary(file, 'marketing_ads');
       setAdForm(prev => ({ ...prev, mediaUrl: url }));
-      toast.success('Ad media uploaded successfully');
+      toast.go('Ad media uploaded successfully');
     } catch (err) {
-      toast.error(err.message || 'Upload failed');
+      toast.stop(err.message || 'Upload failed');
     } finally {
       setUploadingAdMedia(false);
     }
@@ -285,11 +285,11 @@ export default function Marketing() {
   const handleCreateAd = async (e) => {
     e.preventDefault();
     if (!canPublish) {
-      toast.error('You do not have permission to publish ads');
+      toast.stop('You do not have permission to publish ads');
       return;
     }
     if (!adForm.title || !adForm.body) {
-      toast.error('Title and message body are required');
+      toast.stop('Title and message body are required');
       return;
     }
 
@@ -298,7 +298,7 @@ export default function Marketing() {
         method: 'POST',
         body: JSON.stringify(adForm)
       });
-      toast.success('Ad campaign published successfully');
+      toast.go('Ad campaign published successfully');
       setAdForm({
         template: 'PROMO',
         title: '',
@@ -310,7 +310,7 @@ export default function Marketing() {
       });
       fetchAds();
     } catch (err) {
-      toast.error(err.message || 'Failed to publish ad campaign');
+      toast.stop(err.message || 'Failed to publish ad campaign');
     }
   };
 
@@ -321,10 +321,10 @@ export default function Marketing() {
       await request(`/api/business/ads/${id}`, {
         method: 'DELETE'
       });
-      toast.success('Ad campaign deleted');
+      toast.go('Ad campaign deleted');
       fetchAds();
     } catch (err) {
-      toast.error('Failed to delete ad');
+      toast.stop('Failed to delete ad');
     }
   };
 
@@ -332,11 +332,11 @@ export default function Marketing() {
   const handleSendBroadcast = async (e) => {
     e.preventDefault();
     if (!canPublish) {
-      toast.error('You do not have permission to broadcast');
+      toast.stop('You do not have permission to broadcast');
       return;
     }
     if (!broadcastForm.title || !broadcastForm.message) {
-      toast.error('Broadcast title and message are required');
+      toast.stop('Broadcast title and message are required');
       return;
     }
 
@@ -346,11 +346,11 @@ export default function Marketing() {
         method: 'POST',
         body: JSON.stringify(broadcastForm)
       });
-      toast.success('Broadcast sent to all followers successfully!');
+      toast.go('Broadcast sent to all followers successfully!');
       setBroadcastForm({ title: '', message: '' });
       fetchBroadcastHistory();
     } catch (err) {
-      toast.error(err.message || 'Failed to send broadcast');
+      toast.stop(err.message || 'Failed to send broadcast');
     } finally {
       setBroadcastLoading(false);
     }
@@ -365,9 +365,9 @@ export default function Marketing() {
         method: 'PATCH',
         body: JSON.stringify({ accentColor })
       });
-      toast.success('Marketplace brand color saved');
+      toast.go('Marketplace brand color saved');
     } catch (err) {
-      toast.error('Failed to update brand color');
+      toast.stop('Failed to update brand color');
     } finally {
       setSavingAccent(false);
     }

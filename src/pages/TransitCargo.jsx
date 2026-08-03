@@ -3,7 +3,7 @@ import { cargoApi, transit as transitApi } from '@/lib/marketplaceApi';
 import { Card, Button, Tag, Skel, Empty, Dialog, Input, Select } from '@/components/instrument';
 import { fmtUSDC, cn } from '@/lib/utils';
 import { Package, Plus, Clock, MapPin, AlertCircle, CheckCircle2, Truck, Link, Filter } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 const STATUS_COLUMNS = [
   { key: 'PENDING', label: 'Pending', color: 'var(--text-3)' },
@@ -44,7 +44,7 @@ export default function TransitCargo() {
       if (filterStatus) params.status = filterStatus;
       const res = await cargoApi.list(params);
       setCargo(res.data?.cargo || res.data || res.cargo || []);
-    } catch { toast.error('Failed to load cargo'); setCargo([]); }
+    } catch { toast.stop('Failed to load cargo'); setCargo([]); }
   };
 
   const loadTrips = async () => {
@@ -64,29 +64,29 @@ export default function TransitCargo() {
         weightKg: Number(form.weightKg),
         priceUsdc: Number(form.priceUsdc),
       });
-      toast.success('Cargo parcel created');
+      toast.go('Cargo parcel created');
       setAddOpen(false);
       setForm({ transitTripId: '', senderName: '', senderPhone: '', receiverName: '', receiverPhone: '', receiverAddress: '', description: '', weightKg: '', priceUsdc: '', fragile: false, notes: '' });
       load();
-    } catch { toast.error('Failed to create cargo parcel'); }
+    } catch { toast.stop('Failed to create cargo parcel'); }
   };
 
   const handleStatusChange = async (id, status) => {
     try {
       await cargoApi.updateStatus(id, status);
-      toast.success('Status updated to ' + status);
+      toast.go('Status updated to ' + status);
       load();
-    } catch { toast.error('Failed to update status'); }
+    } catch { toast.stop('Failed to update status'); }
   };
 
   const handleAttachProof = async () => {
     try {
       await cargoApi.attachProof(proofOpen.id, proofUrl);
-      toast.success('Proof of delivery attached');
+      toast.go('Proof of delivery attached');
       setProofOpen(null);
       setProofUrl('');
       load();
-    } catch { toast.error('Failed to attach proof'); }
+    } catch { toast.stop('Failed to attach proof'); }
   };
 
   if (!cargo) return <Skel className="h-96" />;

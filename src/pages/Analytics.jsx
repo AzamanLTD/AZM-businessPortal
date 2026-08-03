@@ -116,8 +116,8 @@ function Sk({ className = '' }) {
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-surface-raise border border-line rounded-xl px-3 py-2 shadow-sm text-xs">
-      <p className="text-ink-3 mb-1">{label}</p>
+    <div className="bg-[var(--surface-raise)] border border-line rounded-xl px-3 py-2 shadow-sm text-xs">
+      <p className="text-[var(--text-3)] mb-1">{label}</p>
       {payload.map((p, i) => (
         <p key={i} style={{ color: p.color }} className="font-semibold">{p.name}: {p.value}</p>
       ))}
@@ -180,9 +180,9 @@ export default function Analytics() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-ink">Analytics</h1>
-              <p className="text-sm text-ink-3 mt-0.5">Demand forecasting, reorder alerts, and customer insights</p>
+              <p className="text-sm text-[var(--text-3)] mt-0.5">Demand forecasting, reorder alerts, and customer insights</p>
             </div>
-            <div className="flex items-center gap-2 text-xs text-ink-3 bg-surface-sunk border border-line-firm rounded-md px-3 py-2">
+            <div className="flex items-center gap-2 text-xs text-[var(--text-3)] bg-[var(--surface-sunk)] border border-line-firm rounded-md px-3 py-2">
               <Lightbulb className="w-3.5 h-3.5 text-tint" />
               <span>All insights show their reasoning — <Info className="w-3 h-3 inline" /> for details</span>
             </div>
@@ -199,8 +199,8 @@ export default function Analytics() {
           ].map(({ label, value, delta, icon: Icon, alert }) => (
             <Card key={label} className="p-5">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs text-ink-3 font-medium">{label}</p>
-                <div className={`w-7 h-7 rounded-sm flex items-center justify-center ${alert ? 'bg-bad-bg' : 'bg-surface-sunk'}`}>
+                <p className="text-xs text-[var(--text-3)] font-medium">{label}</p>
+                <div className={`w-7 h-7 rounded-sm flex items-center justify-center ${alert ? 'bg-bad-bg' : 'bg-[var(--surface-sunk)]'}`}>
                   <Icon className={`w-3.5 h-3.5 ${alert ? 'text-bad' : 'text-tint'}`} />
                 </div>
               </div>
@@ -220,7 +220,7 @@ export default function Analytics() {
             <div className="flex items-center justify-between mb-5">
               <div>
                 <h3 className="text-sm font-bold text-ink">Revenue Trend — Last 30 Days</h3>
-                <p className="text-xs text-ink-3 mt-0.5">Completed orders only</p>
+                <p className="text-xs text-[var(--text-3)] mt-0.5">Completed orders only</p>
               </div>
             </div>
             {ordersLoading ? <Sk className="h-48 w-full" /> : (
@@ -250,9 +250,9 @@ export default function Analytics() {
             <div className="flex items-center justify-between mb-1">
               <div>
                 <h3 className="text-sm font-bold text-ink">7-Day Demand Forecast</h3>
-                <p className="text-xs text-ink-3 mt-0.5">Weighted moving average + day-of-week seasonality</p>
+                <p className="text-xs text-[var(--text-3)] mt-0.5">Weighted moving average + day-of-week seasonality</p>
               </div>
-              <div className="flex items-center gap-1.5 text-[11px] text-ink-3 bg-surface-sunk rounded-sm px-2 py-1">
+              <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-3)] bg-[var(--surface-sunk)] rounded-sm px-2 py-1">
                 <Info className="w-3 h-3 text-tint" />
                 Based on last 4 weeks
               </div>
@@ -260,7 +260,7 @@ export default function Analytics() {
             <div className="mt-4 space-y-2">
               {forecast.map((f, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <span className="text-[11px] text-ink-3 w-28 shrink-0">{f.date}</span>
+                  <span className="text-[11px] text-[var(--text-3)] w-28 shrink-0">{f.date}</span>
                   <div className="flex-1 h-2 bg-line rounded-full overflow-hidden">
                     <m.div
                       className="h-full rounded-full"
@@ -281,7 +281,7 @@ export default function Analytics() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-sm font-bold text-ink">Busiest Days</h3>
-                <p className="text-xs text-ink-3 mt-0.5">Average orders by day of week</p>
+                <p className="text-xs text-[var(--text-3)] mt-0.5">Average orders by day of week</p>
               </div>
             </div>
             {ordersLoading ? <Sk className="h-36 w-full" /> : (
@@ -304,9 +304,9 @@ export default function Analytics() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-sm font-bold text-ink">Customer Churn Risk</h3>
-                <p className="text-xs text-ink-3 mt-0.5">Customers overdue vs their usual visit frequency</p>
+                <p className="text-xs text-[var(--text-3)] mt-0.5">Customers overdue vs their usual visit frequency</p>
               </div>
-              <div className="flex items-center gap-1.5 text-[11px] text-ink-3 bg-surface-sunk rounded-sm px-2 py-1">
+              <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-3)] bg-[var(--surface-sunk)] rounded-sm px-2 py-1">
                 <Info className="w-3 h-3 text-tint" />
                 Based on order history
               </div>
@@ -316,8 +316,8 @@ export default function Analytics() {
             ) : churnList.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <Users className="w-8 h-8 text-[color:var(--text-3)] mb-2" />
-                <p className="text-sm text-ink-2">No churn risks detected</p>
-                <p className="text-xs text-ink-3 mt-1">Your regular customers are still active</p>
+                <p className="text-sm text-[var(--text-2)]">No churn risks detected</p>
+                <p className="text-xs text-[var(--text-3)] mt-1">Your regular customers are still active</p>
               </div>
             ) : (
               <div className="space-y-1.5">
@@ -325,13 +325,13 @@ export default function Analytics() {
                   const risk = c.churnScore > 3 ? 'high' : c.churnScore > 2 ? 'medium' : 'low';
                   const riskColor = risk === 'high' ? 'var(--stop)' : risk === 'medium' ? 'var(--hold)' : 'var(--info)';
                   return (
-                    <div key={c.uid} className="flex items-center gap-3 p-3 rounded-md border border-line:bg-surface-sunk transition-colors">
-                      <div className="w-8 h-8 rounded-full bg-surface-sunk flex items-center justify-center text-tint font-bold text-xs flex-shrink-0">
+                    <div key={c.uid} className="flex items-center gap-3 p-3 rounded-md border border-line:bg-[var(--surface-sunk)] transition-colors">
+                      <div className="w-8 h-8 rounded-full bg-[var(--surface-sunk)] flex items-center justify-center text-tint font-bold text-xs flex-shrink-0">
                         {c.name.slice(0,2).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold text-ink">{c.name}</p>
-                        <p className="text-[11px] text-ink-3">
+                        <p className="text-[11px] text-[var(--text-3)]">
                           {c.totalOrders} orders · last seen {c.daysSinceLast}d ago · avg gap {c.avgGap}d
                         </p>
                       </div>
@@ -339,7 +339,7 @@ export default function Analytics() {
                         <span className="text-[11px] font-bold px-2 py-0.5 rounded-az-pill" style={{ background: `${riskColor}18`, color: riskColor }}>
                           {risk} risk
                         </span>
-                        <span className="text-[11px] text-ink-3">{fmtUSDC(c.totalSpend)} LTV</span>
+                        <span className="text-[11px] text-[var(--text-3)]">{fmtUSDC(c.totalSpend)} LTV</span>
                       </div>
                     </div>
                   );
@@ -355,7 +355,7 @@ export default function Analytics() {
             <div className="flex items-center justify-between mb-5">
               <div>
                 <h3 className="text-sm font-bold text-ink">Comparative Performance</h3>
-                <p className="text-xs text-ink-3 mt-0.5">This week vs last week · This month vs last month</p>
+                <p className="text-xs text-[var(--text-3)] mt-0.5">This week vs last week · This month vs last month</p>
               </div>
             </div>
             {(() => {
@@ -392,37 +392,37 @@ export default function Analytics() {
                     const wDelta = pct(m.thisW, m.lastW);
                     const mDelta = pct(m.thisM, m.lastM);
                     return (
-                      <div key={m.label} className="p-4 rounded-md border border-line bg-surface">
-                        <p className="text-xs font-semibold text-ink-3 uppercase tracking-wider mb-3">{m.label}</p>
+                      <div key={m.label} className="p-4 rounded-md border border-line bg-[var(--surface)]">
+                        <p className="text-xs font-semibold text-[var(--text-3)] uppercase tracking-wider mb-3">{m.label}</p>
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="text-[11px] text-ink-3">This week</span>
+                            <span className="text-[11px] text-[var(--text-3)]">This week</span>
                             <span className="text-sm font-bold text-ink font-mono">{m.fmt(m.thisW)}</span>
                           </div>
                           <div className="flex items-center justify-between">
-                            <span className="text-[11px] text-ink-3">Last week</span>
-                            <span className="text-xs text-ink-3 font-mono">{m.fmt(m.lastW)}</span>
+                            <span className="text-[11px] text-[var(--text-3)]">Last week</span>
+                            <span className="text-xs text-[var(--text-3)] font-mono">{m.fmt(m.lastW)}</span>
                           </div>
                           <div className="flex items-center gap-1.5">
                             <span className={`text-[11px] font-medium ${wDelta >= 0 ? 'text-ok' : 'text-bad'}`}>
                               {wDelta >= 0 ? '▲' : '▼'} {Math.abs(wDelta).toFixed(1)}%
                             </span>
-                            <span className="text-[11px] text-ink-3">vs last week</span>
+                            <span className="text-[11px] text-[var(--text-3)]">vs last week</span>
                           </div>
                           <div className="border-t border-line pt-2 mt-2 space-y-2">
                             <div className="flex items-center justify-between">
-                              <span className="text-[11px] text-ink-3">This month</span>
+                              <span className="text-[11px] text-[var(--text-3)]">This month</span>
                               <span className="text-sm font-bold text-ink font-mono">{m.fmt(m.thisM)}</span>
                             </div>
                             <div className="flex items-center justify-between">
-                              <span className="text-[11px] text-ink-3">Last month</span>
-                              <span className="text-xs text-ink-3 font-mono">{m.fmt(m.lastM)}</span>
+                              <span className="text-[11px] text-[var(--text-3)]">Last month</span>
+                              <span className="text-xs text-[var(--text-3)] font-mono">{m.fmt(m.lastM)}</span>
                             </div>
                             <div className="flex items-center gap-1.5">
                               <span className={`text-[11px] font-medium ${mDelta >= 0 ? 'text-ok' : 'text-bad'}`}>
                                 {mDelta >= 0 ? '▲' : '▼'} {Math.abs(mDelta).toFixed(1)}%
                               </span>
-                              <span className="text-[11px] text-ink-3">vs last month</span>
+                              <span className="text-[11px] text-[var(--text-3)]">vs last month</span>
                             </div>
                           </div>
                         </div>
@@ -441,7 +441,7 @@ export default function Analytics() {
             <div className="flex items-center justify-between mb-5">
               <div>
                 <h3 className="text-sm font-bold text-ink">Top Products by Volume</h3>
-                <p className="text-xs text-ink-3 mt-0.5">Best-selling items from completed orders</p>
+                <p className="text-xs text-[var(--text-3)] mt-0.5">Best-selling items from completed orders</p>
               </div>
             </div>
             {(() => {
@@ -459,20 +459,20 @@ export default function Analytics() {
               const maxCount = Math.max(...top.map(t => t.count), 1);
 
               if (top.length === 0) {
-                return <p className="text-sm text-ink-3 text-center py-8">No completed orders yet to rank products.</p>;
+                return <p className="text-sm text-[var(--text-3)] text-center py-8">No completed orders yet to rank products.</p>;
               }
               return (
                 <div className="space-y-2">
                   {top.map((t, i) => (
-                    <div key={t.name} className="flex items-center gap-3 p-3 rounded-md border border-line:bg-surface-raise transition-colors">
-                      <span className="text-lg font-bold text-ink-3 w-6 text-center flex-shrink-0">{i + 1}</span>
+                    <div key={t.name} className="flex items-center gap-3 p-3 rounded-md border border-line:bg-[var(--surface-raise)] transition-colors">
+                      <span className="text-lg font-bold text-[var(--text-3)] w-6 text-center flex-shrink-0">{i + 1}</span>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold text-ink truncate">{t.name}</p>
                         <div className="flex items-center gap-2 mt-1">
                           <div className="flex-1 h-1.5 bg-line rounded-full overflow-hidden">
                             <div className="h-full rounded-full" style={{ width: `${(t.count / maxCount) * 100}%`, background: 'var(--accent)' }} />
                           </div>
-                          <span className="text-[11px] text-ink-3 flex-shrink-0">{t.count} orders · {fmtUSDC(t.revenue)}</span>
+                          <span className="text-[11px] text-[var(--text-3)] flex-shrink-0">{t.count} orders · {fmtUSDC(t.revenue)}</span>
                         </div>
                       </div>
                     </div>

@@ -16,7 +16,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
 import { Card, Button, Input, Tag } from '@/components/instrument';
 import { AlertTriangle, Pause, Play, Download, Trash2, Lock } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 export default function DangerZone() {
   const { bizProfile, user } = useAuth();
@@ -33,11 +33,11 @@ export default function DangerZone() {
   const pauseMutation = useMutation({
     mutationFn: (paused) => businessOS.togglePause(paused),
     onSuccess: (data) => {
-      toast.success(data.isPausedByOwner ? 'Business paused — new orders and bookings are suspended.' : 'Business resumed — accepting orders and bookings again.');
+      toast.go(data.isPausedByOwner ? 'Business paused — new orders and bookings are suspended.' : 'Business resumed — accepting orders and bookings again.');
       qc.invalidateQueries(['bizProfile']);
       setShowPauseConfirm(false);
     },
-    onError: (e) => toast.error('Failed: ' + e.message),
+    onError: (e) => toast.stop('Failed: ' + e.message),
   });
 
   if (!canManage) {
@@ -136,9 +136,9 @@ export default function DangerZone() {
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                toast.success('Export downloaded successfully');
+                toast.go('Export downloaded successfully');
               } catch (e) {
-                toast.error('Export failed: ' + e.message);
+                toast.stop('Export failed: ' + e.message);
               }
             }}
           >
@@ -166,7 +166,7 @@ export default function DangerZone() {
             onClick={() => {
               if (showCloseConfirm) {
                 // For now, just show a toast — actual closure requires backend support ticket system
-                toast.info('Closure request submitted. The AZM team will contact you within 48 hours.');
+                toast.neutral('Closure request submitted. The AZM team will contact you within 48 hours.');
                 setShowCloseConfirm(false);
               } else {
                 setShowCloseConfirm(true);

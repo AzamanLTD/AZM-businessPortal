@@ -541,3 +541,149 @@ body {
   .i-card { box-shadow: none; border: 1px solid #000; break-inside: avoid; }
   body { background: #fff; color: #000; font-size: 10pt; }
 }
+
+/* ============================================================================
+   FIX 0 — Forge → Instrument variable compatibility shim.
+   forge.css was deleted, but 1,274 references to --f-* variables across 65
+   files were never migrated (inline styles + Tailwind arbitrary-value
+   classes like bg-[var(--f-surface)]). Every one of those currently
+   resolves to nothing. This shim aliases every --f-* name to its real
+   Instrument token so all 65 files render correctly again immediately,
+   with zero JSX changes required. Remove this block only after every
+   var(--f- reference in src/ has been migrated to the real token name
+   (verify with: grep -rc "var(--f-" src/ | grep -v ':0').
+   ============================================================================ */
+:root {
+  --f-bg: var(--bg);
+  --f-surface: var(--surface);
+  --f-surface-raised: var(--surface-raise);
+  --f-surface-sunken: var(--surface-sunk);
+  --f-ink-900: var(--surface-sunk);
+  --f-text: var(--text);
+  --f-text-2: var(--text-2);
+  --f-text-3: var(--text-3);
+  --f-text-inv: var(--text-inv);
+  --f-line: var(--line);
+  --f-line-strong: var(--line-firm);
+  --f-tint-color: var(--accent);
+  --f-ok: var(--go);
+  --f-ok-bg: var(--go-bg);
+  --f-bad: var(--stop);
+  --f-bad-bg: var(--stop-bg);
+  --f-warn: var(--hold);
+  --f-warn-bg: var(--hold-bg);
+  --f-info: var(--cool);
+  --f-info-bg: var(--cool-bg);
+}
+.dark {
+  --f-bg: var(--bg);
+  --f-surface: var(--surface);
+  --f-surface-raised: var(--surface-raise);
+  --f-surface-sunken: var(--surface-sunk);
+  --f-ink-900: var(--surface-sunk);
+  --f-text: var(--text);
+  --f-text-2: var(--text-2);
+  --f-text-3: var(--text-3);
+  --f-text-inv: var(--text-inv);
+  --f-line: var(--line);
+  --f-line-strong: var(--line-firm);
+  --f-tint-color: var(--accent);
+  --f-ok: var(--go);
+  --f-ok-bg: var(--go-bg);
+  --f-bad: var(--stop);
+  --f-bad-bg: var(--stop-bg);
+  --f-warn: var(--hold);
+  --f-warn-bg: var(--hold-bg);
+  --f-info: var(--cool);
+  --f-info-bg: var(--cool-bg);
+}
+
+/* ── FIX 2: mobile rail drawer — Shell.jsx renders className="i-rail i-rail--mobile"
+   but this class was never defined, and .i-shell has no breakpoint at all. ── */
+.i-rail--mobile {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 65;
+  width: min(280px, 82vw);
+  box-shadow: var(--d3);
+}
+
+@media (max-width: 900px) {
+  .i-shell { grid-template-columns: 1fr; }
+  .i-rail:not(.i-rail--mobile) { display: none; }
+}
+
+/* ============================================================================
+   FIX 0 — Forge → Instrument variable compatibility shim.
+   forge.css was deleted, but 1,274 references to --f-* variables across 65
+   files were never migrated (inline styles + Tailwind arbitrary-value
+   classes like bg-[var(--f-surface)]). Every one of those currently
+   resolves to nothing. This shim aliases every --f-* name to its real
+   Instrument token so all 65 files render correctly again immediately,
+   with zero JSX changes required. Remove this block only after every
+   var(--f- reference in src/ has been migrated to the real token name
+   (verify with: grep -rc "var(--f-" src/ | grep -v ':0').
+   ============================================================================ */
+:root {
+  --f-bg: var(--bg);
+  --f-surface: var(--surface);
+  --f-surface-raised: var(--surface-raise);
+  --f-surface-sunken: var(--surface-sunk);
+  --f-ink-900: var(--surface-sunk);
+  --f-text: var(--text);
+  --f-text-2: var(--text-2);
+  --f-text-3: var(--text-3);
+  --f-text-inv: var(--text-inv);
+  --f-line: var(--line);
+  --f-line-strong: var(--line-firm);
+  --f-tint-color: var(--accent);
+  --f-ok: var(--go);
+  --f-ok-bg: var(--go-bg);
+  --f-bad: var(--stop);
+  --f-bad-bg: var(--stop-bg);
+  --f-warn: var(--hold);
+  --f-warn-bg: var(--hold-bg);
+  --f-info: var(--cool);
+  --f-info-bg: var(--cool-bg);
+}
+.dark {
+  --f-bg: var(--bg);
+  --f-surface: var(--surface);
+  --f-surface-raised: var(--surface-raise);
+  --f-surface-sunken: var(--surface-sunk);
+  --f-ink-900: var(--surface-sunk);
+  --f-text: var(--text);
+  --f-text-2: var(--text-2);
+  --f-text-3: var(--text-3);
+  --f-text-inv: var(--text-inv);
+  --f-line: var(--line);
+  --f-line-strong: var(--line-firm);
+  --f-tint-color: var(--accent);
+  --f-ok: var(--go);
+  --f-ok-bg: var(--go-bg);
+  --f-bad: var(--stop);
+  --f-bad-bg: var(--stop-bg);
+  --f-warn: var(--hold);
+  --f-warn-bg: var(--hold-bg);
+  --f-info: var(--cool);
+  --f-info-bg: var(--cool-bg);
+}
+
+/* ── FIX 2: mobile rail drawer — Shell.jsx renders className="i-rail i-rail--mobile"
+   but this class was never defined, and .i-shell has no breakpoint at all. ── */
+.i-rail--mobile {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 65;
+  width: min(280px, 82vw);
+  box-shadow: var(--d3);
+}
+
+@media (max-width: 900px) {
+  .i-shell { grid-template-columns: 1fr; }
+  .i-rail:not(.i-rail--mobile) { display: none; }
+}

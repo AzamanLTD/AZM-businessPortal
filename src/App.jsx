@@ -47,7 +47,7 @@ const POS = lazy(() => import('@/pages/POS'));
 
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/lib/query-client';
-import { Toaster } from 'sonner';
+import { ToastHost } from '@/lib/toast';
 import { useEffect, useState } from 'react';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import ErrorBoundary, { SectionBoundary } from '@/components/ErrorBoundary';
@@ -60,11 +60,11 @@ function AppRoutes() {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center" style={{ background: 'var(--f-bg)' }}>
+      <div className="fixed inset-0 flex items-center justify-center" style={{ background: 'var(--bg)' }}>
         <div className="flex flex-col items-center gap-4">
           <div className="w-10 h-10 border-2 rounded-full animate-spin"
-               style={{ borderColor: 'var(--f-line)', borderTopColor: 'var(--f-tint-color)' }} />
-          <p className="text-sm" style={{ color: 'var(--f-text-3)' }}>Loading your portal...</p>
+               style={{ borderColor: 'var(--line)', borderTopColor: 'var(--accent)' }} />
+          <p className="text-sm" style={{ color: 'var(--text-3)' }}>Loading your portal...</p>
         </div>
       </div>
     );
@@ -72,7 +72,7 @@ function AppRoutes() {
 
   if (!authed) {
     return (
-      <Suspense fallback={<div className="flex items-center justify-center h-screen" style={{ background: 'var(--f-bg)' }}><div className="animate-pulse text-sm" style={{ color: 'var(--f-text-3)' }}>Loading…</div></div>}>
+      <Suspense fallback={<div className="flex items-center justify-center h-screen" style={{ background: 'var(--bg)' }}><div className="animate-pulse text-sm" style={{ color: 'var(--text-3)' }}>Loading…</div></div>}>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="*"      element={<Navigate to="/login" replace />} />
@@ -83,7 +83,7 @@ function AppRoutes() {
 
   if (!isAdmin && !bizProfile) {
     return (
-      <Suspense fallback={<div className="flex items-center justify-center h-screen" style={{ background: 'var(--f-bg)' }}><div className="animate-pulse text-sm" style={{ color: 'var(--f-text-3)' }}>Loading…</div></div>}>
+      <Suspense fallback={<div className="flex items-center justify-center h-screen" style={{ background: 'var(--bg)' }}><div className="animate-pulse text-sm" style={{ color: 'var(--text-3)' }}>Loading…</div></div>}>
       <Routes>
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="*"           element={<Navigate to="/onboarding" replace />} />
@@ -93,7 +93,7 @@ function AppRoutes() {
   }
 
   return (
-    <Suspense fallback={<div className="flex items-center justify-center h-screen" style={{ background: 'var(--f-bg)' }}><div className="animate-pulse text-sm" style={{ color: 'var(--f-text-3)' }}>Loading…</div></div>}>
+    <Suspense fallback={<div className="flex items-center justify-center h-screen" style={{ background: 'var(--bg)' }}><div className="animate-pulse text-sm" style={{ color: 'var(--text-3)' }}>Loading…</div></div>}>
     <Routes>
       <Route element={<Layout />}>
         <Route path="/"               element={<Dashboard />} />
@@ -161,22 +161,7 @@ export default function App() {
             <Router>
               <AppRoutes />
             </Router>
-            <Toaster 
-              expanded 
-              position="top-center" 
-              expand={true}
-              theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
-              toastOptions={{
-                className: 'sentry-toast',
-                style: {
-                  background: 'var(--f-surface-raised)',
-                  border: '1px solid var(--f-line)',
-                  color: 'var(--f-text)',
-                  backdropFilter: 'blur(12px)',
-                  boxShadow: '0 4px 20px rgba(17,17,17,0.08)',
-                },
-              }}
-            />
+            <ToastHost />
         </QueryClientProvider>
       </AuthProvider>
     </ErrorBoundary>

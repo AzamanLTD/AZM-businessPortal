@@ -6,7 +6,7 @@ import {
   Calendar, Plus, ChevronLeft, ChevronRight, Clock, CheckCircle2, XCircle,
   Edit2, Trash2, Repeat, ArrowLeftRight, AlertCircle
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 const STATUS_COLORS = {
   SCHEDULED: 'var(--f-tint-color)',
@@ -114,7 +114,7 @@ export default function Scheduling() {
       setSwaps(swapRes.data?.swaps || []);
       setOnDuty(dutyRes.data?.shifts || dutyRes.data?.onDuty || []);
     } catch (err) {
-      toast.error('Failed to load schedule data');
+      toast.stop('Failed to load schedule data');
     } finally {
       setLoading(false);
     }
@@ -137,13 +137,13 @@ export default function Scheduling() {
 
   const handleSave = async () => {
     if (!form.employeeId || !form.shiftDate || !form.startTime || !form.endTime) {
-      toast.error('Please fill in all required fields');
+      toast.stop('Please fill in all required fields');
       return;
     }
     try {
       const startDateTime = new Date(`${form.shiftDate}T${form.startTime}`);
       const endDateTime = new Date(`${form.shiftDate}T${form.endTime}`);
-      if (endDateTime <= startDateTime) { toast.error('End time must be after start time'); return; }
+      if (endDateTime <= startDateTime) { toast.stop('End time must be after start time'); return; }
       const payload = {
         employeeId: form.employeeId,
         shiftDate: startDateTime.toISOString(),
@@ -156,44 +156,44 @@ export default function Scheduling() {
       };
       if (editShift) {
         await shiftApi.update(editShift.id, payload);
-        toast.success('Shift updated');
+        toast.go('Shift updated');
       } else {
         await shiftApi.create(payload);
-        toast.success('Shift created');
+        toast.go('Shift created');
       }
       setAddOpen(false); setEditShift(null); resetForm(); load();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to save shift');
+      toast.stop(err.response?.data?.message || 'Failed to save shift');
     }
   };
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this shift?')) return;
-    try { await shiftApi.remove(id); toast.success('Shift deleted'); load(); }
-    catch (err) { toast.error('Failed to delete shift'); }
+    try { await shiftApi.remove(id); toast.go('Shift deleted'); load(); }
+    catch (err) { toast.stop('Failed to delete shift'); }
   };
 
   const handleNoShow = async (id) => {
-    try { await shiftApi.markNoShow(id); toast.success('Marked as no-show'); load(); }
-    catch (err) { toast.error('Failed to mark no-show'); }
+    try { await shiftApi.markNoShow(id); toast.go('Marked as no-show'); load(); }
+    catch (err) { toast.stop('Failed to mark no-show'); }
   };
 
   const handleApproveSwap = async (id) => {
-    try { await shiftApi.approveSwap(id); toast.success('Swap approved'); load(); }
-    catch (err) { toast.error('Failed to approve swap'); }
+    try { await shiftApi.approveSwap(id); toast.go('Swap approved'); load(); }
+    catch (err) { toast.stop('Failed to approve swap'); }
   };
 
   const handleRejectSwap = async () => {
     if (!rejectSwap) return;
     try {
       await shiftApi.rejectSwap(rejectSwap.id, rejectSwap.note || 'Rejected by manager');
-      toast.success('Swap rejected'); setRejectSwap(null); load();
-    } catch (err) { toast.error('Failed to reject swap'); }
+      toast.go('Swap rejected'); setRejectSwap(null); load();
+    } catch (err) { toast.stop('Failed to reject swap'); }
   };
 
   const handleCreateRotation = async () => {
     if (!rotationForm.employeeId || rotationForm.daysOfWeek.length === 0) {
-      toast.error('Select an employee and at least one day'); return;
+      toast.stop('Select an employee and at least one day'); return;
     }
     try {
       await shiftApi.createRotation({
@@ -205,10 +205,10 @@ export default function Scheduling() {
         weeks: parseInt(rotationForm.weeks) || 4,
         shiftLabel: rotationForm.shiftLabel || null,
       });
-      toast.success('Rotation created'); setRotationOpen(false);
+      toast.go('Rotation created'); setRotationOpen(false);
       setRotationForm({ employeeId: '', daysOfWeek: [], startTime: '09:00', endTime: '17:00', breakMinutes: 30, weeks: 4, shiftLabel: '' });
       load();
-    } catch (err) { toast.error(err.response?.data?.message || 'Failed to create rotation'); }
+    } catch (err) { toast.stop(err.response?.data?.message || 'Failed to create rotation'); }
   };
 
   const resetForm = () => { setForm({ employeeId: '', shiftDate: '', startTime: '', endTime: '', breakMinutes: 30, locationId: '', shiftLabel: '', notes: '' }); };

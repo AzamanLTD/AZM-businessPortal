@@ -17,7 +17,7 @@ import { Card, Button, Input, Textarea, Tag, Switch, Tabs } from '@/components/i
 import { KYB_STATUS_META } from '@/lib/utils';
 import { Building2, Save, Eye, BadgeCheck, QrCode, Wallet, ImagePlus, Palette, Shield, Bell, History, AlertTriangle, CheckCircle2, Users, Code2 } from 'lucide-react';
 import { uploadImageToCloudinary, isCloudinaryConfigured, validateImageFile } from '@/lib/cloudinary';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 import PublicProfilePreview from '@/components/PublicProfilePreview';
 import QrCodePanel from '@/components/QrCodePanel';
 import RolesPermissions from '@/pages/settings/RolesPermissions';
@@ -79,10 +79,10 @@ export default function Settings() {
   const saveMutation = useMutation({
     mutationFn: (data) => businessApi.update(data),
     onSuccess: () => {
-      toast.success('Settings saved');
+      toast.go('Settings saved');
       refreshProfile();
     },
-    onError: (e) => toast.error('Save failed: ' + e.message),
+    onError: (e) => toast.stop('Save failed: ' + e.message),
   });
 
   const handleSave = () => {
@@ -106,7 +106,7 @@ export default function Settings() {
     if (!bizProfile?.bizId) return;
     try {
       await navigator.clipboard.writeText(bizProfile.bizId);
-      toast.success('BIZ ID copied');
+      toast.go('BIZ ID copied');
     } catch { /* ignore */ }
   };
 

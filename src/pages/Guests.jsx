@@ -9,7 +9,7 @@ import { Search, Sparkles, TrendingUp, DollarSign, RefreshCw, ShieldCheck } from
 import { marketplaceApi } from '../lib/marketplaceApi';
 import { Card, Tag, Button, Skel, Empty, Sheet } from '@/components/instrument';
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 const TIER_META = {
   GOLD:   { color: 'var(--hold)',  bg: 'var(--hold-bg)' },
@@ -33,7 +33,7 @@ export default function Guests({ businessId }) {
       const res = await marketplaceApi.getGuests(businessId);
       setGuests(res.data || []);
     } catch (e) {
-      toast.error('Failed to retrieve intelligence directory');
+      toast.stop('Failed to retrieve intelligence directory');
     }
     setLoading(false);
   };

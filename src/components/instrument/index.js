@@ -5,7 +5,7 @@ export { Metric } from './Metric';
 export { Spark } from './Sparkline';
 export { Skel, SkelRow } from './Skeleton';
 export { Empty } from './Empty';
-export { Toast } from './Toast';
+export { toast, ToastHost } from '@/lib/toast';
 export { DataTable } from './DataTable';
 export { Sheet } from './Sheet';
 export { Dialog } from './Dialog';

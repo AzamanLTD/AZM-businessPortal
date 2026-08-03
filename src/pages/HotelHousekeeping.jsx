@@ -33,7 +33,7 @@ import {
   CheckSquare,
   Square
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 const COLUMNS = [
   { key: 'PENDING', label: 'Pending', color: 'var(--text-3)', bg: 'rgba(154, 160, 172, 0.15)', icon: Sparkles },
@@ -208,7 +208,7 @@ export default function HotelHousekeeping() {
       }
     } catch (err) {
       console.error(err);
-      toast.error('Failed to reload housekeeping dashboard.');
+      toast.stop('Failed to reload housekeeping dashboard.');
     } finally {
       setLoading(false);
     }
@@ -281,10 +281,10 @@ export default function HotelHousekeeping() {
   const handleAssign = async (taskId, employeeId) => {
     try {
       await hotelOpsApi.assignTask(taskId, employeeId);
-      toast.success('Housekeeper assigned successfully!');
+      toast.go('Housekeeper assigned successfully!');
       loadData();
     } catch {
-      toast.error('Failed to assign task.');
+      toast.stop('Failed to assign task.');
     }
   };
 
@@ -325,7 +325,7 @@ export default function HotelHousekeeping() {
       await hotelOpsApi.updateChecklist(taskId, updatedChecklist);
       loadData();
     } catch {
-      toast.error('Failed to update checklist item.');
+      toast.stop('Failed to update checklist item.');
     }
   };
 
@@ -345,10 +345,10 @@ export default function HotelHousekeeping() {
     try {
       // Start task sets the state to IN_PROGRESS via updateChecklist
       await hotelOpsApi.updateChecklist(taskId, { status: 'IN_PROGRESS', startedAt: new Date().toISOString() });
-      toast.success('Task started!');
+      toast.go('Task started!');
       loadData();
     } catch {
-      toast.error('Failed to start task.');
+      toast.stop('Failed to start task.');
     }
   };
 
@@ -358,28 +358,28 @@ export default function HotelHousekeeping() {
       if (selfInspect) {
         // Instantly mark passed
         await hotelOpsApi.inspectTask(taskId, { passed: true, notes: 'Self-inspected' });
-        toast.success('Task completed and successfully self-inspected!');
+        toast.go('Task completed and successfully self-inspected!');
       } else {
-        toast.success('Task marked completed and awaiting inspection.');
+        toast.go('Task marked completed and awaiting inspection.');
       }
       loadData();
     } catch {
-      toast.error('Failed to mark task complete.');
+      toast.stop('Failed to mark task complete.');
     }
   };
 
   const handleInspection = async (taskId, passed) => {
     if (!passed && !inspectionNote.trim()) {
-      toast.error('An inspection note is required when failing an inspection.');
+      toast.stop('An inspection note is required when failing an inspection.');
       return;
     }
     try {
       await hotelOpsApi.inspectTask(taskId, { passed, notes: inspectionNote });
-      toast.success(passed ? 'Task passed inspection!' : 'Task failed inspection.');
+      toast.go(passed ? 'Task passed inspection!' : 'Task failed inspection.');
       setInspectionNote('');
       loadData();
     } catch {
-      toast.error('Failed to submit inspection status.');
+      toast.stop('Failed to submit inspection status.');
     }
   };
 
@@ -389,17 +389,17 @@ export default function HotelHousekeeping() {
         await hotelOpsApi.assignTask(taskId, assigneeId);
       }
       await hotelOpsApi.updateChecklist(taskId, { status: 'IN_PROGRESS', startedAt: new Date().toISOString() });
-      toast.success('Task reassigned and restarted!');
+      toast.go('Task reassigned and restarted!');
       loadData();
     } catch {
-      toast.error('Failed to reassign and restart task.');
+      toast.stop('Failed to reassign and restart task.');
     }
   };
 
   const handleCreateTask = async (e) => {
     e.preventDefault();
     if (!createForm.roomId) {
-      toast.error('Please select a room.');
+      toast.stop('Please select a room.');
       return;
     }
 
@@ -424,7 +424,7 @@ export default function HotelHousekeeping() {
           checklistItems
         })
       });
-      toast.success('Housekeeping task created successfully!');
+      toast.go('Housekeeping task created successfully!');
       setCreateForm({
         roomId: '',
         taskType: 'CHECKOUT_CLEAN',
@@ -436,7 +436,7 @@ export default function HotelHousekeeping() {
       setCreateModalOpen(false);
       loadData();
     } catch {
-      toast.error('Failed to create task.');
+      toast.stop('Failed to create task.');
     }
   };
 

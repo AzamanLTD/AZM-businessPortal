@@ -35,7 +35,7 @@ import {
   CheckCircle2,
   Filter
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 const ROLES = [
   { value: 'OWNER', label: 'Owner' },
@@ -119,7 +119,7 @@ export default function Employees() {
       const res = await employeeApi.list();
       setEmployees(res.data?.employees || []);
     } catch (err) {
-      toast.error('Failed to load employee directory');
+      toast.stop('Failed to load employee directory');
     } finally {
       setLoading(false);
     }
@@ -167,7 +167,7 @@ export default function Employees() {
       };
 
       await employeeApi.create(payload);
-      toast.success('Employee added successfully');
+      toast.go('Employee added successfully');
       setIsAddOpen(false);
       // Reset form
       setAddForm({
@@ -182,7 +182,7 @@ export default function Employees() {
       });
       fetchEmployees();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to add employee');
+      toast.stop(err.response?.data?.message || 'Failed to add employee');
     }
   };
 
@@ -200,7 +200,7 @@ export default function Employees() {
       };
 
       await employeeApi.update(selectedEmployee.id, payload);
-      toast.success('Employee updated successfully');
+      toast.go('Employee updated successfully');
       setIsEditOpen(false);
       if (isSelectedOpen) {
         // Update selected view modal too
@@ -208,7 +208,7 @@ export default function Employees() {
       }
       fetchEmployees();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to update employee');
+      toast.stop(err.response?.data?.message || 'Failed to update employee');
     }
   };
 
@@ -216,11 +216,11 @@ export default function Employees() {
   const handleUpdatePermissions = async () => {
     try {
       await employeeApi.updatePermissions(selectedEmployee.id, permissionsForm);
-      toast.success('Permissions updated successfully');
+      toast.go('Permissions updated successfully');
       setIsPermsOpen(false);
       fetchEmployees();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to update permissions');
+      toast.stop(err.response?.data?.message || 'Failed to update permissions');
     }
   };
 
@@ -228,13 +228,13 @@ export default function Employees() {
   const handleTerminateEmployee = async (id) => {
     try {
       await employeeApi.remove(id);
-      toast.success('Employee terminated successfully');
+      toast.go('Employee terminated successfully');
       if (isSelectedOpen && selectedEmployee?.id === id) {
         setIsSelectedOpen(false);
       }
       fetchEmployees();
     } catch (err) {
-      toast.error('Failed to terminate employee');
+      toast.stop('Failed to terminate employee');
     }
   };
 
@@ -243,10 +243,10 @@ export default function Employees() {
     try {
       const nextStatus = emp.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
       await employeeApi.update(emp.id, { status: nextStatus });
-      toast.success(`Employee ${nextStatus === 'ACTIVE' ? 'reactivated' : 'suspended'}`);
+      toast.go(`Employee ${nextStatus === 'ACTIVE' ? 'reactivated' : 'suspended'}`);
       fetchEmployees();
     } catch (err) {
-      toast.error('Failed to update employee status');
+      toast.stop('Failed to update employee status');
     }
   };
 

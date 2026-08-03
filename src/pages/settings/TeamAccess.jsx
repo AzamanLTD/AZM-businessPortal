@@ -14,7 +14,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
 import { Card, Button, Input, Tag, Dialog, Switch } from '@/components/instrument';
 import { Users, UserPlus, Shield, Trash2, Pencil, Crown, Mail, ChevronDown, ChevronUp, Lock } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 const ROLE_INFO = {
   OWNER:          { label: 'Owner',          icon: Crown,  color: 'var(--f-tint-color)' },
@@ -54,42 +54,42 @@ export default function TeamAccess() {
   const inviteMut = useMutation({
     mutationFn: (data) => businessOSEmployees.create(data),
     onSuccess: () => {
-      toast.success('Team member added');
+      toast.go('Team member added');
       qc.invalidateQueries(['business-employees']);
       setShowInvite(false);
       setInviteForm({ email: '', role: 'EMPLOYEE', permissions: [] });
     },
-    onError: (e) => toast.error('Failed to add: ' + e.message),
+    onError: (e) => toast.stop('Failed to add: ' + e.message),
   });
 
   // Update role mutation
   const updateMut = useMutation({
     mutationFn: ({ id, data }) => businessOSEmployees.update(id, data),
     onSuccess: () => {
-      toast.success('Role updated');
+      toast.go('Role updated');
       qc.invalidateQueries(['business-employees']);
     },
-    onError: (e) => toast.error('Failed: ' + e.message),
+    onError: (e) => toast.stop('Failed: ' + e.message),
   });
 
   // Remove mutation
   const removeMut = useMutation({
     mutationFn: (id) => businessOSEmployees.remove(id),
     onSuccess: () => {
-      toast.success('Access revoked');
+      toast.go('Access revoked');
       qc.invalidateQueries(['business-employees']);
     },
-    onError: (e) => toast.error('Failed: ' + e.message),
+    onError: (e) => toast.stop('Failed: ' + e.message),
   });
 
   // Update permissions mutation
   const setPermsMut = useMutation({
     mutationFn: ({ id, permissions }) => businessOSEmployees.setPermissions(id, permissions),
     onSuccess: () => {
-      toast.success('Permissions updated');
+      toast.go('Permissions updated');
       qc.invalidateQueries(['business-employees']);
     },
-    onError: (e) => toast.error('Failed: ' + e.message),
+    onError: (e) => toast.stop('Failed: ' + e.message),
   });
 
   // Split employees into owners/admins vs regular employees
@@ -230,7 +230,7 @@ export default function TeamAccess() {
           )}
           <Button
             onClick={() => {
-              if (!inviteForm.email.trim()) { toast.error('Email is required'); return; }
+              if (!inviteForm.email.trim()) { toast.stop('Email is required'); return; }
               inviteMut.mutate({
                 email: inviteForm.email.trim(),
                 role: inviteForm.role,

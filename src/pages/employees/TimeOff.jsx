@@ -30,7 +30,7 @@ import {
   ChevronDown,
   ChevronRight
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 const TIME_OFF_TYPES = [
   { value: 'VACATION', label: 'Vacation' },
@@ -135,7 +135,7 @@ export default function TimeOff() {
       const res = await employeeApi.list();
       setEmployees(res.data?.employees || []);
     } catch (err) {
-      toast.error('Failed to load employees list');
+      toast.stop('Failed to load employees list');
     } finally {
       setLoadingEmployees(false);
     }
@@ -148,7 +148,7 @@ export default function TimeOff() {
       const res = await timeOffApi.list();
       setTimeOffRequests(res.data?.requests || []);
     } catch (err) {
-      toast.error('Failed to load time-off requests');
+      toast.stop('Failed to load time-off requests');
     } finally {
       setLoadingTimeOff(false);
     }
@@ -161,7 +161,7 @@ export default function TimeOff() {
       const res = await feedbackApi.list();
       setFeedbackList(res.data?.feedback || []);
     } catch (err) {
-      toast.error('Failed to load feedback history');
+      toast.stop('Failed to load feedback history');
     } finally {
       setLoadingFeedback(false);
     }
@@ -177,10 +177,10 @@ export default function TimeOff() {
   const handleApprove = async (id) => {
     try {
       await timeOffApi.approve(id);
-      toast.success('Time-off request approved');
+      toast.go('Time-off request approved');
       fetchTimeOff();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to approve request');
+      toast.stop(err.response?.data?.message || 'Failed to approve request');
     }
   };
 
@@ -194,28 +194,28 @@ export default function TimeOff() {
     if (!selectedRequestForReject) return;
     try {
       await timeOffApi.reject(selectedRequestForReject.id, rejectNote);
-      toast.success('Time-off request rejected');
+      toast.go('Time-off request rejected');
       setRejectModalOpen(false);
       setSelectedRequestForReject(null);
       setRejectNote('');
       fetchTimeOff();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to reject request');
+      toast.stop(err.response?.data?.message || 'Failed to reject request');
     }
   };
 
   const handleCreateRequest = async () => {
     if (!newRequestForm.employeeId) {
-      toast.error('Please select an employee');
+      toast.stop('Please select an employee');
       return;
     }
     if (!newRequestForm.startDate || !newRequestForm.endDate) {
-      toast.error('Please select start and end dates');
+      toast.stop('Please select start and end dates');
       return;
     }
     try {
       await timeOffApi.create(newRequestForm);
-      toast.success('Time-off request created');
+      toast.go('Time-off request created');
       setNewRequestModalOpen(false);
       setNewRequestForm({
         employeeId: '',
@@ -227,23 +227,23 @@ export default function TimeOff() {
       });
       fetchTimeOff();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to create request');
+      toast.stop(err.response?.data?.message || 'Failed to create request');
     }
   };
 
   // Feedback Workflows
   const handleGiveFeedback = async () => {
     if (!feedbackForm.receiverEmployeeId) {
-      toast.error('Please select an employee');
+      toast.stop('Please select an employee');
       return;
     }
     if (!feedbackForm.comment) {
-      toast.error('Please provide a comment');
+      toast.stop('Please provide a comment');
       return;
     }
     try {
       await feedbackApi.give(feedbackForm);
-      toast.success('Feedback submitted successfully');
+      toast.go('Feedback submitted successfully');
       setGiveFeedbackModalOpen(false);
       setFeedbackForm({
         receiverEmployeeId: '',
@@ -255,7 +255,7 @@ export default function TimeOff() {
       });
       fetchFeedback();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to submit feedback');
+      toast.stop(err.response?.data?.message || 'Failed to submit feedback');
     }
   };
 

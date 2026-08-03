@@ -11,7 +11,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
 import { Card, Switch, Button } from '@/components/instrument';
 import { Bell, Save, BellRing } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 const EVENT_TYPES = [
   { key: 'new_order',         label: 'New Order',          desc: 'When a customer places an order' },
@@ -41,10 +41,10 @@ export default function NotificationPrefs() {
   const updateMutation = useMutation({
     mutationFn: (preferences) => businessOS.updateNotificationPrefs(preferences),
     onSuccess: () => {
-      toast.success('Notification preferences saved');
+      toast.go('Notification preferences saved');
       qc.invalidateQueries(['notification-prefs']);
     },
-    onError: (e) => toast.error('Failed to save: ' + e.message),
+    onError: (e) => toast.stop('Failed to save: ' + e.message),
   });
 
   const toggleChannel = (eventType, channel) => {

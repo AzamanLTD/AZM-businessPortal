@@ -35,7 +35,7 @@ import {
 import { hotelOpsApi } from '@/lib/marketplaceApi';
 import { usePermission } from '@/hooks/usePermission';
 import { request } from '@/lib/apiCore'; // safe request fallback if we call new endpoints via fetch/apiCore
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 // Status configuration metadata
 const STATUS_META = {
@@ -132,7 +132,7 @@ export default function HotelRooms() {
       const res = await hotelOpsApi.getRooms();
       setRooms(res?.rooms || res?.data?.rooms || []);
     } catch (err) {
-      toast.error({
+      toast.stop({
         title: 'Error loading rooms',
         description: err.message || 'Please check your connection and try again.',
         action: <Button variant="outline" size="sm" onClick={fetchRooms}>Retry</Button>
@@ -195,7 +195,7 @@ export default function HotelRooms() {
   const handleCreateRoom = async (e) => {
     e.preventDefault();
     if (!roomForm.roomNumber || !roomForm.floor || !roomForm.basePriceUsdc) {
-      toast.error('Please fill in all required fields');
+      toast.stop('Please fill in all required fields');
       return;
     }
     try {
@@ -208,7 +208,7 @@ export default function HotelRooms() {
         weekendPriceUsdc: roomForm.weekendPriceUsdc ? parseFloat(roomForm.weekendPriceUsdc) : undefined
       };
       await hotelOpsApi.createRoom(payload);
-      toast.success('Room added successfully');
+      toast.go('Room added successfully');
       setIsAddModalOpen(false);
       fetchRooms();
       // Reset form
@@ -225,7 +225,7 @@ export default function HotelRooms() {
         status: 'AVAILABLE'
       });
     } catch (err) {
-      toast.error(`Failed to create room: ${err.message || 'Error'}`);
+      toast.stop(`Failed to create room: ${err.message || 'Error'}`);
     }
   };
 
@@ -234,7 +234,7 @@ export default function HotelRooms() {
     e.preventDefault();
     const { startNumber, endNumber, roomType, floor, basePrice, capacity } = bulkForm;
     if (!startNumber || !endNumber || !floor || !basePrice) {
-      toast.error('Please fill in all bulk properties');
+      toast.stop('Please fill in all bulk properties');
       return;
     }
     try {
@@ -249,11 +249,11 @@ export default function HotelRooms() {
           capacity: parseInt(capacity, 10)
         })
       });
-      toast.success('Bulk rooms created successfully');
+      toast.go('Bulk rooms created successfully');
       setIsBulkModalOpen(false);
       fetchRooms();
     } catch (err) {
-      toast.error(`Failed to bulk create rooms: ${err.message || 'Error'}`);
+      toast.stop(`Failed to bulk create rooms: ${err.message || 'Error'}`);
     }
   };
 
@@ -273,11 +273,11 @@ export default function HotelRooms() {
         method: 'PATCH',
         body: JSON.stringify(payload)
       });
-      toast.success(`Room ${roomForm.roomNumber} updated successfully`);
+      toast.go(`Room ${roomForm.roomNumber} updated successfully`);
       setIsDetailModalOpen(false);
       fetchRooms();
     } catch (err) {
-      toast.error(`Failed to update room: ${err.message || 'Error'}`);
+      toast.stop(`Failed to update room: ${err.message || 'Error'}`);
     }
   };
 
@@ -285,13 +285,13 @@ export default function HotelRooms() {
   const handleCycleStatus = async (room, newStatus) => {
     try {
       await hotelOpsApi.updateRoomStatus(room.id, newStatus);
-      toast.success(`Room ${room.roomNumber} is now ${STATUS_META[newStatus].label}`);
+      toast.go(`Room ${room.roomNumber} is now ${STATUS_META[newStatus].label}`);
       fetchRooms();
       if (selectedRoom && selectedRoom.id === room.id) {
         setSelectedRoom({ ...selectedRoom, status: newStatus });
       }
     } catch (err) {
-      toast.error(`Failed to update room status: ${err.message || 'Error'}`);
+      toast.stop(`Failed to update room status: ${err.message || 'Error'}`);
     }
   };
 
@@ -299,7 +299,7 @@ export default function HotelRooms() {
   const handleBlockRoom = async (e) => {
     e.preventDefault();
     if (!blockForm.startDate || !blockForm.endDate || !blockForm.reason) {
-      toast.error('Please enter all dates and reason to block the room');
+      toast.stop('Please enter all dates and reason to block the room');
       return;
     }
     try {
@@ -307,12 +307,12 @@ export default function HotelRooms() {
         method: 'POST',
         body: JSON.stringify(blockForm)
       });
-      toast.success(`Room ${selectedRoom.roomNumber} has been placed under maintenance / blocked`);
+      toast.go(`Room ${selectedRoom.roomNumber} has been placed under maintenance / blocked`);
       setIsBlockModalOpen(false);
       setIsDetailModalOpen(false);
       fetchRooms();
     } catch (err) {
-      toast.error(`Failed to block room: ${err.message || 'Error'}`);
+      toast.stop(`Failed to block room: ${err.message || 'Error'}`);
     }
   };
 
@@ -333,10 +333,10 @@ export default function HotelRooms() {
         ...prev,
         [`${selectedRateCell.roomType}_${selectedRateCell.date}`]: parseFloat(rateOverridePrice)
       }));
-      toast.success('Rate override saved successfully');
+      toast.go('Rate override saved successfully');
       setIsRateOverrideModalOpen(false);
     } catch (err) {
-      toast.error(`Failed to apply override: ${err.message || 'Error'}`);
+      toast.stop(`Failed to apply override: ${err.message || 'Error'}`);
     }
   };
 
@@ -374,9 +374,9 @@ export default function HotelRooms() {
 
       await Promise.all(promises);
       setRateOverrides(updatedOverrides);
-      toast.success(`Quick action complete: rates adjusted successfully`);
+      toast.go(`Quick action complete: rates adjusted successfully`);
     } catch (err) {
-      toast.error(`Failed applying bulk rate action: ${err.message || 'Error'}`);
+      toast.stop(`Failed applying bulk rate action: ${err.message || 'Error'}`);
     }
   };
 

@@ -26,7 +26,7 @@ import {
   Move,
   Info
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 export default function HotelFrontDesk() {
     const { hasPermission } = usePermission();
@@ -89,7 +89,7 @@ export default function HotelFrontDesk() {
       setRoomRackData(rrRes?.data || rrRes || []);
     } catch (err) {
       console.error(err);
-      toast.error('Failed to load front desk data. Please try again.');
+      toast.stop('Failed to load front desk data. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -104,10 +104,10 @@ export default function HotelFrontDesk() {
     try {
       setActionPending(true);
       await resApi.checkIn(reservationId);
-      toast.success('Guest checked in successfully!');
+      toast.go('Guest checked in successfully!');
       loadData();
     } catch (err) {
-      toast.error(err.message || 'Failed to complete check-in');
+      toast.stop(err.message || 'Failed to complete check-in');
     } finally {
       setActionPending(false);
     }
@@ -129,11 +129,11 @@ export default function HotelFrontDesk() {
     try {
       setActionPending(true);
       await resApi.checkOut(checkoutConfirmData.reservationId);
-      toast.success('Guest checked out successfully! Room status set to DIRTY.');
+      toast.go('Guest checked out successfully! Room status set to DIRTY.');
       setCheckoutConfirmOpen(false);
       loadData();
     } catch (err) {
-      toast.error(err.message || 'Failed to complete check-out');
+      toast.stop(err.message || 'Failed to complete check-out');
     } finally {
       setActionPending(false);
     }
@@ -143,7 +143,7 @@ export default function HotelFrontDesk() {
   const handleWalkInSubmit = async (e) => {
     e.preventDefault();
     if (!walkInForm.guestName || !walkInForm.roomId) {
-      toast.error('Please fill in all required fields');
+      toast.stop('Please fill in all required fields');
       return;
     }
 
@@ -168,7 +168,7 @@ export default function HotelFrontDesk() {
         throw new Error(errorData.message || 'Walk-in booking failed');
       }
 
-      toast.success('Walk-in booking created successfully!');
+      toast.go('Walk-in booking created successfully!');
       setWalkInOpen(false);
       // Reset form
       setWalkInForm({
@@ -181,7 +181,7 @@ export default function HotelFrontDesk() {
       });
       loadData();
     } catch (err) {
-      toast.error(err.message || 'Failed to register walk-in guest');
+      toast.stop(err.message || 'Failed to register walk-in guest');
     } finally {
       setActionPending(false);
     }
@@ -203,7 +203,7 @@ export default function HotelFrontDesk() {
   const handleMoveRoomSubmit = async (e) => {
     e.preventDefault();
     if (!moveRoomForm.newRoomId || !moveRoomForm.reason) {
-      toast.error('Please select a new room and state a reason');
+      toast.stop('Please select a new room and state a reason');
       return;
     }
 
@@ -224,11 +224,11 @@ export default function HotelFrontDesk() {
         throw new Error(errorData.message || 'Failed to move room');
       }
 
-      toast.success('Room moved successfully!');
+      toast.go('Room moved successfully!');
       setMoveRoomOpen(false);
       loadData();
     } catch (err) {
-      toast.error(err.message || 'Failed to move guest room');
+      toast.stop(err.message || 'Failed to move guest room');
     } finally {
       setActionPending(false);
     }

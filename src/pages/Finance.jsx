@@ -17,7 +17,7 @@ import {
   Card, Button, Tag, Input, Select, Dialog, Empty, Skel, Switch
 } from '@/components/instrument';
 import { KpiCard, DonutChartCard, AreaChartCard, BarChartCard } from '@/components/charts';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 const TABS = [
   { key: 'dashboard',   label: 'Dashboard',      icon: TrendingUp },
@@ -473,11 +473,11 @@ function ExpensesTab({ canManage }) {
   const handleAddEntry = async (formData) => {
     try {
       await financeApi.createLedgerEntry(formData);
-      toast.success('Entry added');
+      toast.go('Entry added');
       setShowEntryModal(false);
       load();
     } catch (e) {
-      toast.error(`Failed to add entry: ${e.message}`);
+      toast.stop(`Failed to add entry: ${e.message}`);
     }
   };
 
@@ -485,20 +485,20 @@ function ExpensesTab({ canManage }) {
     if (!confirm('Delete this ledger entry? This cannot be undone.')) return;
     try {
       await financeApi.deleteLedgerEntry(id);
-      toast.success('Entry deleted');
+      toast.go('Entry deleted');
       load();
     } catch (e) {
-      toast.error(`Failed to delete: ${e.message}`);
+      toast.stop(`Failed to delete: ${e.message}`);
     }
   };
 
   const handleToggleRecurring = async (item) => {
     try {
       await financeApi.updateRecurring(item.id, { isActive: !item.isActive });
-      toast.success(`Recurring ${item.isActive ? 'paused' : 'activated'}`);
+      toast.go(`Recurring ${item.isActive ? 'paused' : 'activated'}`);
       load();
     } catch (e) {
-      toast.error(`Failed to update: ${e.message}`);
+      toast.stop(`Failed to update: ${e.message}`);
     }
   };
 
@@ -506,21 +506,21 @@ function ExpensesTab({ canManage }) {
     if (!confirm('Delete this recurring template?')) return;
     try {
       await financeApi.deleteRecurring(id);
-      toast.success('Template deleted');
+      toast.go('Template deleted');
       load();
     } catch (e) {
-      toast.error(`Failed to delete: ${e.message}`);
+      toast.stop(`Failed to delete: ${e.message}`);
     }
   };
 
   const handleAddRecurring = async (formData) => {
     try {
       await financeApi.createRecurring(formData);
-      toast.success('Recurring template created');
+      toast.go('Recurring template created');
       setShowRecurringModal(false);
       load();
     } catch (e) {
-      toast.error(`Failed to create template: ${e.message}`);
+      toast.stop(`Failed to create template: ${e.message}`);
     }
   };
 
@@ -981,7 +981,7 @@ function PayoutTab({ canManage }) {
       const data = await request('/api/payout-destinations');
       setDestinations(data?.destinations || []);
     } catch (err) {
-      toast.error(err.message || 'Failed to load payout destinations');
+      toast.stop(err.message || 'Failed to load payout destinations');
     } finally {
       setLoading(false);
     }
@@ -992,7 +992,7 @@ function PayoutTab({ canManage }) {
   const handleAdd = async (e) => {
     e.preventDefault();
     if (!form.nickname.trim() || !form.destinationAddress.trim()) {
-      toast.error('Nickname and destination address are required');
+      toast.stop('Nickname and destination address are required');
       return;
     }
     try {
@@ -1001,12 +1001,12 @@ function PayoutTab({ canManage }) {
         method: 'POST',
         body: JSON.stringify(form),
       });
-      toast.success('Payout destination added');
+      toast.go('Payout destination added');
       setShowAdd(false);
       setForm({ nickname: '', destinationType: 'BANK', destinationAddress: '', isExternalCrypto: false });
       loadDestinations();
     } catch (err) {
-      toast.error(err.message || 'Failed to add destination');
+      toast.stop(err.message || 'Failed to add destination');
     } finally {
       setSubmitting(false);
     }
@@ -1016,20 +1016,20 @@ function PayoutTab({ canManage }) {
     if (!confirm('Remove this payout destination?')) return;
     try {
       await request(`/api/payout-destinations/${id}`, { method: 'DELETE' });
-      toast.success('Destination removed');
+      toast.go('Destination removed');
       loadDestinations();
     } catch (err) {
-      toast.error(err.message || 'Failed to remove destination');
+      toast.stop(err.message || 'Failed to remove destination');
     }
   };
 
   const handleSetDefault = async (id) => {
     try {
       await request(`/api/payout-destinations/${id}/default`, { method: 'PATCH' });
-      toast.success('Default destination updated');
+      toast.go('Default destination updated');
       loadDestinations();
     } catch (err) {
-      toast.error(err.message || 'Failed to set default');
+      toast.stop(err.message || 'Failed to set default');
     }
   };
 

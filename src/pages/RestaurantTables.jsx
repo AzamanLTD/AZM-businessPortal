@@ -5,7 +5,7 @@ import { locations as locApi, products as productsApi } from '@/lib/api';
 import { usePermission } from '@/hooks/usePermission';
 import { useAuth } from '@/lib/AuthContext';
 import { Card, Button, Tag, Skel, Empty, Avatar, Input, Select, Dialog } from '@/components/instrument';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 import {
   Grid3x3, Clock, Users, Plus, Trash2, Edit2, Play, CheckCircle, HelpCircle,
   Move, Check, RotateCcw, AlertCircle, ShoppingBag, X, DollarSign, Calendar
@@ -72,29 +72,29 @@ export default function RestaurantTables() {
   const updateStatusMut = useMutation({
     mutationFn: ({ id, status }) => restaurantApi.updateTableStatus(id, status),
     onSuccess: () => {
-      toast.success('Table status updated successfully');
+      toast.go('Table status updated successfully');
       qc.invalidateQueries({ queryKey: ['restaurant-tables', selectedLocId] });
     },
-    onError: (err) => toast.error(err.message || 'Failed to update table status'),
+    onError: (err) => toast.stop(err.message || 'Failed to update table status'),
   });
 
   // Table Management Mutations (CRUD)
   const createTableMut = useMutation({
     mutationFn: ({ locId, label }) => locApi.createTable(locId, label),
     onSuccess: () => {
-      toast.success('Table created successfully');
+      toast.go('Table created successfully');
       qc.invalidateQueries({ queryKey: ['restaurant-tables', selectedLocId] });
     },
-    onError: (err) => toast.error(err.message || 'Failed to create table'),
+    onError: (err) => toast.stop(err.message || 'Failed to create table'),
   });
 
   const deleteTableMut = useMutation({
     mutationFn: (tableId) => locApi.deleteTable(tableId),
     onSuccess: () => {
-      toast.success('Table deleted successfully');
+      toast.go('Table deleted successfully');
       qc.invalidateQueries({ queryKey: ['restaurant-tables', selectedLocId] });
     },
-    onError: (err) => toast.error(err.message || 'Failed to delete table'),
+    onError: (err) => toast.stop(err.message || 'Failed to delete table'),
   });
 
   // Layout editor state stored in localStorage
@@ -196,7 +196,7 @@ export default function RestaurantTables() {
 
   const handleAddWaitlist = () => {
     if (!waitlistForm.name.trim()) {
-      toast.error('Name is required');
+      toast.stop('Name is required');
       return;
     }
     const newItem = {
@@ -211,17 +211,17 @@ export default function RestaurantTables() {
     saveWaitlist(newList);
     setWaitlistModalOpen(false);
     setWaitlistForm({ name: '', phone: '', partySize: 2, quotedWait: '15m' });
-    toast.success(`${newItem.name} added to the waitlist`);
+    toast.go(`${newItem.name} added to the waitlist`);
   };
 
   const handleNotifyWaitlist = (item) => {
-    toast.success(`Notification sent to ${item.name} (${item.phone || 'No Phone'})!`);
+    toast.go(`Notification sent to ${item.name} (${item.phone || 'No Phone'})!`);
   };
 
   const handleRemoveWaitlist = (id) => {
     const newList = waitlist.filter(item => item.id !== id);
     saveWaitlist(newList);
-    toast.success('Waitlist entry removed');
+    toast.go('Waitlist entry removed');
   };
 
   // Dialog State for adding/modifying table properties in layout editor
@@ -253,7 +253,7 @@ export default function RestaurantTables() {
     saveLayout(updated);
     setTableConfigOpen(false);
     setSelectedConfigTable(null);
-    toast.success(`Table settings updated for ${selectedConfigTable.label || selectedConfigTable.tableNumber}`);
+    toast.go(`Table settings updated for ${selectedConfigTable.label || selectedConfigTable.tableNumber}`);
   };
 
   // Interactive Table Tab Operations
@@ -274,7 +274,7 @@ export default function RestaurantTables() {
       const res = await marketplaceApi.getDineInTab(tabId);
       setCurrentTabDetails(res.tab || res.data || res);
     } catch (err) {
-      toast.error('Failed to load tab details');
+      toast.stop('Failed to load tab details');
     } finally {
       setLoadingTabDetails(false);
     }
@@ -311,10 +311,10 @@ export default function RestaurantTables() {
       await updateStatusMut.mutateAsync({ id: activeTabTable.id, status: 'SEATED' });
       await loadTabDetails(newTab.id);
       
-      toast.success('Dine-in tab opened for Table ' + (activeTabTable.label || activeTabTable.tableNumber));
+      toast.go('Dine-in tab opened for Table ' + (activeTabTable.label || activeTabTable.tableNumber));
       refetchTables();
     } catch (err) {
-      toast.error(err.message || 'Failed to open dine-in tab');
+      toast.stop(err.message || 'Failed to open dine-in tab');
     } finally {
       setLoadingTabDetails(false);
     }
@@ -332,7 +332,7 @@ export default function RestaurantTables() {
         unitPriceUsdc: prod.priceUsdc || prod.price || 10,
         quantity: parseInt(orderQuantity) || 1,
       });
-      toast.success(`${prod.name} added to tab`);
+      toast.go(`${prod.name} added to tab`);
       
       // Cycle table state to ORDERED / EATING
       if (activeTabTable && activeTabTable.status === 'SEATED') {
@@ -342,7 +342,7 @@ export default function RestaurantTables() {
 
       await loadTabDetails(currentTabDetails.id);
     } catch (err) {
-      toast.error(err.message || 'Failed to add item');
+      toast.stop(err.message || 'Failed to add item');
     }
   };
 
@@ -353,7 +353,7 @@ export default function RestaurantTables() {
         taxRatePct: parseFloat(taxRate) || 0,
         tipUsdc: parseFloat(tipAmount) || 0,
       });
-      toast.success('Dine-in bill finalized');
+      toast.go('Dine-in bill finalized');
 
       if (activeTabTable) {
         await updateStatusMut.mutateAsync({ id: activeTabTable.id, status: 'BILLING' });
@@ -362,7 +362,7 @@ export default function RestaurantTables() {
 
       await loadTabDetails(currentTabDetails.id);
     } catch (err) {
-      toast.error(err.message || 'Failed to finalize bill');
+      toast.stop(err.message || 'Failed to finalize bill');
     }
   };
 
@@ -370,7 +370,7 @@ export default function RestaurantTables() {
     if (!currentTabDetails) return;
     try {
       await marketplaceApi.confirmDineInTab(currentTabDetails.id);
-      toast.success('Payment confirmed and tab closed');
+      toast.go('Payment confirmed and tab closed');
 
       if (activeTabTable) {
         await updateStatusMut.mutateAsync({ id: activeTabTable.id, status: 'CLEANING' });
@@ -380,7 +380,7 @@ export default function RestaurantTables() {
       setActiveTabTable(null);
       setCurrentTabDetails(null);
     } catch (err) {
-      toast.error(err.message || 'Failed to process payment confirmation');
+      toast.stop(err.message || 'Failed to process payment confirmation');
     }
   };
 
@@ -398,7 +398,7 @@ export default function RestaurantTables() {
   const handleAddNewTable = () => {
     if (!selectedLocId) return;
     if (!newTableLabel.trim()) {
-      toast.error('Table label or number is required');
+      toast.stop('Table label or number is required');
       return;
     }
     createTableMut.mutate({ locId: selectedLocId, label: newTableLabel.trim() }, {

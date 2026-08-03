@@ -9,7 +9,7 @@ import {
   Lock, AlertTriangle, ShieldCheck, CornerUpLeft, Edit3, Calendar
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 const STEPS = ['AWAITING_PAYMENT', 'PAID', 'DELIVERED', 'COMPLETED'];
 
@@ -85,12 +85,12 @@ export default function OrderDetail() {
   const markDeliveredMutation = useMutation({
     mutationFn: (notes) => ordersApi.markDelivered(id, notes),
     onSuccess: () => {
-      toast.success('Order marked as delivered successfully');
+      toast.go('Order marked as delivered successfully');
       qc.invalidateQueries(['order', id]);
       qc.invalidateQueries(['orders']);
     },
     onError: (err) => {
-      toast.error(err.message || 'Failed to update delivery status');
+      toast.stop(err.message || 'Failed to update delivery status');
     }
   });
 
@@ -98,14 +98,14 @@ export default function OrderDetail() {
   const refundMutation = useMutation({
     mutationFn: (reason) => bookingOpsApi.refundOrder(id, reason),
     onSuccess: () => {
-      toast.success('Refund initiated successfully');
+      toast.go('Refund initiated successfully');
       qc.invalidateQueries(['order', id]);
       qc.invalidateQueries(['orders']);
       setRefundModal(false);
       setRefundReason('');
     },
     onError: (err) => {
-      toast.error(err.message || 'Failed to initiate refund');
+      toast.stop(err.message || 'Failed to initiate refund');
     }
   });
 
@@ -113,12 +113,12 @@ export default function OrderDetail() {
   const saveNotesMutation = useMutation({
     mutationFn: (notes) => ordersApi.markDelivered(id, notes), // markDelivered updates deliveryNotes
     onSuccess: () => {
-      toast.success('Delivery notes saved successfully');
+      toast.go('Delivery notes saved successfully');
       qc.invalidateQueries(['order', id]);
       setIsEditingNotes(false);
     },
     onError: (err) => {
-      toast.error(err.message || 'Failed to save delivery notes');
+      toast.stop(err.message || 'Failed to save delivery notes');
     }
   });
 

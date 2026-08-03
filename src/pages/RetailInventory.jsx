@@ -37,7 +37,7 @@ import {
   FileText,
   ScanLine,
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 const TABS = [
   { key: 'overview', label: 'Overview', icon: Package },
@@ -93,7 +93,7 @@ export default function RetailInventory() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-xl font-bold text-[var(--text)]">Retail Inventory</h1>
-          <p className="text-sm text-ink-2 mt-1">
+          <p className="text-sm text-[var(--text-2)] mt-1">
             Barcode/SKU management, stock counts, purchase orders & supplier directory.
           </p>
         </div>
@@ -103,38 +103,38 @@ export default function RetailInventory() {
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-1">
             <AlertTriangle className="w-4 h-4 text-[var(--hold)]" />
-            <span className="text-xs uppercase text-ink-2">Low Stock</span>
+            <span className="text-xs uppercase text-[var(--text-2)]">Low Stock</span>
           </div>
           <p className="text-2xl font-bold text-[var(--text)]">{lowStockItems.length}</p>
-          <p className="text-xs text-ink-3 mt-0.5">items need reorder</p>
+          <p className="text-xs text-[var(--text-3)] mt-0.5">items need reorder</p>
         </Card>
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-1">
             <Building2 className="w-4 h-4 text-[var(--info)]" />
-            <span className="text-xs uppercase text-ink-2">Suppliers</span>
+            <span className="text-xs uppercase text-[var(--text-2)]">Suppliers</span>
           </div>
           <p className="text-2xl font-bold text-[var(--text)]">{suppliers.length}</p>
-          <p className="text-xs text-ink-3 mt-0.5">{suppliers.filter(s => s.isActive).length} active</p>
+          <p className="text-xs text-[var(--text-3)] mt-0.5">{suppliers.filter(s => s.isActive).length} active</p>
         </Card>
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-1">
             <ShoppingCart className="w-4 h-4 text-[var(--go)]" />
-            <span className="text-xs uppercase text-ink-2">Open POs</span>
+            <span className="text-xs uppercase text-[var(--text-2)]">Open POs</span>
           </div>
           <p className="text-2xl font-bold text-[var(--text)]">
             {purchaseOrders.filter(po => po.status === 'SUBMITTED').length}
           </p>
-          <p className="text-xs text-ink-3 mt-0.5">{purchaseOrders.length} total</p>
+          <p className="text-xs text-[var(--text-3)] mt-0.5">{purchaseOrders.length} total</p>
         </Card>
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-1">
             <ClipboardCheck className="w-4 h-4 text-[var(--accent)]" />
-            <span className="text-xs uppercase text-ink-2">Stock Counts</span>
+            <span className="text-xs uppercase text-[var(--text-2)]">Stock Counts</span>
           </div>
           <p className="text-2xl font-bold text-[var(--text)]">
             {stockCounts.filter(sc => sc.status === 'OPEN').length}
           </p>
-          <p className="text-xs text-ink-3 mt-0.5">{stockCounts.length} total</p>
+          <p className="text-xs text-[var(--text-3)] mt-0.5">{stockCounts.length} total</p>
         </Card>
       </div>
 
@@ -148,7 +148,7 @@ export default function RetailInventory() {
               className={`flex items-center gap-2 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === tab.key
                   ? 'border-emerald-500 text-[var(--go)]'
-                  : 'border-transparent text-ink-2:text-[var(--text)]'
+                  : 'border-transparent text-[var(--text-2)]:text-[var(--text)]'
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -177,9 +177,9 @@ function OverviewTab({ lowStockItems, loading }) {
       qc.invalidateQueries({ queryKey: ['retail'] });
       qc.invalidateQueries({ queryKey: ['products'] });
       setEditingId(null);
-      toast.success('Barcode updated');
+      toast.go('Barcode updated');
     },
-    onError: (e) => toast.error(e.message || 'Failed to update barcode'),
+    onError: (e) => toast.stop(e.message || 'Failed to update barcode'),
   });
 
   const { data: productsData } = useQuery({
@@ -228,19 +228,19 @@ function OverviewTab({ lowStockItems, loading }) {
         ) : (
           <div className="space-y-2">
             {lowStockItems.map(item => (
-              <div key={item.id} className="flex items-center justify-between bg-surface rounded-lg p-3 border border-line/30">
+              <div key={item.id} className="flex items-center justify-between bg-[var(--surface)] rounded-lg p-3 border border-line/30">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-[var(--f-warn-bg)] flex items-center justify-center flex-shrink-0">
                     <AlertTriangle className="w-4 h-4 text-[var(--hold)]" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-[var(--text)]">{item.name}</p>
-                    <p className="text-xs text-ink-3">SKU: {item.sku || '—'}</p>
+                    <p className="text-xs text-[var(--text-3)]">SKU: {item.sku || '—'}</p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-bold text-[var(--hold)]">{item.stockQty || 0} units</p>
-                  <p className="text-xs text-ink-3">threshold: {item.lowStockThreshold || 5}</p>
+                  <p className="text-xs text-[var(--text-3)]">threshold: {item.lowStockThreshold || 5}</p>
                 </div>
               </div>
             ))}
@@ -258,7 +258,7 @@ function OverviewTab({ lowStockItems, loading }) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs text-ink-3 border-b border-line">
+                <tr className="text-left text-xs text-[var(--text-3)] border-b border-line">
                   <th className="py-2 pr-3 font-medium">Product</th>
                   <th className="py-2 px-3 font-medium">SKU</th>
                   <th className="py-2 px-3 font-medium">Barcode</th>
@@ -270,7 +270,7 @@ function OverviewTab({ lowStockItems, loading }) {
               </thead>
               <tbody>
                 {products.slice(0, 30).map(product => (
-                  <tr key={product.id} className="border-b border-line/30:bg-surface/50">
+                  <tr key={product.id} className="border-b border-line/30:bg-[var(--surface)]/50">
                     <td className="py-2 pr-3 text-[var(--text)]">{product.name}</td>
                     {editingId === product.id ? (
                       <>
@@ -296,15 +296,15 @@ function OverviewTab({ lowStockItems, loading }) {
                       </>
                     ) : (
                       <>
-                        <td className="py-2 px-3 text-ink-2 font-mono text-xs">{product.sku || '—'}</td>
-                        <td className="py-2 px-3 text-ink-2 font-mono text-xs">{product.barcode || '—'}</td>
-                        <td className="py-2 px-3 text-ink-2 text-xs">{product.costPrice ? fmtUSDC(product.costPrice) : '—'}</td>
+                        <td className="py-2 px-3 text-[var(--text-2)] font-mono text-xs">{product.sku || '—'}</td>
+                        <td className="py-2 px-3 text-[var(--text-2)] font-mono text-xs">{product.barcode || '—'}</td>
+                        <td className="py-2 px-3 text-[var(--text-2)] text-xs">{product.costPrice ? fmtUSDC(product.costPrice) : '—'}</td>
                         <td className="py-2 px-3">
                           <span className={`text-xs font-medium ${product.stockQty !== null && (product.stockQty || 0) <= (product.lowStockThreshold || 5) ? 'text-[var(--hold)]' : 'text-[var(--text)]'}`}>
                             {product.stockQty ?? '—'}
                           </span>
                         </td>
-                        <td className="py-2 px-3 text-ink-3 text-xs">{product.lowStockThreshold || 5}</td>
+                        <td className="py-2 px-3 text-[var(--text-3)] text-xs">{product.lowStockThreshold || 5}</td>
                         <td className="py-2 pl-3 text-right">
                           <Button size="sm" variant="outline" onClick={() => startEdit(product)}><Pencil className="w-3 h-3" /></Button>
                         </td>
@@ -330,18 +330,18 @@ function SuppliersTab() {
   const { data, isLoading } = useQuery({ queryKey: ['retail', 'suppliers'], queryFn: retailApi.listSuppliers });
   const createMut = useMutation({
     mutationFn: retailApi.createSupplier,
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['retail'] }); setShowModal(false); resetForm(); toast.success('Supplier created'); },
-    onError: (e) => toast.error(e.message || 'Failed to create supplier'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['retail'] }); setShowModal(false); resetForm(); toast.go('Supplier created'); },
+    onError: (e) => toast.stop(e.message || 'Failed to create supplier'),
   });
   const updateMut = useMutation({
     mutationFn: ({ id, data }) => retailApi.updateSupplier(id, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['retail'] }); setShowModal(false); resetForm(); toast.success('Supplier updated'); },
-    onError: (e) => toast.error(e.message || 'Failed to update supplier'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['retail'] }); setShowModal(false); resetForm(); toast.go('Supplier updated'); },
+    onError: (e) => toast.stop(e.message || 'Failed to update supplier'),
   });
   const deleteMut = useMutation({
     mutationFn: retailApi.deleteSupplier,
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['retail'] }); toast.success('Supplier deleted'); },
-    onError: (e) => toast.error(e.message || 'Failed to delete supplier'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['retail'] }); toast.go('Supplier deleted'); },
+    onError: (e) => toast.stop(e.message || 'Failed to delete supplier'),
   });
 
   function resetForm() { setForm({ name: '', contactName: '', email: '', phone: '', address: '', notes: '' }); setEditSupplier(null); }
@@ -357,7 +357,7 @@ function SuppliersTab() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <p className="text-sm text-ink-2">{suppliers.length} supplier{suppliers.length !== 1 ? 's' : ''}</p>
+        <p className="text-sm text-[var(--text-2)]">{suppliers.length} supplier{suppliers.length !== 1 ? 's' : ''}</p>
         <Button onClick={() => { resetForm(); setShowModal(true); }}><Plus className="w-3.5 h-3.5 mr-1.5" /> Add Supplier</Button>
       </div>
       {isLoading ? <Skel rows={4} /> : suppliers.length === 0 ? (
@@ -369,14 +369,14 @@ function SuppliersTab() {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm font-medium text-[var(--text)]">{s.name}</p>
-                  {s.contactName && <p className="text-xs text-ink-2 mt-0.5">{s.contactName}</p>}
+                  {s.contactName && <p className="text-xs text-[var(--text-2)] mt-0.5">{s.contactName}</p>}
                 </div>
                 <Tag color={s.isActive ? 'green' : 'gray'}>{s.isActive ? 'Active' : 'Inactive'}</Tag>
               </div>
               <div className="mt-3 space-y-1">
-                {s.email && <p className="text-xs text-ink-3">✉ {s.email}</p>}
-                {s.phone && <p className="text-xs text-ink-3">☎ {s.phone}</p>}
-                {s.address && <p className="text-xs text-ink-3">⌂ {s.address}</p>}
+                {s.email && <p className="text-xs text-[var(--text-3)]">✉ {s.email}</p>}
+                {s.phone && <p className="text-xs text-[var(--text-3)]">☎ {s.phone}</p>}
+                {s.address && <p className="text-xs text-[var(--text-3)]">⌂ {s.address}</p>}
               </div>
               <div className="flex gap-2 mt-3">
                 <Button size="sm" variant="outline" onClick={() => startEdit(s)}><Pencil className="w-3 h-3 mr-1" /> Edit</Button>
@@ -391,29 +391,29 @@ function SuppliersTab() {
       <Dialog open={showModal} onClose={() => { setShowModal(false); resetForm(); }} title={editSupplier ? 'Edit Supplier' : 'Add Supplier'}>
         <div className="space-y-3">
           <div>
-            <label className="text-xs text-ink-2 mb-1 block">Name *</label>
+            <label className="text-xs text-[var(--text-2)] mb-1 block">Name *</label>
             <Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Acme Supplies Ltd" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-ink-2 mb-1 block">Contact Name</label>
+              <label className="text-xs text-[var(--text-2)] mb-1 block">Contact Name</label>
               <Input value={form.contactName} onChange={e => setForm(f => ({ ...f, contactName: e.target.value }))} placeholder="John Doe" />
             </div>
             <div>
-              <label className="text-xs text-ink-2 mb-1 block">Phone</label>
+              <label className="text-xs text-[var(--text-2)] mb-1 block">Phone</label>
               <Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} placeholder="+233 20 000 0000" />
             </div>
           </div>
           <div>
-            <label className="text-xs text-ink-2 mb-1 block">Email</label>
+            <label className="text-xs text-[var(--text-2)] mb-1 block">Email</label>
             <Input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="orders@acme.com" />
           </div>
           <div>
-            <label className="text-xs text-ink-2 mb-1 block">Address</label>
+            <label className="text-xs text-[var(--text-2)] mb-1 block">Address</label>
             <Input value={form.address} onChange={e => setForm(f => ({ ...f, address: e.target.value }))} placeholder="123 Industrial Ave, Accra" />
           </div>
           <div>
-            <label className="text-xs text-ink-2 mb-1 block">Notes</label>
+            <label className="text-xs text-[var(--text-2)] mb-1 block">Notes</label>
             <Textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Payment terms, delivery schedule, etc." rows={2} />
           </div>
           <div className="flex justify-end gap-2 pt-2">
@@ -437,13 +437,13 @@ function PurchaseOrdersTab({ suppliers }) {
   const { data, isLoading } = useQuery({ queryKey: ['retail', 'purchase-orders'], queryFn: retailApi.listPurchaseOrders });
   const createMut = useMutation({
     mutationFn: retailApi.createPurchaseOrder,
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['retail'] }); setShowModal(false); resetPOForm(); toast.success('Purchase order created'); },
-    onError: (e) => toast.error(e.message || 'Failed to create purchase order'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['retail'] }); setShowModal(false); resetPOForm(); toast.go('Purchase order created'); },
+    onError: (e) => toast.stop(e.message || 'Failed to create purchase order'),
   });
   const statusMut = useMutation({
     mutationFn: ({ id, data }) => retailApi.updatePurchaseOrder(id, data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['retail'] }); toast.success('Purchase order updated'); },
-    onError: (e) => toast.error(e.message || 'Failed to update purchase order'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['retail'] }); toast.go('Purchase order updated'); },
+    onError: (e) => toast.stop(e.message || 'Failed to update purchase order'),
   });
 
   function resetPOForm() { setPoForm({ supplierId: '', notes: '', expectedDate: '', items: [{ productName: '', sku: '', quantity: 1, unitCost: 0 }] }); }
@@ -461,7 +461,7 @@ function PurchaseOrdersTab({ suppliers }) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <p className="text-sm text-ink-2">{purchaseOrders.length} purchase order{purchaseOrders.length !== 1 ? 's' : ''}</p>
+        <p className="text-sm text-[var(--text-2)]">{purchaseOrders.length} purchase order{purchaseOrders.length !== 1 ? 's' : ''}</p>
         <Button onClick={() => { resetPOForm(); setShowModal(true); }} disabled={suppliers.length === 0}>
           <Plus className="w-3.5 h-3.5 mr-1.5" /> Create PO
         </Button>
@@ -485,13 +485,13 @@ function PurchaseOrdersTab({ suppliers }) {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-[var(--text)]">{po.poNumber}</p>
-                    <p className="text-xs text-ink-3">{po.supplier?.name || 'Unknown'} • {po.items?.length || 0} item{po.items?.length !== 1 ? 's' : ''}</p>
+                    <p className="text-xs text-[var(--text-3)]">{po.supplier?.name || 'Unknown'} • {po.items?.length || 0} item{po.items?.length !== 1 ? 's' : ''}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-right">
                     <p className="text-sm font-bold text-[var(--text)]">{fmtUSDC(po.totalCost)}</p>
-                    <p className="text-xs text-ink-3">{new Date(po.createdAt).toLocaleDateString()}</p>
+                    <p className="text-xs text-[var(--text-3)]">{new Date(po.createdAt).toLocaleDateString()}</p>
                   </div>
                   <Tag color={STATUS_COLORS[po.status] || 'gray'}>{po.status}</Tag>
                 </div>
@@ -515,20 +515,20 @@ function PurchaseOrdersTab({ suppliers }) {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-ink-2 mb-1 block">Supplier *</label>
+              <label className="text-xs text-[var(--text-2)] mb-1 block">Supplier *</label>
               <Select value={poForm.supplierId} onChange={e => setPoForm(f => ({ ...f, supplierId: e.target.value }))}>
                 <option value="">Select supplier…</option>
                 {suppliers.filter(s => s.isActive).map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
               </Select>
             </div>
             <div>
-              <label className="text-xs text-ink-2 mb-1 block">Expected Date</label>
+              <label className="text-xs text-[var(--text-2)] mb-1 block">Expected Date</label>
               <Input type="date" value={poForm.expectedDate} onChange={e => setPoForm(f => ({ ...f, expectedDate: e.target.value }))} />
             </div>
           </div>
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs text-ink-2">Line Items</label>
+              <label className="text-xs text-[var(--text-2)]">Line Items</label>
               <Button size="sm" variant="outline" onClick={addItem}><Plus className="w-3 h-3 mr-1" /> Add Item</Button>
             </div>
             <div className="space-y-2">
@@ -538,7 +538,7 @@ function PurchaseOrdersTab({ suppliers }) {
                   <Input value={item.sku} onChange={e => updateItem(idx, 'sku', e.target.value)} placeholder="SKU" className="w-24" />
                   <Input type="number" value={item.quantity} onChange={e => updateItem(idx, 'quantity', e.target.value)} placeholder="Qty" className="w-16" />
                   <Input type="number" step="0.01" value={item.unitCost} onChange={e => updateItem(idx, 'unitCost', e.target.value)} placeholder="Unit cost" className="w-24" />
-                  <span className="text-xs text-ink-2 w-20 text-right">{fmtUSDC((parseFloat(item.quantity) || 0) * (parseFloat(item.unitCost) || 0))}</span>
+                  <span className="text-xs text-[var(--text-2)] w-20 text-right">{fmtUSDC((parseFloat(item.quantity) || 0) * (parseFloat(item.unitCost) || 0))}</span>
                   <Button size="sm" variant="outline" onClick={() => removeItem(idx)} disabled={poForm.items.length === 1}><X className="w-3 h-3" /></Button>
                 </div>
               ))}
@@ -546,7 +546,7 @@ function PurchaseOrdersTab({ suppliers }) {
             <div className="flex justify-end mt-2"><span className="text-sm font-bold text-[var(--text)]">Total: {fmtUSDC(poTotal)}</span></div>
           </div>
           <div>
-            <label className="text-xs text-ink-2 mb-1 block">Notes</label>
+            <label className="text-xs text-[var(--text-2)] mb-1 block">Notes</label>
             <Textarea value={poForm.notes} onChange={e => setPoForm(f => ({ ...f, notes: e.target.value }))} placeholder="Delivery instructions…" rows={2} />
           </div>
           <div className="flex justify-end gap-2 pt-2">
@@ -561,17 +561,17 @@ function PurchaseOrdersTab({ suppliers }) {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-ink-2">Supplier: <span className="text-[var(--text)]">{selectedPO.supplier?.name}</span></p>
-                <p className="text-xs text-ink-3 mt-0.5">Created: {new Date(selectedPO.createdAt).toLocaleString()}</p>
+                <p className="text-sm text-[var(--text-2)]">Supplier: <span className="text-[var(--text)]">{selectedPO.supplier?.name}</span></p>
+                <p className="text-xs text-[var(--text-3)] mt-0.5">Created: {new Date(selectedPO.createdAt).toLocaleString()}</p>
               </div>
               <Tag color={STATUS_COLORS[selectedPO.status] || 'gray'}>{selectedPO.status}</Tag>
             </div>
-            {selectedPO.notes && <div className="bg-surface rounded-lg p-3"><p className="text-xs text-ink-3 mb-1">Notes</p><p className="text-sm text-ink-2">{selectedPO.notes}</p></div>}
+            {selectedPO.notes && <div className="bg-[var(--surface)] rounded-lg p-3"><p className="text-xs text-[var(--text-3)] mb-1">Notes</p><p className="text-sm text-[var(--text-2)]">{selectedPO.notes}</p></div>}
             <div>
-              <p className="text-xs text-ink-2 mb-2">Line Items</p>
+              <p className="text-xs text-[var(--text-2)] mb-2">Line Items</p>
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-xs text-ink-3 border-b border-line">
+                  <tr className="text-left text-xs text-[var(--text-3)] border-b border-line">
                     <th className="py-1.5 pr-2 font-medium">Product</th>
                     <th className="py-1.5 px-2 font-medium">SKU</th>
                     <th className="py-1.5 px-2 font-medium text-right">Qty</th>
@@ -583,16 +583,16 @@ function PurchaseOrdersTab({ suppliers }) {
                   {selectedPO.items?.map(item => (
                     <tr key={item.id} className="border-b border-line/30">
                       <td className="py-1.5 pr-2 text-[var(--text)]">{item.productName}</td>
-                      <td className="py-1.5 px-2 text-ink-2 font-mono text-xs">{item.sku || '—'}</td>
+                      <td className="py-1.5 px-2 text-[var(--text-2)] font-mono text-xs">{item.sku || '—'}</td>
                       <td className="py-1.5 px-2 text-right text-[var(--text)]">{item.quantity}</td>
-                      <td className="py-1.5 px-2 text-right text-ink-2">{fmtUSDC(item.unitCost)}</td>
+                      <td className="py-1.5 px-2 text-right text-[var(--text-2)]">{fmtUSDC(item.unitCost)}</td>
                       <td className="py-1.5 pl-2 text-right text-[var(--text)] font-medium">{fmtUSDC(item.lineTotal)}</td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
                   <tr>
-                    <td colSpan={4} className="py-2 text-right text-xs text-ink-2 font-medium">Total</td>
+                    <td colSpan={4} className="py-2 text-right text-xs text-[var(--text-2)] font-medium">Total</td>
                     <td className="py-2 pl-2 text-right text-[var(--text)] font-bold">{fmtUSDC(selectedPO.totalCost)}</td>
                   </tr>
                 </tfoot>
@@ -645,7 +645,7 @@ function StockCountTab() {
       {!activeCount ? (
         <>
           <div className="flex justify-between items-center">
-            <p className="text-sm text-ink-2">{stockCounts.length} stock count{stockCounts.length !== 1 ? 's' : ''}</p>
+            <p className="text-sm text-[var(--text-2)]">{stockCounts.length} stock count{stockCounts.length !== 1 ? 's' : ''}</p>
             <Button onClick={() => createMut.mutate({})} disabled={createMut.isPending}>
               <Plus className="w-3.5 h-3.5 mr-1.5" /> New Stock Count
             </Button>
@@ -663,18 +663,18 @@ function StockCountTab() {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-[var(--text)]">{sc.countNumber}</p>
-                        <p className="text-xs text-ink-3">{sc.items?.length || 0} items • {new Date(sc.createdAt).toLocaleDateString()}</p>
+                        <p className="text-xs text-[var(--text-3)]">{sc.items?.length || 0} items • {new Date(sc.createdAt).toLocaleDateString()}</p>
                       </div>
                     </div>
                     <Tag color={STATUS_COLORS[sc.status] || 'gray'}>{sc.status}</Tag>
                   </div>
                   {sc.status === 'OPEN' && sc.items && (
                     <div className="mt-2">
-                      <div className="flex items-center gap-2 text-xs text-ink-3">
+                      <div className="flex items-center gap-2 text-xs text-[var(--text-3)]">
                         <Clock className="w-3 h-3" />
                         {sc.items.filter(i => i.countedQty !== null).length} / {sc.items.length} counted
                       </div>
-                      <div className="h-1 bg-surface rounded-full mt-1 overflow-hidden">
+                      <div className="h-1 bg-[var(--surface)] rounded-full mt-1 overflow-hidden">
                         <div className="h-full bg-[var(--accent)] rounded-full transition-all" style={{ width: `${sc.items.length > 0 ? (sc.items.filter(i => i.countedQty !== null).length / sc.items.length * 100) : 0}%` }} />
                       </div>
                     </div>
@@ -700,12 +700,12 @@ function StockCountTab() {
           </div>
           <Card className="p-4">
             {activeCount.items?.length === 0 ? (
-              <p className="text-sm text-ink-3 text-center py-4">No tracked products in this count.</p>
+              <p className="text-sm text-[var(--text-3)] text-center py-4">No tracked products in this count.</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="text-left text-xs text-ink-3 border-b border-line">
+                    <tr className="text-left text-xs text-[var(--text-3)] border-b border-line">
                       <th className="py-2 pr-3 font-medium">#</th>
                       <th className="py-2 px-3 font-medium">Product</th>
                       <th className="py-2 px-3 font-medium text-right">System Qty</th>
@@ -721,9 +721,9 @@ function StockCountTab() {
                         : (item.countedQty !== null && item.countedQty !== undefined ? item.countedQty - item.systemQty : null);
                       return (
                         <tr key={item.id} className="border-b border-line/30">
-                          <td className="py-2 pr-3 text-ink-3 text-xs">{idx + 1}</td>
+                          <td className="py-2 pr-3 text-[var(--text-3)] text-xs">{idx + 1}</td>
                           <td className="py-2 px-3 text-[var(--text)] text-xs font-mono">{item.productId?.slice(0, 8)}…</td>
-                          <td className="py-2 px-3 text-right text-ink-2">{item.systemQty}</td>
+                          <td className="py-2 px-3 text-right text-[var(--text-2)]">{item.systemQty}</td>
                           <td className="py-2 px-3 text-right">
                             {activeCount.status === 'OPEN' ? (
                               <Input type="number" value={countedValues[item.id] ?? item.countedQty ?? ''} onChange={e => handleCount(activeCount.id, item.id, e.target.value)} placeholder="—" className="h-7 w-20 text-right text-xs" />
@@ -731,10 +731,10 @@ function StockCountTab() {
                           </td>
                           <td className="py-2 px-3 text-right">
                             {discrepancy !== null ? (
-                              <span className={`text-xs font-medium ${discrepancy === 0 ? 'text-ink-3' : discrepancy > 0 ? 'text-[var(--go)]' : 'text-[var(--stop)]'}`}>{discrepancy > 0 ? '+' : ''}{discrepancy}</span>
-                            ) : <span className="text-ink-3">—</span>}
+                              <span className={`text-xs font-medium ${discrepancy === 0 ? 'text-[var(--text-3)]' : discrepancy > 0 ? 'text-[var(--go)]' : 'text-[var(--stop)]'}`}>{discrepancy > 0 ? '+' : ''}{discrepancy}</span>
+                            ) : <span className="text-[var(--text-3)]">—</span>}
                           </td>
-                          <td className="py-2 pl-3 text-ink-3 text-xs">{item.notes || ''}</td>
+                          <td className="py-2 pl-3 text-[var(--text-3)] text-xs">{item.notes || ''}</td>
                         </tr>
                       );
                     })}

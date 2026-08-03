@@ -9,7 +9,7 @@ import {
   Ticket, Users, DollarSign, QrCode, MapPin, Package, AlertTriangle,
   CheckCircle2, Clock, Plus, Truck, Scale, Phone, ArrowRight, RefreshCw,
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 const CARGO_STATUS_META = {
   PENDING:     { label: 'Pending',     color: 'var(--hold)',  dot: 'bg-amber-400' },
@@ -61,7 +61,7 @@ export default function TransitManifests() {
     try {
       const res = await transitOpsApi.routes();
       setTrips(res.data?.trips || []);
-    } catch { toast.error('Failed to load trips'); }
+    } catch { toast.stop('Failed to load trips'); }
   };
 
   const loadManifest = async (tripId) => {
@@ -73,7 +73,7 @@ export default function TransitManifests() {
       ]);
       setManifest(manifestRes.data);
       setCargo(cargoRes.data?.parcels || []);
-    } catch { toast.error('Failed to load manifest'); }
+    } catch { toast.stop('Failed to load manifest'); }
   };
 
   const loadVehicles = async () => {
@@ -87,16 +87,16 @@ export default function TransitManifests() {
 
   const handleAddCargo = async () => {
     if (!selectedTrip || !cargoForm.senderName || !cargoForm.receiverName || !cargoForm.description) {
-      toast.error('Fill required fields');
+      toast.stop('Fill required fields');
       return;
     }
     try {
       await cargoApi.create({ ...cargoForm, transitTripId: selectedTrip });
-      toast.success('Cargo parcel added');
+      toast.go('Cargo parcel added');
       setShowCargoModal(false);
       setCargoForm({ senderName: '', senderPhone: '', receiverName: '', receiverPhone: '', receiverAddress: '', description: '', weightKg: '', priceUsdc: '', fragile: false, notes: '' });
       loadManifest(selectedTrip);
-    } catch { toast.error('Failed to add cargo'); }
+    } catch { toast.stop('Failed to add cargo'); }
   };
 
   const advanceCargoStatus = async (parcelId, currentStatus) => {
@@ -105,23 +105,23 @@ export default function TransitManifests() {
     const next = CARGO_STATUS_FLOW[idx + 1];
     try {
       await cargoApi.updateStatus(parcelId, next);
-      toast.success(`Parcel → ${CARGO_STATUS_META[next].label}`);
+      toast.go(`Parcel → ${CARGO_STATUS_META[next].label}`);
       loadManifest(selectedTrip);
-    } catch { toast.error('Failed to update status'); }
+    } catch { toast.stop('Failed to update status'); }
   };
 
   const handleIropsReassign = async () => {
-    if (!iropsVehicle) { toast.error('Select a replacement vehicle'); return; }
+    if (!iropsVehicle) { toast.stop('Select a replacement vehicle'); return; }
     setIropsLoading(true);
     try {
       const res = await cargoApi.reassign({ sourceTripId: selectedTrip, targetVehicleId: iropsVehicle });
-      toast.success(res.data?.message || 'Reassignment complete');
+      toast.go(res.data?.message || 'Reassignment complete');
       setShowIrops(false);
       setIropsVehicle('');
       loadTrips();
       setSelectedTrip(null);
       setManifest(null);
-    } catch { toast.error('Reassignment failed'); }
+    } catch { toast.stop('Reassignment failed'); }
     setIropsLoading(false);
   };
 

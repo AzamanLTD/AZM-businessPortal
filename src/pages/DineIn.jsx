@@ -38,7 +38,7 @@ import {
   Sparkles,
   Users
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 export default function DineIn() {
   const queryClient = useQueryClient();
@@ -111,14 +111,14 @@ export default function DineIn() {
     mutationFn: ({ businessProfileId, customerAzamanId }) =>
       marketplaceApi.openDineInTab(businessProfileId, customerAzamanId),
     onSuccess: () => {
-      toast.success('Dine-In Tab opened successfully');
+      toast.go('Dine-In Tab opened successfully');
       queryClient.invalidateQueries({ queryKey: ['openTabs'] });
       setIsNewTabOpen(false);
       setNewTabCustomer(null);
       setNewTabTableNum('');
     },
     onError: (err) => {
-      toast.error(err.message || 'Failed to open tab');
+      toast.stop(err.message || 'Failed to open tab');
     },
   });
 
@@ -126,14 +126,14 @@ export default function DineIn() {
     mutationFn: ({ tabId, payload }) =>
       marketplaceApi.addDineInItem(tabId, payload),
     onSuccess: () => {
-      toast.success('Item added to tab');
+      toast.go('Item added to tab');
       queryClient.invalidateQueries({ queryKey: ['dineInTab', selectedTabId] });
       queryClient.invalidateQueries({ queryKey: ['openTabs'] });
       setActiveItemConfig(null);
       setItemModifierForm({ notes: '', quantity: 1 });
     },
     onError: (err) => {
-      toast.error(err.message || 'Failed to add item');
+      toast.stop(err.message || 'Failed to add item');
     },
   });
 
@@ -146,11 +146,11 @@ export default function DineIn() {
       });
     },
     onSuccess: () => {
-      toast.success('Order routed & sent to kitchen display successfully!');
+      toast.go('Order routed & sent to kitchen display successfully!');
       queryClient.invalidateQueries({ queryKey: ['dineInTab', selectedTabId] });
     },
     onError: (err) => {
-      toast.error(`KDS dispatch failure: ${err.message}`);
+      toast.stop(`KDS dispatch failure: ${err.message}`);
     },
   });
 
@@ -158,13 +158,13 @@ export default function DineIn() {
     mutationFn: ({ tabId, payload }) =>
       marketplaceApi.finalizeDineInTab(tabId, payload),
     onSuccess: () => {
-      toast.success('Tab moved to BILLING. Finalized summary dispatched.');
+      toast.go('Tab moved to BILLING. Finalized summary dispatched.');
       queryClient.invalidateQueries({ queryKey: ['dineInTab', selectedTabId] });
       queryClient.invalidateQueries({ queryKey: ['openTabs'] });
       setIsBillingOpen(false);
     },
     onError: (err) => {
-      toast.error(err.message || 'Failed to finalize tab');
+      toast.stop(err.message || 'Failed to finalize tab');
     },
   });
 
@@ -172,12 +172,12 @@ export default function DineIn() {
     mutationFn: (tabId) =>
       marketplaceApi.confirmDineInTab(tabId),
     onSuccess: () => {
-      toast.success('Tab paid & closed successfully. Invoice printed!');
+      toast.go('Tab paid & closed successfully. Invoice printed!');
       queryClient.invalidateQueries({ queryKey: ['openTabs'] });
       setSelectedTabId(null);
     },
     onError: (err) => {
-      toast.error(err.message || 'Failed to close tab');
+      toast.stop(err.message || 'Failed to close tab');
     },
   });
 
@@ -189,7 +189,7 @@ export default function DineIn() {
       const res = await marketplaceApi.searchGuest(searchQuery.trim());
       setGuestResults(res?.data || res || []);
     } catch (e) {
-      toast.error('Search failed: ' + e.message);
+      toast.stop('Search failed: ' + e.message);
     } finally {
       setIsSearchingGuests(false);
     }
@@ -197,7 +197,7 @@ export default function DineIn() {
 
   const handleOpenTabSubmit = () => {
     if (!newTabCustomer) {
-      toast.error('Please select or search a guest');
+      toast.stop('Please select or search a guest');
       return;
     }
     openTabMutation.mutate({
@@ -841,7 +841,7 @@ export default function DineIn() {
                       variant="secondary"
                       size="sm"
                       onClick={() => {
-                        toast.success(`Printed split statement for Guest ${split.guestNum}!`, {
+                        toast.go(`Printed split statement for Guest ${split.guestNum}!`, {
                           description: `Amount: GHS ${split.total.toFixed(2)}. Sent copy to table printer.`,
                         });
                       }}
@@ -863,7 +863,7 @@ export default function DineIn() {
                 variant="primary"
                 type="button"
                 onClick={() => {
-                  toast.success('Split billing configuration finalized successfully!');
+                  toast.go('Split billing configuration finalized successfully!');
                   setIsSplitOpen(false);
                 }}
               >

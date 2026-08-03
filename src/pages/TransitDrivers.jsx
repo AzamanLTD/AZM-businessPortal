@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { transitOpsApi } from '@/lib/marketplaceApi';
 import { Card, Button, Tag, Skel, Empty, Dialog, Select, Input } from '@/components/instrument';
 import { Users, Bus, AlertCircle, Clock, CheckCircle2, XCircle, Calendar, Truck } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 const DRIVER_STATUS = {
   ASSIGNED: { label: 'Assigned', color: 'var(--text-3)' },
@@ -35,7 +35,7 @@ export default function TransitDrivers() {
       ]);
       setAssignments(assignRes.data?.drivers || assignRes.data || []);
       setCalendar(calRes.data?.days || calRes.data || []);
-    } catch { toast.error('Failed to load driver data'); setAssignments([]); }
+    } catch { toast.stop('Failed to load driver data'); setAssignments([]); }
   };
 
   const loadVehicles = async () => {
@@ -50,20 +50,20 @@ export default function TransitDrivers() {
   const handleStatusUpdate = async (id, status) => {
     try {
       await transitOpsApi.updateDriverStatus(id, status);
-      toast.success('Driver status updated');
+      toast.go('Driver status updated');
       load();
-    } catch { toast.error('Failed to update status'); }
+    } catch { toast.stop('Failed to update status'); }
   };
 
   const handleIropsReassign = async () => {
     try {
       const res = await transitOpsApi.iropsReassign(iropsForm);
       const data = res.data || res;
-      toast.success('Reassigned ' + (data.passengerCount || 0) + ' passengers and ' + (data.cargoCount || 0) + ' cargo items');
+      toast.go('Reassigned ' + (data.passengerCount || 0) + ' passengers and ' + (data.cargoCount || 0) + ' cargo items');
       setIropsOpen(false);
       setIropsForm({ sourceTripId: '', targetVehicleId: '' });
       load();
-    } catch { toast.error('Failed to reassign'); }
+    } catch { toast.stop('Failed to reassign'); }
   };
 
   // Group assignments by driver

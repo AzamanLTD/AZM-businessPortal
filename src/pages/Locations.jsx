@@ -4,7 +4,7 @@ import { locations as locApi, businessOS } from '@/lib/api';
 import { uploadImageToCloudinary, isCloudinaryConfigured, validateImageFile } from '@/lib/cloudinary';
 import { Card, Button, Input, Tag, Empty, Skel, Dialog } from '@/components/instrument';
 import { MapPin, Plus, Pencil, Trash2, Clock, ChevronDown, ChevronUp, Image, CalendarDays, X } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 const DAYS = ["mon","tue","wed","thu","fri","sat","sun"];
 const DAY_LABELS = { mon:"Monday", tue:"Tuesday", wed:"Wednesday", thu:"Thursday", fri:"Friday", sat:"Saturday", sun:"Sunday" };
@@ -61,31 +61,31 @@ export default function Locations() {
 
   const createMut = useMutation({
     mutationFn: (d) => locApi.create(d),
-    onSuccess: () => { toast.success('Location added'); invalidate(); setModal(null); },
-    onError:   (e) => toast.error(e.message),
+    onSuccess: () => { toast.go('Location added'); invalidate(); setModal(null); },
+    onError:   (e) => toast.stop(e.message),
   });
 
   const updateMut = useMutation({
     mutationFn: ({ id, data: d }) => locApi.update(id, d),
-    onSuccess: () => { toast.success('Location updated'); invalidate(); setModal(null); },
-    onError:   (e) => toast.error(e.message),
+    onSuccess: () => { toast.go('Location updated'); invalidate(); setModal(null); },
+    onError:   (e) => toast.stop(e.message),
   });
 
   const deleteMut = useMutation({
     mutationFn: (id) => locApi.remove(id),
-    onSuccess: () => { toast.success('Location deactivated'); invalidate(); },
-    onError:   (e) => toast.error(e.message),
+    onSuccess: () => { toast.go('Location deactivated'); invalidate(); },
+    onError:   (e) => toast.stop(e.message),
   });
 
   const createTableMut = useMutation({
     mutationFn: ({ locId, label }) => locApi.createTable(locId, label),
     onSuccess: (_, { locId }) => {
-      toast.success('Table added');
+      toast.go('Table added');
       setNewTableLabel(s => ({ ...s, [locId]: '' }));
       qc.invalidateQueries({ queryKey: ['biz-location-tables', locId] });
       invalidate(); // refresh the table-count shown on the card
     },
-    onError:   (e) => toast.error(e.message),
+    onError:   (e) => toast.stop(e.message),
   });
 
   const openCreate = () => { setForm(BLANK_LOC); setHours(BLANK_HOURS); setModal("create"); };
@@ -96,22 +96,22 @@ export default function Locations() {
     const file = e.target.files?.[0];
     e.target.value = ''; // allow re-selecting the same file
     if (!file) return;
-    const err = validateImageFile(file); if (err) { toast.error(err); return; }
-    if (form.galleryUrls.length >= 10) { toast.error("Max 10 gallery images."); return; }
+    const err = validateImageFile(file); if (err) { toast.stop(err); return; }
+    if (form.galleryUrls.length >= 10) { toast.stop("Max 10 gallery images."); return; }
     setUploading(true);
     try {
       const url = await uploadImageToCloudinary(file, "azaman-locations");
       setForm(f => ({ ...f, galleryUrls: [...f.galleryUrls, url] }));
-      toast.success('Image uploaded');
-    } catch (err) { toast.error(err.message); }
+      toast.go('Image uploaded');
+    } catch (err) { toast.stop(err.message); }
     finally { setUploading(false); }
   };
 
   const handleSubmit = () => {
-    if (!form.label.trim()) { toast.error("Branch name required."); return; }
-    if (!form.address.trim()) { toast.error("Address required."); return; }
+    if (!form.label.trim()) { toast.stop("Branch name required."); return; }
+    if (!form.address.trim()) { toast.stop("Address required."); return; }
     const lat = parseFloat(form.latitude); const lng = parseFloat(form.longitude);
-    if (isNaN(lat) || isNaN(lng)) { toast.error("Valid latitude and longitude are required."); return; }
+    if (isNaN(lat) || isNaN(lng)) { toast.stop("Valid latitude and longitude are required."); return; }
     const payload = {
       label: form.label, address: form.address, city: form.city, region: form.region,
       country: form.country, phoneNumber: form.phoneNumber, galleryUrls: form.galleryUrls,
@@ -247,21 +247,21 @@ function HolidayHours({ locId }) {
   const addMut = useMutation({
     mutationFn: (data) => businessOS.addHoursException(locId, data),
     onSuccess: () => {
-      toast.success('Exception added');
+      toast.go('Exception added');
       qc.invalidateQueries(['hours-exceptions', locId]);
       setNewExc({ date: '', isClosed: false, openTime: '09:00', closeTime: '17:00', note: '' });
       setShowForm(false);
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => toast.stop(e.message),
   });
 
   const delMut = useMutation({
     mutationFn: (excId) => businessOS.deleteHoursException(locId, excId),
     onSuccess: () => {
-      toast.success('Exception removed');
+      toast.go('Exception removed');
       qc.invalidateQueries(['hours-exceptions', locId]);
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => toast.stop(e.message),
   });
 
   return (
@@ -349,7 +349,7 @@ function HolidayHours({ locId }) {
           <Button
             size="sm"
             onClick={() => {
-              if (!newExc.date) { toast.error('Date is required'); return; }
+              if (!newExc.date) { toast.stop('Date is required'); return; }
               addMut.mutate(newExc);
             }}
             className="w-full"
@@ -377,18 +377,18 @@ function LocationCard({ loc, onEdit, onDelete, expandedTables, setExpandedTables
   const deleteTableMut = useMutation({
     mutationFn: (tableId) => locApi.deleteTable(tableId),
     onSuccess: () => {
-      toast.success('Table removed');
+      toast.go('Table removed');
       qc.invalidateQueries({ queryKey: ['biz-location-tables', loc.id] });
       qc.invalidateQueries({ queryKey: ['biz-locations'] });
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => toast.stop(e.message),
   });
 
   const toggle = () => setExpandedTables(s => ({ ...s, [loc.id]: !s[loc.id] }));
 
   const submitTable = () => {
     const label = (newTableLabel[loc.id] || '').trim();
-    if (!label) { toast.error('Table label required.'); return; }
+    if (!label) { toast.stop('Table label required.'); return; }
     createTableMut.mutate({ locId: loc.id, label });
   };
 

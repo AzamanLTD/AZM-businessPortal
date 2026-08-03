@@ -9,7 +9,7 @@ import {
   Bell, CheckCheck, ShoppingBag, Wallet, AlertTriangle,
   CheckCircle2, XCircle, RotateCcw, ShieldCheck, CalendarCheck, Clock, Check, HelpCircle
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 const FILTER_CHIPS = [
   { key: 'ALL', label: 'All' },
@@ -73,10 +73,10 @@ export default function Notifications() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['biz-notifications'] });
       qc.invalidateQueries({ queryKey: ['biz-notifications-unread-count'] });
-      toast.success('Notification marked as read');
+      toast.go('Notification marked as read');
     },
     onError: () => {
-      toast.error('Failed to mark read');
+      toast.stop('Failed to mark read');
     }
   });
 
@@ -86,10 +86,10 @@ export default function Notifications() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['biz-notifications'] });
       qc.invalidateQueries({ queryKey: ['biz-notifications-unread-count'] });
-      toast.success('All notifications marked as read');
+      toast.go('All notifications marked as read');
     },
     onError: () => {
-      toast.error('Failed to mark all read');
+      toast.stop('Failed to mark all read');
     }
   });
 

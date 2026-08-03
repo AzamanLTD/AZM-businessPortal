@@ -38,7 +38,7 @@ import {
   Receipt, Plus, Search, X, Trash2, Eye, Send, Ban, Mail,
   User, MapPin, Star, AlertCircle, Loader2, ChevronDown, ChevronUp, Check, Repeat, RefreshCw, CalendarClock
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 // ── Invoice status display config ───────────────────────────────────────────
 const INVOICE_STATUS_META = {
@@ -86,26 +86,26 @@ export default function Invoices() {
   const sendMut = useMutation({
     mutationFn: (id) => invoicesApi.send(id),
     onSuccess: () => {
-      toast.success('The invoice has been locked and sent to the customer.');
+      toast.go('The invoice has been locked and sent to the customer.');
   const emailMut = useMutation({
     mutationFn: ({ id, email }) => invoicesApi.email(id, email),
-    onSuccess: (data) => toast.success(data.message || 'Invoice sent successfully.'),
-    onError: (e) => toast.error(`Error Emailing: ${e.message}`),
+    onSuccess: (data) => toast.go(data.message || 'Invoice sent successfully.'),
+    onError: (e) => toast.stop(`Error Emailing: ${e.message}`),
   });
       invalidate();
     },
-    onError: (e) => toast.error(`Error Sending: ${e.message}`),
+    onError: (e) => toast.stop(`Error Sending: ${e.message}`),
   });
 
   const voidMut = useMutation({
     mutationFn: ({ id, reason }) => invoicesApi.void(id, { reason }),
     onSuccess: () => {
-      toast.success('The invoice is now cancelled.');
+      toast.go('The invoice is now cancelled.');
       setShowVoidReason(null);
       setVoidReason('');
       invalidate();
     },
-    onError: (e) => toast.error(`Error Voiding: ${e.message}`),
+    onError: (e) => toast.stop(`Error Voiding: ${e.message}`),
   });
 
   // Bulk mutations
@@ -123,7 +123,7 @@ export default function Invoices() {
         console.error(err);
       }
     }
-    toast.success(`Successfully sent ${successCount} of ${drafts.length} draft invoices.`);
+    toast.go(`Successfully sent ${successCount} of ${drafts.length} draft invoices.`);
     setSelectedIds([]);
     invalidate();
     setIsBulkProcessing(false);
@@ -143,7 +143,7 @@ export default function Invoices() {
         console.error(err);
       }
     }
-    toast.success(`Successfully voided ${successCount} of ${sents.length} sent invoices.`);
+    toast.go(`Successfully voided ${successCount} of ${sents.length} sent invoices.`);
     setSelectedIds([]);
     invalidate();
     setIsBulkProcessing(false);
@@ -518,13 +518,13 @@ function CustomerLookup({ customer, onSelect, onClear }) {
   const lookupMut = useMutation({
     mutationFn: (id) => invoicesApi.lookupCustomer(id),
     onSuccess: (res) => onSelect(res.customer),
-    onError: () => toast.error('No user found with that AZM ID.'),
+    onError: () => toast.stop('No user found with that AZM ID.'),
   });
 
   const submit = () => {
     const id = azamanId.trim();
     if (!id.toUpperCase().startsWith('AZM-')) {
-      toast.error('Enter a valid AZM ID (e.g. AZM-00123456).');
+      toast.stop('Enter a valid AZM ID (e.g. AZM-00123456).');
       return;
     }
     lookupMut.mutate(id);
@@ -598,19 +598,19 @@ function CreateInvoiceModal({ onClose, onCreated }) {
   const createMut = useMutation({
     mutationFn: (payload) => invoicesApi.create(payload),
     onSuccess: (res) => {
-      toast.success('Draft saved successfully.');
+      toast.go('Draft saved successfully.');
       onCreated(res.invoice);
     },
-    onError: (e) => toast.error(`Error: ${e.message}`),
+    onError: (e) => toast.stop(`Error: ${e.message}`),
   });
 
   const sendMut = useMutation({
     mutationFn: (id) => invoicesApi.send(id),
     onSuccess: (res) => {
-      toast.success('Invoice successfully drafted and sent to customer.');
+      toast.go('Invoice successfully drafted and sent to customer.');
       onCreated(res.invoice);
     },
-    onError: (e) => toast.error(`Error Sending: ${e.message}`),
+    onError: (e) => toast.stop(`Error Sending: ${e.message}`),
   });
 
   // Line item helpers
@@ -646,7 +646,7 @@ function CreateInvoiceModal({ onClose, onCreated }) {
 
   const preparePayload = () => {
     if (!customer) {
-      toast.error('Find a customer first.');
+      toast.stop('Find a customer first.');
       return null;
     }
     const cleanLines = lineItems
@@ -657,7 +657,7 @@ function CreateInvoiceModal({ onClose, onCreated }) {
       }))
       .filter(it => it.description && !isNaN(it.unitPrice) && it.unitPrice >= 0);
     if (cleanLines.length === 0) {
-      toast.error('Add at least one valid line item (description + price).');
+      toast.stop('Add at least one valid line item (description + price).');
       return null;
     }
 
@@ -667,11 +667,11 @@ function CreateInvoiceModal({ onClose, onCreated }) {
       const value = parseFloat(t.value);
       if (!name && isNaN(value)) continue; // skip fully-empty rows
       if (!name) {
-        toast.error('Every tax line needs a name.');
+        toast.stop('Every tax line needs a name.');
         return null;
       }
       if (isNaN(value) || value < 0) {
-        toast.error(`Invalid value for tax "${name}".`);
+        toast.stop(`Invalid value for tax "${name}".`);
         return null;
       }
       cleanTaxes.push({ name, type: t.type === 'FLAT' ? 'FLAT' : 'PERCENTAGE', value });
@@ -699,7 +699,7 @@ function CreateInvoiceModal({ onClose, onCreated }) {
       const res = await invoicesApi.create(payload);
       sendMut.mutate(res.invoice.id);
     } catch (err) {
-      toast.error(`Error Creating: ${err.message}`);
+      toast.stop(`Error Creating: ${err.message}`);
     }
   };
 
@@ -1052,30 +1052,30 @@ function TaxPresetsSection() {
   const createMut = useMutation({
     mutationFn: (data) => bookingOpsApi.createTaxPreset(data),
     onSuccess: () => {
-      toast.success('Saved successfully.');
+      toast.go('Saved successfully.');
       resetForm();
       invalidate();
     },
-    onError: (e) => toast.error(`Error: ${e.message}`),
+    onError: (e) => toast.stop(`Error: ${e.message}`),
   });
 
   const updateMut = useMutation({
     mutationFn: ({ id, data }) => bookingOpsApi.updateTaxPreset(id, data),
     onSuccess: () => {
-      toast.success('Changes saved.');
+      toast.go('Changes saved.');
       resetForm();
       invalidate();
     },
-    onError: (e) => toast.error(`Error: ${e.message}`),
+    onError: (e) => toast.stop(`Error: ${e.message}`),
   });
 
   const deleteMut = useMutation({
     mutationFn: (id) => bookingOpsApi.deleteTaxPreset(id),
     onSuccess: () => {
-      toast.success('Tax preset deleted.');
+      toast.go('Tax preset deleted.');
       invalidate();
     },
-    onError: (e) => toast.error(`Error: ${e.message}`),
+    onError: (e) => toast.stop(`Error: ${e.message}`),
   });
 
   const resetForm = () => {
@@ -1098,12 +1098,12 @@ function TaxPresetsSection() {
 
   const handleSave = () => {
     if (!name.trim()) {
-      toast.error('Name is required.');
+      toast.stop('Name is required.');
       return;
     }
     const val = parseFloat(value);
     if (isNaN(val) || val < 0) {
-      toast.error('Enter a valid positive number.');
+      toast.stop('Enter a valid positive number.');
       return;
     }
 
@@ -1233,20 +1233,20 @@ function RecurringPanel() {
 
   const enableMut = useMutation({
     mutationFn: ({ invoiceId, interval }) => bookingOpsApi.enableRecurring(invoiceId, interval),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['recurring-invoices'] }); qc.invalidateQueries({ queryKey: ['biz-invoices'] }); toast.success('Recurring invoice enabled'); },
-    onError: (e) => toast.error(e.message || 'Failed to enable recurring'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['recurring-invoices'] }); qc.invalidateQueries({ queryKey: ['biz-invoices'] }); toast.go('Recurring invoice enabled'); },
+    onError: (e) => toast.stop(e.message || 'Failed to enable recurring'),
   });
 
   const disableMut = useMutation({
     mutationFn: (invoiceId) => bookingOpsApi.disableRecurring(invoiceId),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['recurring-invoices'] }); qc.invalidateQueries({ queryKey: ['biz-invoices'] }); toast.success('Recurring disabled'); },
-    onError: (e) => toast.error(e.message || 'Failed to disable recurring'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['recurring-invoices'] }); qc.invalidateQueries({ queryKey: ['biz-invoices'] }); toast.go('Recurring disabled'); },
+    onError: (e) => toast.stop(e.message || 'Failed to disable recurring'),
   });
 
   const processMut = useMutation({
     mutationFn: () => bookingOpsApi.processRecurring(),
-    onSuccess: (data) => { qc.invalidateQueries({ queryKey: ['biz-invoices'] }); toast.success(data.generated ? `Generated ${data.generated} new invoice(s)` : 'No recurring invoices due'); },
-    onError: (e) => toast.error(e.message || 'Failed to process recurring'),
+    onSuccess: (data) => { qc.invalidateQueries({ queryKey: ['biz-invoices'] }); toast.go(data.generated ? `Generated ${data.generated} new invoice(s)` : 'No recurring invoices due'); },
+    onError: (e) => toast.stop(e.message || 'Failed to process recurring'),
   });
 
   const recurring = recurringData?.invoices || [];

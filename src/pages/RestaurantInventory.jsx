@@ -36,7 +36,7 @@ import {
   Check,
   X
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 // Custom Stocks level bar
 function StockBar({ current, minimum }) {
@@ -121,25 +121,25 @@ export default function RestaurantInventory() {
   const createMutation = useMutation({
     mutationFn: (data) => inventoryApi.create(data),
     onSuccess: () => {
-      toast.success('Inventory item created successfully');
+      toast.go('Inventory item created successfully');
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
       setIsCreateOpen(false);
       resetForm();
     },
     onError: (err) => {
-      toast.error(err.message || 'Failed to create item');
+      toast.stop(err.message || 'Failed to create item');
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => inventoryApi.update(id, data),
     onSuccess: () => {
-      toast.success('Inventory item updated successfully');
+      toast.go('Inventory item updated successfully');
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
       setEditingItem(null);
     },
     onError: (err) => {
-      toast.error(err.message || 'Failed to update item');
+      toast.stop(err.message || 'Failed to update item');
     },
   });
 
@@ -149,7 +149,7 @@ export default function RestaurantInventory() {
       const updatedItem = inventoryData?.find(i => i.id === variables.id);
       const name = updatedItem?.name || 'Item';
       const unit = updatedItem?.unit || '';
-      toast.success(`Restocked ${variables.qty} ${unit} of ${name}`, {
+      toast.go(`Restocked ${variables.qty} ${unit} of ${name}`, {
         description: `Current Stock updated. Log summary: Restock of ${variables.qty} completed.`,
       });
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
@@ -157,30 +157,30 @@ export default function RestaurantInventory() {
       setRestockQty('');
     },
     onError: (err) => {
-      toast.error(err.message || 'Failed to restock item');
+      toast.stop(err.message || 'Failed to restock item');
     },
   });
 
   const linkMutation = useMutation({
     mutationFn: ({ productId, data }) => inventoryApi.linkIngredient(productId, data),
     onSuccess: () => {
-      toast.success('Ingredient linked to recipe');
+      toast.go('Ingredient linked to recipe');
       queryClient.invalidateQueries({ queryKey: ['recipes'] });
       setLinkForm({ inventoryItemId: '', quantityRequired: '' });
     },
     onError: (err) => {
-      toast.error(err.message || 'Failed to link ingredient');
+      toast.stop(err.message || 'Failed to link ingredient');
     },
   });
 
   const unlinkMutation = useMutation({
     mutationFn: ({ productId, itemId }) => inventoryApi.unlinkIngredient(productId, itemId),
     onSuccess: () => {
-      toast.success('Ingredient unlinked from recipe');
+      toast.go('Ingredient unlinked from recipe');
       queryClient.invalidateQueries({ queryKey: ['recipes'] });
     },
     onError: (err) => {
-      toast.error(err.message || 'Failed to unlink ingredient');
+      toast.stop(err.message || 'Failed to unlink ingredient');
     },
   });
 
@@ -188,13 +188,13 @@ export default function RestaurantInventory() {
   const deductMutation = useMutation({
     mutationFn: (orderId) => inventoryApi.deductForOrder(orderId),
     onSuccess: (res) => {
-      toast.success(`Inventory deducted for order successfully!`, {
+      toast.go(`Inventory deducted for order successfully!`, {
         description: 'Auto-deduction completed. Checked all recipe requirements against real-time stock levels.',
       });
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
     },
     onError: (err) => {
-      toast.error(`Auto-deduction warning: ${err.message}`);
+      toast.stop(`Auto-deduction warning: ${err.message}`);
     },
   });
 
@@ -206,7 +206,7 @@ export default function RestaurantInventory() {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
     },
     onError: (err) => {
-      toast.error(`Failed to 86 item: ${err.message}`);
+      toast.stop(`Failed to 86 item: ${err.message}`);
     },
   });
 
@@ -225,7 +225,7 @@ export default function RestaurantInventory() {
   const handleCreateSubmit = (e) => {
     e.preventDefault();
     if (!form.name || !form.unit || form.currentStock === '' || form.costPerUnit === '') {
-      toast.error('Please fill in all required fields');
+      toast.stop('Please fill in all required fields');
       return;
     }
     createMutation.mutate({
@@ -239,7 +239,7 @@ export default function RestaurantInventory() {
   const handleEditSubmit = (e) => {
     e.preventDefault();
     if (!editingItem.name || !editingItem.unit || editingItem.currentStock === '' || editingItem.costPerUnit === '') {
-      toast.error('Please fill in all required fields');
+      toast.stop('Please fill in all required fields');
       return;
     }
     updateMutation.mutate({
@@ -259,7 +259,7 @@ export default function RestaurantInventory() {
   const handleRestockSubmit = (e) => {
     e.preventDefault();
     if (!restockQty || parseFloat(restockQty) <= 0) {
-      toast.error('Please enter a valid quantity');
+      toast.stop('Please enter a valid quantity');
       return;
     }
     restockMutation.mutate({ id: restockItem.id, qty: restockQty });
@@ -267,7 +267,7 @@ export default function RestaurantInventory() {
 
   const handleLinkSubmit = (productId) => {
     if (!linkForm.inventoryItemId || !linkForm.quantityRequired || parseFloat(linkForm.quantityRequired) <= 0) {
-      toast.error('Please select an ingredient and enter a valid quantity');
+      toast.stop('Please select an ingredient and enter a valid quantity');
       return;
     }
     linkMutation.mutate({

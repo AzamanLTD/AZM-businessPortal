@@ -4,7 +4,7 @@ import { business as businessApi } from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
 import { Button, Input, Textarea, Select } from '@/components/instrument';
 import { Store, ArrowRight, AlertCircle } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 const CATEGORIES = [
   { value: '',                   label: 'Select your business type...' },
@@ -42,7 +42,7 @@ export default function Onboarding() {
   const createMutation = useMutation({
     mutationFn: (data) => businessApi.register(data),
     onSuccess: () => {
-      toast.success('Business profile created!');
+      toast.go('Business profile created!');
       refreshProfile();
     },
     onError: (e) => setError(e.message),
