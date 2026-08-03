@@ -52,6 +52,16 @@ function fmtDate(d) {
   return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+function EmptyState({ icon: Icon, title, description }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 space-y-3">
+      {Icon && <Icon className="w-10 h-10 text-[var(--text-3)]" />}
+      <div className="text-sm font-medium text-[var(--text-2)]">{title}</div>
+      {description && <div className="text-xs text-[var(--text-3)] max-w-xs">{description}</div>}
+    </div>
+  );
+}
+
 // ── Main Component ─────────────────────────────────────────────────────────
 export default function Finance() {
   const { hasPermission } = usePermission();
