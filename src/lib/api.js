@@ -9,14 +9,14 @@ export { request };
 
 export const auth = {
   login: async (email, password) => {
-    const data = await request('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
-    if (!data.refreshToken) throw new Error('Login failed — server did not return a refresh session.');
-    const session = await request('/api/auth/business-session', {
+    const session = await request('/api/auth/business-session/login', {
       method: 'POST',
-      body: JSON.stringify({ refreshToken: data.refreshToken }),
+      headers: { 'x-auth-client': 'business-portal' },
+      body: JSON.stringify({ email, password }),
     });
+    if (!session.accessToken) throw new Error('Login failed — server did not return an access session.');
     setAccessToken(session.accessToken);
-    return { ...data, accessToken: session.accessToken, user: session.user || data.user };
+    return session;
   },
   restore: restoreBusinessSession,
   logout: logoutBusinessSession,
