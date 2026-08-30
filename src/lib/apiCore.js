@@ -53,13 +53,17 @@ export async function request(path, options = {}) {
   const isSessionCall = path.startsWith('/api/auth/business-session');
 
   async function send(token) {
+    // Preserve caller headers for non-security concerns, but make authentication
+    // and business selection authoritative. A caller must not be able to
+    // accidentally replace the live JWT or selected business context.
+    const headers = new Headers(options.headers || {});
+    headers.set('Content-Type', 'application/json');
+    if (token) headers.set('Authorization', `Bearer ${token}`);
+    else headers.delete('Authorization');
     const adminBizId = localStorage.getItem('admin_selected_biz');
-    const headers = {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(adminBizId ? { 'x-admin-business-id': adminBizId } : {}),
-      ...(options.headers || {}),
-    };
+    if (adminBizId) headers.set('x-admin-business-id', adminBizId);
+    else headers.delete('x-admin-business-id');
+
     return fetchWithTimeout(`${BASE_URL}${path}`, {
       ...options,
       credentials: 'include',
