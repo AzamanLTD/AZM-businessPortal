@@ -5,24 +5,24 @@
  */
 
 const BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://azm-backend.onrender.com' : 'http://localhost:3000');
+const REQUEST_TIMEOUT_MS = 30_000;
 let accessToken = null;
 let refreshPromise = null;
 
-export function setAccessToken(token) {
-  accessToken = token || null;
-}
+export function setAccessToken(token) { accessToken = token || null; }
+export function getAccessToken() { return accessToken; }
+export function clearAccessToken() { accessToken = null; }
 
-export function getAccessToken() {
-  return accessToken;
-}
-
-export function clearAccessToken() {
-  accessToken = null;
+async function fetchWithTimeout(url, options) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try { return await fetch(url, { ...options, signal: controller.signal }); }
+  finally { clearTimeout(timer); }
 }
 
 async function refreshSession() {
   if (!refreshPromise) {
-    refreshPromise = fetch(`${BASE_URL}/api/auth/business-session`, {
+    refreshPromise = fetchWithTimeout(`${BASE_URL}/api/auth/business-session`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -38,20 +38,14 @@ async function refreshSession() {
   return refreshPromise;
 }
 
-export async function restoreBusinessSession() {
-  return refreshSession();
-}
+export function restoreBusinessSession() { return refreshSession(); }
 
 export async function logoutBusinessSession() {
   try {
-    await fetch(`${BASE_URL}/api/auth/business-session/logout`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
+    await fetchWithTimeout(`${BASE_URL}/api/auth/business-session/logout`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
     });
-  } finally {
-    clearAccessToken();
-  }
+  } finally { clearAccessToken(); }
 }
 
 export async function request(path, options = {}) {
@@ -59,36 +53,27 @@ export async function request(path, options = {}) {
   const isSessionCall = path.startsWith('/api/auth/business-session');
 
   async function send(token) {
-    return fetch(`${BASE_URL}${path}`, {
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...(() => {
-          const adminBizId = localStorage.getItem('admin_selected_biz');
-          return adminBizId ? { 'x-admin-business-id': adminBizId } : {};
-        })(),
-        ...options.headers,
-      },
+    const adminBizId = localStorage.getItem('admin_selected_biz');
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(adminBizId ? { 'x-admin-business-id': adminBizId } : {}),
+      ...(options.headers || {}),
+    };
+    return fetchWithTimeout(`${BASE_URL}${path}`, {
       ...options,
+      credentials: 'include',
+      headers,
     });
   }
 
   let res = await send(accessToken);
-
-  // A short-lived access token is expected to expire. Rotate the HttpOnly
-  // refresh cookie once, then replay the original request exactly once.
   if (res.status === 401 && !isLoginCall && !isSessionCall && accessToken) {
-    try {
-      await refreshSession();
-      res = await send(accessToken);
-    } catch {
-      clearAccessToken();
-    }
+    try { await refreshSession(); res = await send(accessToken); }
+    catch { clearAccessToken(); }
   }
 
   const data = await res.json().catch(() => ({ message: res.statusText }));
-
   if (!res.ok) {
     const msg = data.message || data.error || 'Request failed';
     if (res.status === 401 && !isLoginCall && !isSessionCall) {
@@ -99,13 +84,9 @@ export async function request(path, options = {}) {
     }
     const err = new Error(msg);
     if (res.status === 402) {
-      err.statusCode = 402;
-      err.violations = data.violations;
-      err.tier = data.tier;
-      err.stakedBalance = data.stakedBalance;
+      err.statusCode = 402; err.violations = data.violations; err.tier = data.tier; err.stakedBalance = data.stakedBalance;
     }
     throw err;
   }
-
   return data;
 }
