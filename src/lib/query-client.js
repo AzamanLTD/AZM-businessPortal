@@ -14,10 +14,15 @@ export const queryClient = new QueryClient({
   },
 });
 
-// Auth restoration creates the socket asynchronously, after this module may
-// already have loaded. Poll briefly for that singleton and bind exactly once.
+// Auth restoration can create the socket after this module loads. Keep the
+// short bootstrap window, but expose an explicit hook for later login/logout
+// cycles where SocketService creates a new singleton instance.
+export function ensureRealtimeQueryBridge() {
+  return installRealtimeQueryBridge(queryClient);
+}
+
 const bridgeBootstrap = setInterval(() => {
-  if (installRealtimeQueryBridge(queryClient)) {
+  if (ensureRealtimeQueryBridge()) {
     clearInterval(bridgeBootstrap);
   }
 }, 100);
