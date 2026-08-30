@@ -42,26 +42,29 @@ export const storefrontApi = {
       body: JSON.stringify({ layoutJson, themeId, ...(expectedUpdatedAt ? { expectedUpdatedAt } : {}) }),
     }),
 
-  /** Publish the draft */
-  publish: () =>
-    sfRequest(`${BASE}/me/publish`, { method: 'POST' }),
+  /** Publish the draft using the snapshot the editor last observed. */
+  publish: (expectedUpdatedAt) =>
+    sfRequest(`${BASE}/me/publish`, {
+      method: 'POST',
+      body: JSON.stringify(expectedUpdatedAt ? { expectedUpdatedAt } : {}),
+    }),
 
   /** Get version history */
   getHistory: (limit) =>
     sfRequest(`${BASE}/me/history${limit ? `?limit=${limit}` : ''}`),
 
-  /** Revert draft to a previous version */
-  revertToVersion: (versionId) =>
+  /** Revert draft to a previous version while protecting the current snapshot. */
+  revertToVersion: (versionId, expectedUpdatedAt) =>
     sfRequest(`${BASE}/me/revert`, {
       method: 'POST',
-      body: JSON.stringify({ versionId }),
+      body: JSON.stringify({ versionId, ...(expectedUpdatedAt ? { expectedUpdatedAt } : {}) }),
     }),
 
-  /** Apply a template to the draft */
-  applyTemplate: (templateId) =>
+  /** Apply a template while protecting the current draft snapshot. */
+  applyTemplate: (templateId, expectedUpdatedAt) =>
     sfRequest(`${BASE}/me/apply-template`, {
       method: 'POST',
-      body: JSON.stringify({ templateId }),
+      body: JSON.stringify({ templateId, ...(expectedUpdatedAt ? { expectedUpdatedAt } : {}) }),
     }),
 
   /** Check AZM staking eligibility / tier */
