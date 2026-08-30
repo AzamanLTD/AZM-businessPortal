@@ -8,10 +8,10 @@
  * This module is deliberately singleton-per-socket: reconnects replace the
  * listener set instead of accumulating duplicate handlers.
  */
-import { queryClient } from './query-client';
 import { getSocket } from './socket';
 
 let boundSocket = null;
+let boundQueryClient = null;
 let handlers = [];
 
 function asObject(value) {
@@ -23,7 +23,7 @@ function orderIdFrom(payload) {
   return data.orderId ?? data.order_id ?? data.order?.id ?? data.id ?? null;
 }
 
-function invalidateOrder(orderId) {
+function invalidateOrder(queryClient, orderId) {
   if (orderId != null && String(orderId).length > 0) {
     queryClient.invalidateQueries({ queryKey: ['order', String(orderId)] });
     queryClient.invalidateQueries({ queryKey: ['order', orderId] });
@@ -32,13 +32,13 @@ function invalidateOrder(orderId) {
   queryClient.invalidateQueries({ queryKey: ['orders-stats'] });
 }
 
-function invalidateNotifications() {
+function invalidateNotifications(queryClient) {
   queryClient.invalidateQueries({ queryKey: ['business-notifications'] });
   queryClient.invalidateQueries({ queryKey: ['notifications'] });
   queryClient.invalidateQueries({ queryKey: ['business-notifications-unread'] });
 }
 
-function invalidateEvent(event, payload) {
+function invalidateEvent(queryClient, event, payload) {
   const orderEvents = new Set(['order_location', 'order_status', 'order_eta', 'business_order_delivered']);
   const escrowEvents = new Set([
     'escrow_funded',
@@ -50,22 +50,23 @@ function invalidateEvent(event, payload) {
   ]);
 
   if (orderEvents.has(event) || escrowEvents.has(event)) {
-    invalidateOrder(orderIdFrom(payload));
+    invalidateOrder(queryClient, orderIdFrom(payload));
   }
 
   if (event === 'biz_notification' || event === 'biz_notifications_updated' || event === 'new_notification' || event === 'notifications_updated') {
-    invalidateNotifications();
+    invalidateNotifications(queryClient);
   }
 }
 
-export function installRealtimeQueryBridge() {
+export function installRealtimeQueryBridge(queryClient) {
   const socket = getSocket();
-  if (!socket) return () => {};
+  if (!socket || !queryClient) return false;
 
-  if (boundSocket === socket) return () => uninstallRealtimeQueryBridge(socket);
+  if (boundSocket === socket && boundQueryClient === queryClient) return true;
 
   uninstallRealtimeQueryBridge(boundSocket);
   boundSocket = socket;
+  boundQueryClient = queryClient;
 
   const events = [
     'order_location',
@@ -85,12 +86,12 @@ export function installRealtimeQueryBridge() {
   ];
 
   handlers = events.map((event) => {
-    const handler = (payload) => invalidateEvent(event, payload);
+    const handler = (payload) => invalidateEvent(queryClient, event, payload);
     socket.on(event, handler);
     return [event, handler];
   });
 
-  return () => uninstallRealtimeQueryBridge(socket);
+  return true;
 }
 
 export function uninstallRealtimeQueryBridge(socket = boundSocket) {
@@ -99,5 +100,6 @@ export function uninstallRealtimeQueryBridge(socket = boundSocket) {
   if (socket === boundSocket) {
     handlers = [];
     boundSocket = null;
+    boundQueryClient = null;
   }
 }
