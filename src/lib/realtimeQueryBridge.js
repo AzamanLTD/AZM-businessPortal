@@ -39,7 +39,18 @@ function invalidateNotifications(queryClient) {
 }
 
 function invalidateEvent(queryClient, event, payload) {
-  const orderEvents = new Set(['order_location', 'order_status', 'order_eta', 'business_order_delivered']);
+  // The backend's canonical tracking contract uses colon-delimited names.
+  // Keep underscore aliases temporarily so older deployed backends do not
+  // silently lose invalidation during a rolling deployment.
+  const orderEvents = new Set([
+    'order:location',
+    'order:status',
+    'order:eta',
+    'order_location',
+    'order_status',
+    'order_eta',
+    'business_order_delivered',
+  ]);
   const escrowEvents = new Set([
     'escrow_funded',
     'escrow_settled',
@@ -47,6 +58,7 @@ function invalidateEvent(queryClient, event, payload) {
     'escrow_disputed',
     'escrow_resolved',
     'escrow_terms_updated',
+    'invoice_paid',
   ]);
 
   if (orderEvents.has(event) || escrowEvents.has(event)) {
@@ -69,6 +81,9 @@ export function installRealtimeQueryBridge(queryClient) {
   boundQueryClient = queryClient;
 
   const events = [
+    'order:location',
+    'order:status',
+    'order:eta',
     'order_location',
     'order_status',
     'order_eta',
@@ -79,6 +94,7 @@ export function installRealtimeQueryBridge(queryClient) {
     'escrow_disputed',
     'escrow_resolved',
     'escrow_terms_updated',
+    'invoice_paid',
     'biz_notification',
     'biz_notifications_updated',
     'new_notification',
