@@ -88,6 +88,16 @@ function invalidateEvent(queryClient, event, payload) {
 
   if (event === 'biz_notification' || event === 'biz_notifications_updated' || event === 'new_notification' || event === 'notifications_updated') {
     invalidateNotifications(queryClient);
+
+    // Escrow lifecycle notifications are persisted BusinessNotification rows
+    // and now arrive over the canonical `biz_notification` signal. The
+    // notification feed and the order projection are both affected by these
+    // events, so converge both surfaces from the authoritative APIs. Other
+    // notification types should not cause broad order invalidation.
+    const data = asObject(payload);
+    if (event === 'biz_notification' && String(data.type || '').startsWith('ORDER_')) {
+      invalidateOrder(queryClient, orderIdFrom(data));
+    }
   }
 }
 
