@@ -23,6 +23,11 @@ function orderIdFrom(payload) {
   return data.orderId ?? data.order_id ?? data.order?.id ?? data.id ?? null;
 }
 
+function invoiceIdFrom(payload) {
+  const data = asObject(payload);
+  return data.invoiceId ?? data.invoice_id ?? data.invoice?.id ?? data.id ?? null;
+}
+
 function invalidateOrder(queryClient, orderId) {
   if (orderId != null && String(orderId).length > 0) {
     queryClient.invalidateQueries({ queryKey: ['order', String(orderId)] });
@@ -30,6 +35,15 @@ function invalidateOrder(queryClient, orderId) {
   }
   queryClient.invalidateQueries({ queryKey: ['orders'] });
   queryClient.invalidateQueries({ queryKey: ['orders-stats'] });
+}
+
+function invalidateInvoices(queryClient, invoiceId) {
+  if (invoiceId != null && String(invoiceId).length > 0) {
+    queryClient.invalidateQueries({ queryKey: ['biz-invoice', String(invoiceId)] });
+    queryClient.invalidateQueries({ queryKey: ['biz-invoice', invoiceId] });
+  }
+  queryClient.invalidateQueries({ queryKey: ['biz-invoices'] });
+  queryClient.invalidateQueries({ queryKey: ['invoice-stats'] });
 }
 
 function invalidateNotifications(queryClient) {
@@ -58,11 +72,18 @@ function invalidateEvent(queryClient, event, payload) {
     'escrow_disputed',
     'escrow_resolved',
     'escrow_terms_updated',
-    'invoice_paid',
   ]);
 
   if (orderEvents.has(event) || escrowEvents.has(event)) {
     invalidateOrder(queryClient, orderIdFrom(payload));
+  }
+
+  // invoice_paid changes the business invoice resource, not the order
+  // resource. Keep it on its own convergence path so payment settlement is
+  // reflected immediately in the invoice list/detail/statistics without
+  // coupling unrelated order queries to an invoice event.
+  if (event === 'invoice_paid') {
+    invalidateInvoices(queryClient, invoiceIdFrom(payload));
   }
 
   if (event === 'biz_notification' || event === 'biz_notifications_updated' || event === 'new_notification' || event === 'notifications_updated') {
