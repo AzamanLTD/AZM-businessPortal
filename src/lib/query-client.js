@@ -15,14 +15,9 @@ export const queryClient = new QueryClient({
 });
 
 // Auth restoration creates the socket asynchronously, after this module may
-// already have loaded. Poll briefly for that singleton and bind exactly once;
-// the bridge itself is idempotent and removes stale listeners when a socket is
-// replaced. This keeps realtime events as invalidation signals rather than a
-// second client-side source of truth.
+// already have loaded. Poll briefly for that singleton and bind exactly once.
 const bridgeBootstrap = setInterval(() => {
-  if (installRealtimeQueryBridge() !== undefined) {
-    // installRealtimeQueryBridge is idempotent; stop once a socket exists.
-    // The returned cleanup function is intentionally not invoked here.
+  if (installRealtimeQueryBridge(queryClient)) {
     clearInterval(bridgeBootstrap);
   }
 }, 100);
