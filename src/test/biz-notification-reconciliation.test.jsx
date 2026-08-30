@@ -40,7 +40,7 @@ describe('business notification event contract', () => {
 
     handlers.get('biz_notification')({ type: 'INVOICE_PAID' });
 
-    expect(invalidations.some((x) => x.queryKey?.[0] === 'invoices')).toBe(true);
+    expect(invalidations.some((x) => x.queryKey?.[0] === 'biz-invoices')).toBe(true);
     expect(invalidations.some((x) => x.queryKey?.[0] === 'invoice-stats')).toBe(true);
     unmount();
     expect(handlers.size).toBe(0);
