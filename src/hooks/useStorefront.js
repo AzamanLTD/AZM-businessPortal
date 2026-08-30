@@ -57,7 +57,7 @@ export function useStorefront(businessId) {
       setDraft(updated);
       return updated;
     } catch (err) {
-      if (err.message?.includes('modified by another editor')) {
+      if (err.statusCode === 409 || err.code === 'STOREFRONT_DRAFT_CONFLICT' || err.message?.includes('modified by another editor')) {
         setError('Draft was modified by another editor. Refreshing...');
         await loadAll();
       } else {
@@ -73,13 +73,16 @@ export function useStorefront(businessId) {
     setSaving(true);
     setError(null);
     try {
-      const result = await storefrontApi.publish();
+      const result = await storefrontApi.publish(draft?.updatedAt);
       setPublished(result);
       setDraft(null);
       return result;
     } catch (err) {
-      // PHASE 8: Surface Nitro 402 violations to the UI
-      if (err.statusCode === 402 && err.violations) {
+      if (err.statusCode === 409 || err.code === 'STOREFRONT_DRAFT_CONFLICT' || err.message?.includes('modified by another editor')) {
+        setError('The storefront changed before publishing. Refreshing the latest draft...');
+        await loadAll();
+      } else if (err.statusCode === 402 && err.violations) {
+        // PHASE 8: Surface Nitro 402 violations to the UI
         const summary = err.violations.map(v =>
           `${v.type === 'theme' ? 'Theme' : 'Widget'} "${v.key}" requires ${v.requiredTier.replace('NITRO_', '')} tier`
         ).join('; ');
@@ -92,7 +95,7 @@ export function useStorefront(businessId) {
     } finally {
       setSaving(false);
     }
-  }, []);
+  }, [draft?.updatedAt]);
 
   const scheduleAutoSave = useCallback((layoutJson, themeId) => {
     clearTimeout(autoSaveTimer.current);
@@ -163,29 +166,41 @@ export function useStorefront(businessId) {
 
   const applyTemplate = useCallback(async (templateId) => {
     setSaving(true);
+    setError(null);
     try {
-      const newDraft = await storefrontApi.applyTemplate(templateId);
+      const newDraft = await storefrontApi.applyTemplate(templateId, draft?.updatedAt);
       setDraft(newDraft);
     } catch (err) {
-      setError(err.message);
+      if (err.statusCode === 409 || err.code === 'STOREFRONT_DRAFT_CONFLICT') {
+        setError('The storefront changed before the template was applied. Refreshing...');
+        await loadAll();
+      } else {
+        setError(err.message);
+      }
       throw err;
     } finally {
       setSaving(false);
     }
-  }, []);
+  }, [draft?.updatedAt]);
 
   const revertToVersion = useCallback(async (versionId) => {
     setSaving(true);
+    setError(null);
     try {
-      const newDraft = await storefrontApi.revertToVersion(versionId);
+      const newDraft = await storefrontApi.revertToVersion(versionId, draft?.updatedAt);
       setDraft(newDraft);
     } catch (err) {
-      setError(err.message);
+      if (err.statusCode === 409 || err.code === 'STOREFRONT_DRAFT_CONFLICT') {
+        setError('The storefront changed before the revert was applied. Refreshing...');
+        await loadAll();
+      } else {
+        setError(err.message);
+      }
       throw err;
     } finally {
       setSaving(false);
     }
-  }, []);
+  }, [draft?.updatedAt]);
 
   // PHASE 8: Record analytics event (nitro_upsell_clicked, etc.)
   const recordEvent = useCallback(async (eventType, metadata = {}) => {
