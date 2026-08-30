@@ -7,6 +7,11 @@ import { notifications as notifApi } from '@/lib/api';
  * Subscribes to the canonical business notification stream and turns events
  * into cache invalidations. Socket payloads are never treated as authoritative
  * business state; the next query always refetches from the backend.
+ *
+ * Some older screens still use legacy query roots (biz-invoices, orders,
+ * reservations, etc.) while newer screens use the qk factory. We invalidate
+ * both roots during the migration so realtime remains seamless across the
+ * portal instead of silently depending on which screen was opened first.
  */
 const PROJECTION_EVENTS = {
   order: new Set([
@@ -21,6 +26,8 @@ const PROJECTION_EVENTS = {
   transit: new Set(['TRANSIT_BOOKING_NEW', 'TRANSIT_NO_SHOW', 'TRANSIT_REMINDER']),
   dineIn: new Set(['DINE_IN_TAB_OPENED', 'DINE_IN_TAB_FINALIZED', 'DINE_IN_TAB_PAID']),
   trust: new Set(['TRUST_LEVEL_CHANGED', 'PENALTY_CHARGED', 'PENALTY_REFUNDED']),
+  businessProfile: new Set(['KYB_STATUS_CHANGED', 'FOLLOWED_BUSINESS']),
+  marketing: new Set(['AD_POST_CREATED']),
 };
 
 export function useBizNotifications() {
@@ -40,40 +47,40 @@ export function useBizNotifications() {
     const refreshNotifs = () => {
       qc.invalidateQueries({ queryKey: ['biz-notifications'] });
       qc.invalidateQueries({ queryKey: ['biz-notifications-count'] });
+      qc.invalidateQueries({ queryKey: ['notifications'] });
     };
 
-    const invalidate = (key) => qc.invalidateQueries({ queryKey: key });
+    const invalidateRoots = (...roots) => {
+      roots.forEach((root) => qc.invalidateQueries({ queryKey: [root] }));
+    };
 
     const handleBizNotif = (payload) => {
       const type = payload?.type;
       refreshNotifs();
 
       if (PROJECTION_EVENTS.order.has(type)) {
-        invalidate(['orders']);
-        invalidate(['recent-orders']);
-        invalidate(['biz-stats']);
+        invalidateRoots('orders', 'recent-orders', 'biz-stats');
       }
       if (PROJECTION_EVENTS.invoice.has(type)) {
-        invalidate(['biz-invoices']);
-        invalidate(['biz-invoice']);
-        invalidate(['invoice-stats']);
+        invalidateRoots('invoices', 'biz-invoices', 'biz-invoice', 'invoice-stats');
       }
       if (PROJECTION_EVENTS.reservation.has(type)) {
-        invalidate(['reservations']);
-        invalidate(['reservation-stats']);
+        invalidateRoots('reservations', 'reservation-stats');
       }
       if (PROJECTION_EVENTS.transit.has(type)) {
-        invalidate(['transit']);
-        invalidate(['transit-bookings']);
-        invalidate(['transit-trips']);
+        invalidateRoots('transit', 'transit-bookings', 'transit-trips');
       }
       if (PROJECTION_EVENTS.dineIn.has(type)) {
-        invalidate(['dine-in']);
-        invalidate(['dine-in-tabs']);
+        invalidateRoots('dine-in', 'dine-in-tabs');
       }
       if (PROJECTION_EVENTS.trust.has(type)) {
-        invalidate(['business-profile']);
-        invalidate(['biz-stats']);
+        invalidateRoots('business-profile', 'biz-profile', 'biz-stats');
+      }
+      if (PROJECTION_EVENTS.businessProfile.has(type)) {
+        invalidateRoots('business-profile', 'biz-profile', 'business');
+      }
+      if (PROJECTION_EVENTS.marketing.has(type)) {
+        invalidateRoots('marketing', 'ads', 'business-ads');
       }
     };
 
