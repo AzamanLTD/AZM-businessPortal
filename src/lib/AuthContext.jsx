@@ -2,10 +2,15 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 import { auth, business, request } from './api';
 import { setAccessToken } from './apiCore';
 import { connectSocket, joinUserRoom, disconnectSocket } from './socket';
+import { ensureRealtimeQueryBridge } from './query-client';
 
 function wireSocket(token, userId) {
   if (!token) return;
   const sock = connectSocket(token);
+  // The realtime bridge is keyed by socket identity. Calling this after every
+  // login/session restore makes logout -> login cycles safe when the singleton
+  // socket instance has been replaced.
+  ensureRealtimeQueryBridge();
   if (userId != null) {
     if (sock.connected) joinUserRoom(userId);
     else sock.once('connect', () => joinUserRoom(userId));
