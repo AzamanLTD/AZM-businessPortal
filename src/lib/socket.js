@@ -30,14 +30,29 @@ export function connectSocket(token) {
     reconnectionDelay: 2000,
   });
 
-  socket.on('connect',       () => console.log('[Socket] Connected:', socket.id));
-  socket.on('disconnect',    (reason) => console.log('[Socket] Disconnected:', reason));
+  socket.on('connect', () => console.log('[Socket] Connected:', socket.id));
+  socket.on('disconnect', (reason) => console.log('[Socket] Disconnected:', reason));
   socket.on('connect_error', (err) => console.warn('[Socket] Error:', err.message));
 
   // Publish for components that opportunistically listen (e.g. NotificationBell).
   if (typeof window !== 'undefined') window.__azSocket = socket;
 
   return socket;
+}
+
+/**
+ * Replace the JWT used by the current Socket.IO handshake.
+ * Socket.IO only sends `auth.token` during the connection handshake, so a
+ * silently refreshed HTTP token must trigger a fresh handshake too. Otherwise
+ * REST calls recover while realtime authorization remains stuck on an expired
+ * credential.
+ */
+export function updateSocketToken(token) {
+  if (!token || !socket) return;
+  socket.auth = { ...(socket.auth || {}), token };
+  if (socket.connected) {
+    socket.disconnect().connect();
+  }
 }
 
 export function joinUserRoom(userId) {
