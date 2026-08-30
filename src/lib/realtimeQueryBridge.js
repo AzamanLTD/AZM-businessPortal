@@ -78,6 +78,15 @@ function invalidateEvent(queryClient, event, payload) {
     invalidateOrder(queryClient, orderIdFrom(payload));
   }
 
+  // Expiry/manual refund has a dedicated convergence signal. Its payload
+  // carries escrow/ticket identity rather than an order id, so invalidate the
+  // complete order projection instead of treating escrowId as an orderId.
+  // The persisted ORDER_REFUNDED notification will also provide a second,
+  // durable convergence edge when the business notification write completes.
+  if (event === 'escrow_refunded') {
+    invalidateOrder(queryClient, null);
+  }
+
   // invoice_paid changes the business invoice resource, not the order
   // resource. Keep it on its own convergence path so payment settlement is
   // reflected immediately in the invoice list/detail/statistics without
@@ -125,6 +134,7 @@ export function installRealtimeQueryBridge(queryClient) {
     'escrow_disputed',
     'escrow_resolved',
     'escrow_terms_updated',
+    'escrow_refunded',
     'invoice_paid',
     'biz_notification',
     'biz_notifications_updated',
