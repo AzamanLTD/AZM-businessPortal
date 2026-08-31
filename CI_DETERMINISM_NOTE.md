@@ -1,1 +1,0 @@
-The repository has a committed package-lock.json (lockfileVersion 3), while the current Business Portal CI uses npm install. The production validation gate is a Vite build. The intended hardening is to use npm ci so the lockfile is the deterministic dependency contract.
