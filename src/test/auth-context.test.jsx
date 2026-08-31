@@ -2,22 +2,25 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, fireEvent, screen, waitFor } from '@testing-library/react';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 
-const mockAuth = {
-  login: vi.fn(),
-  restore: vi.fn(),
-  logout: vi.fn(),
-};
-
-const mockBusiness = {
-  me: vi.fn(),
-};
-
-const mockRequest = vi.fn();
-const mockSetAccessToken = vi.fn();
-const mockConnectSocket = vi.fn();
-const mockJoinUserRoom = vi.fn();
-const mockDisconnectSocket = vi.fn();
-const mockEnsureRealtimeQueryBridge = vi.fn();
+const {
+  mockAuth,
+  mockBusiness,
+  mockRequest,
+  mockSetAccessToken,
+  mockConnectSocket,
+  mockJoinUserRoom,
+  mockDisconnectSocket,
+  mockEnsureRealtimeQueryBridge,
+} = vi.hoisted(() => ({
+  mockAuth: { login: vi.fn(), restore: vi.fn(), logout: vi.fn() },
+  mockBusiness: { me: vi.fn() },
+  mockRequest: vi.fn(),
+  mockSetAccessToken: vi.fn(),
+  mockConnectSocket: vi.fn(),
+  mockJoinUserRoom: vi.fn(),
+  mockDisconnectSocket: vi.fn(),
+  mockEnsureRealtimeQueryBridge: vi.fn(),
+}));
 
 vi.mock('@/lib/api', () => ({
   auth: mockAuth,
