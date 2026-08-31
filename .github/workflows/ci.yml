@@ -35,5 +35,8 @@ jobs:
       - name: Smoke test
         run: npm run test:smoke
 
+      - name: Run tests
+        run: npx vitest run
+
       - name: Build
         run: npm run build

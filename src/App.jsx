@@ -55,7 +55,7 @@ import { Layout } from '@/components/instrument';
 import { AppBackground } from '@/components/AppBackground';
 import { TypeGuardedRoute } from './components/TypeGuardedRoute';
 
-function AppRoutes() {
+export function AppRoutes() {
   const { authed, loading, bizProfile, isAdmin } = useAuth();
 
   if (loading) {
