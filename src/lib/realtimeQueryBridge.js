@@ -87,11 +87,11 @@ function invalidateEvent(queryClient, event, payload) {
     invalidateOrder(queryClient, null);
   }
 
-  // invoice_paid changes the business invoice resource, not the order
-  // resource. Keep it on its own convergence path so payment settlement is
-  // reflected immediately in the invoice list/detail/statistics without
-  // coupling unrelated order queries to an invoice event.
-  if (event === 'invoice_paid') {
+  // invoice_paid and invoice_voided change the business invoice resource, not
+  // the order resource. Keep them on their own convergence path so invoice
+  // list/detail/statistics reflect the backend immediately without coupling
+  // unrelated order queries to invoice lifecycle events.
+  if (event === 'invoice_paid' || event === 'invoice_voided') {
     invalidateInvoices(queryClient, invoiceIdFrom(payload));
   }
 
@@ -136,6 +136,7 @@ export function installRealtimeQueryBridge(queryClient) {
     'escrow_terms_updated',
     'escrow_refunded',
     'invoice_paid',
+    'invoice_voided',
     'biz_notification',
     'biz_notifications_updated',
     'new_notification',
