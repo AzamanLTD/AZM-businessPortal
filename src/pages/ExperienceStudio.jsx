@@ -113,7 +113,7 @@ export default function ExperienceStudio() {
     try {
       const saved = await storefrontApi.saveExperience(draft);
       setDraft(saved);
-      setMessage('Experience saved. It is now ready for the storefront renderer.');
+      setMessage('Saved as a storefront draft. Publish your storefront from Storefront Editor to make this experience live.');
     } catch (err) {
       setError(err?.message || 'Could not save experience settings.');
     } finally {
