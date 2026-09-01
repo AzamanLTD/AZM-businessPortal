@@ -25,6 +25,10 @@ export const storefrontApi = {
   getPublicTheme: (businessProfileId) =>
     sfRequest(`${BASE}/${businessProfileId}/public-theme`),
 
+  /** Public category-native experience contract */
+  getPublicExperience: (businessProfileId) =>
+    sfRequest(`${BASE}/${businessProfileId}/experience`),
+
   // ── CATALOG (public, no businessId needed) ─────────────────────────────────
   listThemes:    (category) => sfRequest(`${BASE}/themes${category ? `?category=${category}` : ''}`),
   listWidgets:   (category) => sfRequest(`${BASE}/widgets${category ? `?category=${category}` : ''}`),
@@ -32,8 +36,7 @@ export const storefrontApi = {
 
   // ── AUTHENTICATED — /me/* (JWT resolves businessProfileId) ─────────────────
   /** Get or create the draft layout for the authenticated business */
-  getDraft: () =>
-    sfRequest(`${BASE}/me/draft`),
+  getDraft: () => sfRequest(`${BASE}/me/draft`),
 
   /** Save the current draft (PUT) */
   saveDraft: (layoutJson, themeId, expectedUpdatedAt) =>
@@ -50,8 +53,7 @@ export const storefrontApi = {
     }),
 
   /** Get version history */
-  getHistory: (limit) =>
-    sfRequest(`${BASE}/me/history${limit ? `?limit=${limit}` : ''}`),
+  getHistory: (limit) => sfRequest(`${BASE}/me/history${limit ? `?limit=${limit}` : ''}`),
 
   /** Revert draft to a previous version while protecting the current snapshot. */
   revertToVersion: (versionId, expectedUpdatedAt) =>
@@ -68,8 +70,7 @@ export const storefrontApi = {
     }),
 
   /** Check AZM staking eligibility / tier */
-  checkEligibility: () =>
-    sfRequest(`${BASE}/me/eligibility`),
+  checkEligibility: () => sfRequest(`${BASE}/me/eligibility`),
 
   /** Record a storefront analytics event */
   recordEvent: (eventType, metadata) =>
@@ -79,8 +80,7 @@ export const storefrontApi = {
     }),
 
   /** Get aggregated storefront analytics (business owner view) */
-  getAnalytics: (days = 30) =>
-    sfRequest(`${BASE}/me/analytics?days=${days}`),
+  getAnalytics: (days = 30) => sfRequest(`${BASE}/me/analytics?days=${days}`),
 
   /** Upload media for a tile (multipart) */
   uploadMedia: (formData) =>
@@ -88,5 +88,16 @@ export const storefrontApi = {
       method: 'POST',
       headers: {}, // let browser set Content-Type with boundary
       body: formData,
+    }),
+
+  // ── EXPERIENCE STUDIO ─────────────────────────────────────────────────────
+  /** Get effective category-native experience settings for the business */
+  getExperience: () => sfRequest(`${BASE}/me/experience`),
+
+  /** Save the constrained experience blueprint */
+  saveExperience: (blueprint) =>
+    sfRequest(`${BASE}/me/experience`, {
+      method: 'PUT',
+      body: JSON.stringify(blueprint),
     }),
 };

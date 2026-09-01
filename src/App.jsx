@@ -43,12 +43,12 @@ const MessagingChannels = lazy(() => import('@/pages/settings/MessagingChannels'
 const WebOrdering = lazy(() => import('@/pages/marketing/WebOrdering'));
 const StorefrontEditor = lazy(() => import('@/pages/StorefrontEditor'));
 const StorefrontAnalytics = lazy(() => import('@/pages/StorefrontAnalytics'));
+const ExperienceStudio = lazy(() => import('@/pages/ExperienceStudio'));
 const POS = lazy(() => import('@/pages/POS'));
 
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/lib/query-client';
 import { ToastHost } from '@/lib/toast';
-import { useEffect, useState } from 'react';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import ErrorBoundary, { SectionBoundary } from '@/components/ErrorBoundary';
 import { Layout } from '@/components/instrument';
@@ -142,6 +142,7 @@ export function AppRoutes() {
         <Route path="/settings/messaging"  element={<MessagingChannels />} />
         <Route path="/marketing/web-ordering" element={<WebOrdering />} />
         <Route path="/storefront"             element={<StorefrontEditor />} />
+        <Route path="/storefront/experience" element={<ExperienceStudio />} />
         <Route path="/storefront/analytics"   element={<StorefrontAnalytics />} />
       </Route>
       <Route path="/login"      element={<Navigate to="/" replace />} />
