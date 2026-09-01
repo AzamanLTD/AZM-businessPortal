@@ -8,7 +8,7 @@ import {
   LayoutDashboard, CalendarCheck, ConciergeBell, ChefHat, BedDouble, Sparkles,
   Bus, Route, Users, Package, Wallet, Receipt, LineChart, Megaphone, Store,
   Star, Settings, Building2, MessageSquare, Bell, ClipboardList, Boxes,
-  UserCog, CalendarClock, Banknote, Plane,
+  UserCog, CalendarClock, Banknote, Plane, WandSparkles,
 } from 'lucide-react';
 
 /**
@@ -92,6 +92,7 @@ export const DOMAINS = [
     groups:[
       { label:'Storefront', items:[
         { to:'/storefront',           label:'Editor',    icon:Store },
+        { to:'/storefront/experience', label:'Experience Studio', icon:WandSparkles },
         { to:'/storefront/analytics', label:'Traffic',   icon:LineChart },
         { to:'/marketing/web-ordering', label:'Web ordering', icon:Store },
       ]},
