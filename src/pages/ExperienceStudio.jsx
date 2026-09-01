@@ -39,6 +39,22 @@ const CATEGORY_PRESETS = {
   TRANSIT: ['TRAVEL_JOURNEY'],
 };
 
+const NAVIGATION_LABELS = {
+  CONTEXTUAL: 'Contextual guidance',
+  FLOOR_TRAVERSE: 'Traverse by floor',
+  AISLE_TRAVERSE: 'Traverse by collection',
+  JOURNEY_TIMELINE: 'Journey timeline',
+};
+
+const DETAIL_LABELS = {
+  MORPH: 'Focused detail',
+  DISH_DOSSIER: 'Dish dossier',
+  PRODUCT_DOSSIER: 'Product dossier',
+  ROOM_DOSSIER: 'Room dossier',
+  SEAT_DOSSIER: 'Seat dossier',
+  SERVICE_DOSSIER: 'Service dossier',
+};
+
 function Section({ title, description, children }) {
   return (
     <section className="rounded-2xl border p-5" style={{ borderColor: 'var(--line)', background: 'var(--surface)' }}>
@@ -56,6 +72,22 @@ function Toggle({ label, checked, onChange, disabled = false }) {
     <label className={`flex items-center justify-between gap-4 rounded-xl border px-4 py-3 ${disabled ? 'opacity-50' : 'cursor-pointer'}`} style={{ borderColor: 'var(--line)' }}>
       <span className="text-sm" style={{ color: 'var(--text)' }}>{label}</span>
       <input type="checkbox" checked={checked} disabled={disabled} onChange={(event) => onChange(event.target.checked)} />
+    </label>
+  );
+}
+
+function SelectPolicy({ label, value, options, labels, onChange }) {
+  return (
+    <label className="block rounded-xl border px-4 py-3" style={{ borderColor: 'var(--line)' }}>
+      <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-3)' }}>{label}</span>
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none"
+        style={{ borderColor: 'var(--line)', color: 'var(--text)' }}
+      >
+        {options.map((option) => <option key={option} value={option}>{labels[option] || option}</option>)}
+      </select>
     </label>
   );
 }
@@ -84,6 +116,12 @@ export default function ExperienceStudio() {
   const category = data?.category?.toUpperCase() || '';
   const availablePresets = CATEGORY_PRESETS[category] || Object.keys(PRESET_META);
   const presetMeta = PRESET_META[draft?.preset] || PRESET_META.SERVICE_JOURNEY;
+  const navigationModes = data?.navigationModes?.length
+    ? data.navigationModes
+    : ['CONTEXTUAL', 'FLOOR_TRAVERSE', 'AISLE_TRAVERSE', 'JOURNEY_TIMELINE'];
+  const detailPresentations = data?.detailPresentations?.length
+    ? data.detailPresentations
+    : ['MORPH', 'DISH_DOSSIER', 'PRODUCT_DOSSIER', 'ROOM_DOSSIER', 'SEAT_DOSSIER', 'SERVICE_DOSSIER'];
 
   const patch = (path, value) => {
     setDraft((current) => {
@@ -188,6 +226,23 @@ export default function ExperienceStudio() {
               </div>
             </Section>
 
+            <Section title="Journey navigation" description="Choose how customers understand where they are without exposing an unrestricted navigation builder.">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <SelectPolicy
+                  label="Navigation mode"
+                  value={draft.navigation.mode}
+                  options={navigationModes}
+                  labels={NAVIGATION_LABELS}
+                  onChange={(value) => patch('navigation.mode', value)}
+                />
+                <Toggle
+                  label="Show progress / navigation context"
+                  checked={draft.navigation.showProgress}
+                  onChange={(value) => patch('navigation.showProgress', value)}
+                />
+              </div>
+            </Section>
+
             <Section title="Customer context" description="Let the experience acknowledge useful real-world context without making it mandatory.">
               <div className="space-y-2">
                 <Toggle label="Use contextual information when available" checked={draft.customerContext.enabled} onChange={(value) => patch('customerContext.enabled', value)} />
@@ -203,8 +258,15 @@ export default function ExperienceStudio() {
               </div>
             </Section>
 
-            <Section title="Detail experience" description="Choose what a customer can inspect once they focus an item. The actual domain data still comes from your catalog, rooms or trip records.">
-              <div className="grid gap-2 sm:grid-cols-2">
+            <Section title="Detail experience" description="Choose the presentation grammar and what a customer can inspect once they focus an item. The actual domain data remains authoritative.">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <SelectPolicy
+                  label="Detail presentation"
+                  value={draft.detail.presentation}
+                  options={detailPresentations}
+                  labels={DETAIL_LABELS}
+                  onChange={(value) => patch('detail.presentation', value)}
+                />
                 <Toggle label="Gallery" checked={draft.detail.showGallery} onChange={(value) => patch('detail.showGallery', value)} />
                 <Toggle label="Specifications" checked={draft.detail.showSpecifications} onChange={(value) => patch('detail.showSpecifications', value)} />
                 <Toggle label="Options / variants" checked={draft.detail.showOptions} onChange={(value) => patch('detail.showOptions', value)} />
@@ -260,6 +322,13 @@ export default function ExperienceStudio() {
                       {draft.commit.style === style && <span className="text-[10px] font-bold uppercase" style={{ color: 'var(--accent)' }}>Selected</span>}
                     </button>
                   ))}
+                </div>
+                <div className="mt-4">
+                  <Toggle
+                    label="Keep a persistent customer tray / bag"
+                    checked={draft.commit.persistentTray}
+                    onChange={(value) => patch('commit.persistentTray', value)}
+                  />
                 </div>
               </div>
               <div className="border-t px-5 py-4 text-xs" style={{ borderColor: 'var(--line)', color: 'var(--text-3)' }}>
