@@ -4,6 +4,32 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { storefrontApi } from '@/services/storefrontApi';
 
+/**
+ * Preserve an already-published/editor Experience Blueprint when a generic
+ * layout operation sends an older/partial layout shape. The backend also
+ * protects this boundary, but keeping the editor payload intact prevents an
+ * avoidable destructive round trip from this client.
+ *
+ * Explicit `experience` values (including null) are left untouched so callers
+ * can intentionally replace the snapshot.
+ */
+export function mergeDraftExperience(layoutJson, currentDraft) {
+  const incoming = layoutJson && typeof layoutJson === 'object'
+    ? { ...layoutJson }
+    : {};
+  const currentLayout = currentDraft?.layoutJson;
+  const hasIncomingExperience = Object.prototype.hasOwnProperty.call(incoming, 'experience');
+  const hasCurrentExperience = currentLayout && typeof currentLayout === 'object'
+    ? Object.prototype.hasOwnProperty.call(currentLayout, 'experience')
+    : false;
+
+  if (!hasIncomingExperience && hasCurrentExperience) {
+    incoming.experience = currentLayout.experience;
+  }
+
+  return incoming;
+}
+
 export function useStorefront(businessId) {
   const [draft, setDraft]           = useState(null);
   const [published, setPublished]   = useState(null);
@@ -53,7 +79,8 @@ export function useStorefront(businessId) {
     setSaving(true);
     setError(null);
     try {
-      const updated = await storefrontApi.saveDraft(layoutJson, themeId, draft?.updatedAt);
+      const safeLayoutJson = mergeDraftExperience(layoutJson, draft);
+      const updated = await storefrontApi.saveDraft(safeLayoutJson, themeId, draft?.updatedAt);
       setDraft(updated);
       return updated;
     } catch (err) {
@@ -67,7 +94,7 @@ export function useStorefront(businessId) {
     } finally {
       setSaving(false);
     }
-  }, [draft?.updatedAt]);
+  }, [draft?.updatedAt, draft]);
 
   const publish = useCallback(async () => {
     setSaving(true);
@@ -84,7 +111,7 @@ export function useStorefront(businessId) {
       } else if (err.statusCode === 402 && err.violations) {
         // PHASE 8: Surface Nitro 402 violations to the UI
         const summary = err.violations.map(v =>
-          `${v.type === 'theme' ? 'Theme' : 'Widget'} "${v.key}" requires ${v.requiredTier.replace('NITRO_', '')} tier`
+          `${v.type === 'theme' ? 'Theme' : 'Widget'} \"${v.key}\" requires ${v.requiredTier.replace('NITRO_', '')} tier`
         ).join('; ');
         setError(`Nitro eligibility failed: ${summary}. Stake more AZM to unlock.`);
         err.userMessage = `Nitro eligibility failed: ${summary}`;
