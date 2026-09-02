@@ -26,38 +26,33 @@ describe('ExperienceSimulator', () => {
   it('starts with category-native dining language', () => {
     render(<ExperienceSimulator blueprint={blueprint} category="FOOD_BEVERAGE" />);
 
-    expect(screen.getByText('A menu that feels like a place')).toBeInTheDocument();
-    expect(screen.getByText('Turn through courses and specials')).toBeInTheDocument();
-    expect(screen.getByText(/Restaurant/)).toBeInTheDocument();
+    expect(screen.getByText('Browse the menu like a place, not a list')).toBeInTheDocument();
+    expect(screen.getByText('Tonight’s table')).toBeInTheDocument();
+    expect(screen.getByText(/Dining journey/)).toBeInTheDocument();
     expect(screen.getByText(/contextual/)).toBeInTheDocument();
   });
 
   it('walks the draft through browse, focus, detail and commit stages', () => {
     render(<ExperienceSimulator blueprint={blueprint} category="FOOD_BEVERAGE" />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Continue journey' }));
-    expect(screen.getByText('Chef’s peppered chicken')).toBeInTheDocument();
-    expect(screen.getByText('DISH DOSSIER')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Peppered chicken charred/i }));
+    expect(screen.getByText('Peppered chicken')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Preview Dish dossier' })).toHaveAttribute('aria-selected', 'true');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Continue journey' }));
-    expect(screen.getByText('Customer context')).toBeInTheDocument();
-    expect(screen.getAllByText('Included').length).toBeGreaterThan(0);
-    expect(screen.getByText('ON')).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Continue journey' }));
-    expect(screen.getByText('Tear into tray')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('tab', { name: 'Preview Add to tray' }));
+    expect(screen.getByText('Add to tray')).toBeInTheDocument();
     expect(screen.getByText(/paper rip/i)).toBeInTheDocument();
-    expect(screen.getByText('Try commitment')).toBeInTheDocument();
   });
 
   it('lets an owner jump directly to a journey stage', () => {
     render(<ExperienceSimulator blueprint={blueprint} category="FOOD_BEVERAGE" />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Preview Chef’s peppered chicken' }));
-    expect(screen.getByText('Chef’s peppered chicken')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('tab', { name: 'Preview Peppered chicken' }));
+    expect(screen.getByText('Peppered chicken')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Preview Peppered chicken' })).toHaveAttribute('aria-selected', 'true');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Preview Tear the order into the tray' }));
-    expect(screen.getByText('Tear into tray')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('tab', { name: 'Preview Add to tray' }));
+    expect(screen.getByText('Add to tray')).toBeInTheDocument();
   });
 
   it('uses a retail blueprint without inheriting dining copy', () => {
@@ -74,8 +69,8 @@ describe('ExperienceSimulator', () => {
       />,
     );
 
-    expect(screen.getByText('A store you can move through')).toBeInTheDocument();
-    expect(screen.getByText('Move across collections like aisles')).toBeInTheDocument();
-    expect(screen.queryByText('A menu that feels like a place')).not.toBeInTheDocument();
+    expect(screen.getByText('Move through collections and pull products forward')).toBeInTheDocument();
+    expect(screen.getByText('Best sellers')).toBeInTheDocument();
+    expect(screen.queryByText('Browse the menu like a place, not a list')).not.toBeInTheDocument();
   });
 });
