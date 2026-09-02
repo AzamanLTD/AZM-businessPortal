@@ -56,6 +56,12 @@ const DETAIL_LABELS = {
   SERVICE_DOSSIER: 'Service dossier',
 };
 
+const COMMIT_LABELS = {
+  MATERIAL: 'Material commit',
+  PAPER_RIP: 'Paper rip into tray',
+  LIFT_INTO_TRAY: 'Lift into tray / bag',
+};
+
 function Section({ title, description, children }) {
   return (
     <section className="rounded-2xl border p-5" style={{ borderColor: 'var(--line)', background: 'var(--surface)' }}>
@@ -288,6 +294,32 @@ export default function ExperienceStudio() {
                     {tempo[0] + tempo.slice(1).toLowerCase()}
                   </button>
                 ))}
+              </div>
+            </Section>
+
+            <Section title="Commit behavior" description="Choose the final physical metaphor customers experience when they commit an item. The backend still owns the actual transaction.">
+              <div className="space-y-3">
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {allowedCommitStyles.map((style) => (
+                    <button
+                      key={style}
+                      type="button"
+                      onClick={() => patch('commit.style', style)}
+                      className="rounded-xl border px-4 py-3 text-left"
+                      style={{ borderColor: draft.commit.style === style ? 'var(--accent)' : 'var(--line)', background: draft.commit.style === style ? 'color-mix(in srgb, var(--accent) 8%, var(--surface))' : 'var(--surface)' }}
+                    >
+                      <span className="block text-sm font-semibold" style={{ color: 'var(--text)' }}>{COMMIT_LABELS[style] || style}</span>
+                      <span className="mt-1 block text-[11px] leading-5" style={{ color: 'var(--text-3)' }}>
+                        {style === 'PAPER_RIP' ? 'Dining orders leave the menu and become part of the tray.' : style === 'LIFT_INTO_TRAY' ? 'Products or stays visually move into the customer tray.' : 'Use a restrained confirmation without a physical metaphor.'}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                <Toggle
+                  label="Keep a persistent customer tray / bag"
+                  checked={draft.commit.persistentTray}
+                  onChange={(value) => patch('commit.persistentTray', value)}
+                />
               </div>
             </Section>
           </div>
