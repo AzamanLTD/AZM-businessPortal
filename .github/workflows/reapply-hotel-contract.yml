@@ -1,0 +1,49 @@
+name: Reapply hotel customer contract
+
+on:
+  push:
+    branches: [fix/hotel-frontdesk-customer-contract]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/hotel-frontdesk-customer-contract
+          fetch-depth: 1
+      - name: Apply exact hotel walk-in edits
+        run: |
+          set -eu
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('src/pages/HotelFrontDesk.jsx')
+          s = p.read_text()
+          pairs = [
+            ("    guestName: '',\n    phone: '',\n    roomId: '',", "    customerAzamanId: '',\n    phone: '',\n    roomId: '',"),
+            ("    if (!walkInForm.guestName || !walkInForm.roomId) {", "    if (!walkInForm.customerAzamanId || !walkInForm.roomId) {"),
+            ("          guestName: walkInForm.guestName,\n          phone: walkInForm.phone,", "          customerAzamanId: walkInForm.customerAzamanId,\n          phone: walkInForm.phone,"),
+            ("        guestName: '',\n        phone: '',\n        roomId: '',", "        customerAzamanId: '',\n        phone: '',\n        roomId: '',"),
+          ]
+          for old, new in pairs:
+              if old not in s:
+                  raise SystemExit(f'missing expected pattern: {old!r}')
+              s = s.replace(old, new, 1)
+          old = '''              label="Guest Full Name *"\n              required\n              placeholder="e.g. Alice Vance"\n              value={walkInForm.guestName}\n              onChange={(e) => setWalkInForm(prev => ({ ...prev, guestName: e.target.value }))}\n            />'''
+          new = '''              label="Customer Azaman ID *"\n              required\n              placeholder="e.g. AZM-123456789"\n              value={walkInForm.customerAzamanId}\n              onChange={(e) => setWalkInForm(prev => ({ ...prev, customerAzamanId: e.target.value.trim().toUpperCase() }))}\n            />'''
+          if old not in s:
+              raise SystemExit('missing expected guest input block')
+          s = s.replace(old, new, 1)
+          p.write_text(s)
+          Path('src/pages/HotelFrontDesk.contract.test.jsx').write_text('''import { describe, expect, it } from 'vitest';\nimport { readFile } from 'node:fs/promises';\nimport { join } from 'node:path';\n\ndescribe('HotelFrontDesk walk-in customer identity contract', () => {\n  it('uses the public Azaman customer identifier', async () => {\n    const source = await readFile(join(process.cwd(), 'src/pages/HotelFrontDesk.jsx'), 'utf8');\n    expect(source).toContain('customerAzamanId: walkInForm.customerAzamanId');\n    expect(source).toContain('label="Customer Azaman ID *"');\n    expect(source).not.toContain('guestName: walkInForm.guestName');\n  });\n});\n''')
+          Path('.github/workflows/reapply-hotel-contract.yml').unlink()
+          import subprocess
+          subprocess.run(['git','config','user.name','azaman-automation'], check=True)
+          subprocess.run(['git','config','user.email','automation@azaman.local'], check=True)
+          subprocess.run(['git','add','-A'], check=True)
+          subprocess.run(['git','commit','-m','fix(hotel): align front desk walk-in identity'], check=True)
+          subprocess.run(['git','push','origin','HEAD:fix/hotel-frontdesk-customer-contract'], check=True)
+          PY
