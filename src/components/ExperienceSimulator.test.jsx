@@ -22,15 +22,16 @@ describe('ExperienceSimulator', () => {
   it('renders the restaurant journey and opens a dish detail from the menu', () => {
     render(<ExperienceSimulator category="FOOD_BEVERAGE" blueprint={blueprint('DINING_JOURNEY')} />);
     expect(screen.getByText('Browse the menu like a place, not a list')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Peppered chicken' }));
+    fireEvent.click(screen.getByRole('button', { name: /Peppered chicken charred/i }));
     expect(screen.getByText('Peppered chicken')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Preview Dish dossier' })).toHaveAttribute('aria-selected', 'true');
   });
 
   it('renders retail as a shelf and carries the selected product into the detail stage', () => {
     render(<ExperienceSimulator category="RETAIL" blueprint={blueprint('SHOP_FLOOR')} />);
     expect(screen.getByText('Best sellers')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Everyday carry set/i }));
-    expect(screen.getByText('PRODUCT DOSSIER')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Preview Product dossier' })).toHaveAttribute('aria-selected', 'true');
   });
 
   it('renders hotel floor traversal and preserves room identity into the dossier', () => {
@@ -38,7 +39,7 @@ describe('ExperienceSimulator', () => {
     expect(screen.getByText('Rooms with availability')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Room 302/i }));
     expect(screen.getByText('Room 302')).toBeInTheDocument();
-    expect(screen.getByText('ROOM DOSSIER')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Preview Room dossier' })).toHaveAttribute('aria-selected', 'true');
   });
 
   it('renders transit seats with an occupied seat disabled and a selectable journey', () => {
@@ -52,7 +53,7 @@ describe('ExperienceSimulator', () => {
   it('progresses from detail to the configured commit state', () => {
     render(<ExperienceSimulator category="RETAIL" blueprint={blueprint('SHOP_FLOOR')} />);
     fireEvent.click(screen.getByRole('button', { name: /Everyday carry set/i }));
-    expect(screen.getByText('PRODUCT DOSSIER')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Preview Product dossier' })).toHaveAttribute('aria-selected', 'true');
     fireEvent.click(screen.getByRole('button', { name: /Lift into bag/i }));
     expect(screen.getByText('Commit complete')).toBeInTheDocument();
   });
