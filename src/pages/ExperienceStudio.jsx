@@ -53,7 +53,7 @@ export default function ExperienceStudio() {
     const load = async () => {
       try {
         let next = { products: [], rooms: [], trips: [] };
-        if (category === 'FOOD_BEVERAGE' || category === 'RESTAURANT' || category === 'RETAIL') {
+        if (category === 'FOOD_BEVERAGE' || category === 'RESTAURANT' || category === 'RETAIL' || category === 'SERVICE' || category === 'OTHER') {
           const response = await products.list();
           next.products = response?.products || response?.data?.products || [];
         } else if (category === 'HOSPITALITY' || category === 'HOTEL') {
