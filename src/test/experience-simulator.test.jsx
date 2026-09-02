@@ -50,6 +50,16 @@ describe('ExperienceSimulator', () => {
     expect(screen.getByText(/persistent tray/i)).toBeInTheDocument();
   });
 
+  it('lets an owner jump directly to a journey stage', () => {
+    render(<ExperienceSimulator blueprint={blueprint} category="FOOD_BEVERAGE" />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Preview Chef’s peppered chicken' }));
+    expect(screen.getByText('Chef’s peppered chicken')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Preview Tear the order into the tray' }));
+    expect(screen.getByText('Tear into tray')).toBeInTheDocument();
+  });
+
   it('uses a retail blueprint without inheriting dining copy', () => {
     render(
       <ExperienceSimulator
