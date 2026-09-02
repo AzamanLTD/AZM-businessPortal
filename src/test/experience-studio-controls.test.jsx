@@ -65,7 +65,6 @@ describe('ExperienceStudio commit controls', () => {
 
   it('restores the commit metaphor and persistent tray controls for the active preset', async () => {
     renderStudio();
-
     expect(await screen.findByText('Commit behavior')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Paper rip into tray/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Material commit/i })).toBeInTheDocument();
@@ -74,29 +73,23 @@ describe('ExperienceStudio commit controls', () => {
 
   it('changes the commit metaphor without mutating the backend until save', async () => {
     renderStudio();
-
     const material = await screen.findByRole('button', { name: /Material commit/i });
     fireEvent.click(material);
-
     expect(mocks.saveExperience).not.toHaveBeenCalled();
-
     fireEvent.click(screen.getByRole('button', { name: /Save experience/i }));
-    await waitFor(() => expect(mocks.saveExperience).toHaveBeenCalledWith(expect.objectContaining({
-      commit: { style: 'MATERIAL', persistentTray: true },
-    }));
+    await waitFor(() => expect(mocks.saveExperience).toHaveBeenCalledWith(
+      expect.objectContaining({ commit: { style: 'MATERIAL', persistentTray: true } }),
+    ));
   });
 
   it('lets the business turn off the persistent tray while keeping the commit metaphor', async () => {
     renderStudio();
-
     const tray = await screen.findByLabelText('Keep a persistent customer tray / bag');
     fireEvent.click(tray);
-
     expect(tray).not.toBeChecked();
     fireEvent.click(screen.getByRole('button', { name: /Save experience/i }));
-
-    await waitFor(() => expect(mocks.saveExperience).toHaveBeenCalledWith(expect.objectContaining({
-      commit: { style: 'PAPER_RIP', persistentTray: false },
-    }));
+    await waitFor(() => expect(mocks.saveExperience).toHaveBeenCalledWith(
+      expect.objectContaining({ commit: { style: 'PAPER_RIP', persistentTray: false } }),
+    ));
   });
 });
