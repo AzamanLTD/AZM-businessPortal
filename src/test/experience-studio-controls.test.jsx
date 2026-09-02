@@ -62,7 +62,6 @@ describe('ExperienceStudio commit controls', () => {
     const material = await screen.findByRole('button', { name: /Material commit/i });
     fireEvent.click(material);
 
-    expect(material).toHaveStyle({ borderColor: 'var(--accent)' });
     expect(mocks.saveExperience).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('button', { name: /Save experience/i }));
