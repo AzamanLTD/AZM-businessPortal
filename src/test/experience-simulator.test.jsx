@@ -35,20 +35,29 @@ describe('ExperienceSimulator', () => {
   it('walks the draft through browse, focus, detail and commit stages', () => {
     render(<ExperienceSimulator blueprint={blueprint} category="FOOD_BEVERAGE" />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Try next step' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Continue journey' }));
     expect(screen.getByText('Chef’s peppered chicken')).toBeInTheDocument();
     expect(screen.getByText('DISH DOSSIER')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Try next step' }));
-    expect(screen.getByText('Focused detail')).toBeInTheDocument();
-    expect(screen.getByText('Visible')).toBeInTheDocument();
-    expect(screen.getByText('Enabled')).toBeInTheDocument();
-    expect(screen.getByText('On')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Continue journey' }));
+    expect(screen.getByText('Customer context')).toBeInTheDocument();
+    expect(screen.getAllByText('Included').length).toBeGreaterThan(0);
+    expect(screen.getByText('ON')).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Try next step' }));
-    expect(screen.getByText('Tear the order into the tray')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Continue journey' }));
+    expect(screen.getByText('Tear into tray')).toBeInTheDocument();
     expect(screen.getByText(/paper rip/i)).toBeInTheDocument();
-    expect(screen.getByText(/persistent tray/i)).toBeInTheDocument();
+    expect(screen.getByText('Try commitment')).toBeInTheDocument();
+  });
+
+  it('lets an owner jump directly to a journey stage', () => {
+    render(<ExperienceSimulator blueprint={blueprint} category="FOOD_BEVERAGE" />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Preview Chef’s peppered chicken' }));
+    expect(screen.getByText('Chef’s peppered chicken')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Preview Tear the order into the tray' }));
+    expect(screen.getByText('Tear into tray')).toBeInTheDocument();
   });
 
   it('uses a retail blueprint without inheriting dining copy', () => {
