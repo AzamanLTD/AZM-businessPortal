@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { storefrontApi } from '@/services/storefrontApi';
 import ExperienceSimulator from '@/components/ExperienceSimulator';
+import { experiencePolicyForCategory } from '@/lib/experiencePolicy';
 
 const PRESET_META = {
   DINING_JOURNEY: {
@@ -28,16 +29,6 @@ const PRESET_META = {
     description: 'A calm, guided path from service discovery to a clear appointment or service commitment.',
     steps: ['Discover service', 'Open service', 'Confirm details', 'Commit'],
   },
-};
-
-const CATEGORY_PRESETS = {
-  FOOD_BEVERAGE: ['DINING_JOURNEY'],
-  RESTAURANT: ['DINING_JOURNEY'],
-  RETAIL: ['SHOP_FLOOR'],
-  HOSPITALITY: ['BUILDING_WALK'],
-  HOTEL: ['BUILDING_WALK'],
-  LOGISTICS: ['TRAVEL_JOURNEY'],
-  TRANSIT: ['TRAVEL_JOURNEY'],
 };
 
 const NAVIGATION_LABELS = {
@@ -84,15 +75,11 @@ function Toggle({ label, checked, onChange, disabled = false }) {
 }
 
 function SelectPolicy({ label, value, options, labels, onChange }) {
+  const safeValue = options.includes(value) ? value : options[0];
   return (
     <label className="block rounded-xl border px-4 py-3" style={{ borderColor: 'var(--line)' }}>
       <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text-3)' }}>{label}</span>
-      <select
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none"
-        style={{ borderColor: 'var(--line)', color: 'var(--text)' }}
-      >
+      <select value={safeValue} onChange={(event) => onChange(event.target.value)} className="w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none" style={{ borderColor: 'var(--line)', color: 'var(--text)' }}>
         {options.map((option) => <option key={option} value={option}>{labels[option] || option}</option>)}
       </select>
     </label>
@@ -121,14 +108,13 @@ export default function ExperienceStudio() {
   }, []);
 
   const category = data?.category?.toUpperCase() || '';
-  const availablePresets = CATEGORY_PRESETS[category] || Object.keys(PRESET_META);
+  const policy = experiencePolicyForCategory(category);
+  const availablePresets = policy.presets;
   const presetMeta = PRESET_META[draft?.preset] || PRESET_META.SERVICE_JOURNEY;
-  const navigationModes = data?.navigationModes?.length
-    ? data.navigationModes
-    : ['CONTEXTUAL', 'FLOOR_TRAVERSE', 'AISLE_TRAVERSE', 'JOURNEY_TIMELINE'];
-  const detailPresentations = data?.detailPresentations?.length
-    ? data.detailPresentations
-    : ['MORPH', 'DISH_DOSSIER', 'PRODUCT_DOSSIER', 'ROOM_DOSSIER', 'SEAT_DOSSIER', 'SERVICE_DOSSIER'];
+  const navigationModes = (data?.navigationModes || []).filter((mode) => policy.navigationModes.includes(mode));
+  const detailPresentations = (data?.detailPresentations || []).filter((presentation) => policy.detailPresentations.includes(presentation));
+  const safeNavigationModes = navigationModes.length ? navigationModes : policy.navigationModes;
+  const safeDetailPresentations = detailPresentations.length ? detailPresentations : policy.detailPresentations;
 
   const patch = (path, value) => {
     setDraft((current) => {
@@ -145,10 +131,9 @@ export default function ExperienceStudio() {
 
   const allowedCommitStyles = useMemo(() => {
     const values = data?.commitStyles || [];
-    if (draft?.preset === 'DINING_JOURNEY') return values.filter((value) => value === 'PAPER_RIP' || value === 'MATERIAL');
-    if (draft?.preset === 'BUILDING_WALK' || draft?.preset === 'SHOP_FLOOR') return values.filter((value) => value === 'LIFT_INTO_TRAY' || value === 'MATERIAL');
-    return values;
-  }, [data, draft?.preset]);
+    const filtered = values.filter((value) => policy.commitStyles.includes(value));
+    return filtered.length ? filtered : policy.commitStyles;
+  }, [data, policy]);
 
   async function save() {
     if (!draft || saving) return;
@@ -176,6 +161,10 @@ export default function ExperienceStudio() {
     );
   }
 
+  const showTableContext = policy.context.tableNumber;
+  const showServiceContext = policy.context.serviceMode;
+  const showPassengerContext = policy.context.passenger;
+
   return (
     <div className="min-h-full p-6 lg:p-8">
       <div className="mx-auto max-w-6xl space-y-6">
@@ -187,13 +176,7 @@ export default function ExperienceStudio() {
               This is not a page builder. AZM owns the interaction grammar and accessibility; you control the character, context and transaction feel.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={save}
-            disabled={saving}
-            className="rounded-xl px-5 py-3 text-sm font-semibold text-white disabled:opacity-60"
-            style={{ background: 'var(--accent)' }}
-          >
+          <button type="button" onClick={save} disabled={saving} className="rounded-xl px-5 py-3 text-sm font-semibold text-white disabled:opacity-60" style={{ background: 'var(--accent)' }}>
             {saving ? 'Saving…' : 'Save experience'}
           </button>
         </header>
@@ -206,22 +189,13 @@ export default function ExperienceStudio() {
 
         <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-6">
-            <Section
-              title="Journey preset"
-              description="The preset determines the interaction language available to customers. Your business type constrains what can be selected."
-            >
+            <Section title="Journey preset" description="The preset determines the interaction language available to customers. Your business type constrains what can be selected.">
               <div className="grid gap-3 sm:grid-cols-2">
                 {availablePresets.map((preset) => {
                   const meta = PRESET_META[preset];
                   const active = draft.preset === preset;
                   return (
-                    <button
-                      key={preset}
-                      type="button"
-                      onClick={() => setDraft((current) => ({ ...current, preset }))}
-                      className="text-left rounded-xl border p-4 transition"
-                      style={{ borderColor: active ? 'var(--accent)' : 'var(--line)', background: active ? 'color-mix(in srgb, var(--accent) 8%, var(--surface))' : 'var(--surface)' }}
-                    >
+                    <button key={preset} type="button" onClick={() => setDraft((current) => ({ ...current, preset }))} className="text-left rounded-xl border p-4 transition" style={{ borderColor: active ? 'var(--accent)' : 'var(--line)', background: active ? 'color-mix(in srgb, var(--accent) 8%, var(--surface))' : 'var(--surface)' }}>
                       <div className="flex items-center justify-between gap-3">
                         <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{meta.title}</span>
                         {active && <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--accent)' }}>Active</span>}
@@ -235,45 +209,23 @@ export default function ExperienceStudio() {
 
             <Section title="Journey navigation" description="Choose how customers understand where they are without exposing an unrestricted navigation builder.">
               <div className="grid gap-3 sm:grid-cols-2">
-                <SelectPolicy
-                  label="Navigation mode"
-                  value={draft.navigation.mode}
-                  options={navigationModes}
-                  labels={NAVIGATION_LABELS}
-                  onChange={(value) => patch('navigation.mode', value)}
-                />
-                <Toggle
-                  label="Show progress / navigation context"
-                  checked={draft.navigation.showProgress}
-                  onChange={(value) => patch('navigation.showProgress', value)}
-                />
+                <SelectPolicy label="Navigation mode" value={draft.navigation.mode} options={safeNavigationModes} labels={NAVIGATION_LABELS} onChange={(value) => patch('navigation.mode', value)} />
+                <Toggle label="Show progress / navigation context" checked={draft.navigation.showProgress} onChange={(value) => patch('navigation.showProgress', value)} />
               </div>
             </Section>
 
-            <Section title="Customer context" description="Let the experience acknowledge useful real-world context without making it mandatory.">
+            <Section title="Customer context" description="Only context that has meaning for this business category is exposed.">
               <div className="space-y-2">
                 <Toggle label="Use contextual information when available" checked={draft.customerContext.enabled} onChange={(value) => patch('customerContext.enabled', value)} />
-                {'tableNumber' in draft.customerContext && (
-                  <Toggle label="Offer table number for dine-in customers" checked={draft.customerContext.tableNumber === true} onChange={(value) => patch('customerContext.tableNumber', value)} />
-                )}
-                {'serviceMode' in draft.customerContext && (
-                  <Toggle label="Remember service mode (dine-in / takeaway)" checked={draft.customerContext.serviceMode === true} onChange={(value) => patch('customerContext.serviceMode', value)} />
-                )}
-                {'passenger' in draft.customerContext && (
-                  <Toggle label="Attach passenger context to the journey" checked={draft.customerContext.passenger === true} onChange={(value) => patch('customerContext.passenger', value)} />
-                )}
+                {showTableContext && <Toggle label="Offer table number for dine-in customers" checked={draft.customerContext.tableNumber === true} onChange={(value) => patch('customerContext.tableNumber', value)} />}
+                {showServiceContext && <Toggle label="Remember service mode (dine-in / takeaway)" checked={draft.customerContext.serviceMode === true} onChange={(value) => patch('customerContext.serviceMode', value)} />}
+                {showPassengerContext && <Toggle label="Attach passenger context to the journey" checked={draft.customerContext.passenger === true} onChange={(value) => patch('customerContext.passenger', value)} />}
               </div>
             </Section>
 
             <Section title="Detail experience" description="Choose the presentation grammar and what a customer can inspect once they focus an item. The actual domain data remains authoritative.">
               <div className="grid gap-3 sm:grid-cols-2">
-                <SelectPolicy
-                  label="Detail presentation"
-                  value={draft.detail.presentation}
-                  options={detailPresentations}
-                  labels={DETAIL_LABELS}
-                  onChange={(value) => patch('detail.presentation', value)}
-                />
+                <SelectPolicy label="Detail presentation" value={draft.detail.presentation} options={safeDetailPresentations} labels={DETAIL_LABELS} onChange={(value) => patch('detail.presentation', value)} />
                 <Toggle label="Gallery" checked={draft.detail.showGallery} onChange={(value) => patch('detail.showGallery', value)} />
                 <Toggle label="Specifications" checked={draft.detail.showSpecifications} onChange={(value) => patch('detail.showSpecifications', value)} />
                 <Toggle label="Options / variants" checked={draft.detail.showOptions} onChange={(value) => patch('detail.showOptions', value)} />
@@ -284,13 +236,7 @@ export default function ExperienceStudio() {
             <Section title="Motion personality" description="Motion changes pacing, not meaning. Reduced-motion users always receive a safe non-motion equivalent.">
               <div className="grid gap-3 sm:grid-cols-3">
                 {(data.motionTempos || []).map((tempo) => (
-                  <button
-                    key={tempo}
-                    type="button"
-                    onClick={() => patch('motion.tempo', tempo)}
-                    className="rounded-xl border px-4 py-3 text-sm font-semibold"
-                    style={{ borderColor: draft.motion.tempo === tempo ? 'var(--accent)' : 'var(--line)', color: 'var(--text)' }}
-                  >
+                  <button key={tempo} type="button" onClick={() => patch('motion.tempo', tempo)} className="rounded-xl border px-4 py-3 text-sm font-semibold" style={{ borderColor: draft.motion.tempo === tempo ? 'var(--accent)' : 'var(--line)', color: 'var(--text)' }}>
                     {tempo[0] + tempo.slice(1).toLowerCase()}
                   </button>
                 ))}
@@ -301,31 +247,27 @@ export default function ExperienceStudio() {
               <div className="space-y-3">
                 <div className="grid gap-3 sm:grid-cols-3">
                   {allowedCommitStyles.map((style) => (
-                    <button
-                      key={style}
-                      type="button"
-                      onClick={() => patch('commit.style', style)}
-                      className="rounded-xl border px-4 py-3 text-left"
-                      style={{ borderColor: draft.commit.style === style ? 'var(--accent)' : 'var(--line)', background: draft.commit.style === style ? 'color-mix(in srgb, var(--accent) 8%, var(--surface))' : 'var(--surface)' }}
-                    >
+                    <button key={style} type="button" onClick={() => patch('commit.style', style)} className="rounded-xl border px-4 py-3 text-left" style={{ borderColor: draft.commit.style === style ? 'var(--accent)' : 'var(--line)', background: draft.commit.style === style ? 'color-mix(in srgb, var(--accent) 8%, var(--surface))' : 'var(--surface)' }}>
                       <span className="block text-sm font-semibold" style={{ color: 'var(--text)' }}>{COMMIT_LABELS[style] || style}</span>
                       <span className="mt-1 block text-[11px] leading-5" style={{ color: 'var(--text-3)' }}>
-                        {style === 'PAPER_RIP' ? 'Dining orders leave the menu and become part of the tray.' : style === 'LIFT_INTO_TRAY' ? 'Products or stays visually move into the customer tray.' : 'Use a restrained confirmation without a physical metaphor.'}
+                        {style === 'PAPER_RIP' ? 'Dining orders leave the menu and become part of the tray.' : style === 'LIFT_INTO_TRAY' ? 'Products visually move into the customer bag or tray.' : 'Use a restrained confirmation without a physical metaphor.'}
                       </span>
                     </button>
                   ))}
                 </div>
-                <Toggle
-                  label="Keep a persistent customer tray / bag"
-                  checked={draft.commit.persistentTray}
-                  onChange={(value) => patch('commit.persistentTray', value)}
-                />
+                <Toggle label="Keep a persistent customer tray / bag" checked={draft.commit.persistentTray} onChange={(value) => patch('commit.persistentTray', value)} />
               </div>
             </Section>
           </div>
 
           <div className="space-y-6">
             <ExperienceSimulator blueprint={draft} category={category} />
+            <div className="rounded-2xl border p-5" style={{ borderColor: 'var(--line)', background: 'var(--surface)' }}>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--accent)' }}>Experience guardrails</p>
+              <p className="mt-2 text-sm leading-6" style={{ color: 'var(--text-2)' }}>
+                AZM keeps the experience category-native. Your settings can tune pacing, detail and context, but cannot create a journey that contradicts what the business actually does.
+              </p>
+            </div>
           </div>
         </div>
       </div>
