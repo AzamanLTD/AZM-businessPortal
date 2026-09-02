@@ -23,7 +23,7 @@ describe('ExperienceSimulator', () => {
     render(<ExperienceSimulator category="FOOD_BEVERAGE" blueprint={blueprint('DINING_JOURNEY')} />);
     expect(screen.getByText('Browse the menu like a place, not a list')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Peppered chicken' }));
-    expect(screen.getByText('peppered chicken')).toBeInTheDocument();
+    expect(screen.getByText('Peppered chicken')).toBeInTheDocument();
   });
 
   it('renders retail as a shelf and carries the selected product into the detail stage', () => {
