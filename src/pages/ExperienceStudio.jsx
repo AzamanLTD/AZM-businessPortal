@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
+import { products } from '@/lib/api';
+import { hotelOpsApi, transit } from '@/lib/marketplaceApi';
 import { storefrontApi } from '@/services/storefrontApi';
 import ExperienceSimulator from '@/components/ExperienceSimulator';
+import ExperienceContentPreview from '@/components/ExperienceContentPreview';
 import { experiencePolicyForCategory } from '@/lib/experiencePolicy';
 
 const PRESET_META = {
@@ -89,6 +92,7 @@ function SelectPolicy({ label, value, options, labels, onChange }) {
 export default function ExperienceStudio() {
   const [data, setData] = useState(null);
   const [draft, setDraft] = useState(null);
+  const [preview, setPreview] = useState({ products: [], rooms: [], trips: [], loading: true, error: '' });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -108,6 +112,33 @@ export default function ExperienceStudio() {
   }, []);
 
   const category = data?.category?.trim().toUpperCase() || '';
+
+  useEffect(() => {
+    if (!category) return undefined;
+    let active = true;
+    setPreview((current) => ({ ...current, loading: true, error: '' }));
+    const load = async () => {
+      try {
+        let next = { products: [], rooms: [], trips: [] };
+        if (category === 'FOOD_BEVERAGE' || category === 'RESTAURANT' || category === 'RETAIL') {
+          const response = await products.list();
+          next.products = response?.products || response?.data?.products || [];
+        } else if (category === 'HOSPITALITY' || category === 'HOTEL') {
+          const response = await hotelOpsApi.getRooms();
+          next.rooms = response?.rooms || response?.data?.rooms || [];
+        } else if (category === 'LOGISTICS' || category === 'TRANSIT') {
+          const response = await transit.list();
+          next.trips = response?.trips || response?.data?.trips || [];
+        }
+        if (active) setPreview({ ...next, loading: false, error: '' });
+      } catch (err) {
+        if (active) setPreview({ products: [], rooms: [], trips: [], loading: false, error: err?.message || 'Could not load storefront content.' });
+      }
+    };
+    load();
+    return () => { active = false; };
+  }, [category]);
+
   const policy = experiencePolicyForCategory(category);
   const availablePresets = policy.presets;
   const presetMeta = PRESET_META[draft?.preset] || PRESET_META.SERVICE_JOURNEY;
@@ -270,6 +301,17 @@ export default function ExperienceStudio() {
 
           <div className="space-y-6">
             <ExperienceSimulator blueprint={draft} category={category} />
+            {preview.error && (
+              <div className="rounded-xl border px-4 py-3 text-xs" style={{ borderColor: 'var(--line)', color: 'var(--text-3)', background: 'var(--surface)' }}>
+                Your content preview could not load. The simulator is still showing the configured journey: {preview.error}
+              </div>
+            )}
+            <ExperienceContentPreview
+              category={category}
+              products={preview.products}
+              rooms={preview.rooms}
+              trips={preview.trips}
+            />
             <div className="rounded-2xl border p-5" style={{ borderColor: 'var(--line)', background: 'var(--surface)' }}>
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--accent)' }}>Experience guardrails</p>
               <p className="mt-2 text-sm leading-6" style={{ color: 'var(--text-2)' }}>
