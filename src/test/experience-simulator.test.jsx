@@ -47,7 +47,7 @@ describe('ExperienceSimulator', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Continue journey' }));
     expect(screen.getByText('Tear into tray')).toBeInTheDocument();
     expect(screen.getByText(/paper rip/i)).toBeInTheDocument();
-    expect(screen.getByText(/persistent tray/i)).toBeInTheDocument();
+    expect(screen.getByText('Try commitment')).toBeInTheDocument();
   });
 
   it('lets an owner jump directly to a journey stage', () => {
