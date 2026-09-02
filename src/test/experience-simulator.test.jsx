@@ -18,9 +18,8 @@ const blueprint = {
     serviceMode: true,
     passenger: false,
   },
-  commit: { style: 'PAPER_RIP' },
+  commit: { style: 'PAPER_RIP', persistentTray: true },
   motion: { tempo: 'BALANCED' },
-  persistentTray: true,
 };
 
 describe('ExperienceSimulator', () => {
@@ -29,8 +28,8 @@ describe('ExperienceSimulator', () => {
 
     expect(screen.getByText('A menu that feels like a place')).toBeInTheDocument();
     expect(screen.getByText('Turn through courses and specials')).toBeInTheDocument();
-    expect(screen.getByText('Restaurant')).toBeInTheDocument();
-    expect(screen.getByText('contextual')).toBeInTheDocument();
+    expect(screen.getByText(/Restaurant/)).toBeInTheDocument();
+    expect(screen.getByText(/contextual/)).toBeInTheDocument();
   });
 
   it('walks the draft through browse, focus, detail and commit stages', () => {
@@ -61,7 +60,7 @@ describe('ExperienceSimulator', () => {
           preset: 'SHOP_FLOOR',
           navigation: { mode: 'AISLE_TRAVERSE' },
           detail: { ...blueprint.detail, presentation: 'PRODUCT_DOSSIER' },
-          commit: { style: 'LIFT_INTO_TRAY' },
+          commit: { ...blueprint.commit, style: 'LIFT_INTO_TRAY' },
         }}
       />,
     );
