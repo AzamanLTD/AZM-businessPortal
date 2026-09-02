@@ -39,7 +39,7 @@ describe('ExperienceSimulator', () => {
     expect(screen.getByText('Peppered chicken')).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Preview Dish dossier' })).toHaveAttribute('aria-selected', 'true');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Preview Add to tray' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Preview Add to tray' }));
     expect(screen.getByText('Commit complete')).toBeInTheDocument();
     expect(screen.getByText(/paper rip/i)).toBeInTheDocument();
   });
@@ -49,7 +49,7 @@ describe('ExperienceSimulator', () => {
 
     fireEvent.click(screen.getByRole('tab', { name: 'Preview Peppered chicken' }));
     expect(screen.getByText('Peppered chicken')).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Preview Dish dossier' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'Preview Peppered chicken' })).toHaveAttribute('aria-selected', 'true');
 
     fireEvent.click(screen.getByRole('tab', { name: 'Preview Add to tray' }));
     expect(screen.getByText('Commit complete')).toBeInTheDocument();
