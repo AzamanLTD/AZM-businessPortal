@@ -107,7 +107,7 @@ export default function ExperienceStudio() {
     return () => { active = false; };
   }, []);
 
-  const category = data?.category?.toUpperCase() || '';
+  const category = data?.category?.trim().toUpperCase() || '';
   const policy = experiencePolicyForCategory(category);
   const availablePresets = policy.presets;
   const presetMeta = PRESET_META[draft?.preset] || PRESET_META.SERVICE_JOURNEY;
@@ -164,6 +164,7 @@ export default function ExperienceStudio() {
   const showTableContext = policy.context.tableNumber;
   const showServiceContext = policy.context.serviceMode;
   const showPassengerContext = policy.context.passenger;
+  const persistentTrayAvailable = policy.persistentTray;
 
   return (
     <div className="min-h-full p-6 lg:p-8">
@@ -255,7 +256,14 @@ export default function ExperienceStudio() {
                     </button>
                   ))}
                 </div>
-                <Toggle label="Keep a persistent customer tray / bag" checked={draft.commit.persistentTray} onChange={(value) => patch('commit.persistentTray', value)} />
+                <Toggle
+                  label={persistentTrayAvailable ? 'Keep a persistent customer tray / bag' : 'Persistent tray / bag is not used for this business type'}
+                  checked={persistentTrayAvailable && draft.commit.persistentTray === true}
+                  disabled={!persistentTrayAvailable}
+                  onChange={(value) => {
+                    if (persistentTrayAvailable) patch('commit.persistentTray', value);
+                  }}
+                />
               </div>
             </Section>
           </div>

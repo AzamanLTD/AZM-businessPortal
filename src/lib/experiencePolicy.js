@@ -4,6 +4,7 @@ const CATEGORY_EXPERIENCE_POLICY = Object.freeze({
     navigationModes: ['CONTEXTUAL'],
     detailPresentations: ['MORPH', 'DISH_DOSSIER'],
     commitStyles: ['MATERIAL', 'PAPER_RIP'],
+    persistentTray: true,
     context: Object.freeze({ tableNumber: true, serviceMode: true, passenger: false }),
   }),
   RESTAURANT: Object.freeze({
@@ -11,6 +12,7 @@ const CATEGORY_EXPERIENCE_POLICY = Object.freeze({
     navigationModes: ['CONTEXTUAL'],
     detailPresentations: ['MORPH', 'DISH_DOSSIER'],
     commitStyles: ['MATERIAL', 'PAPER_RIP'],
+    persistentTray: true,
     context: Object.freeze({ tableNumber: true, serviceMode: true, passenger: false }),
   }),
   RETAIL: Object.freeze({
@@ -18,6 +20,7 @@ const CATEGORY_EXPERIENCE_POLICY = Object.freeze({
     navigationModes: ['CONTEXTUAL', 'AISLE_TRAVERSE'],
     detailPresentations: ['MORPH', 'PRODUCT_DOSSIER'],
     commitStyles: ['MATERIAL', 'LIFT_INTO_TRAY'],
+    persistentTray: true,
     context: Object.freeze({ tableNumber: false, serviceMode: false, passenger: false }),
   }),
   HOSPITALITY: Object.freeze({
@@ -25,6 +28,7 @@ const CATEGORY_EXPERIENCE_POLICY = Object.freeze({
     navigationModes: ['CONTEXTUAL', 'FLOOR_TRAVERSE'],
     detailPresentations: ['MORPH', 'ROOM_DOSSIER'],
     commitStyles: ['MATERIAL'],
+    persistentTray: false,
     context: Object.freeze({ tableNumber: false, serviceMode: false, passenger: false }),
   }),
   HOTEL: Object.freeze({
@@ -32,6 +36,7 @@ const CATEGORY_EXPERIENCE_POLICY = Object.freeze({
     navigationModes: ['CONTEXTUAL', 'FLOOR_TRAVERSE'],
     detailPresentations: ['MORPH', 'ROOM_DOSSIER'],
     commitStyles: ['MATERIAL'],
+    persistentTray: false,
     context: Object.freeze({ tableNumber: false, serviceMode: false, passenger: false }),
   }),
   LOGISTICS: Object.freeze({
@@ -39,6 +44,7 @@ const CATEGORY_EXPERIENCE_POLICY = Object.freeze({
     navigationModes: ['CONTEXTUAL', 'JOURNEY_TIMELINE'],
     detailPresentations: ['MORPH', 'SEAT_DOSSIER'],
     commitStyles: ['MATERIAL'],
+    persistentTray: false,
     context: Object.freeze({ tableNumber: false, serviceMode: false, passenger: true }),
   }),
   TRANSIT: Object.freeze({
@@ -46,6 +52,7 @@ const CATEGORY_EXPERIENCE_POLICY = Object.freeze({
     navigationModes: ['CONTEXTUAL', 'JOURNEY_TIMELINE'],
     detailPresentations: ['MORPH', 'SEAT_DOSSIER'],
     commitStyles: ['MATERIAL'],
+    persistentTray: false,
     context: Object.freeze({ tableNumber: false, serviceMode: false, passenger: true }),
   }),
   DEFAULT: Object.freeze({
@@ -53,12 +60,13 @@ const CATEGORY_EXPERIENCE_POLICY = Object.freeze({
     navigationModes: ['CONTEXTUAL'],
     detailPresentations: ['MORPH', 'SERVICE_DOSSIER'],
     commitStyles: ['MATERIAL'],
+    persistentTray: false,
     context: Object.freeze({ tableNumber: false, serviceMode: false, passenger: false }),
   }),
 });
 
 export function experiencePolicyForCategory(category) {
-  return CATEGORY_EXPERIENCE_POLICY[String(category || '').toUpperCase()] || CATEGORY_EXPERIENCE_POLICY.DEFAULT;
+  return CATEGORY_EXPERIENCE_POLICY[String(category || '').trim().toUpperCase()] || CATEGORY_EXPERIENCE_POLICY.DEFAULT;
 }
 
 export { CATEGORY_EXPERIENCE_POLICY };
