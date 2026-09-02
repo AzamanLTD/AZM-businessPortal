@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 
-const sourcePath = new URL('./HotelFrontDesk.jsx', import.meta.url);
+const sourcePath = fileURLToPath(new URL('./HotelFrontDesk.jsx', import.meta.url));
 
 describe('HotelFrontDesk walk-in customer identity contract', () => {
   it('uses the public Azaman customer identifier', async () => {
