@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { storefrontApi } from '@/services/storefrontApi';
+import ExperienceSimulator from '@/components/ExperienceSimulator';
 
 const PRESET_META = {
   DINING_JOURNEY: {
@@ -292,49 +293,7 @@ export default function ExperienceStudio() {
           </div>
 
           <div className="space-y-6">
-            <section className="sticky top-6 overflow-hidden rounded-2xl border" style={{ borderColor: 'var(--line)', background: 'var(--surface)' }}>
-              <div className="border-b px-5 py-4" style={{ borderColor: 'var(--line)' }}>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: 'var(--accent)' }}>Customer preview</p>
-                <h2 className="mt-1 text-lg font-bold" style={{ color: 'var(--text)' }}>{presetMeta.title}</h2>
-                <p className="mt-1 text-xs leading-5" style={{ color: 'var(--text-3)' }}>{presetMeta.description}</p>
-              </div>
-              <div className="space-y-3 p-5">
-                {presetMeta.steps.map((step, index) => (
-                  <div key={step} className="flex items-center gap-3 rounded-xl border px-4 py-3" style={{ borderColor: 'var(--line)' }}>
-                    <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-bold text-white" style={{ background: 'var(--accent)' }}>{index + 1}</div>
-                    <span className="text-sm" style={{ color: 'var(--text)' }}>{step}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="border-t p-5" style={{ borderColor: 'var(--line)' }}>
-                <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Commit animation</p>
-                <p className="mt-1 text-xs leading-5" style={{ color: 'var(--text-3)' }}>This is the visual language used when a customer commits an item or reservation.</p>
-                <div className="mt-3 space-y-2">
-                  {allowedCommitStyles.map((style) => (
-                    <button
-                      key={style}
-                      type="button"
-                      onClick={() => patch('commit.style', style)}
-                      className="flex w-full items-center justify-between rounded-xl border px-4 py-3 text-sm"
-                      style={{ borderColor: draft.commit.style === style ? 'var(--accent)' : 'var(--line)', color: 'var(--text)' }}
-                    >
-                      <span>{style === 'PAPER_RIP' ? 'Paper rip into tray' : style === 'LIFT_INTO_TRAY' ? 'Lift into tray' : 'Material commit'}</span>
-                      {draft.commit.style === style && <span className="text-[10px] font-bold uppercase" style={{ color: 'var(--accent)' }}>Selected</span>}
-                    </button>
-                  ))}
-                </div>
-                <div className="mt-4">
-                  <Toggle
-                    label="Keep a persistent customer tray / bag"
-                    checked={draft.commit.persistentTray}
-                    onChange={(value) => patch('commit.persistentTray', value)}
-                  />
-                </div>
-              </div>
-              <div className="border-t px-5 py-4 text-xs" style={{ borderColor: 'var(--line)', color: 'var(--text-3)' }}>
-                Accessibility-safe motion is always enabled. Businesses cannot script arbitrary animation sequences.
-              </div>
-            </section>
+            <ExperienceSimulator blueprint={draft} category={category} />
           </div>
         </div>
       </div>
