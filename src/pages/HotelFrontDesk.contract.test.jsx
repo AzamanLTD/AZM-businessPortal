@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+// Contract guard for the public customer identity boundary.
 describe('HotelFrontDesk walk-in customer identity contract', () => {
   it('uses the public Azaman customer identifier', async () => {
     const source = await readFile(join(process.cwd(), 'src/pages/HotelFrontDesk.jsx'), 'utf8');
