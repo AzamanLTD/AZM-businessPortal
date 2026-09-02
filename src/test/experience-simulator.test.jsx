@@ -29,7 +29,8 @@ describe('ExperienceSimulator', () => {
 
     expect(screen.getByText('A menu that feels like a place')).toBeInTheDocument();
     expect(screen.getByText('Turn through courses and specials')).toBeInTheDocument();
-    expect(screen.getByText('Restaurant · contextual guidance')).toBeInTheDocument();
+    expect(screen.getByText('Restaurant')).toBeInTheDocument();
+    expect(screen.getByText('contextual')).toBeInTheDocument();
   });
 
   it('walks the draft through browse, focus, detail and commit stages', () => {
@@ -37,7 +38,7 @@ describe('ExperienceSimulator', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Try next step' }));
     expect(screen.getByText('Chef’s peppered chicken')).toBeInTheDocument();
-    expect(screen.getByText('Dish dossier')).toBeInTheDocument();
+    expect(screen.getByText('DISH DOSSIER')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Try next step' }));
     expect(screen.getByText('Focused detail')).toBeInTheDocument();
