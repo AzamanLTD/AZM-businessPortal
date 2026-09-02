@@ -2,13 +2,15 @@ import '@testing-library/jest-dom';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const saveExperience = vi.fn();
-const getExperience = vi.fn();
+const mocks = vi.hoisted(() => ({
+  saveExperience: vi.fn(),
+  getExperience: vi.fn(),
+}));
 
 vi.mock('@/services/storefrontApi', () => ({
   storefrontApi: {
-    getExperience,
-    saveExperience,
+    getExperience: mocks.getExperience,
+    saveExperience: mocks.saveExperience,
   },
 }));
 
@@ -41,8 +43,8 @@ const response = {
 describe('ExperienceStudio commit controls', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    getExperience.mockResolvedValue(response);
-    saveExperience.mockResolvedValue(blueprint);
+    mocks.getExperience.mockResolvedValue(response);
+    mocks.saveExperience.mockResolvedValue(blueprint);
   });
 
   it('restores the commit metaphor and persistent tray controls for the active preset', async () => {
@@ -61,10 +63,10 @@ describe('ExperienceStudio commit controls', () => {
     fireEvent.click(material);
 
     expect(material).toHaveStyle({ borderColor: 'var(--accent)' });
-    expect(saveExperience).not.toHaveBeenCalled();
+    expect(mocks.saveExperience).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('button', { name: /Save experience/i }));
-    await waitFor(() => expect(saveExperience).toHaveBeenCalledWith(expect.objectContaining({
+    await waitFor(() => expect(mocks.saveExperience).toHaveBeenCalledWith(expect.objectContaining({
       commit: { style: 'MATERIAL', persistentTray: true },
     })));
   });
@@ -78,7 +80,7 @@ describe('ExperienceStudio commit controls', () => {
     expect(tray).not.toBeChecked();
     fireEvent.click(screen.getByRole('button', { name: /Save experience/i }));
 
-    await waitFor(() => expect(saveExperience).toHaveBeenCalledWith(expect.objectContaining({
+    await waitFor(() => expect(mocks.saveExperience).toHaveBeenCalledWith(expect.objectContaining({
       commit: { style: 'PAPER_RIP', persistentTray: false },
     })));
   });
