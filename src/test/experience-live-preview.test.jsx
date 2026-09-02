@@ -48,7 +48,9 @@ describe('ExperienceLivePreview', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Increase quantity' }));
 
     expect(screen.getByText('$34.00')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /Tear into tray/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Preview Tear into tray/i }));
+    expect(screen.getByRole('button', { name: /^Tear into tray$/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /^Tear into tray$/i }));
     expect(screen.getByText('Added to the tray')).toBeInTheDocument();
   });
 
