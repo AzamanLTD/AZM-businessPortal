@@ -40,7 +40,7 @@ describe('ExperienceSimulator', () => {
     expect(screen.getByRole('tab', { name: 'Preview Dish dossier' })).toHaveAttribute('aria-selected', 'true');
 
     fireEvent.click(screen.getByRole('tab', { name: 'Preview Add to tray' }));
-    expect(screen.getByText('Commit complete')).toBeInTheDocument();
+    expect(screen.getByText('Add to tray')).toBeInTheDocument();
     expect(screen.getByText(/paper rip/i)).toBeInTheDocument();
   });
 
@@ -52,7 +52,7 @@ describe('ExperienceSimulator', () => {
     expect(screen.getByRole('tab', { name: 'Preview Peppered chicken' })).toHaveAttribute('aria-selected', 'true');
 
     fireEvent.click(screen.getByRole('tab', { name: 'Preview Add to tray' }));
-    expect(screen.getByText('Commit complete')).toBeInTheDocument();
+    expect(screen.getByText('Add to tray')).toBeInTheDocument();
   });
 
   it('uses a retail blueprint without inheriting dining copy', () => {
