@@ -50,7 +50,7 @@ export default function HotelFrontDesk() {
 
   // Form states for modals
   const [walkInForm, setWalkInForm] = useState({
-    guestName: '',
+    customerAzamanId: '',
     phone: '',
     roomId: '',
     nights: 1,
@@ -142,7 +142,7 @@ export default function HotelFrontDesk() {
   // Walk-In Booking Submission
   const handleWalkInSubmit = async (e) => {
     e.preventDefault();
-    if (!walkInForm.guestName || !walkInForm.roomId) {
+    if (!walkInForm.customerAzamanId || !walkInForm.roomId) {
       toast.stop('Please fill in all required fields');
       return;
     }
@@ -154,7 +154,7 @@ export default function HotelFrontDesk() {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          guestName: walkInForm.guestName,
+          customerAzamanId: walkInForm.customerAzamanId,
           phone: walkInForm.phone,
           roomId: walkInForm.roomId,
           nights: Number(walkInForm.nights),
@@ -172,7 +172,7 @@ export default function HotelFrontDesk() {
       setWalkInOpen(false);
       // Reset form
       setWalkInForm({
-        guestName: '',
+        customerAzamanId: '',
         phone: '',
         roomId: '',
         nights: 1,
@@ -698,11 +698,11 @@ export default function HotelFrontDesk() {
         <form onSubmit={handleWalkInSubmit} className="space-y-4 pt-3">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
-              label="Guest Full Name *"
+              label="Customer Azaman ID *"
               required
-              placeholder="e.g. Alice Vance"
-              value={walkInForm.guestName}
-              onChange={(e) => setWalkInForm(prev => ({ ...prev, guestName: e.target.value }))}
+              placeholder="e.g. AZM-123456789"
+              value={walkInForm.customerAzamanId}
+              onChange={(e) => setWalkInForm(prev => ({ ...prev, customerAzamanId: e.target.value.trim().toUpperCase() }))}
             />
             <Input
               label="Phone Number"
