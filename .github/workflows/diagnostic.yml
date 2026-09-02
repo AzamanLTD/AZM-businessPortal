@@ -1,0 +1,11 @@
+name: Diagnostic
+on:
+  push:
+    branches: [fix/hotel-frontdesk-customer-contract]
+permissions:
+  contents: write
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo diagnostic-ok
