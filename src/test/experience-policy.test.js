@@ -10,6 +10,7 @@ describe('category experience policy', () => {
     expect(policy.navigationModes).toEqual(['CONTEXTUAL']);
     expect(policy.detailPresentations).toEqual(['MORPH', 'DISH_DOSSIER']);
     expect(policy.commitStyles).toEqual(['MATERIAL', 'PAPER_RIP']);
+    expect(policy.persistentTray).toBe(true);
     expect(policy.context).toEqual({ tableNumber: true, serviceMode: true, passenger: false });
   });
 
@@ -20,6 +21,7 @@ describe('category experience policy', () => {
     expect(policy.navigationModes).toEqual(['CONTEXTUAL', 'FLOOR_TRAVERSE']);
     expect(policy.detailPresentations).toEqual(['MORPH', 'ROOM_DOSSIER']);
     expect(policy.commitStyles).toEqual(['MATERIAL']);
+    expect(policy.persistentTray).toBe(false);
     expect(policy.context.tableNumber).toBe(false);
   });
 
@@ -29,6 +31,7 @@ describe('category experience policy', () => {
     expect(policy.presets).toEqual(['TRAVEL_JOURNEY']);
     expect(policy.navigationModes).toEqual(['CONTEXTUAL', 'JOURNEY_TIMELINE']);
     expect(policy.detailPresentations).toEqual(['MORPH', 'SEAT_DOSSIER']);
+    expect(policy.persistentTray).toBe(false);
     expect(policy.context).toEqual({ tableNumber: false, serviceMode: false, passenger: true });
   });
 
@@ -39,6 +42,7 @@ describe('category experience policy', () => {
     expect(policy.navigationModes).toEqual(['CONTEXTUAL', 'AISLE_TRAVERSE']);
     expect(policy.detailPresentations).toEqual(['MORPH', 'PRODUCT_DOSSIER']);
     expect(policy.commitStyles).toEqual(['MATERIAL', 'LIFT_INTO_TRAY']);
+    expect(policy.persistentTray).toBe(true);
     expect(policy.context.passenger).toBe(false);
   });
 
@@ -48,6 +52,7 @@ describe('category experience policy', () => {
       navigationModes: ['CONTEXTUAL'],
       detailPresentations: ['MORPH', 'SERVICE_DOSSIER'],
       commitStyles: ['MATERIAL'],
+      persistentTray: false,
       context: { tableNumber: false, serviceMode: false, passenger: false },
     });
   });
