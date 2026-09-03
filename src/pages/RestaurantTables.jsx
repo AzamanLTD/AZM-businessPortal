@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { Card, Button, Tag, Skel, Empty, Avatar, Input, Select, Dialog } from '@/components/instrument';
 import { toast } from '@/lib/toast';
 import {
-  Grid3x3, Clock, Users, Plus, Trash2, Edit2, Play, CheckCircle, HelpCircle,
+  Grid3x3, Clock, Users, Plus, Trash2, Edit2, Play, HelpCircle,
   Move, Check, RotateCcw, AlertCircle, ShoppingBag, X, DollarSign, Calendar
 } from 'lucide-react';
 
@@ -363,24 +363,6 @@ export default function RestaurantTables() {
       await loadTabDetails(currentTabDetails.id);
     } catch (err) {
       toast.stop(err.message || 'Failed to finalize bill');
-    }
-  };
-
-  const handleCloseAndPayTab = async () => {
-    if (!currentTabDetails) return;
-    try {
-      await marketplaceApi.confirmDineInTab(currentTabDetails.id);
-      toast.go('Payment confirmed and tab closed');
-
-      if (activeTabTable) {
-        await updateStatusMut.mutateAsync({ id: activeTabTable.id, status: 'CLEANING' });
-        refetchTables();
-      }
-
-      setActiveTabTable(null);
-      setCurrentTabDetails(null);
-    } catch (err) {
-      toast.stop(err.message || 'Failed to process payment confirmation');
     }
   };
 
@@ -826,9 +808,9 @@ export default function RestaurantTables() {
                       <Button variant="secondary" size="sm" onClick={handleFinalizeTab} className="flex-1">
                         Generate Bill
                       </Button>
-                      <Button variant="primary" size="sm" onClick={handleCloseAndPayTab} className="flex-1">
-                        Confirm Payment
-                      </Button>
+                      <div className="flex flex-1 items-center justify-center rounded-md border border-[var(--line)] px-2 text-center text-xs text-[var(--text-3)]">
+                        Await customer payment
+                      </div>
                     </div>
                   </div>
                 )}
