@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 
 import { orders as ordersApi, invoices as invoicesApi, request } from '@/lib/api';
-import { reservations as resApi, transit as transitApi, checkIn as checkInApi, reviews as reviewsApi } from '@/lib/marketplaceApi';
+import { reservations as resApi, transit as transitApi, checkIn as checkInApi, reviews as reviewsApi, bookingOpsApi } from '@/lib/marketplaceApi';
 import { useAuth } from '@/lib/AuthContext';
 import { fmtUSDC, fmt, ORDER_STATUS_META, KYB_STATUS_META } from '@/lib/utils';
 import { getTypeConfig } from '@/lib/businessTypes';
@@ -184,7 +184,7 @@ export default function Dashboard() {
     queryKey: ['dashboard-analytics-orders'], queryFn: () => ordersApi.list({ limit: 50 }), refetchInterval: 60_000,
   });
   const { data: invoiceData } = useQuery({
-    queryKey: ['dashboard-invoices'], queryFn: () => invoicesApi.list({ limit: 50 }), refetchInterval: 60_000,
+    queryKey: ['dashboard-invoice-stats'], queryFn: () => bookingOpsApi.invoiceStats(), refetchInterval: 60_000,
   });
   const { data: resStatsData } = useQuery({
     queryKey: ['reservation-stats'], queryFn: () => resApi.stats(),
@@ -211,7 +211,6 @@ export default function Dashboard() {
   const stats = statsData?.stats || {};
   const recent = recentData?.orders || [];
   const analyticsOrders = analyticsData?.orders || [];
-  const allInvoices = invoiceData?.invoices || [];
   const dailyRevenue = useMemo(() => {
     if (Array.isArray(stats.revenueByDay)) return stats.revenueByDay;
     return computeDailyRevenue(analyticsOrders, 30);
@@ -220,10 +219,10 @@ export default function Dashboard() {
   const hasRevenue = dailyRevenue.some(d => d.revenue > 0);
   const funnelMax = Math.max(funnel[0]?.count || 0, 1);
   const invoiceStats = useMemo(() => ({
-    sent: allInvoices.filter(i => i.status === 'SENT').length,
-    paid: allInvoices.filter(i => i.status === 'PAID').length,
-    paidRevenue: allInvoices.filter(i => i.status === 'PAID').reduce((s, i) => s + (Number(i.billTotalUsdc) || 0), 0),
-  }), [allInvoices]);
+    sent: Number(invoiceData?.sentCount || 0),
+    paid: Number(invoiceData?.paidCount || 0),
+    paidRevenue: Number(invoiceData?.totalRevenueUsdc || 0),
+  }), [invoiceData]);
   const resStats = resStatsData?.stats || {};
   const checkInStats = checkInStatsData?.stats || {};
   const reviewStats = reviewStatsData?.stats || {};
