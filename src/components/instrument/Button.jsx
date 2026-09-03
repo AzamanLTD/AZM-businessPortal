@@ -10,7 +10,7 @@ const SIZE = { xs: 'i-btn--xs', sm: 'i-btn--sm', md: '', lg: 'i-btn--lg' };
 
 const Button = forwardRef(function Button(
   { variant = 'default', size = 'md', icon: Icon, iconOnly = false, busy = false,
-    kbd, children, className, disabled = false, type = 'button', ...props },
+    kbd, children, className, disabled = false, ...props },
   ref
 ) {
   const isDisabled = disabled || busy;
@@ -18,7 +18,6 @@ const Button = forwardRef(function Button(
   return (
     <button
       ref={ref}
-      type={type}
       className={clsx('i-btn', VARIANT[variant], SIZE[size], iconOnly && 'i-btn--icon', className)}
       data-busy={busy || undefined}
       disabled={isDisabled}
