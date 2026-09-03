@@ -212,7 +212,10 @@ export default function Dashboard() {
   const recent = recentData?.orders || [];
   const analyticsOrders = analyticsData?.orders || [];
   const allInvoices = invoiceData?.invoices || [];
-  const dailyRevenue = useMemo(() => computeDailyRevenue(analyticsOrders, 30), [analyticsOrders]);
+  const dailyRevenue = useMemo(() => {
+    if (Array.isArray(stats.revenueByDay)) return stats.revenueByDay;
+    return computeDailyRevenue(analyticsOrders, 30);
+  }, [stats.revenueByDay, analyticsOrders]);
   const funnel = useMemo(() => computeFunnel(analyticsOrders), [analyticsOrders]);
   const hasRevenue = dailyRevenue.some(d => d.revenue > 0);
   const funnelMax = Math.max(funnel[0]?.count || 0, 1);
