@@ -23,7 +23,6 @@ import {
   Plus,
   Minus,
   Search,
-  CheckCircle,
   Clock,
   MapPin,
   Utensils,
@@ -165,19 +164,6 @@ export default function DineIn() {
     },
     onError: (err) => {
       toast.stop(err.message || 'Failed to finalize tab');
-    },
-  });
-
-  const closeTabMutation = useMutation({
-    mutationFn: (tabId) =>
-      marketplaceApi.confirmDineInTab(tabId),
-    onSuccess: () => {
-      toast.go('Tab paid & closed successfully. Invoice printed!');
-      queryClient.invalidateQueries({ queryKey: ['openTabs'] });
-      setSelectedTabId(null);
-    },
-    onError: (err) => {
-      toast.stop(err.message || 'Failed to close tab');
     },
   });
 
@@ -553,15 +539,9 @@ export default function DineIn() {
                               Request Bill (Finalize)
                             </Button>
                           ) : (
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              onClick={() => closeTabMutation.mutate(selectedTabId)}
-                              className="w-full bg-[var(--go)]:bg-[var(--go)] flex items-center justify-center gap-1.5 h-10"
-                            >
-                              <CheckCircle className="w-4 h-4" />
-                              Confirm & Pay Tab
-                            </Button>
+                            <div className="rounded-lg border border-[var(--line)] bg-[var(--surface-2)] px-3 py-2 text-center text-xs text-[var(--text-3)]">
+                              Bill sent — awaiting the customer’s secure payment confirmation.
+                            </div>
                           )}
                         </div>
                       )}
