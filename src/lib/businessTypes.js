@@ -82,9 +82,12 @@ export function getBusinessType(category) {
   return map[category?.toUpperCase()] || 'GENERAL';
 }
 
-/** Get the type config for a business profile */
-export function getTypeConfig(bizProfile) {
-  const type = getBusinessType(bizProfile?.category);
+/** Resolve configuration from a full business profile or a type/category string. */
+export function getTypeConfig(bizProfileOrType) {
+  const categoryOrType = typeof bizProfileOrType === 'string'
+    ? bizProfileOrType
+    : bizProfileOrType?.category;
+  const type = getBusinessType(categoryOrType);
   return { type, ...BUSINESS_TYPES[type] };
 }
 
