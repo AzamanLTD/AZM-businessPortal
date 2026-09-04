@@ -15,7 +15,7 @@ const TransitTrips = lazy(() => import('@/pages/TransitTrips'));
 const Reservations = lazy(() => import('@/pages/Reservations'));
 const CheckIn = lazy(() => import('@/pages/CheckIn'));
 const Reviews = lazy(() => import('@/pages/Reviews'));
-const DineIn = lazy(() => import('@/pages/DineIn'));
+const DineIn = lazy(() => import('@/pages/DineInV2'));
 const Guests = lazy(() => import('@/pages/Guests'));
 const Marketing = lazy(() => import('@/pages/Marketing'));
 const FinanceV2 = lazy(() => import('@/pages/FinanceV2'));
