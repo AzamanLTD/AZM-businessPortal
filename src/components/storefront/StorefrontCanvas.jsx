@@ -2,20 +2,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // AZAMAN Business Portal — True 2D Visual Storefront Builder
 //
-// Upgraded from a flat linear list to a real 2D grid canvas with:
-//   • Drag-to-reposition tiles anywhere on the canvas
-//   • Resize tiles by dragging corner handles
-//   • Multi-column support (1-4 col span)
-//   • Visual grid overlay (drag guides)
-//   • Snap-to-grid positioning
-//   • Click to select, double-click to configure
-//
-// Reference: Wix drag-and-drop, Webflow layout grid, Shopify theme editor,
-//            Square Online visual builder
+// Layout mutation is intentionally limited to the tile.position patch domain.
+// Content/configuration stays in tile.props. This boundary is important for
+// Studio V2 because the visual stage will eventually sit on top of a shared
+// storefront renderer rather than maintain an independent fake preview.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useCallback, useRef, useState, useEffect } from 'react';
-import { Trash2, Plus, Image, Info, ShoppingBag, Star, Phone, MapPin, MousePointerClick, Video, BadgePercent, Instagram, BarChart, Hash, Code, Sparkles, Layers, Maximize2, Move } from 'lucide-react';
+import { Trash2, Plus, Image, Info, ShoppingBag, Star, Phone, MapPin, MousePointerClick, Video, BadgePercent, Instagram, BarChart, Hash, Code, Sparkles, Layers, Move } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const WIDGET_ICONS = {
@@ -37,23 +31,20 @@ const WIDGET_ICONS = {
 };
 
 const GRID_COLS = 4;
-const ROW_HEIGHT = 80; // px per row unit
-const GAP = 12; // gap between tiles
+const ROW_HEIGHT = 80;
+const GAP = 12;
 
 export default function StorefrontCanvas({
   draft, theme, selectedTileId, onSelectTile, onUpdateTile, onRemoveTile, onReorderTiles,
 }) {
   const tiles = draft?.layoutJson?.tiles ?? [];
   const canvasRef = useRef(null);
-  const [dragState, setDragState] = useState(null); // { tileId, startX, startY, origCol, origRow, origColSpan, origRowSpan, mode: 'move' | 'resize' }
+  const [dragState, setDragState] = useState(null);
   const [canvasWidth, setCanvasWidth] = useState(600);
 
-  // Track canvas width for grid calculations
   useEffect(() => {
     const updateWidth = () => {
-      if (canvasRef.current) {
-        setCanvasWidth(canvasRef.current.offsetWidth);
-      }
+      if (canvasRef.current) setCanvasWidth(canvasRef.current.offsetWidth);
     };
     updateWidth();
     const observer = new ResizeObserver(updateWidth);
@@ -63,7 +54,6 @@ export default function StorefrontCanvas({
 
   const colWidth = (canvasWidth - GAP * (GRID_COLS - 1)) / GRID_COLS;
 
-  // Convert grid position to pixel position
   const gridToPx = (col, row, colSpan, rowSpan) => ({
     left: col * (colWidth + GAP),
     top: row * (ROW_HEIGHT + GAP),
@@ -71,17 +61,6 @@ export default function StorefrontCanvas({
     height: rowSpan * ROW_HEIGHT + (rowSpan - 1) * GAP,
   });
 
-  // Convert pixel to grid position
-  const pxToGrid = (pxX, pxY) => {
-    const col = Math.round(pxX / (colWidth + GAP));
-    const row = Math.round(pxY / (ROW_HEIGHT + GAP));
-    return {
-      col: Math.max(0, Math.min(col, GRID_COLS - 1)),
-      row: Math.max(0, row),
-    };
-  };
-
-  // Start dragging a tile
   const startDrag = useCallback((e, tile, mode) => {
     e.stopPropagation();
     e.preventDefault();
@@ -98,7 +77,6 @@ export default function StorefrontCanvas({
     onSelectTile(tile.id);
   }, [onSelectTile]);
 
-  // Handle mouse move during drag
   useEffect(() => {
     if (!dragState) return;
 
@@ -111,28 +89,27 @@ export default function StorefrontCanvas({
       if (dragState.mode === 'move') {
         const newCol = Math.max(0, Math.min(
           dragState.origCol + Math.round(deltaX / (colWidth + GAP)),
-          GRID_COLS - (dragState.origColSpan)
+          GRID_COLS - dragState.origColSpan
         ));
         const newRow = Math.max(0, dragState.origRow + Math.round(deltaY / (ROW_HEIGHT + GAP)));
+        // IMPORTANT: updateTile's second argument is a props patch. Send only
+        // `position` so grid geometry cannot leak into tile.props.
         onUpdateTile(tile.id, {
-          ...tile,
           position: { ...tile.position, col: newCol, row: newRow },
         });
       } else if (dragState.mode === 'resize') {
         const newColSpan = Math.max(1, Math.min(
           dragState.origColSpan + Math.round(deltaX / (colWidth + GAP)),
-          GRID_COLS - (dragState.origCol) + 1
+          GRID_COLS - dragState.origCol
         ));
         const newRowSpan = Math.max(1, dragState.origRowSpan + Math.round(deltaY / (ROW_HEIGHT + GAP)));
         onUpdateTile(tile.id, {
-          ...tile,
           position: { ...tile.position, colSpan: newColSpan, rowSpan: newRowSpan },
         });
       }
     };
 
     const handleUp = () => setDragState(null);
-
     window.addEventListener('mousemove', handleMove);
     window.addEventListener('mouseup', handleUp);
     return () => {
@@ -141,7 +118,6 @@ export default function StorefrontCanvas({
     };
   }, [dragState, tiles, colWidth, onUpdateTile]);
 
-  // Calculate canvas height based on max row
   const maxRow = tiles.reduce((max, t) => {
     const rowEnd = (t.position?.row ?? 0) + (t.position?.rowSpan ?? 2);
     return Math.max(max, rowEnd);
@@ -169,7 +145,6 @@ export default function StorefrontCanvas({
 
   return (
     <div className="max-w-2xl mx-auto">
-      {/* Toolbar */}
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs font-medium" style={{ color: 'var(--f-text-3)' }}>
           {tiles.length} tile{tiles.length !== 1 ? 's' : ''} — drag to move, drag corner to resize
@@ -181,7 +156,6 @@ export default function StorefrontCanvas({
         </div>
       </div>
 
-      {/* Canvas */}
       <div
         ref={canvasRef}
         className="relative rounded-2xl border-2 overflow-hidden"
@@ -197,7 +171,6 @@ export default function StorefrontCanvas({
           backgroundPosition: '0 0',
         }}
       >
-        {/* Tiles */}
         {tiles.map((tile) => {
           const col = tile.position?.col ?? 0;
           const row = tile.position?.row ?? 0;
@@ -214,9 +187,9 @@ export default function StorefrontCanvas({
               onMouseDown={(e) => startDrag(e, tile, 'move')}
               onClick={(e) => { e.stopPropagation(); onSelectTile(tile.id); }}
               className={cn(
-                "absolute rounded-xl border-2 transition-shadow cursor-move select-none overflow-hidden",
-                isDragging && "opacity-80 shadow-2xl z-50",
-                !isDragging && "transition-all duration-150"
+                'absolute rounded-xl border-2 transition-shadow cursor-move select-none overflow-hidden',
+                isDragging && 'opacity-80 shadow-2xl z-50',
+                !isDragging && 'transition-all duration-150'
               )}
               style={{
                 left: pos.left,
@@ -231,11 +204,10 @@ export default function StorefrontCanvas({
                 cursor: isDragging ? 'grabbing' : 'grab',
               }}
             >
-              {/* Tile content */}
               <div className="flex flex-col h-full p-3">
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ background: isSelected ? 'var(--f-surface-sunken)' : 'var(--f-surface-sunken)' }}>
+                    style={{ background: 'var(--f-surface-sunken)' }}>
                     <Icon className="w-4 h-4" style={{ color: isSelected ? 'var(--f-tint-color)' : 'var(--f-text-3)' }} />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -264,26 +236,20 @@ export default function StorefrontCanvas({
                 </div>
               </div>
 
-              {/* Selected indicator bar */}
               {isSelected && (
                 <div className="absolute left-0 top-0 bottom-0 w-1" style={{ background: 'var(--f-tint-color)' }} />
               )}
 
-              {/* Resize handle (bottom-right corner) */}
               {isSelected && (
                 <div
                   onMouseDown={(e) => startDrag(e, tile, 'resize')}
                   className="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize flex items-end justify-end"
                   style={{ touchAction: 'none' }}
                 >
-                  <div
-                    className="w-3 h-3 border-r-2 border-b-2 rounded-br-md"
-                    style={{ borderColor: 'var(--f-tint-color)' }}
-                  />
+                  <div className="w-3 h-3 border-r-2 border-b-2 rounded-br-md" style={{ borderColor: 'var(--f-tint-color)' }} />
                 </div>
               )}
 
-              {/* Move handle badge (top-left) */}
               {isSelected && (
                 <div className="absolute -top-2 -left-2 px-1.5 py-0.5 rounded-md text-[10px] font-bold flex items-center gap-1"
                   style={{ background: 'var(--f-tint-color)', color: 'white' }}>
