@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { request } from '../lib/apiCore';
 
-const DEFAULT_REFRESH_SECONDS = 60;
+const DEFAULT_REFRESH_SECONDS = 600;
 
-const unwrapRatePayload = (payload) => {
+export const unwrapRatePayload = (payload) => {
   const data = payload?.data && typeof payload.data === 'object' ? payload.data : payload;
   const rawRate = data?.liveRetailRate ?? data?.liveUsdToGhs ?? data?.rate;
   const rate = Number(rawRate);
@@ -14,6 +14,9 @@ const unwrapRatePayload = (payload) => {
     : DEFAULT_REFRESH_SECONDS;
 
   return {
+    pair: data?.pair?.toString() || 'USDC/GHS',
+    settlementCurrency: data?.settlementCurrency?.toString() || 'USDC',
+    displayCurrency: data?.displayCurrency?.toString() || 'GHS',
     ghsPerUsdc: Number.isFinite(rate) && rate > 0 ? rate : 0,
     source: data?.rateSource?.toString() || 'UNKNOWN',
     lastSync: data?.lastSync ? new Date(data.lastSync) : null,
@@ -35,6 +38,9 @@ export function useFxRate() {
   });
 
   const data = query.data || {
+    pair: 'USDC/GHS',
+    settlementCurrency: 'USDC',
+    displayCurrency: 'GHS',
     ghsPerUsdc: 0,
     source: 'UNAVAILABLE',
     lastSync: null,
@@ -50,7 +56,7 @@ export function useFxRate() {
   return {
     ...query,
     ...data,
-    isUsable: data.ghsPerUsdc > 0,
+    isUsable: data.pair === 'USDC/GHS' && data.settlementCurrency === 'USDC' && data.displayCurrency === 'GHS' && data.ghsPerUsdc > 0,
     isStale: query.isError || (anchor > 0 && remainingSeconds === 0),
     remainingSeconds,
     fetchedAt: anchor > 0 ? new Date(anchor) : null,
