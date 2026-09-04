@@ -30,7 +30,7 @@ describe('storefrontApi.saveExperience', () => {
           layoutJson: {
             gridColumns: 4,
             tiles: [{ id: 'tile-1', widgetType: 'hero_header' }],
-            experience: { preset: 'DINING_JOURNEY' },
+            experience: { preset: 'DINING_JOURNEY', navigation: { mode: 'CONTEXTUAL' } },
           },
         },
       });
