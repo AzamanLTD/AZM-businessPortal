@@ -1,0 +1,56 @@
+name: Integrate Storefront Studio V2
+
+on:
+  push:
+    branches:
+      - feat/storefront-studio-v2-workbench
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Wire Studio V2 into Storefront Editor
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('src/pages/StorefrontEditor.jsx')
+          s = p.read_text()
+          replacements = [
+            (
+              "import MagicLayout from '@/components/storefront/MagicLayout';",
+              "import MagicLayout from '@/components/storefront/MagicLayout';\nimport StorefrontStudioV2 from '@/components/storefront/StorefrontStudioV2';"
+            ),
+            (
+              "  const [showQR, setShowQR]                           = useState(false);",
+              "  const [showQR, setShowQR]                           = useState(false);\n  const [showStudioV2, setShowStudioV2] = useState(false);"
+            ),
+            (
+              "          <button onClick={() => navigate('/storefront/analytics')}",
+              "          <button onClick={() => setShowStudioV2(true)}\n            className=\"flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all\"\n            style={{ color: 'var(--text)', borderColor: 'var(--line)', background: 'var(--surface-sunk)' }}>\n            <Layout className=\"w-4 h-4\" />Studio V2\n          </button>\n          <button onClick={() => navigate('/storefront/analytics')}"
+            ),
+            (
+              "      </Card>\n\n      {/* ── QR Code Panel ── */}",
+              "      </Card>\n\n      {showStudioV2 && (\n        <StorefrontStudioV2\n          draft={draft}\n          saveDraft={saveDraft}\n          business={bizProfile}\n          onClose={() => setShowStudioV2(false)}\n        />\n      )}\n\n      {/* ── QR Code Panel ── */}"
+            ),
+          ]
+          for old, new in replacements:
+              if old not in s:
+                  raise SystemExit(f'Expected StorefrontEditor anchor not found: {old[:80]}')
+              if s.count(old) != 1:
+                  raise SystemExit(f'Expected exactly one StorefrontEditor anchor: {old[:80]}')
+              s = s.replace(old, new, 1)
+          p.write_text(s)
+          PY
+          rm -f .github/workflows/once-integrate-studio-v2.yml
+          git add src/pages/StorefrontEditor.jsx .github/workflows/once-integrate-studio-v2.yml
+          git diff --cached --check
+          git commit -m "feat: expose Storefront Studio V2 from storefront editor"
+          git push origin HEAD:feat/storefront-studio-v2-workbench
