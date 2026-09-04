@@ -3,7 +3,7 @@ import { request } from '../lib/apiCore';
 
 const DEFAULT_REFRESH_SECONDS = 600;
 
-const unwrapRatePayload = (payload) => {
+export const unwrapRatePayload = (payload) => {
   const data = payload?.data && typeof payload.data === 'object' ? payload.data : payload;
   const rawRate = data?.liveRetailRate ?? data?.liveUsdToGhs ?? data?.rate;
   const rate = Number(rawRate);
