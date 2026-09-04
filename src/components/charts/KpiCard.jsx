@@ -16,12 +16,15 @@ export function KpiCard({ label, value, delta, deltaType = 'positive', sparkData
   const deltaBgClass = isPositive ? 'bg-ok-subtle' : 'bg-bad-subtle';
   const deltaTextClass = isPositive ? 'text-ok' : 'text-bad';
 
-  // Format value to extract numbers if possible for AnimatedNumber.
   const numericValue = typeof value === 'string' ? parseFloat(value.replace(/[^0-9.-]/g, '')) : value;
   const hasNumber = !isNaN(numericValue) && numericValue !== null;
-  const stringSuffix = typeof value === 'string' ? value.replace(/[0-9.,-]/g, '').trim() : '';
-  const stringPrefix = typeof value === 'string' ? value.split(/[0-9]/)[0] : '';
   const isDollarAmount = typeof value === 'string' && value.trim().startsWith('$') && Number.isFinite(Number(numericValue));
+  const stringPrefix = typeof value === 'string'
+    ? (isDollarAmount ? '$' : value.split(/[0-9]/)[0])
+    : '';
+  const stringSuffix = typeof value === 'string'
+    ? (isDollarAmount ? '' : value.replace(/[0-9.,-]/g, '').trim())
+    : '';
   const ghsEquivalent = isDollarAmount && fx.isUsable
     ? Number(numericValue) * Number(fx.ghsPerUsdc)
     : null;
