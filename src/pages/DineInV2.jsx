@@ -264,7 +264,7 @@ export default function DineInV2() {
       <Card className="border p-3 text-xs text-[var(--text-3)]">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span>Settlement currency: <strong className="text-[var(--text-1)]">USDC</strong> · Local display: <strong className="text-[var(--text-1)]">GHS</strong></span>
-          <span>{fx.isUsable ? `1 USDC ≈ GH₵ ${money(fx.ghsPerUsdc)} · ${fx.source} · refresh in ${fx.remainingSeconds}s` : 'Live GHS rate temporarily unavailable · USDC remains authoritative'}</span>
+          <span>{fx.isUsable ? `1 USDC ≈ GH₵ ${Number(fx.ghsPerUsdc).toFixed(2)} · ${fx.source} · refresh in ${fx.remainingSeconds}s` : 'Live GHS rate temporarily unavailable · USDC remains authoritative'}</span>
         </div>
       </Card>
 
