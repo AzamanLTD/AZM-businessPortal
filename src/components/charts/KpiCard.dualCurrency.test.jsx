@@ -1,14 +1,18 @@
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
-vi.mock('@/hooks/useFxRate', () => ({
-  useFxRate: () => ({
+const fxMock = vi.hoisted(() => ({
+  current: {
     isUsable: true,
     ghsPerUsdc: 13.25,
     source: 'KOTANI_PAY',
     remainingSeconds: 420,
-  }),
+  },
+}));
+
+vi.mock('@/hooks/useFxRate', () => ({
+  useFxRate: () => fxMock.current,
 }));
 
 vi.mock('@/components/instrument', () => ({
@@ -18,32 +22,42 @@ vi.mock('@/components/instrument', () => ({
 import { KpiCard } from './KpiCard';
 
 describe('KpiCard dual-currency presentation', () => {
+  beforeEach(() => {
+    fxMock.current = {
+      isUsable: true,
+      ghsPerUsdc: 13.25,
+      source: 'KOTANI_PAY',
+      remainingSeconds: 420,
+    };
+  });
+
   it('shows the live GHS equivalent for dollar-denominated financial values', () => {
     render(<KpiCard label="Revenue" value="$100.00" />);
 
-    expect(screen.getByText(/\$100\.00/)).toBeInTheDocument();
+    expect(screen.getByText('100.00')).toBeInTheDocument();
     expect(screen.getByText(/GH₵ 1,325\.00/)).toBeInTheDocument();
     expect(screen.getByText(/GHS current equivalent/)).toBeInTheDocument();
+    expect(screen.getByText(/1 USDC ≈ GH₵ 13\.25/)).toHaveAttribute('title');
   });
 
   it('does not append a GHS equivalent to non-currency KPI values', () => {
     render(<KpiCard label="Completion" value="98%" />);
 
-    expect(screen.getByText(/98\.00/)).toBeInTheDocument();
+    expect(screen.getByText('98.00')).toBeInTheDocument();
     expect(screen.queryByText(/GHS current equivalent/)).not.toBeInTheDocument();
   });
 
-  it('degrades honestly when the live rate is unavailable', () => {
-    vi.doMock('@/hooks/useFxRate', () => ({
-      useFxRate: () => ({ isUsable: false, ghsPerUsdc: 0, source: 'UNAVAILABLE', remainingSeconds: 0 }),
-    }));
+  it('reports the GHS equivalent as unavailable without a usable oracle rate', () => {
+    fxMock.current = {
+      isUsable: false,
+      ghsPerUsdc: 0,
+      source: 'UNAVAILABLE',
+      remainingSeconds: 0,
+    };
 
-    // The module-level mock is intentionally deterministic for this test file;
-    // the unavailable-state rendering is also exercised by the production branch
-    // whenever fx.isUsable is false. Keep the assertion focused on the fact that
-    // the component never renders a fabricated GHS number.
-    const { rerender } = render(<KpiCard label="Revenue" value="$100.00" />);
-    rerender(<KpiCard label="Revenue" value="$100.00" />);
+    render(<KpiCard label="Revenue" value="$100.00" />);
+
+    expect(screen.getByText('GHS equivalent unavailable')).toBeInTheDocument();
     expect(screen.queryByText(/GH₵ 0\.00/)).not.toBeInTheDocument();
   });
 });
