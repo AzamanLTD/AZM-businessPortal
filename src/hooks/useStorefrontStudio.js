@@ -35,7 +35,7 @@ export function useStorefrontStudio({ draft, saveDraft }) {
   }, [document, selection]);
 
   const patchNode = useCallback((nodeId, domain, patch) => commit(updateStudioNode(document, nodeId, domain, patch), selection), [commit, document, selection]);
-  const addNode = useCallback((type, parentId = null) => {
+  const addNode = useCallback((type, parentId = null, index = -1) => {
     if (!STUDIO_NODE_TYPES.includes(type)) return;
     const node = createChildNode({
       id: makeId(type), type, props: defaultPropsFor(type),
@@ -43,7 +43,7 @@ export function useStorefrontStudio({ draft, saveDraft }) {
       layout: { mode: parentId ? 'flow' : 'block' }, responsive: {},
       actions: type === 'button' ? { tap: { type: 'openCart' } } : {},
     });
-    commit(insertNode(document, node, { parentId }), [node.id]);
+    commit(insertNode(document, node, { parentId, index }), [node.id]);
   }, [commit, document]);
 
   const move = useCallback((nodeId, target) => commit(moveNode(document, nodeId, target), selection), [commit, document, selection]);
