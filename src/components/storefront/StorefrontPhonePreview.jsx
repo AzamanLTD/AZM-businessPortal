@@ -189,12 +189,13 @@ function LocationMap({ props, tokens }) {
 
 function ActionButtons({ props, tokens }) {
   const accent = tokens.accent || '#6C4FD1';
+  const customLabel = typeof props.customLabel === 'string' && props.customLabel.trim() ? props.customLabel.trim() : null;
   const btns = [];
-  if (props.showOrder)  btns.push({ label: 'Order Now', bg: accent, color: '#fff' });
+  if (props.showOrder)  btns.push({ label: customLabel || 'Order Now', bg: accent, color: '#fff' });
   if (props.showBook)   btns.push({ label: 'Book', bg: accent, color: '#fff' });
   if (props.showFollow) btns.push({ label: 'Follow', bg: `${accent}20`, color: accent });
   if (props.showShare)  btns.push({ label: 'Share', bg: '#f0f0f0', color: '#555' });
-  if (btns.length === 0) btns.push({ label: 'Order Now', bg: accent, color: '#fff' });
+  if (btns.length === 0) btns.push({ label: customLabel || 'Order Now', bg: accent, color: '#fff' });
   return (
     <div style={{ padding: '8px 8px 6px', display: 'flex', gap: 4, flexWrap: 'wrap' }}>
       {btns.map(({ label, bg, color }, i) => (
