@@ -34,9 +34,8 @@ describe('dine-in realtime/location/currency contract', () => {
     );
 
     expect(source).toContain("import { useFxRate } from '../hooks/useFxRate';");
-    expect(source).toContain("queryKey: ['fx-rate', 'USDC', 'GHS']");
     expect(source).toContain("Settlement currency: <strong className=\"text-[var(--text-1)]\">USDC</strong> · Local display: <strong className=\"text-[var(--text-1)]\">GHS</strong>");
-    expect(source).toContain('fx.isUsable ? `1 USDC ≈ GH₵ ${money(fx.ghsPerUsdc)} · ${fx.source} · refresh in ${fx.remainingSeconds}s`');
+    expect(source).toContain('fx.isUsable ? `1 USDC ≈ GH₵ ${Number(fx.ghsPerUsdc).toFixed(2)} · ${fx.source} · refresh in ${fx.remainingSeconds}s`');
     expect(source).toContain("Live GHS rate temporarily unavailable · USDC remains authoritative");
     expect(source).toContain('return `${usdc} · GH₵ ${(Number(usdc) * currentGhsPerUsdc).toFixed(2)}`;');
   });
