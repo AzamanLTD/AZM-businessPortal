@@ -22,6 +22,7 @@ export default function DineInV2() {
   const businessId = bizProfile?.id;
 
   const [selectedTabId, setSelectedTabId] = useState(null);
+  const [selectedTabLocationId, setSelectedTabLocationId] = useState('');
   const [isNewTabOpen, setIsNewTabOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [guestResults, setGuestResults] = useState([]);
@@ -65,15 +66,10 @@ export default function DineInV2() {
     enabled: canView,
   });
 
-  const { data: productsData, isLoading: productsLoading } = useQuery({
-    queryKey: ['dineInProducts', newTabLocationId],
-    queryFn: async () => {
-      const response = await productsApi.list({ limit: 50, isActive: 'true', ...(newTabLocationId ? { locationId: newTabLocationId } : {}) });
-      return response?.products || response?.data || [];
-    },
-    enabled: canView,
-  });
-  const products = Array.isArray(productsData) ? productsData : [];
+  const selectedTabSummary = useMemo(
+    () => (openTabs || []).find((tab) => tab.id === selectedTabId),
+    [openTabs, selectedTabId],
+  );
 
   const { data: activeTabDetails, isLoading: detailLoading } = useQuery({
     queryKey: ['dineInTab', selectedTabId],
@@ -84,17 +80,32 @@ export default function DineInV2() {
     enabled: canView && !!selectedTabId,
   });
 
+  const menuLocationId = selectedTabId
+    ? (selectedTabLocationId || activeTabDetails?.locationId || selectedTabSummary?.locationId || '')
+    : newTabLocationId;
+
+  const { data: productsData, isLoading: productsLoading } = useQuery({
+    queryKey: ['dineInProducts', menuLocationId],
+    queryFn: async () => {
+      const response = await productsApi.list({ limit: 50, isActive: 'true', ...(menuLocationId ? { locationId: menuLocationId } : {}) });
+      return response?.products || response?.data || [];
+    },
+    enabled: canView,
+  });
+  const products = Array.isArray(productsData) ? productsData : [];
+
   useEffect(() => {
-    if (activeTabDetails?.locationId && activeTabDetails.locationId !== newTabLocationId) {
-      setNewTabLocationId(activeTabDetails.locationId);
+    if (activeTabDetails?.locationId && activeTabDetails.locationId !== selectedTabLocationId) {
+      setSelectedTabLocationId(activeTabDetails.locationId);
     }
-  }, [activeTabDetails?.locationId]);
+  }, [activeTabDetails?.locationId, selectedTabLocationId]);
 
   const openTabMutation = useMutation({
     mutationFn: ({ customerAzamanId, locationId, tableId }) =>
       marketplaceApi.openDineInTab(businessId, customerAzamanId, { locationId: locationId || undefined, tableId: tableId || undefined }),
     onSuccess: (response) => {
       toast.go('Dine-In tab opened');
+      const createdTab = response?.data || response;
       queryClient.invalidateQueries({ queryKey: ['openTabs'] });
       setIsNewTabOpen(false);
       setNewTabCustomer(null);
@@ -102,8 +113,10 @@ export default function DineInV2() {
       setGuestResults([]);
       setNewTabLocationId('');
       setNewTabTableId('');
-      const createdTab = response?.data || response;
-      if (createdTab?.id) setSelectedTabId(createdTab.id);
+      if (createdTab?.id) {
+        setSelectedTabId(createdTab.id);
+        setSelectedTabLocationId(createdTab.locationId || '');
+      }
     },
     onError: (error) => toast.stop(error.message || 'Failed to open tab'),
   });
@@ -238,7 +251,7 @@ export default function DineInV2() {
             <Empty icon={Receipt} title="No open tabs" description="Open a branch-aware tab to start serving." />
           ) : (
             (openTabs || []).map((tab) => (
-              <Card key={tab.id} onClick={() => setSelectedTabId(tab.id)} className={`cursor-pointer border p-4 ${selectedTabId === tab.id ? 'border-[var(--accent)]' : 'border-[var(--line)]'}`}>
+              <Card key={tab.id} onClick={() => { setSelectedTabId(tab.id); setSelectedTabLocationId(tab.locationId || ''); }} className={`cursor-pointer border p-4 ${selectedTabId === tab.id ? 'border-[var(--accent)]' : 'border-[var(--line)]'}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2 font-bold">{tab.tableId ? `Table ${tab.tableId}` : 'Bar'} <Tag tone="neutral">{tab.status}</Tag></div>
