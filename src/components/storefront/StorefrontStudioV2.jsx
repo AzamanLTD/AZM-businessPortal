@@ -35,6 +35,9 @@ function StudioStage({ draft, business, document, selection, onDrop, onSelect })
           widgets={[]}
           business={business}
           businessType={business?.businessType || business?.type || 'GENERAL'}
+          selectedTileId={selection[0] || null}
+          onSelectTile={onSelect}
+          editorMode
         />
       </div>
     </div>

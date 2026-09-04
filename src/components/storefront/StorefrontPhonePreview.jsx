@@ -396,7 +396,7 @@ function getNavTabs(businessType) {
 // Main component
 // ─────────────────────────────────────────────────────────────
 
-export default function StorefrontPhonePreview({ draft, theme, widgets, business, businessType }) {
+export default function StorefrontPhonePreview({ draft, theme, widgets, business, businessType, selectedTileId, onSelectTile, editorMode = false }) {
   const tokens  = theme?.tokenSet || {};
   const accent  = tokens.accent    || 'var(--f-tint-color)';
   const bg      = tokens.background || '#ffffff';
@@ -475,8 +475,25 @@ export default function StorefrontPhonePreview({ draft, theme, widgets, business
             sortedTiles.map(tile => {
               const Renderer = WIDGET_RENDERERS[tile.widgetType];
               if (!Renderer) return <FallbackTile key={tile.id} tile={tile} tokens={tokens} />;
+              const selected = editorMode && selectedTileId === tile.id;
               return (
-                <div key={tile.id} style={{ borderBottom: `1px solid ${tokens.border || '#f0f0f0'}` }}>
+                <div
+                  key={tile.id}
+                  role={editorMode ? 'button' : undefined}
+                  tabIndex={editorMode ? 0 : undefined}
+                  onClick={editorMode ? (event) => { event.stopPropagation(); onSelectTile?.(tile.id); } : undefined}
+                  onKeyDown={editorMode ? (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelectTile?.(tile.id); } } : undefined}
+                  style={{
+                    position: 'relative',
+                    borderBottom: `1px solid ${tokens.border || '#f0f0f0'}`,
+                    outline: selected ? `2px solid ${accent}` : 'none',
+                    outlineOffset: -2,
+                    cursor: editorMode ? 'pointer' : undefined,
+                  }}
+                >
+                  {selected && (
+                    <div style={{ position: 'absolute', top: 3, right: 4, zIndex: 5, fontSize: 7, fontWeight: 800, color: '#fff', background: accent, borderRadius: 4, padding: '2px 4px', pointerEvents: 'none' }}>Editing</div>
+                  )}
                   <Renderer props={tile.props || {}} business={businessInfo} tokens={tokens} />
                 </div>
               );
