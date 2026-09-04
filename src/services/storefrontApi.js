@@ -93,7 +93,9 @@ export const storefrontApi = {
   // ── EXPERIENCE STUDIO ─────────────────────────────────────────────────────
   /**
    * Save the constrained experience blueprint through the versioned draft
-   * contract so concurrent editors cannot silently discard newer layout state.
+   * contract. The latest draft snapshot is fetched immediately before the
+   * write, and its expectedUpdatedAt protects the full layout from concurrent
+   * edits elsewhere in Storefront Editor or another Studio session.
    */
   saveExperience: async (blueprint) => {
     const draft = await sfRequest(`${BASE}/me/draft`);
@@ -101,7 +103,7 @@ export const storefrontApi = {
       ...(draft?.layoutJson && typeof draft.layoutJson === 'object' ? draft.layoutJson : {}),
       experience: blueprint,
     };
-    return sfRequest(`${BASE}/me/draft`, {
+    const saved = await sfRequest(`${BASE}/me/draft`, {
       method: 'PUT',
       body: JSON.stringify({
         layoutJson,
@@ -109,5 +111,6 @@ export const storefrontApi = {
         ...(draft?.updatedAt ? { expectedUpdatedAt: draft.updatedAt } : {}),
       }),
     });
+    return saved?.layoutJson?.experience || blueprint;
   },
 };
