@@ -16,6 +16,7 @@ import PublishConfirmModal from '@/components/storefront/PublishConfirmModal';
 import VersionHistorySidebar from '@/components/storefront/VersionHistorySidebar';
 import KeyboardTileManager from '@/components/storefront/KeyboardTileManager';
 import MagicLayout from '@/components/storefront/MagicLayout';
+import StorefrontStudioV2 from '@/components/storefront/StorefrontStudioV2';
 import StorefrontHealthScore from '@/components/storefront/StorefrontHealthScore';
 import TemplateGallery from '@/components/storefront/TemplateGallery';
 import QrCodePanel from '@/components/QrCodePanel';
@@ -41,6 +42,7 @@ export default function StorefrontEditor() {
   const [showPreview, setShowPreview]               = useState(true);
   const [showTemplates, setShowTemplates]             = useState(false);
   const [showQR, setShowQR]                           = useState(false);
+  const [showStudioV2, setShowStudioV2] = useState(false);
 
   const selectedTile   = useMemo(() => draft?.layoutJson?.tiles?.find(t => t.id === selectedTileId) ?? null, [draft, selectedTileId]);
   const selectedWidget = useMemo(() => selectedTile ? widgets.find(w => w.widgetType === selectedTile.widgetType) : null, [selectedTile, widgets]);
@@ -149,6 +151,11 @@ export default function StorefrontEditor() {
             {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             {showPreview ? 'Hide' : 'Show'} Preview
           </button>
+          <button onClick={() => setShowStudioV2(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold transition-all"
+            style={{ color: 'var(--text)', borderColor: 'var(--line)', background: 'var(--surface-sunk)' }}>
+            <Layout className="w-4 h-4" />Studio V2
+          </button>
           <button onClick={() => navigate('/storefront/analytics')}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-all"
             style={{ color: 'var(--text)', borderColor: 'var(--line)' }}>
@@ -208,6 +215,10 @@ export default function StorefrontEditor() {
           </button>
         </div>
       </Card>
+
+      {showStudioV2 && (
+        <StorefrontStudioV2 draft={draft} saveDraft={saveDraft} business={bizProfile} onClose={() => setShowStudioV2(false)} />
+      )}
 
       {/* ── QR Code Panel ── */}
       {showQR && published && (
