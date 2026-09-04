@@ -91,13 +91,23 @@ export const storefrontApi = {
     }),
 
   // ── EXPERIENCE STUDIO ─────────────────────────────────────────────────────
-  /** Get effective category-native experience settings for the business */
-  getExperience: () => sfRequest(`${BASE}/me/experience`),
-
-  /** Save the constrained experience blueprint */
-  saveExperience: (blueprint) =>
-    sfRequest(`${BASE}/me/experience`, {
+  /**
+   * Save the constrained experience blueprint through the versioned draft
+   * contract so concurrent editors cannot silently discard newer layout state.
+   */
+  saveExperience: async (blueprint) => {
+    const draft = await sfRequest(`${BASE}/me/draft`);
+    const layoutJson = {
+      ...(draft?.layoutJson && typeof draft.layoutJson === 'object' ? draft.layoutJson : {}),
+      experience: blueprint,
+    };
+    return sfRequest(`${BASE}/me/draft`, {
       method: 'PUT',
-      body: JSON.stringify(blueprint),
-    }),
+      body: JSON.stringify({
+        layoutJson,
+        themeId: draft?.themeId,
+        ...(draft?.updatedAt ? { expectedUpdatedAt: draft.updatedAt } : {}),
+      }),
+    });
+  },
 };
