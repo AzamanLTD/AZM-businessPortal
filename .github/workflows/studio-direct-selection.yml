@@ -1,0 +1,55 @@
+name: Prepare Studio direct preview selection
+
+on:
+  push:
+    branches: [feat/studio-direct-preview-selection]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: ${{ github.actor == 'pyraxxz' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch shared preview and Studio selection bridge
+        shell: bash
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+
+          preview = Path('src/components/storefront/StorefrontPhonePreview.jsx')
+          s = preview.read_text()
+          old_sig = 'export default function StorefrontPhonePreview({ draft, theme, widgets, business, businessType }) {'
+          new_sig = 'export default function StorefrontPhonePreview({ draft, theme, widgets, business, businessType, selectedTileId, onSelectTile, editorMode = false }) {'
+          if old_sig not in s:
+              raise SystemExit('preview component signature not found')
+          s = s.replace(old_sig, new_sig, 1)
+          old_map = '''              return (\n                <div key={tile.id} style={{ borderBottom: `1px solid ${tokens.border || '#f0f0f0'}` }}>\n                  <Renderer props={tile.props || {}} business={businessInfo} tokens={tokens} />\n                </div>\n              );'''
+          new_map = '''              const selected = editorMode && selectedTileId === tile.id;\n              return (\n                <div\n                  key={tile.id}\n                  role={editorMode ? 'button' : undefined}\n                  tabIndex={editorMode ? 0 : undefined}\n                  onClick={editorMode ? (event) => { event.stopPropagation(); onSelectTile?.(tile.id); } : undefined}\n                  onKeyDown={editorMode ? (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelectTile?.(tile.id); } } : undefined}\n                  style={{\n                    position: 'relative',\n                    borderBottom: `1px solid ${tokens.border || '#f0f0f0'}`,\n                    outline: selected ? `2px solid ${accent}` : 'none',\n                    outlineOffset: -2,\n                    cursor: editorMode ? 'pointer' : undefined,\n                  }}\n                >\n                  {selected && (\n                    <div style={{ position: 'absolute', top: 3, right: 4, zIndex: 5, fontSize: 7, fontWeight: 800, color: '#fff', background: accent, borderRadius: 4, padding: '2px 4px', pointerEvents: 'none' }}>Editing</div>\n                  )}\n                  <Renderer props={tile.props || {}} business={businessInfo} tokens={tokens} />\n                </div>\n              );'''
+          if old_map not in s:
+              raise SystemExit('preview tile renderer block not found')
+          preview.write_text(s.replace(old_map, new_map, 1))
+
+          studio = Path('src/components/storefront/StorefrontStudioV2.jsx')
+          s = studio.read_text()
+          s = s.replace('function StudioStage({ draft, business, document, selection, onDrop, onSelect }) {', 'function StudioStage({ draft, business, document, selection, onDrop, onSelect }) {', 1)
+          old_call = '''          widgets={[]}\n          business={business}\n          businessType={business?.businessType || business?.type || 'GENERAL'}\n        />'''
+          new_call = '''          widgets={[]}\n          business={business}\n          businessType={business?.businessType || business?.type || 'GENERAL'}\n          selectedTileId={selection[0] || null}\n          onSelectTile={onSelect}\n          editorMode\n        />'''
+          if old_call not in s:
+              raise SystemExit('Studio preview call not found')
+          studio.write_text(s.replace(old_call, new_call, 1))
+
+          # Clean, deterministic test for the editor selection contract.
+          test = Path('src/components/storefront/StorefrontPhonePreview.editorSelection.test.jsx')
+          test.write_text('''import { describe, expect, it } from 'vitest';\nimport fs from 'node:fs';\nimport path from 'node:path';\n\ndescribe('StorefrontPhonePreview editor selection contract', () => {\n  it('exposes editor selection props and keyboard activation', () => {\n    const source = fs.readFileSync(path.resolve('src/components/storefront/StorefrontPhonePreview.jsx'), 'utf8');\n    expect(source).toContain('selectedTileId, onSelectTile, editorMode = false');\n    expect(source).toContain("onSelectTile?.(tile.id)");\n    expect(source).toContain("event.key === 'Enter'");\n  });\n});\n''')
+          PY
+      - name: Commit and remove workflow
+        shell: bash
+        run: |
+          rm .github/workflows/studio-direct-selection.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/components/storefront/StorefrontPhonePreview.jsx src/components/storefront/StorefrontStudioV2.jsx src/components/storefront/StorefrontPhonePreview.editorSelection.test.jsx .github/workflows/studio-direct-selection.yml
+          git commit -m 'feat(storefront): make Studio preview tiles directly selectable'
+          git push origin HEAD:${{ github.ref_name }}
