@@ -1,0 +1,42 @@
+name: Make finance accounting labels explicit
+
+"on":
+  push:
+    branches:
+      - fix/finance-usdc-accounting-labels
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update Finance labels without revaluation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('src/pages/Finance.jsx')
+          s = p.read_text()
+          s = s.replace("import { fmtUSDC, fmtUSDC as fmtUsd } from '@/lib/utils';", "import { fmtUSDC } from '@/lib/utils';")
+          if "fmtUsd(" not in s:
+              raise SystemExit('Expected finance fmtUsd aliases were not found.')
+          s = s.replace('fmtUsd(', 'fmtUSDC(')
+          s = s.replace('Finance & Ledger', 'Finance & Ledger (USDC)', 1)
+          s = s.replace('Revenue by category', 'Revenue by category (USDC)', 1)
+          s = s.replace('Cash Flow', 'Cash Flow (USDC)', 1)
+          s = s.replace('P&L Statement', 'P&L Statement (USDC)', 1)
+          s = s.replace('Expenses & Ledger', 'Expenses & Ledger (USDC)', 1)
+          s = s.replace('Payroll Position', 'Payroll Position (USDC)', 1)
+          p.write_text(s)
+          PY
+          rm -f .github/workflows/once-finance-usdc-labels.yml
+          git add src/pages/Finance.jsx .github/workflows/once-finance-usdc-labels.yml
+          git diff --cached --check
+          git commit -m 'fix: label finance accounting values as USDC'
+          git push origin HEAD:fix/finance-usdc-accounting-labels
