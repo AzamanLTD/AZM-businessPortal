@@ -70,19 +70,6 @@ export default function DineInV2() {
     () => (openTabs || []).find((tab) => tab.id === selectedTabId),
     [openTabs, selectedTabId],
   );
-  const menuLocationId = selectedTabId
-    ? (selectedTabLocationId || selectedTabSummary?.locationId || '')
-    : newTabLocationId;
-
-  const { data: productsData, isLoading: productsLoading } = useQuery({
-    queryKey: ['dineInProducts', menuLocationId],
-    queryFn: async () => {
-      const response = await productsApi.list({ limit: 50, isActive: 'true', ...(menuLocationId ? { locationId: menuLocationId } : {}) });
-      return response?.products || response?.data || [];
-    },
-    enabled: canView && (!selectedTabId || !!menuLocationId || !detailLoading),
-  });
-  const products = Array.isArray(productsData) ? productsData : [];
 
   const { data: activeTabDetails, isLoading: detailLoading } = useQuery({
     queryKey: ['dineInTab', selectedTabId],
@@ -92,6 +79,20 @@ export default function DineInV2() {
     },
     enabled: canView && !!selectedTabId,
   });
+
+  const menuLocationId = selectedTabId
+    ? (selectedTabLocationId || activeTabDetails?.locationId || selectedTabSummary?.locationId || '')
+    : newTabLocationId;
+
+  const { data: productsData, isLoading: productsLoading } = useQuery({
+    queryKey: ['dineInProducts', menuLocationId],
+    queryFn: async () => {
+      const response = await productsApi.list({ limit: 50, isActive: 'true', ...(menuLocationId ? { locationId: menuLocationId } : {}) });
+      return response?.products || response?.data || [];
+    },
+    enabled: canView,
+  });
+  const products = Array.isArray(productsData) ? productsData : [];
 
   useEffect(() => {
     if (activeTabDetails?.locationId && activeTabDetails.locationId !== selectedTabLocationId) {
