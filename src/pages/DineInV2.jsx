@@ -4,22 +4,42 @@ import { marketplaceApi } from '../lib/marketplaceApi';
 import { products as productsApi, locations as locationsApi, request } from '../lib/api';
 import { usePermission } from '../hooks/usePermission';
 import { useAuth } from '../lib/AuthContext';
+import { useFxRate } from '../hooks/useFxRate';
 import { Card, Tag, Button, Input, Select, Empty, Skel, Dialog } from '@/components/instrument';
 import { AlertCircle, Clock, MapPin, Plus, Receipt, Send, Utensils, Users, UserCheck, Search } from 'lucide-react';
 import { toast } from '@/lib/toast';
 
+let currentGhsPerUsdc = 0;
+
 const money = (value) => {
   const n = Number(value);
-  return Number.isFinite(n) ? n.toFixed(2) : '0.00';
+  const usdc = Number.isFinite(n) ? n.toFixed(2) : '0.00';
+  if (currentGhsPerUsdc > 0) {
+    return `${usdc} · GH₵ ${(Number(usdc) * currentGhsPerUsdc).toFixed(2)}`;
+  }
+  return usdc;
 };
 
 export default function DineInV2() {
   const queryClient = useQueryClient();
   const { bizProfile } = useAuth();
   const { hasPermission } = usePermission();
+  const fx = useFxRate();
+  const [, setFxTick] = useState(0);
   const canManage = hasPermission('dinein.manage');
   const canView = hasPermission('dinein.view') || canManage;
   const businessId = bizProfile?.id;
+
+  useEffect(() => {
+    currentGhsPerUsdc = fx.ghsPerUsdc;
+  }, [fx.ghsPerUsdc]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setFxTick((value) => value + 1), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  currentGhsPerUsdc = fx.ghsPerUsdc;
 
   const [selectedTabId, setSelectedTabId] = useState(null);
   const [selectedTabLocationId, setSelectedTabLocationId] = useState('');
@@ -241,6 +261,13 @@ export default function DineInV2() {
         {canManage && <Button variant="primary" size="sm" onClick={() => setIsNewTabOpen(true)}><Plus className="mr-1 h-4 w-4" /> Open Table Tab</Button>}
       </div>
 
+      <Card className="border p-3 text-xs text-[var(--text-3)]">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span>Settlement currency: <strong className="text-[var(--text-1)]">USDC</strong> · Local display: <strong className="text-[var(--text-1)]">GHS</strong></span>
+          <span>{fx.isUsable ? `1 USDC ≈ GH₵ ${money(fx.ghsPerUsdc)} · ${fx.source} · refresh in ${fx.remainingSeconds}s` : 'Live GHS rate temporarily unavailable · USDC remains authoritative'}</span>
+        </div>
+      </Card>
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -311,7 +338,7 @@ export default function DineInV2() {
       </Dialog>
 
       <Dialog open={isBillingOpen} onClose={() => setIsBillingOpen(false)} title="Finalize Bill">
-        <div className="space-y-4"><div className="rounded-lg border border-[var(--line)] p-3 text-xs"><div className="flex justify-between"><span>Subtotal</span><strong>USDC {money(activeTabDetails?.subtotalUsdc)}</strong></div><p className="mt-2 text-[var(--text-3)]">Tax is calculated from the business default on the server. This screen only collects an optional service tip.</p></div><Input type="number" min="0" step="any" label="Service Tip (USDC)" value={tipUsdc} onChange={(event) => setTipUsdc(event.target.value)} /><div className="flex justify-end gap-2"><Button variant="secondary" onClick={() => setIsBillingOpen(false)}>Cancel</Button><Button variant="primary" onClick={() => finalizeMutation.mutate({ tabId: selectedTabId, tip: Math.max(0, Number(tipUsdc) || 0) })} disabled={finalizeMutation.isPending}>{finalizeMutation.isPending ? 'Finalizing…' : 'Finalize Tab'}</Button></div></div>
+        <div className="space-y-4"><div className="rounded-lg border border-[var(--line)] p-3 text-xs"><div className="flex justify-between"><span>Subtotal</span><strong>USDC {money(activeTabDetails?.subtotalUsdc)}</strong></div><p className="mt-2 text-[var(--text-3)]">Tax is calculated from the business default on the server. This screen only collects an optional service tip.</p></div><Input type="number" min="0" step="any" label="Service Tip (USDC)" value={tipUsdc} onChange={(event) => setTipUsdc(event.target.value)} /><p className="text-xs text-[var(--text-3)]">{fx.isUsable ? `Display reference: GH₵ ${(Math.max(0, Number(tipUsdc) || 0) * fx.ghsPerUsdc).toFixed(2)} · USDC ${Math.max(0, Number(tipUsdc) || 0).toFixed(2)}` : 'GHS display reference unavailable; settlement input remains USDC.'}</p><div className="flex justify-end gap-2"><Button variant="secondary" onClick={() => setIsBillingOpen(false)}>Cancel</Button><Button variant="primary" onClick={() => finalizeMutation.mutate({ tabId: selectedTabId, tip: Math.max(0, Number(tipUsdc) || 0) })} disabled={finalizeMutation.isPending}>{finalizeMutation.isPending ? 'Finalizing…' : 'Finalize Tab'}</Button></div></div>
       </Dialog>
 
       <Dialog open={isSplitOpen} onClose={() => setIsSplitOpen(false)} title="Split Preview">
