@@ -71,19 +71,27 @@ export const marketplaceStats = {
 
 export const marketplaceApi = {
   // ── Dine-In (uses /api/dine-in/tabs) ─────────────────────────────────────
-  openDineInTab: (businessProfileId, customerAzamanId) =>
-    request('/api/dine-in/tabs', { method: "POST", body: JSON.stringify({ businessProfileId, customerAzamanId }) }),
+  // Location/table are optional only for backwards-compatible callers. When
+  // supplied, the server validates ownership and persists the context on the
+  // tab; clients do not get to choose billing authority.
+  openDineInTab: (businessProfileId, customerAzamanId, { locationId, tableId } = {}) =>
+    request('/api/dine-in/tabs', {
+      method: 'POST',
+      body: JSON.stringify({ businessProfileId, customerAzamanId, locationId, tableId }),
+    }),
 
   addDineInItem: (tabId, { productId, name, unitPriceUsdc, quantity }) =>
-    request(`/api/dine-in/tabs/${tabId}/items`, { method: "POST", body: JSON.stringify({ productId, name, unitPriceUsdc, quantity }) }),
+    request(`/api/dine-in/tabs/${tabId}/items`, { method: 'POST', body: JSON.stringify({ productId, name, unitPriceUsdc, quantity }) }),
 
-  finalizeDineInTab: (tabId, { taxRatePct, tipUsdc }) =>
-    request(`/api/dine-in/tabs/${tabId}/finalize`, { method: "POST", body: JSON.stringify({ taxRatePct, tipUsdc }) }),
+  // Tax is server-authoritative for business-side dine-in settlement. The
+  // portal may supply an optional tip, but must not submit a tax rate.
+  finalizeDineInTab: (tabId, { tipUsdc } = {}) =>
+    request(`/api/dine-in/tabs/${tabId}/finalize`, { method: 'POST', body: JSON.stringify({ tipUsdc }) }),
 
   getDineInTab: (tabId) => request(`/api/dine-in/tabs/${tabId}`),
   getOpenTabs: () => request('/api/dine-in/tabs'),
-  confirmDineInTab: (tabId) => request(`/api/dine-in/tabs/${tabId}/pay`, { method: "POST", body: JSON.stringify({}) }),
-  reportDineInDefault: (tabId, reason) => request(`/api/dine-in/tabs/${tabId}/default`, { method: "POST", body: JSON.stringify({ reason }) }),
+  confirmDineInTab: (tabId) => request(`/api/dine-in/tabs/${tabId}/pay`, { method: 'POST', body: JSON.stringify({}) }),
+  reportDineInDefault: (tabId, reason) => request(`/api/dine-in/tabs/${tabId}/default`, { method: 'POST', body: JSON.stringify({ reason }) }),
 
   // ── Guests (uses /api/dine-in/guests) ────────────────────────────────────
   getGuests: () => request('/api/dine-in/guests'),
@@ -91,8 +99,8 @@ export const marketplaceApi = {
 
   // ── Ad Posts (uses /api/ad-posts) ─────────────────────────────────────────
   getAdPosts: (businessProfileId) => request(`/api/ad-posts/active/${businessProfileId}`),
-  createAdPost: (data) => request('/api/ad-posts', { method: "POST", body: JSON.stringify(data) }),
-  deleteAdPost: (adPostId) => request(`/api/ad-posts/${adPostId}`, { method: "DELETE" }),
+  createAdPost: (data) => request('/api/ad-posts', { method: 'POST', body: JSON.stringify(data) }),
+  deleteAdPost: (adPostId) => request(`/api/ad-posts/${adPostId}`, { method: 'DELETE' }),
   getAdFeed: (params = {}) => {
     const qs = new URLSearchParams(params).toString();
     return request(`/api/ad-posts/feed${qs ? `?${qs}` : ''}`);
@@ -100,14 +108,14 @@ export const marketplaceApi = {
 
   // ── Showcase (uses /api/showcases) ────────────────────────────────────────
   getShowcase: (businessProfileId) => request(`/api/showcases/${businessProfileId}`),
-  addShowcaseSlide: (businessProfileId, data) => request('/api/showcases', { method: "POST", body: JSON.stringify({ businessProfileId, ...data }) }),
-  updateShowcaseSlide: (slideId, data) => request(`/api/showcases/${slideId}`, { method: "PATCH", body: JSON.stringify(data) }),
-  removeShowcaseSlide: (businessProfileId, slideId) => request(`/api/showcases/${slideId}`, { method: "DELETE" }),
-  reorderShowcase: (businessProfileId, slides) => request('/api/showcases/reorder', { method: "POST", body: JSON.stringify({ slides }) }),
+  addShowcaseSlide: (businessProfileId, data) => request('/api/showcases', { method: 'POST', body: JSON.stringify({ businessProfileId, ...data }) }),
+  updateShowcaseSlide: (slideId, data) => request(`/api/showcases/${slideId}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  removeShowcaseSlide: (businessProfileId, slideId) => request(`/api/showcases/${slideId}`, { method: 'DELETE' }),
+  reorderShowcase: (businessProfileId, slides) => request('/api/showcases/reorder', { method: 'POST', body: JSON.stringify({ slides }) }),
 
   // ── Follows (uses /api/follows) ───────────────────────────────────────────
-  followBusiness: (businessProfileId) => request('/api/follows', { method: "POST", body: JSON.stringify({ businessProfileId }) }),
-  unfollowBusiness: (businessProfileId) => request(`/api/follows/${businessProfileId}`, { method: "DELETE" }),
+  followBusiness: (businessProfileId) => request('/api/follows', { method: 'POST', body: JSON.stringify({ businessProfileId }) }),
+  unfollowBusiness: (businessProfileId) => request(`/api/follows/${businessProfileId}`, { method: 'DELETE' }),
   checkFollowing: (businessProfileId) => request(`/api/follows/check/${businessProfileId}`),
   getMyFollowing: () => request('/api/follows/following'),
   getMyFollowers: () => request('/api/follows/followers'),
@@ -126,9 +134,9 @@ export const marketplaceApi = {
 
   // ── Reservations: counter-propose (uses existing reservation routes) ──────
   counterProposeReservation: (resId, data) =>
-    request(`/api/reservations/${resId}/counter-propose`, { method: "POST", body: JSON.stringify(data) }),
+    request(`/api/reservations/${resId}/counter-propose`, { method: 'POST', body: JSON.stringify(data) }),
   acceptCounterProposal: (resId) =>
-    request(`/api/reservations/${resId}/accept-counter`, { method: "POST" }),
+    request(`/api/reservations/${resId}/accept-counter`, { method: 'POST' }),
 };
 
 // ── Employee Management ──────────────────────────────────────────────────
@@ -301,6 +309,7 @@ export const hotelOpsApi = {
   rooms: (params = {}) => hotelOpsApi.getRooms(params),  // alias
   createRoom: (data) => request('/api/business-os/hotel/rooms', { method: 'POST', body: JSON.stringify(data) }),
   updateRoomStatus: (id, status) => request(`/api/business-os/hotel/rooms/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  getRoomRack: (params = {}) => request(`/api/business-os/hotel/room-rack?days=${days}`),
   getRoomRack: (params = {}) => {
     const qs = new URLSearchParams(params).toString();
     return request(`/api/business-os/hotel/room-rack${qs ? `?${qs}` : ''}`);
@@ -581,4 +590,3 @@ export const messagingApi = {
   sendMessage: (conversationId, content) =>
     request(`/api/business-os/messages/${conversationId}/send`, { method: 'POST', body: JSON.stringify({ content }) }),
 };
-
