@@ -74,7 +74,7 @@ export function useBizNotifications() {
         invalidateRoots('transit', 'transit-bookings', 'transit-trips');
       }
       if (PROJECTION_EVENTS.dineIn.has(type)) {
-        invalidateRoots('dine-in', 'dine-in-tabs');
+        invalidateRoots('dine-in', 'dine-in-tabs', 'openTabs', 'dineInTab');
       }
       if (PROJECTION_EVENTS.trust.has(type)) {
         invalidateRoots('business-profile', 'biz-profile', 'biz-stats');
