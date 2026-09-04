@@ -5,7 +5,7 @@ const DEFAULT_REFRESH_SECONDS = 60;
 
 const unwrapRatePayload = (payload) => {
   const data = payload?.data && typeof payload.data === 'object' ? payload.data : payload;
-  const rawRate = data?.liveUsdToGhs ?? data?.rate;
+  const rawRate = data?.liveRetailRate ?? data?.liveUsdToGhs ?? data?.rate;
   const rate = Number(rawRate);
   const rawInterval = data?.refreshIntervalSeconds ?? data?.quoteValiditySeconds;
   const parsedInterval = Number(rawInterval);
