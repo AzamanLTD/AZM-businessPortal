@@ -1,6 +1,6 @@
 // src/pages/Finance.jsx
 // Module 07 — Finance, Ledger & Payouts
-// Full financial hub: Dashboard, P&L, Expenses & Ledger, Payroll Position, Payout Settings
+// Full financial hub: Dashboard, P&L, Expenses & Ledger (USDC), Payroll Position (USDC), Payout Settings
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { financeApi, employeeApi } from '@/lib/marketplaceApi';
 import { request } from '@/lib/apiCore';
-import { fmtUSDC, fmtUSDC as fmtUsd } from '@/lib/utils';
+import { fmtUSDC } from '@/lib/utils';
 import { usePermission } from '@/hooks/usePermission';
 import { useAuth } from '@/lib/AuthContext';
 import {
@@ -21,7 +21,7 @@ import { toast } from '@/lib/toast';
 
 const TABS = [
   { key: 'dashboard',   label: 'Dashboard',      icon: TrendingUp },
-  { key: 'pnl',         label: 'P&L Statement',   icon: Receipt },
+  { key: 'pnl',         label: 'P&L Statement (USDC)',   icon: Receipt },
   { key: 'expenses',    label: 'Expenses & Ledger', icon: Wallet },
   { key: 'payroll',     label: 'Payroll Position', icon: PiggyBank },
   { key: 'payout',      label: 'Payout Settings',  icon: Shield },
@@ -92,7 +92,7 @@ export default function Finance() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--text)]">Finance & Ledger</h1>
+          <h1 className="text-2xl font-bold text-[var(--text)]">Finance & Ledger (USDC)</h1>
           <p className="text-sm text-[var(--text-3)] mt-1">
             Track revenue, expenses, P&L, payroll liability, and payout destinations.
           </p>
@@ -185,7 +185,7 @@ function DashboardTab({ rangeDays, canManage }) {
   const outstanding = data?.outstandingInvoices ?? 0;
   const payrollLiability = data?.upcomingPayroll ?? 0;
 
-  // Revenue by category for donut
+  // Revenue by category (USDC) for donut
   const donutData = (data?.revenueByCategory ?? []).map(c => ({
     name: c.category || c.label || 'Other',
     value: Number(c.amount ?? c.value ?? 0),
@@ -206,7 +206,7 @@ function DashboardTab({ rangeDays, canManage }) {
           <AlertTriangle className="w-5 h-5 text-warn flex-shrink-0" />
           <div className="flex-1">
             <p className="text-sm font-medium text-[var(--text)]">
-              {fmtUsd(escrow.totalHeld)} held in escrow across open orders
+              {fmtUSDC(escrow.totalHeld)} held in escrow across open orders
             </p>
             <p className="text-xs text-[var(--text-3)] mt-0.5">
               These funds are not yet released to your available balance. Settlement occurs when orders are fulfilled.
@@ -219,7 +219,7 @@ function DashboardTab({ rangeDays, canManage }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <KpiCard
           label="Revenue"
-          value={fmtUsd(revenue)}
+          value={fmtUSDC(revenue)}
           delta={fmtPct(revenueDelta)}
           deltaType={revenueDelta >= 0 ? 'positive' : 'negative'}
           icon={TrendingUp}
@@ -227,7 +227,7 @@ function DashboardTab({ rangeDays, canManage }) {
         />
         <KpiCard
           label="Expenses"
-          value={fmtUsd(expenses)}
+          value={fmtUSDC(expenses)}
           delta={fmtPct(expenseDelta)}
           deltaType={expenseDelta <= 0 ? 'positive' : 'negative'}
           icon={TrendingDown}
@@ -235,7 +235,7 @@ function DashboardTab({ rangeDays, canManage }) {
         />
         <KpiCard
           label="Net Profit"
-          value={fmtUsd(netProfit)}
+          value={fmtUSDC(netProfit)}
           delta={revenue - expenses > 0 ? 'Positive' : 'Negative'}
           deltaType={netProfit >= 0 ? 'positive' : 'negative'}
           icon={DollarSign}
@@ -243,13 +243,13 @@ function DashboardTab({ rangeDays, canManage }) {
         />
         <KpiCard
           label="Outstanding Invoices"
-          value={fmtUsd(outstanding)}
+          value={fmtUSDC(outstanding)}
           icon={Receipt}
           color="var(--hold)"
         />
         <KpiCard
           label="Payroll Liability"
-          value={fmtUsd(payrollLiability)}
+          value={fmtUSDC(payrollLiability)}
           icon={PiggyBank}
           color="var(--info)"
         />
@@ -258,7 +258,7 @@ function DashboardTab({ rangeDays, canManage }) {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <AreaChartCard
-          title="Cash Flow Trend"
+          title="Cash Flow (USDC) Trend"
           data={cashflowData.length > 0 ? cashflowData : [{ date: '—', inflow: 0, outflow: 0 }]}
           xKey="date"
           yKey="inflow"
@@ -368,14 +368,14 @@ function PnLTab({ rangeDays }) {
             {revenueLines.map((l, i) => (
               <tr key={i} className="border-b border-[var(--line)]/50">
                 <td className="py-2 px-4 text-[var(--text-3)] pl-8">{l.label || l.category || '—'}</td>
-                <td className="py-2 px-4 text-right text-[var(--text)]">{fmtUsd(l.amount ?? l.value ?? 0)}</td>
-                <td className="py-2 px-4 text-right text-[var(--text-3)]">{fmtUsd(l.priorAmount ?? l.prior ?? 0)}</td>
+                <td className="py-2 px-4 text-right text-[var(--text)]">{fmtUSDC(l.amount ?? l.value ?? 0)}</td>
+                <td className="py-2 px-4 text-right text-[var(--text-3)]">{fmtUSDC(l.priorAmount ?? l.prior ?? 0)}</td>
               </tr>
             ))}
             <tr className="border-b-2 border-[var(--line)]">
               <td className="py-2 px-4 font-semibold text-[var(--text)]">Total Revenue</td>
-              <td className="py-2 px-4 text-right font-bold text-[var(--go)]">{fmtUsd(totalRevenue)}</td>
-              <td className="py-2 px-4 text-right font-semibold text-[var(--text-3)]">{fmtUsd(data?.priorRevenue ?? 0)}</td>
+              <td className="py-2 px-4 text-right font-bold text-[var(--go)]">{fmtUSDC(totalRevenue)}</td>
+              <td className="py-2 px-4 text-right font-semibold text-[var(--text-3)]">{fmtUSDC(data?.priorRevenue ?? 0)}</td>
             </tr>
 
             {/* COGS */}
@@ -387,14 +387,14 @@ function PnLTab({ rangeDays }) {
                 {cogsLines.map((l, i) => (
                   <tr key={i} className="border-b border-[var(--line)]/50">
                     <td className="py-2 px-4 text-[var(--text-3)] pl-8">{l.label || l.category || '—'}</td>
-                    <td className="py-2 px-4 text-right text-[var(--text)]">({fmtUsd(l.amount ?? l.value ?? 0)})</td>
-                    <td className="py-2 px-4 text-right text-[var(--text-3)]">({fmtUsd(l.priorAmount ?? l.prior ?? 0)})</td>
+                    <td className="py-2 px-4 text-right text-[var(--text)]">({fmtUSDC(l.amount ?? l.value ?? 0)})</td>
+                    <td className="py-2 px-4 text-right text-[var(--text-3)]">({fmtUSDC(l.priorAmount ?? l.prior ?? 0)})</td>
                   </tr>
                 ))}
                 <tr className="border-b-2 border-[var(--line)]">
                   <td className="py-2 px-4 font-semibold text-[var(--text)]">Total COGS</td>
-                  <td className="py-2 px-4 text-right font-bold text-[var(--stop)]">({fmtUsd(totalCogs)})</td>
-                  <td className="py-2 px-4 text-right font-semibold text-[var(--text-3)]">({fmtUsd(data?.priorCogs ?? 0)})</td>
+                  <td className="py-2 px-4 text-right font-bold text-[var(--stop)]">({fmtUSDC(totalCogs)})</td>
+                  <td className="py-2 px-4 text-right font-semibold text-[var(--text-3)]">({fmtUSDC(data?.priorCogs ?? 0)})</td>
                 </tr>
               </>
             )}
@@ -402,8 +402,8 @@ function PnLTab({ rangeDays }) {
             {/* Gross Profit */}
             <tr className="border-b-2 border-[var(--accent)]/30 bg-[var(--accent)]/5">
               <td className="py-3 px-4 font-bold text-[var(--text)]">Gross Profit</td>
-              <td className="py-3 px-4 text-right font-bold text-[var(--accent)]">{fmtUsd(grossProfit)}</td>
-              <td className="py-3 px-4 text-right font-semibold text-[var(--text-3)]">{fmtUsd(data?.priorGrossProfit ?? 0)}</td>
+              <td className="py-3 px-4 text-right font-bold text-[var(--accent)]">{fmtUSDC(grossProfit)}</td>
+              <td className="py-3 px-4 text-right font-semibold text-[var(--text-3)]">{fmtUSDC(data?.priorGrossProfit ?? 0)}</td>
             </tr>
 
             {/* Operating Expenses */}
@@ -414,8 +414,8 @@ function PnLTab({ rangeDays }) {
               opexLines.map((l, i) => (
                 <tr key={i} className="border-b border-[var(--line)]/50">
                   <td className="py-2 px-4 text-[var(--text-3)] pl-8">{l.label || l.category || '—'}</td>
-                  <td className="py-2 px-4 text-right text-[var(--text)]">({fmtUsd(l.amount ?? l.value ?? 0)})</td>
-                  <td className="py-2 px-4 text-right text-[var(--text-3)]">({fmtUsd(l.priorAmount ?? l.prior ?? 0)})</td>
+                  <td className="py-2 px-4 text-right text-[var(--text)]">({fmtUSDC(l.amount ?? l.value ?? 0)})</td>
+                  <td className="py-2 px-4 text-right text-[var(--text-3)]">({fmtUSDC(l.priorAmount ?? l.prior ?? 0)})</td>
                 </tr>
               ))
             ) : (
@@ -426,17 +426,17 @@ function PnLTab({ rangeDays }) {
             )}
             <tr className="border-b-2 border-[var(--line)]">
               <td className="py-2 px-4 font-semibold text-[var(--text)]">Total OpEx</td>
-              <td className="py-2 px-4 text-right font-bold text-[var(--stop)]">({fmtUsd(totalOpex)})</td>
-              <td className="py-2 px-4 text-right font-semibold text-[var(--text-3)]">({fmtUsd(data?.priorOpex ?? 0)})</td>
+              <td className="py-2 px-4 text-right font-bold text-[var(--stop)]">({fmtUSDC(totalOpex)})</td>
+              <td className="py-2 px-4 text-right font-semibold text-[var(--text-3)]">({fmtUSDC(data?.priorOpex ?? 0)})</td>
             </tr>
 
             {/* Net Profit */}
             <tr className="bg-[var(--accent)]/10">
               <td className="py-3 px-4 font-bold text-[var(--text)]">Net Profit</td>
               <td className={`py-3 px-4 text-right font-bold ${netProfit >= 0 ? 'text-[var(--go)]' : 'text-[var(--stop)]'}`}>
-                {netProfit >= 0 ? fmtUsd(netProfit) : `(${fmtUsd(Math.abs(netProfit))})`}
+                {netProfit >= 0 ? fmtUSDC(netProfit) : `(${fmtUSDC(Math.abs(netProfit))})`}
               </td>
-              <td className="py-3 px-4 text-right font-semibold text-[var(--text-3)]">{fmtUsd(data?.priorNetProfit ?? 0)}</td>
+              <td className="py-3 px-4 text-right font-semibold text-[var(--text-3)]">{fmtUSDC(data?.priorNetProfit ?? 0)}</td>
             </tr>
           </tbody>
         </table>
@@ -608,7 +608,7 @@ function ExpensesTab({ canManage }) {
                       </td>
                       <td className="py-2.5 px-4 text-[var(--text-3)] max-w-xs truncate">{e.description || e.note || '—'}</td>
                       <td className="py-2.5 px-4 text-right font-medium text-[var(--stop)]">
-                        ({fmtUsd(e.amount ?? e.value ?? 0)})
+                        ({fmtUSDC(e.amount ?? e.value ?? 0)})
                       </td>
                       {canManage && (
                         <td className="py-2.5 px-4">
@@ -661,7 +661,7 @@ function ExpensesTab({ canManage }) {
                       </Tag>
                     </div>
                     <p className="text-sm text-[var(--text-3)] mt-1">
-                      {fmtUsd(r.amount)} · {r.frequency?.toLowerCase() || 'monthly'} · {r.category}
+                      {fmtUSDC(r.amount)} · {r.frequency?.toLowerCase() || 'monthly'} · {r.category}
                     </p>
                     {r.description && (
                       <p className="text-xs text-[var(--text-3)] mt-2">{r.description}</p>
@@ -895,7 +895,7 @@ function PayrollTab() {
             </div>
             <span className="text-sm font-medium text-[var(--text-3)]">Pending</span>
           </div>
-          <p className="text-2xl font-bold text-[var(--text)]">{fmtUsd(pending)}</p>
+          <p className="text-2xl font-bold text-[var(--text)]">{fmtUSDC(pending)}</p>
           <p className="text-xs text-[var(--text-3)] mt-1">Awaiting approval</p>
         </Card>
 
@@ -906,7 +906,7 @@ function PayrollTab() {
             </div>
             <span className="text-sm font-medium text-[var(--text-3)]">Approved</span>
           </div>
-          <p className="text-2xl font-bold text-[var(--text)]">{fmtUsd(approved)}</p>
+          <p className="text-2xl font-bold text-[var(--text)]">{fmtUSDC(approved)}</p>
           <p className="text-xs text-[var(--text-3)] mt-1">Ready for disbursement</p>
         </Card>
 
@@ -917,7 +917,7 @@ function PayrollTab() {
             </div>
             <span className="text-sm font-medium text-[var(--text-3)]">Disbursed</span>
           </div>
-          <p className="text-2xl font-bold text-[var(--text)]">{fmtUsd(disbursed)}</p>
+          <p className="text-2xl font-bold text-[var(--text)]">{fmtUSDC(disbursed)}</p>
           <p className="text-xs text-[var(--text-3)] mt-1">Paid this period</p>
         </Card>
 
@@ -928,7 +928,7 @@ function PayrollTab() {
             </div>
             <span className="text-sm font-medium text-[var(--text-3)]">EWA Float</span>
           </div>
-          <p className="text-2xl font-bold text-[var(--text)]">{fmtUsd(ewaFloat)}</p>
+          <p className="text-2xl font-bold text-[var(--text)]">{fmtUSDC(ewaFloat)}</p>
           <p className="text-xs text-[var(--text-3)] mt-1">Early wage outstanding</p>
         </Card>
       </div>
@@ -952,7 +952,7 @@ function PayrollTab() {
                   <tr key={d.id || i} className="border-b border-[var(--line)]/50">
                     <td className="py-2.5 px-4 text-[var(--text-3)]">{fmtDate(d.date || d.createdAt)}</td>
                     <td className="py-2.5 px-4 text-[var(--text)]">{d.recipientCount ?? d.count ?? '—'}</td>
-                    <td className="py-2.5 px-4 text-right font-medium text-[var(--text)]">{fmtUsd(d.amount ?? d.total ?? 0)}</td>
+                    <td className="py-2.5 px-4 text-right font-medium text-[var(--text)]">{fmtUSDC(d.amount ?? d.total ?? 0)}</td>
                     <td className="py-2.5 px-4">
                       <Tag color={d.status === 'COMPLETED' ? 'var(--go)' : d.status === 'FAILED' ? 'var(--stop)' : 'var(--hold)'}>
                         {d.status || 'PENDING'}
