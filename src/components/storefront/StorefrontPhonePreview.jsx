@@ -3,6 +3,7 @@
 // Every widget type has its own mini-renderer that uses the tile's actual props.
 // Widget types aligned with backend seedWidgetCatalog.js
 import { Card } from '@/components/instrument';
+import { useState } from 'react';
 import { Smartphone, Star, MapPin, Phone, MessageCircle, ShoppingBag, Image, Users, Clock, ChevronRight, Play, ExternalLink, Globe, BarChart, Hash, Code, Sparkles, Instagram, TrendingUp } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────
@@ -397,7 +398,8 @@ function getNavTabs(businessType) {
 // Main component
 // ─────────────────────────────────────────────────────────────
 
-export default function StorefrontPhonePreview({ draft, theme, widgets, business, businessType, selectedTileId, onSelectTile, editorMode = false }) {
+export default function StorefrontPhonePreview({ draft, theme, widgets, business, businessType, selectedTileId, onSelectTile, editorMode = false, onDropTile }) {
+  const [dropTarget, setDropTarget] = useState(null);
   const tokens  = theme?.tokenSet || {};
   const accent  = tokens.accent    || 'var(--f-tint-color)';
   const bg      = tokens.background || '#ffffff';
@@ -477,25 +479,40 @@ export default function StorefrontPhonePreview({ draft, theme, widgets, business
               const Renderer = WIDGET_RENDERERS[tile.widgetType];
               if (!Renderer) return <FallbackTile key={tile.id} tile={tile} tokens={tokens} />;
               const selected = editorMode && selectedTileId === tile.id;
+              const isBefore = dropTarget?.tileId === tile.id && dropTarget.edge === 'before';
+              const isAfter = dropTarget?.tileId === tile.id && dropTarget.edge === 'after';
+              const resolveDrop = (event) => {
+                event.preventDefault();
+                const type = event.dataTransfer.getData('application/x-azm-studio-node');
+                if (!type || !editorMode || !onDropTile) return null;
+                const rect = event.currentTarget.getBoundingClientRect();
+                return { tileId: tile.id, edge: event.clientY < rect.top + rect.height / 2 ? 'before' : 'after', type };
+              };
               return (
-                <div
-                  key={tile.id}
-                  role={editorMode ? 'button' : undefined}
-                  tabIndex={editorMode ? 0 : undefined}
-                  onClick={editorMode ? (event) => { event.stopPropagation(); onSelectTile?.(tile.id); } : undefined}
-                  onKeyDown={editorMode ? (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelectTile?.(tile.id); } } : undefined}
-                  style={{
-                    position: 'relative',
-                    borderBottom: `1px solid ${tokens.border || '#f0f0f0'}`,
-                    outline: selected ? `2px solid ${accent}` : 'none',
-                    outlineOffset: -2,
-                    cursor: editorMode ? 'pointer' : undefined,
-                  }}
-                >
-                  {selected && (
-                    <div style={{ position: 'absolute', top: 3, right: 4, zIndex: 5, fontSize: 7, fontWeight: 800, color: '#fff', background: accent, borderRadius: 4, padding: '2px 4px', pointerEvents: 'none' }}>Editing</div>
-                  )}
-                  <Renderer props={tile.props || {}} business={businessInfo} tokens={tokens} />
+                <div key={tile.id}>
+                  {isBefore && <div style={{ height: 3, margin: '0 8px', borderRadius: 999, background: accent }} aria-hidden="true" />}
+                  <div
+                    role={editorMode ? 'button' : undefined}
+                    tabIndex={editorMode ? 0 : undefined}
+                    onClick={editorMode ? (event) => { event.stopPropagation(); onSelectTile?.(tile.id); } : undefined}
+                    onKeyDown={editorMode ? (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelectTile?.(tile.id); } } : undefined}
+                    onDragOver={editorMode && onDropTile ? (event) => { const target = resolveDrop(event); if (target) setDropTarget(target); } : undefined}
+                    onDragLeave={editorMode ? () => setDropTarget((current) => current?.tileId === tile.id ? null : current) : undefined}
+                    onDrop={editorMode && onDropTile ? (event) => { const target = resolveDrop(event); setDropTarget(null); if (target) { event.stopPropagation(); onDropTile(target.tileId, target.edge, target.type); } } : undefined}
+                    style={{
+                      position: 'relative',
+                      borderBottom: `1px solid ${tokens.border || '#f0f0f0'}`,
+                      outline: selected ? `2px solid ${accent}` : 'none',
+                      outlineOffset: -2,
+                      cursor: editorMode ? 'pointer' : undefined,
+                    }}
+                  >
+                    {selected && (
+                      <div style={{ position: 'absolute', top: 3, right: 4, zIndex: 5, fontSize: 7, fontWeight: 800, color: '#fff', background: accent, borderRadius: 4, padding: '2px 4px', pointerEvents: 'none' }}>Editing</div>
+                    )}
+                    <Renderer props={tile.props || {}} business={businessInfo} tokens={tokens} />
+                  </div>
+                  {isAfter && <div style={{ height: 3, margin: '0 8px', borderRadius: 999, background: accent }} aria-hidden="true" />}
                 </div>
               );
             })
