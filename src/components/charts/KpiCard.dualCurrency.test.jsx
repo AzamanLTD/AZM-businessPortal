@@ -37,7 +37,7 @@ describe('KpiCard dual-currency presentation', () => {
     expect(screen.getByText('100.00')).toBeInTheDocument();
     expect(screen.getByText(/GH₵ 1,325\.00/)).toBeInTheDocument();
     expect(screen.getByText(/GHS current equivalent/)).toBeInTheDocument();
-    expect(screen.getByText(/1 USDC ≈ GH₵ 13\.25/)).toHaveAttribute('title');
+    expect(screen.getByTitle(/1 USDC ≈ GH₵ 13\.25/)).toHaveAttribute('title', expect.stringContaining('KOTANI_PAY'));
   });
 
   it('does not append a GHS equivalent to non-currency KPI values', () => {
