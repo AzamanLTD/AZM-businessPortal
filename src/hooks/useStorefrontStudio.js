@@ -64,7 +64,18 @@ export function useStorefrontStudio({ draft, saveDraft }) {
     const result = redoHistory(value, { document, selection });
     setDocument(result.current.document); setSelection(result.current.selection); return result.history;
   }), [document, selection]);
-  const save = useCallback(() => saveDraft({ ...clone(draft?.layoutJson || {}), experience: clone(document) }, draft?.themeId), [document, draft?.layoutJson, draft?.themeId, saveDraft]);
+
+  // Preserve the optimistic-concurrency snapshot observed when the editor
+  // loaded. The API layer already forwards this as `expectedUpdatedAt` and the
+  // backend rejects stale saves rather than silently overwriting newer work.
+  const save = useCallback(
+    () => saveDraft(
+      { ...clone(draft?.layoutJson || {}), experience: clone(document) },
+      draft?.themeId,
+      draft?.updatedAt,
+    ),
+    [document, draft?.layoutJson, draft?.themeId, draft?.updatedAt, saveDraft],
+  );
 
   return { document, selection, setSelection, patchNode, addNode, move, remove, duplicate, setVisibility, setLocked, undo, redo, canUndo: history.past.length > 0, canRedo: history.future.length > 0, save };
 }
