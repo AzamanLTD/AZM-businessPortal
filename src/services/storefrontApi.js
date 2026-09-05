@@ -45,9 +45,9 @@ export const storefrontApi = {
       body: JSON.stringify({ layoutJson, themeId, ...(expectedUpdatedAt ? { expectedUpdatedAt } : {}) }),
     }),
 
-  /** Publish the draft using the snapshot the editor last observed. */
+  /** Publish the draft using the transactional compare-and-swap publish boundary. */
   publish: (expectedUpdatedAt) =>
-    sfRequest(`${BASE}/me/publish`, {
+    sfRequest(`${BASE}/me/publish-safe`, {
       method: 'POST',
       body: JSON.stringify(expectedUpdatedAt ? { expectedUpdatedAt } : {}),
     }),
