@@ -90,6 +90,11 @@ const TOKENS = {
       rowHeightDp: 80,
       gapDp: 12,
     },
+    previewDevices: {
+      phone: { widthDp: 412, heightDp: 892, displayWidthPx: 220 },
+      tablet: { widthDp: 768, heightDp: 1024, displayWidthPx: 320 },
+      desktop: { widthDp: 1280, heightDp: 900, displayWidthPx: 640 },
+    },
   },
 
   snap: {
