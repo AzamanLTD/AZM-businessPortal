@@ -7,6 +7,7 @@ import { STUDIO_NODE_TYPES } from '@/lib/storefrontStudioModel';
 import { getStudioParentId } from '@/lib/storefrontStudioTree';
 import { normalizeStudioViewport } from '@/lib/storefrontStudioResponsive';
 import { runtimeAdapterIsContainer, studioDocumentToRuntimeDraft } from '@/lib/storefrontStudioRuntimeAdapter';
+import { sanitizeStorefrontPreviewHtml } from '@/lib/storefrontPreviewSanitizer';
 import { useStorefrontStudio } from '@/hooks/useStorefrontStudio';
 
 const LABELS = { page:'Page', section:'Section', stack:'Stack', row:'Row', column:'Column', grid:'Grid', overlay:'Overlay', hero:'Hero', 'product-grid':'Product Grid', 'product-carousel':'Product Carousel', 'product-card':'Product Card', 'category-rail':'Category Rail', button:'Button', 'icon-button':'Icon Button', text:'Text', image:'Image', video:'Video', rating:'Rating', reviews:'Reviews', contact:'Contact', location:'Location', promo:'Promotion', social:'Social', spacer:'Spacer', divider:'Divider' };
@@ -18,7 +19,13 @@ const VIEWPORTS = [
 const buttonClass = 'rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold disabled:opacity-40';
 
 function StudioStage({ draft, business, document, selection, viewport, onDrop, onSelect, onDropTile }) {
-  const runtimeDraft = useMemo(() => studioDocumentToRuntimeDraft(draft, document, viewport), [draft, document, viewport]);
+  const runtimeDraft = useMemo(() => {
+    const next = studioDocumentToRuntimeDraft(draft, document, viewport);
+    next.layoutJson.tiles = next.layoutJson.tiles.map((tile) => tile.widgetType === 'custom_html'
+      ? { ...tile, props: { ...tile.props, html: sanitizeStorefrontPreviewHtml(tile.props?.html, 500) } }
+      : tile);
+    return next;
+  }, [draft, document, viewport]);
   const selectedNode = selection[0] ? document.nodes[selection[0]] : null;
   const theme = useMemo(() => ({
     name: draft?.themeName || 'Studio',
