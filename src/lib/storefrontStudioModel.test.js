@@ -40,6 +40,38 @@ describe('storefrontStudioModel', () => {
     expect(doc.pages[0].root).toEqual(['tile-1']);
   });
 
+  it('uses stable deterministic ids for legacy tiles without ids', () => {
+    const source = {
+      tiles: [
+        { widgetType: 'text', props: { value: 'First' } },
+        { widgetType: 'button', props: { label: 'Second' } },
+      ],
+    };
+
+    const first = migrateLegacyTiles(source);
+    const second = migrateLegacyTiles(source);
+
+    expect(first.pages[0].root).toEqual(['legacy_1', 'legacy_2']);
+    expect(second.pages[0].root).toEqual(first.pages[0].root);
+    expect(second.nodes.legacy_1.props.value).toBe('First');
+    expect(second.nodes.legacy_2.props.label).toBe('Second');
+  });
+
+  it('resolves deterministic ids without colliding with explicit ids', () => {
+    const source = {
+      tiles: [
+        { id: 'legacy_1', widgetType: 'text' },
+        { widgetType: 'button', props: { label: 'Second' } },
+      ],
+    };
+
+    const doc = migrateLegacyTiles(source);
+
+    expect(doc.pages[0].root).toEqual(['legacy_1', 'legacy_2']);
+    expect(doc.nodes.legacy_1.type).toBe('section');
+    expect(doc.nodes.legacy_2.type).toBe('section');
+  });
+
   it('prefers an existing v2 experience document', () => {
     const source = {
       tiles: [{ id: 'legacy', widgetType: 'text', props: { title: 'old' } }],
