@@ -17,4 +17,10 @@ describe('experiencePolicyForCategory', () => {
     expect(experiencePolicyForCategory(' hotel ').presets).toEqual(['BUILDING_WALK']);
     expect(experiencePolicyForCategory('retail').presets).toEqual(['SHOP_FLOOR']);
   });
+
+  it('maps portal business categories to the matching experience policy', () => {
+    expect(experiencePolicyForCategory('REAL_ESTATE').presets).toEqual(['BUILDING_WALK']);
+    expect(experiencePolicyForCategory('FREELANCE_SERVICES').presets).toEqual(['SERVICE_JOURNEY']);
+    expect(experiencePolicyForCategory('OTHER').presets).toEqual(['SERVICE_JOURNEY']);
+  });
 });
