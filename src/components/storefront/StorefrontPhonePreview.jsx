@@ -355,7 +355,7 @@ const WIDGET_RENDERERS = {
   review_carousel:     ReviewCarousel,
   contact_card:        ContactCard,
   location_map:        LocationMap,
-  action_buttons:      ActionButtons,
+  action_buttons:        ActionButtons,
   retail_collection_box: RetailCollectionBoxPreview,
   // NITRO_BRONZE
   video_player:        VideoPlayer,
