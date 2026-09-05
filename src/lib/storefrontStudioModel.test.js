@@ -68,7 +68,7 @@ describe('storefrontStudioModel', () => {
     const doc = migrateLegacyTiles(source);
 
     expect(doc.pages[0].root).toEqual(['legacy_1', 'legacy_2']);
-    expect(doc.nodes.legacy_1.type).toBe('text');
+    expect(doc.nodes.legacy_1.type).toBe('section');
     expect(doc.nodes.legacy_2.type).toBe('button');
   });
 
