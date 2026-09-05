@@ -1,536 +1,113 @@
-// src/components/storefront/StorefrontPhonePreview.jsx
-// Real, per-widget preview that mirrors how Flutter renders each tile.
-// Every widget type has its own mini-renderer that uses the tile's actual props.
-// Widget types aligned with backend seedWidgetCatalog.js
-import { Card } from '@/components/instrument';
+import { useMemo, useState } from 'react';
 import RetailCollectionBoxPreview from './RetailCollectionBoxPreview';
-import { useState } from 'react';
-import { Smartphone, Star, MapPin, Phone, MessageCircle, ShoppingBag, Image, Users, Clock, ChevronRight, Play, ExternalLink, Globe, BarChart, Hash, Code, Sparkles, Instagram, TrendingUp } from "lucide-react";
+import {
+  Smartphone, Star, MapPin, Phone, MessageCircle, ShoppingBag, Image, Users,
+  Clock, ChevronRight, Play, ExternalLink, Globe, Code, Sparkles, Instagram,
+} from 'lucide-react';
+import { STOREFRONT_STUDIO_TOKENS, toPreviewPx } from '@/lib/storefrontStudioTokens';
 
-// ─────────────────────────────────────────────────────────────
-// Individual mini-widget renderers (mirror Flutter widget layout)
-// ─────────────────────────────────────────────────────────────
+const widgetGeometry = STOREFRONT_STUDIO_TOKENS.studio.previewWidgets;
+const px = (value) => toPreviewPx(value);
+const themeColor = (tokens, key, fallback) => tokens?.[key] || fallback;
+const spacing = (name, fallback) => px(widgetGeometry.spacing?.[name] ?? fallback);
+const typePx = (name, fallback) => px(widgetGeometry.type?.[name] ?? fallback);
 
 function HeroHeader({ props, business, tokens }) {
-  const bg = props.mediaUrl
-    ? `url(${props.mediaUrl}) center/cover no-repeat`
-    : tokens.accent || '#6C4FD1';
+  const height = widgetGeometry.hero.heightDp[props.height] || widgetGeometry.hero.heightDp.standard;
+  const accent = themeColor(tokens, 'accent', '#6C4FD1');
+  const bg = props.mediaUrl ? `url(${props.mediaUrl}) center/cover no-repeat` : accent;
   const overlayAlpha = Math.round((props.overlayOpacity ?? 0.3) * 255).toString(16).padStart(2, '0');
-  const overlayColor = `#000000${overlayAlpha}`;
-  const heightMap = { compact: 60, standard: 80, tall: 100 };
-  const heightPx = heightMap[props.height] || 80;
-
-  return (
-    <div style={{ height: heightPx, background: bg, position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
-      <div style={{ position: 'absolute', inset: 0, background: overlayColor }} />
-      {!props.mediaUrl && business?.coverPhotoUrl && (
-        <img src={business.coverPhotoUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-      )}
-      <div style={{ position: 'relative', zIndex: 1, padding: '10px 12px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '100%' }}>
-        {props.title && (
-          <p style={{ color: '#fff', fontSize: 11, fontWeight: 700, lineHeight: 1.3, marginBottom: 2 }}>{props.title}</p>
-        )}
-        {props.subtitle && (
-          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 9 }}>{props.subtitle}</p>
-        )}
-      </div>
+  return <div style={{ height: px(height), background: bg, position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
+    <div style={{ position: 'absolute', inset: 0, background: `#000000${overlayAlpha}` }} />
+    {!props.mediaUrl && business?.coverPhotoUrl && <img src={business.coverPhotoUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
+    <div style={{ position: 'relative', zIndex: 1, paddingTop: px(widgetGeometry.hero.bottomInsetDp), paddingRight: px(widgetGeometry.hero.sideInsetDp), paddingBottom: px(widgetGeometry.hero.bottomInsetDp), paddingLeft: px(widgetGeometry.hero.sideInsetDp), display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '100%' }}>
+      {props.title && <p style={{ color: '#fff', fontSize: typePx('heroTitle', 24), fontWeight: 700, lineHeight: 1.3, marginBottom: px(widgetGeometry.hero.titleBottomGapDp) }}>{props.title}</p>}
+      {props.subtitle && <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: typePx('heroSubtitle', 14) }}>{props.subtitle}</p>}
     </div>
-  );
+  </div>;
 }
 
 function QuickInfoBar({ props, business, tokens }) {
-  const accent = tokens.accent || '#6C4FD1';
-  const textColor = tokens.textSecondary || '#888';
-  return (
-    <div style={{ padding: '6px 10px', display: 'flex', gap: 8, alignItems: 'center', borderBottom: `1px solid ${tokens.border || '#eee'}`, flexWrap: 'wrap' }}>
-      {props.showRating && business?.averageRating && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Star size={8} fill={accent} color={accent} />
-          <span style={{ fontSize: 9, color: accent, fontWeight: 700 }}>{Number(business.averageRating).toFixed(1)}</span>
-        </div>
-      )}
-      {props.showCategory && business?.category && (
-        <span style={{ fontSize: 8, color: textColor, textTransform: 'capitalize' }}>{business.category.toLowerCase().replace(/_/g, ' ')}</span>
-      )}
-      {props.showHours && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Clock size={7} color={textColor} />
-          <span style={{ fontSize: 8, color: textColor }}>Open Now</span>
-        </div>
-      )}
-      {props.customInfo && (
-        <span style={{ fontSize: 8, color: textColor }}>{props.customInfo}</span>
-      )}
-    </div>
-  );
+  const accent = themeColor(tokens, 'accent', '#6C4FD1');
+  const textColor = themeColor(tokens, 'textSecondary', '#888');
+  return <div style={{ paddingTop: px(widgetGeometry.quickInfo.verticalPaddingDp), paddingRight: px(widgetGeometry.quickInfo.horizontalPaddingDp), paddingBottom: px(widgetGeometry.quickInfo.verticalPaddingDp), paddingLeft: px(widgetGeometry.quickInfo.horizontalPaddingDp), display: 'flex', gap: px(widgetGeometry.quickInfo.itemGapDp), alignItems: 'center', borderBottom: `1px solid ${themeColor(tokens, 'border', '#eee')}`, flexWrap: 'wrap' }}>
+    {props.showRating && business?.averageRating && <div style={{ display: 'flex', alignItems: 'center', gap: px(widgetGeometry.quickInfo.iconLabelGapDp) }}><Star size={px(widgetGeometry.quickInfo.iconSizeDp)} fill={accent} color={accent} /><span style={{ fontSize: typePx('body', 12), color: accent, fontWeight: 700 }}>{Number(business.averageRating).toFixed(1)}</span></div>}
+    {props.showCategory && business?.category && <span style={{ fontSize: typePx('small', 12), color: textColor, textTransform: 'capitalize' }}>{business.category.toLowerCase().replace(/_/g, ' ')}</span>}
+    {props.showHours && <div style={{ display: 'flex', alignItems: 'center', gap: px(widgetGeometry.quickInfo.iconLabelGapDp) }}><Clock size={px(widgetGeometry.quickInfo.iconSizeDp)} color={textColor} /><span style={{ fontSize: typePx('small', 12), color: textColor }}>Open Now</span></div>}
+    {props.customInfo && <span style={{ fontSize: typePx('small', 12), color: textColor }}>{props.customInfo}</span>}
+  </div>;
 }
 
 function ProductGrid({ props, tokens }) {
-  const accent = tokens.accent || '#6C4FD1';
-  const surface = tokens.surface || '#f8f8f8';
-  const cols = props.columns || 2;
+  const accent = themeColor(tokens, 'accent', '#6C4FD1');
+  const surface = themeColor(tokens, 'surface', '#f8f8f8');
   const count = Math.min(props.maxItems || 4, 4);
-  const items = Array.from({ length: count });
-  return (
-    <div style={{ padding: '8px 8px 4px' }}>
-      {props.title && (
-        <p style={{ fontSize: 9, fontWeight: 700, color: tokens.textPrimary || '#111', marginBottom: 6 }}>{props.title}</p>
-      )}
-      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 4 }}>
-        {items.map((_, i) => (
-          <div key={i} style={{ borderRadius: 6, overflow: 'hidden', background: surface }}>
-            <div style={{ height: 40, background: `${accent}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <ShoppingBag size={14} color={accent} />
-            </div>
-            <div style={{ padding: '3px 4px' }}>
-              <div style={{ height: 5, background: `${accent}30`, borderRadius: 2, marginBottom: 2 }} />
-              {props.showPrice && <div style={{ height: 4, width: '60%', background: `${accent}50`, borderRadius: 2 }} />}
-            </div>
-          </div>
-        ))}
-      </div>
+  return <div style={{ paddingTop: spacing('block', 10), paddingRight: spacing('block', 10), paddingBottom: spacing('tight', 6), paddingLeft: spacing('block', 10) }}>
+    {props.title && <p style={{ fontSize: typePx('section', 12), fontWeight: 700, color: themeColor(tokens, 'textPrimary', '#111'), marginBottom: px(widgetGeometry.productGrid.titleBottomGapDp) }}>{props.title}</p>}
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${props.columns || 2}, 1fr)`, gap: px(widgetGeometry.productGrid.mainAxisSpacingDp) }}>
+      {Array.from({ length: count }).map((_, i) => <div key={i} style={{ borderRadius: px(widgetGeometry.productGrid.cardRadiusDp), overflow: 'hidden', background: surface }}><div style={{ height: px(widgetGeometry.productGrid.mediaHeightDp), background: `${accent}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ShoppingBag size={px(widgetGeometry.productGrid.iconSizeDp)} color={accent} /></div><div style={{ padding: px(widgetGeometry.productGrid.cardPaddingDp) }}><div style={{ height: px(widgetGeometry.productGrid.skeletonHeightDp), background: `${accent}30`, borderRadius: px(widgetGeometry.productGrid.skeletonRadiusDp), marginBottom: px(widgetGeometry.productGrid.skeletonGapDp) }} />{props.showPrice && <div style={{ height: px(widgetGeometry.productGrid.priceHeightDp), width: '60%', background: `${accent}50`, borderRadius: px(widgetGeometry.productGrid.skeletonRadiusDp) }} />}</div></div>)}
     </div>
-  );
+  </div>;
 }
 
 function ReviewCarousel({ props, tokens }) {
-  const accent = tokens.accent || '#6C4FD1';
-  const surface = tokens.surface || '#f8f8f8';
-  return (
-    <div style={{ padding: '8px 8px 6px' }}>
-      {props.title && (
-        <p style={{ fontSize: 9, fontWeight: 700, color: tokens.textPrimary || '#111', marginBottom: 5 }}>{props.title}</p>
-      )}
-      {[5, 4].map((stars, i) => (
-        <div key={i} style={{ background: surface, borderRadius: 6, padding: '5px 7px', marginBottom: 4 }}>
-          <div style={{ display: 'flex', gap: 1, marginBottom: 2 }}>
-            {Array.from({ length: stars }).map((_, j) => <Star key={j} size={7} fill={accent} color={accent} />)}
-          </div>
-          <div style={{ height: 4, background: '#ddd', borderRadius: 2, marginBottom: 2 }} />
-          <div style={{ height: 4, width: '70%', background: '#ddd', borderRadius: 2 }} />
-          <p style={{ fontSize: 7, color: tokens.textSecondary || '#aaa', marginTop: 2 }}>— Customer</p>
-        </div>
-      ))}
-    </div>
-  );
+  const accent = themeColor(tokens, 'accent', '#6C4FD1');
+  const surface = themeColor(tokens, 'surface', '#f8f8f8');
+  return <div style={{ paddingTop: spacing('block', 10), paddingRight: spacing('block', 10), paddingBottom: spacing('tight', 6), paddingLeft: spacing('block', 10) }}>{props.title && <p style={{ fontSize: typePx('section', 12), fontWeight: 700, color: themeColor(tokens, 'textPrimary', '#111'), marginBottom: px(widgetGeometry.review.titleBottomGapDp) }}>{props.title}</p>}{[5, 4].map((stars, i) => <div key={i} style={{ background: surface, borderRadius: px(widgetGeometry.review.cardRadiusDp), paddingTop: px(widgetGeometry.review.cardPaddingVerticalDp), paddingRight: px(widgetGeometry.review.cardPaddingHorizontalDp), paddingBottom: px(widgetGeometry.review.cardPaddingVerticalDp), paddingLeft: px(widgetGeometry.review.cardPaddingHorizontalDp), marginBottom: px(widgetGeometry.review.cardGapDp) }}><div style={{ display: 'flex', gap: px(widgetGeometry.review.starGapDp), marginBottom: px(widgetGeometry.review.textGapDp) }}>{Array.from({ length: stars }).map((_, j) => <Star key={j} size={px(widgetGeometry.review.starSizeDp)} fill={accent} color={accent} />)}</div><div style={{ height: px(widgetGeometry.review.lineHeightDp), background: '#ddd', borderRadius: px(widgetGeometry.review.lineRadiusDp), marginBottom: px(widgetGeometry.review.textGapDp) }} /><div style={{ height: px(widgetGeometry.review.lineHeightDp), width: '70%', background: '#ddd', borderRadius: px(widgetGeometry.review.lineRadiusDp) }} /><p style={{ fontSize: typePx('caption', 10), color: themeColor(tokens, 'textSecondary', '#aaa'), marginTop: px(widgetGeometry.review.authorTopGapDp) }}>— Customer</p></div>)}</div>;
 }
 
 function ContactCard({ props, business, tokens }) {
-  const accent = tokens.accent || '#6C4FD1';
-  const phone = business?.phoneNumber || null;
-  const actions = [];
+  const accent = themeColor(tokens, 'accent', '#6C4FD1'); const phone = business?.phoneNumber || null; const actions = [];
   if (props.showPhone && phone) actions.push({ icon: Phone, label: 'Call', color: accent });
   if (props.showWhatsApp && phone) actions.push({ icon: MessageCircle, label: 'WhatsApp', color: '#25D366' });
   if (props.showEmail) actions.push({ icon: ExternalLink, label: 'Email', color: '#EA4335' });
   if (props.showWebsite) actions.push({ icon: Globe, label: 'Website', color: '#3D74DB' });
-  if (actions.length === 0) {
-    actions.push({ icon: Phone, label: 'Call', color: accent });
-    actions.push({ icon: MessageCircle, label: 'WhatsApp', color: '#25D366' });
-  }
-  return (
-    <div style={{ padding: '8px 8px 6px', display: 'flex', gap: 6, justifyContent: 'center' }}>
-      {actions.map(({ icon: Icon, label, color }, i) => (
-        <div key={i} style={{ flex: 1, borderRadius: 8, border: `1px solid ${color}40`, padding: '6px 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-          <div style={{ width: 22, height: 22, borderRadius: '50%', background: `${color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Icon size={11} color={color} />
-          </div>
-          <span style={{ fontSize: 7, color, fontWeight: 600 }}>{label}</span>
-          {label === 'Call' && phone && (
-            <span style={{ fontSize: 6, color: tokens.textSecondary || '#aaa' }}>{phone.substring(0, 10)}</span>
-          )}
-        </div>
-      ))}
-    </div>
-  );
+  if (!actions.length) actions.push({ icon: Phone, label: 'Call', color: accent }, { icon: MessageCircle, label: 'WhatsApp', color: '#25D366' });
+  return <div style={{ paddingTop: spacing('block', 10), paddingRight: spacing('block', 10), paddingBottom: spacing('tight', 6), paddingLeft: spacing('block', 10), display: 'flex', gap: px(widgetGeometry.contact.actionGapDp), justifyContent: 'center' }}>{actions.map(({ icon: Icon, label, color }, i) => <div key={i} style={{ flex: 1, borderRadius: px(widgetGeometry.contact.cardRadiusDp), borderWidth: px(1), borderStyle: 'solid', borderColor: `${color}40`, padding: px(widgetGeometry.contact.cardPaddingDp), display: 'flex', flexDirection: 'column', alignItems: 'center', gap: px(widgetGeometry.contact.innerGapDp) }}><div style={{ width: px(widgetGeometry.contact.iconBoxDp), height: px(widgetGeometry.contact.iconBoxDp), borderRadius: '50%', background: `${color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon size={px(widgetGeometry.contact.iconSizeDp)} color={color} /></div><span style={{ fontSize: typePx('caption', 10), color, fontWeight: 600 }}>{label}</span>{label === 'Call' && phone && <span style={{ fontSize: typePx('micro', 9), color: themeColor(tokens, 'textSecondary', '#aaa') }}>{phone.substring(0, widgetGeometry.contact.phonePreviewChars)}</span>}</div>)}</div>;
 }
 
-function ShowcaseGallery({ props, tokens }) {
-  const accent = tokens.accent || '#6C4FD1';
-  return (
-    <div style={{ padding: '8px 8px 6px' }}>
-      {props.title && (
-        <p style={{ fontSize: 9, fontWeight: 700, color: tokens.textPrimary || '#111', marginBottom: 5 }}>{props.title}</p>
-      )}
-      <div style={{ display: 'flex', gap: 4 }}>
-        <div style={{ flex: 2, height: 55, borderRadius: 6, background: `${accent}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Image size={18} color={accent} />
-        </div>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {[1, 2].map(i => (
-            <div key={i} style={{ flex: 1, borderRadius: 6, background: `${accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Image size={10} color={accent} />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
+function ShowcaseGallery({ props, tokens }) { const accent = themeColor(tokens, 'accent', '#6C4FD1'); return <div style={{ paddingTop: spacing('block', 10), paddingRight: spacing('block', 10), paddingBottom: spacing('tight', 6), paddingLeft: spacing('block', 10) }}>{props.title && <p style={{ fontSize: typePx('section', 12), fontWeight: 700, color: themeColor(tokens, 'textPrimary', '#111'), marginBottom: px(widgetGeometry.showcase.titleBottomGapDp) }}>{props.title}</p>}<div style={{ display: 'flex', gap: px(widgetGeometry.showcase.itemGapDp) }}><div style={{ flex: 2, height: px(widgetGeometry.showcase.mainHeightDp), borderRadius: px(widgetGeometry.showcase.radiusDp), background: `${accent}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Image size={px(widgetGeometry.showcase.mainIconDp)} color={accent} /></div><div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: px(widgetGeometry.showcase.itemGapDp) }}>{[1, 2].map(i => <div key={i} style={{ flex: 1, borderRadius: px(widgetGeometry.showcase.radiusDp), background: `${accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Image size={px(widgetGeometry.showcase.smallIconDp)} color={accent} /></div>)}</div></div></div>; }
+function LocationMap({ props, tokens }) { const accent = themeColor(tokens, 'accent', '#6C4FD1'); return <div style={{ paddingTop: spacing('block', 10), paddingRight: spacing('block', 10), paddingBottom: spacing('tight', 6), paddingLeft: spacing('block', 10) }}>{props.title && <p style={{ fontSize: typePx('section', 12), fontWeight: 700, color: themeColor(tokens, 'textPrimary', '#111'), marginBottom: px(widgetGeometry.location.titleBottomGapDp) }}>{props.title}</p>}<div style={{ height: px(widgetGeometry.location.mapHeightDp), borderRadius: px(widgetGeometry.location.radiusDp), background: '#e8f0e8', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><svg width="100%" height="100%" style={{ position: 'absolute', inset: 0, opacity: 0.3 }}>{[10,20,30,40,50].map(y => <line key={y} x1="0" y1={`${y}%`} x2="100%" y2={`${y}%`} stroke="#888" strokeWidth={px(widgetGeometry.location.gridStrokeDp)} />)}{[20,40,60,80].map(x => <line key={x} x1={`${x}%`} y1="0" x2={`${x}%`} y2="100%" stroke="#888" strokeWidth={px(widgetGeometry.location.gridStrokeDp)} />)}</svg><div style={{ zIndex: 1, width: px(widgetGeometry.location.pinDp), height: px(widgetGeometry.location.pinDp), borderRadius: '50% 50% 50% 0', background: accent, transform: 'rotate(-45deg)' }} /></div><div style={{ display: 'flex', alignItems: 'center', gap: px(widgetGeometry.location.labelGapDp), marginTop: px(widgetGeometry.location.labelTopGapDp) }}><MapPin size={px(widgetGeometry.location.iconSizeDp)} color={accent} /><span style={{ fontSize: typePx('small', 12), color: themeColor(tokens, 'textSecondary', '#888') }}>View on Maps</span></div></div>; }
+function ActionButtons({ props, tokens }) { const accent = themeColor(tokens, 'accent', '#6C4FD1'); const customLabel = typeof props.customLabel === 'string' && props.customLabel.trim() ? props.customLabel.trim() : null; const btns = []; if (props.showOrder) btns.push({ label: customLabel || 'Order Now', bg: accent, color: '#fff' }); if (props.showBook) btns.push({ label: 'Book', bg: accent, color: '#fff' }); if (props.showFollow) btns.push({ label: 'Follow', bg: `${accent}20`, color: accent }); if (props.showShare) btns.push({ label: 'Share', bg: '#f0f0f0', color: '#555' }); if (!btns.length) btns.push({ label: customLabel || 'Order Now', bg: accent, color: '#fff' }); return <div style={{ paddingTop: spacing('block', 10), paddingRight: spacing('block', 10), paddingBottom: spacing('tight', 6), paddingLeft: spacing('block', 10), display: 'flex', gap: px(widgetGeometry.actionButtons.itemGapDp), flexWrap: 'wrap' }}>{btns.map(({ label, bg, color }, i) => <div key={i} style={{ flex: 1, minWidth: px(widgetGeometry.actionButtons.minWidthDp), borderRadius: px(widgetGeometry.actionButtons.radiusDp), paddingTop: px(widgetGeometry.actionButtons.paddingVerticalDp), paddingRight: px(widgetGeometry.actionButtons.paddingHorizontalDp), paddingBottom: px(widgetGeometry.actionButtons.paddingVerticalDp), paddingLeft: px(widgetGeometry.actionButtons.paddingHorizontalDp), background: bg, textAlign: 'center' }}><span style={{ fontSize: typePx('small', 12), color, fontWeight: 700 }}>{label}</span></div>)}</div>; }
+function VideoPlayer({ props, tokens }) { const accent = themeColor(tokens, 'accent', '#6C4FD1'); return <div style={{ marginTop: 0, marginRight: spacing('block', 10), marginBottom: spacing('tight', 6), marginLeft: spacing('block', 10), borderRadius: px(widgetGeometry.video.radiusDp), height: px(widgetGeometry.video.heightDp), background: `${accent}15`, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>{props.posterUrl && <img src={props.posterUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}<div style={{ position: 'relative', zIndex: 1, width: px(widgetGeometry.video.playButtonDp), height: px(widgetGeometry.video.playButtonDp), borderRadius: '50%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Play size={px(widgetGeometry.video.playIconDp)} color="#fff" fill="#fff" /></div></div>; }
+function PromoBanner({ props, tokens }) { const accent = themeColor(tokens, 'accent', '#6C4FD1'); const bg = props.backgroundColor || `${accent}15`; return <div style={{ marginTop: 0, marginRight: spacing('block', 10), marginBottom: spacing('tight', 6), marginLeft: spacing('block', 10), borderRadius: px(widgetGeometry.promo.radiusDp), background: bg, borderWidth: px(1), borderStyle: 'solid', borderColor: props.backgroundColor ? `${props.backgroundColor}40` : `${accent}30`, paddingTop: px(widgetGeometry.promo.paddingVerticalDp), paddingRight: px(widgetGeometry.promo.paddingHorizontalDp), paddingBottom: px(widgetGeometry.promo.paddingVerticalDp), paddingLeft: px(widgetGeometry.promo.paddingHorizontalDp) }}>{props.title && <p style={{ fontSize: typePx('small', 12), fontWeight: 700, color: props.backgroundColor ? '#fff' : accent, marginBottom: px(widgetGeometry.promo.titleGapDp) }}>{props.title}</p>}{props.subtitle && <p style={{ fontSize: typePx('caption', 10), color: props.backgroundColor ? 'rgba(255,255,255,0.85)' : themeColor(tokens, 'textSecondary', '#666'), lineHeight: 1.3 }}>{props.subtitle}</p>}{props.ctaText && <div style={{ marginTop: px(widgetGeometry.promo.ctaTopGapDp), display: 'inline-flex', alignItems: 'center', gap: px(widgetGeometry.promo.ctaGapDp), paddingTop: px(widgetGeometry.promo.ctaPaddingVerticalDp), paddingRight: px(widgetGeometry.promo.ctaPaddingHorizontalDp), paddingBottom: px(widgetGeometry.promo.ctaPaddingVerticalDp), paddingLeft: px(widgetGeometry.promo.ctaPaddingHorizontalDp), borderRadius: px(widgetGeometry.promo.ctaRadiusDp), background: props.backgroundColor ? 'rgba(255,255,255,0.2)' : accent }}><span style={{ fontSize: typePx('caption', 10), fontWeight: 700, color: '#fff' }}>{props.ctaText}</span><ChevronRight size={px(widgetGeometry.promo.ctaIconDp)} color="#fff" /></div>}</div>; }
+function SocialFeed({ props, tokens }) { const accent = themeColor(tokens, 'accent', '#6C4FD1'); const PlatformIcon = ({ instagram: Instagram, tiktok: Sparkles, facebook: Users }[props.platform || 'instagram']) || Instagram; const count = Math.min(props.maxPosts || 6, 3); return <div style={{ paddingTop: spacing('block', 10), paddingRight: spacing('block', 10), paddingBottom: spacing('tight', 6), paddingLeft: spacing('block', 10) }}><div style={{ display: 'flex', alignItems: 'center', gap: px(widgetGeometry.social.iconGapDp), marginBottom: px(widgetGeometry.social.titleGapDp) }}><PlatformIcon size={px(widgetGeometry.social.platformIconDp)} color={accent} /><p style={{ fontSize: typePx('small', 12), fontWeight: 700, color: themeColor(tokens, 'textPrimary', '#111') }}>{props.handle ? `@${props.handle}` : 'Latest Posts'}</p></div><div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: px(widgetGeometry.social.gridGapDp) }}>{Array.from({ length: count }).map((_, i) => <div key={i} style={{ aspectRatio: '1', borderRadius: px(widgetGeometry.social.radiusDp), background: `${accent}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Image size={px(widgetGeometry.social.imageIconDp)} color={`${accent}80`} /></div>)}</div></div>; }
+function LiveStats({ props, tokens }) { const accent = themeColor(tokens, 'accent', '#6C4FD1'); const stats = []; if (props.showFollowers) stats.push({ label: 'Followers', value: '1.2K' }); if (props.showReviews) stats.push({ label: 'Reviews', value: '340' }); if (props.showOrders) stats.push({ label: 'Orders', value: '5.8K' }); if (props.showRating) stats.push({ label: 'Rating', value: '4.8★' }); if (!stats.length) stats.push({ label: 'Followers', value: '1.2K' }, { label: 'Reviews', value: '340' }); return <div style={{ paddingTop: spacing('block', 10), paddingRight: spacing('block', 10), paddingBottom: spacing('tight', 6), paddingLeft: spacing('block', 10), display: 'flex', justifyContent: 'space-around' }}>{stats.map((s, i) => <div key={i} style={{ textAlign: 'center' }}><p style={{ fontSize: typePx('stat', 16), fontWeight: 800, color: accent }}>{s.value}</p><p style={{ fontSize: typePx('caption', 10), color: themeColor(tokens, 'textSecondary', '#888'), marginTop: px(widgetGeometry.liveStats.labelTopGapDp) }}>{s.label}</p></div>)}</div>; }
+function AnimatedCounter({ props, tokens }) { const accent = themeColor(tokens, 'accent', '#6C4FD1'); return <div style={{ paddingTop: px(widgetGeometry.counter.paddingVerticalDp), paddingRight: spacing('block', 10), paddingBottom: px(widgetGeometry.counter.paddingVerticalDp), paddingLeft: spacing('block', 10), textAlign: 'center' }}><p style={{ fontSize: typePx('counter', 28), fontWeight: 900, color: accent }}>{props.prefix || ''}{props.value ?? 0}{props.suffix || ''}</p>{props.label && <p style={{ fontSize: typePx('caption', 10), color: themeColor(tokens, 'textSecondary', '#888'), marginTop: px(widgetGeometry.counter.labelTopGapDp) }}>{props.label}</p>}</div>; }
+function CustomHtml({ props, tokens }) { return <div style={{ marginTop: 0, marginRight: spacing('block', 10), marginBottom: spacing('tight', 6), marginLeft: spacing('block', 10), borderRadius: px(widgetGeometry.customHtml.radiusDp), borderWidth: px(1), borderStyle: 'solid', borderColor: themeColor(tokens, 'border', '#eee'), paddingTop: px(widgetGeometry.customHtml.paddingVerticalDp), paddingRight: px(widgetGeometry.customHtml.paddingHorizontalDp), paddingBottom: px(widgetGeometry.customHtml.paddingVerticalDp), paddingLeft: px(widgetGeometry.customHtml.paddingHorizontalDp), overflow: 'hidden' }}>{props.html ? <div style={{ fontSize: typePx('caption', 10), color: themeColor(tokens, 'textPrimary', '#111'), lineHeight: 1.4, maxHeight: px(widgetGeometry.customHtml.maxHeightDp), overflow: 'hidden' }} dangerouslySetInnerHTML={{ __html: props.html.substring(0, 500) }} /> : <div style={{ display: 'flex', alignItems: 'center', gap: px(widgetGeometry.customHtml.iconGapDp), opacity: 0.5 }}><Code size={px(widgetGeometry.customHtml.iconDp)} color={themeColor(tokens, 'textSecondary', '#888')} /><span style={{ fontSize: typePx('caption', 10), color: themeColor(tokens, 'textSecondary', '#888') }}>Custom HTML block</span></div>}</div>; }
+function GradientHero({ props }) { const from = props.gradientFrom || '#6C4FD1'; const to = props.gradientTo || '#E07B30'; return <div style={{ height: px(widgetGeometry.gradientHero.heightDp), background: `linear-gradient(135deg, ${from}, ${to})`, position: 'relative', overflow: 'hidden', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', paddingTop: px(widgetGeometry.gradientHero.paddingVerticalDp), paddingRight: px(widgetGeometry.gradientHero.paddingHorizontalDp), paddingBottom: px(widgetGeometry.gradientHero.paddingVerticalDp), paddingLeft: px(widgetGeometry.gradientHero.paddingHorizontalDp) }}><Sparkles size={px(widgetGeometry.gradientHero.iconDp)} color="rgba(255,255,255,0.5)" style={{ position: 'absolute', top: px(widgetGeometry.gradientHero.iconTopDp), right: px(widgetGeometry.gradientHero.iconRightDp) }} />{props.title && <p style={{ color: '#fff', fontSize: typePx('heroTitle', 24), fontWeight: 800, lineHeight: 1.3, marginBottom: px(widgetGeometry.gradientHero.titleBottomGapDp), position: 'relative', zIndex: 1 }}>{props.title}</p>}{props.subtitle && <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: typePx('heroSubtitle', 14), position: 'relative', zIndex: 1 }}>{props.subtitle}</p>}</div>; }
 
-function LocationMap({ props, tokens }) {
-  const accent = tokens.accent || '#6C4FD1';
-  return (
-    <div style={{ padding: '8px 8px 6px' }}>
-      {props.title && (
-        <p style={{ fontSize: 9, fontWeight: 700, color: tokens.textPrimary || '#111', marginBottom: 5 }}>{props.title}</p>
-      )}
-      <div style={{ height: 60, borderRadius: 8, background: '#e8f0e8', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0, opacity: 0.3 }}>
-          {[10,20,30,40,50].map(y => <line key={y} x1="0" y1={`${y}%`} x2="100%" y2={`${y}%`} stroke="#888" strokeWidth="0.5" />)}
-          {[20,40,60,80].map(x => <line key={x} x1={`${x}%`} y1="0" x2={`${x}%`} y2="100%" stroke="#888" strokeWidth="0.5" />)}
-        </svg>
-        <div style={{ zIndex: 1, width: 24, height: 24, borderRadius: '50% 50% 50% 0', background: accent, transform: 'rotate(-45deg)', boxShadow: `0 2px 8px ${accent}80` }} />
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
-        <MapPin size={9} color={accent} />
-        <span style={{ fontSize: 8, color: tokens.textSecondary || '#888' }}>View on Maps</span>
-      </div>
-    </div>
-  );
-}
+const WIDGET_RENDERERS = { hero_header: HeroHeader, quick_info_bar: QuickInfoBar, product_grid: ProductGrid, showcase_gallery: ShowcaseGallery, review_carousel: ReviewCarousel, contact_card: ContactCard, location_map: LocationMap, action_buttons: ActionButtons, retail_collection_box: RetailCollectionBoxPreview, video_player: VideoPlayer, promo_banner: PromoBanner, social_feed: SocialFeed, live_stats: LiveStats, animated_counter: AnimatedCounter, custom_html: CustomHtml, gradient_hero: GradientHero };
 
-function ActionButtons({ props, tokens }) {
-  const accent = tokens.accent || '#6C4FD1';
-  const customLabel = typeof props.customLabel === 'string' && props.customLabel.trim() ? props.customLabel.trim() : null;
-  const btns = [];
-  if (props.showOrder)  btns.push({ label: customLabel || 'Order Now', bg: accent, color: '#fff' });
-  if (props.showBook)   btns.push({ label: 'Book', bg: accent, color: '#fff' });
-  if (props.showFollow) btns.push({ label: 'Follow', bg: `${accent}20`, color: accent });
-  if (props.showShare)  btns.push({ label: 'Share', bg: '#f0f0f0', color: '#555' });
-  if (btns.length === 0) btns.push({ label: customLabel || 'Order Now', bg: accent, color: '#fff' });
-  return (
-    <div style={{ padding: '8px 8px 6px', display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-      {btns.map(({ label, bg, color }, i) => (
-        <div key={i} style={{ flex: 1, minWidth: 40, borderRadius: 6, padding: '5px 6px', background: bg, textAlign: 'center' }}>
-          <span style={{ fontSize: 8, color, fontWeight: 700 }}>{label}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
+function FallbackTile({ tile, tokens }) { const accent = themeColor(tokens, 'accent', '#6C4FD1'); return <div style={{ marginTop: px(widgetGeometry.fallback.marginVerticalDp), marginRight: px(widgetGeometry.fallback.marginHorizontalDp), marginBottom: px(widgetGeometry.fallback.marginVerticalDp), marginLeft: px(widgetGeometry.fallback.marginHorizontalDp), borderRadius: px(widgetGeometry.fallback.radiusDp), borderWidth: px(1), borderStyle: 'dashed', borderColor: `${accent}40`, paddingTop: px(widgetGeometry.fallback.paddingVerticalDp), paddingRight: px(widgetGeometry.fallback.paddingHorizontalDp), paddingBottom: px(widgetGeometry.fallback.paddingVerticalDp), paddingLeft: px(widgetGeometry.fallback.paddingHorizontalDp), opacity: 0.7 }}><p style={{ fontSize: typePx('small', 12), fontWeight: 600, color: accent, textTransform: 'capitalize' }}>{(tile.widgetType || '').replace(/_/g, ' ')}</p>{tile.props?.title && <p style={{ fontSize: typePx('caption', 10), color: themeColor(tokens, 'textSecondary', '#888'), marginTop: px(widgetGeometry.fallback.titleTopGapDp) }}>{tile.props.title}</p>}</div>; }
 
-// ── NITRO BRONZE renderers ──
-
-function VideoPlayer({ props, tokens }) {
-  const accent = tokens.accent || '#6C4FD1';
-  return (
-    <div style={{ margin: '0 8px 4px', borderRadius: 8, height: 70, background: `${accent}15`, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-      {props.posterUrl && (
-        <img src={props.posterUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-      )}
-      {props.videoUrl && (
-        <video src={props.videoUrl} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} muted={props.muted} loop={props.loop} autoPlay={props.autoplay} />
-      )}
-      <div style={{ position: 'relative', zIndex: 1, width: 28, height: 28, borderRadius: '50%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Play size={12} color="#fff" fill="#fff" />
-      </div>
-    </div>
-  );
-}
-
-function PromoBanner({ props, tokens }) {
-  const accent = tokens.accent || '#6C4FD1';
-  const bg = props.backgroundColor || `${accent}15`;
-  const border = props.backgroundColor ? `${props.backgroundColor}40` : `${accent}30`;
-  return (
-    <div style={{ margin: '0 8px 4px', borderRadius: 8, background: bg, border: `1px solid ${border}`, padding: '8px 10px' }}>
-      {props.title && <p style={{ fontSize: 9, fontWeight: 700, color: props.backgroundColor ? '#fff' : accent, marginBottom: 2 }}>{props.title}</p>}
-      {props.subtitle && <p style={{ fontSize: 8, color: props.backgroundColor ? 'rgba(255,255,255,0.85)' : (tokens.textSecondary || '#666'), lineHeight: 1.3 }}>{props.subtitle}</p>}
-      {props.ctaText && (
-        <div style={{ marginTop: 4, display: 'inline-flex', alignItems: 'center', gap: 2, padding: '3px 8px', borderRadius: 4, background: props.backgroundColor ? 'rgba(255,255,255,0.2)' : accent }}>
-          <span style={{ fontSize: 7, fontWeight: 700, color: props.backgroundColor ? '#fff' : '#fff' }}>{props.ctaText}</span>
-          <ChevronRight size={8} color={props.backgroundColor ? '#fff' : '#fff'} />
-        </div>
-      )}
-    </div>
-  );
-}
-
-function SocialFeed({ props, tokens }) {
-  const accent = tokens.accent || '#6C4FD1';
-  const platform = props.platform || 'instagram';
-  const platformIcons = { instagram: Instagram, tiktok: Sparkles, facebook: Users };
-  const PlatformIcon = platformIcons[platform] || Instagram;
-  const count = Math.min(props.maxPosts || 6, 3);
-  return (
-    <div style={{ padding: '8px 8px 6px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 5 }}>
-        <PlatformIcon size={12} color={accent} />
-        <p style={{ fontSize: 9, fontWeight: 700, color: tokens.textPrimary || '#111' }}>
-          {props.handle ? `@${props.handle}` : `Latest Posts`}
-        </p>
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 3 }}>
-        {Array.from({ length: count }).map((_, i) => (
-          <div key={i} style={{ aspectRatio: '1', borderRadius: 6, background: `${accent}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Image size={12} color={`${accent}80`} />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ── NITRO SILVER renderers ──
-
-function LiveStats({ props, tokens }) {
-  const accent = tokens.accent || '#6C4FD1';
-  const stats = [];
-  if (props.showFollowers) stats.push({ label: 'Followers', value: '1.2K' });
-  if (props.showReviews) stats.push({ label: 'Reviews', value: '340' });
-  if (props.showOrders) stats.push({ label: 'Orders', value: '5.8K' });
-  if (props.showRating) stats.push({ label: 'Rating', value: '4.8★' });
-  if (stats.length === 0) stats.push({ label: 'Followers', value: '1.2K' }, { label: 'Reviews', value: '340' });
-  return (
-    <div style={{ padding: '8px 8px 6px', display: 'flex', justifyContent: 'space-around' }}>
-      {stats.map((s, i) => (
-        <div key={i} style={{ textAlign: 'center' }}>
-          <p style={{ fontSize: 12, fontWeight: 800, color: accent }}>{s.value}</p>
-          <p style={{ fontSize: 7, color: tokens.textSecondary || '#888', marginTop: 1 }}>{s.label}</p>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function AnimatedCounter({ props, tokens }) {
-  const accent = tokens.accent || '#6C4FD1';
-  return (
-    <div style={{ padding: '10px 8px', textAlign: 'center' }}>
-      <p style={{ fontSize: 22, fontWeight: 900, color: accent }}>
-        {props.prefix || ''}{props.value ?? 0}{props.suffix || ''}
-      </p>
-      {props.label && (
-        <p style={{ fontSize: 8, color: tokens.textSecondary || '#888', marginTop: 2 }}>{props.label}</p>
-      )}
-    </div>
-  );
-}
-
-// ── NITRO GOLD renderers ──
-
-function CustomHtml({ props, tokens }) {
-  // Preview the raw HTML in a constrained box (sanitization happens on render in Flutter)
-  return (
-    <div style={{ margin: '0 8px 4px', borderRadius: 8, border: `1px solid ${tokens.border || '#eee'}`, padding: '6px 8px', overflow: 'hidden' }}>
-      {props.html ? (
-        <div style={{ fontSize: 8, color: tokens.textPrimary || '#111', lineHeight: 1.4, maxHeight: 60, overflow: 'hidden' }}
-          dangerouslySetInnerHTML={{ __html: props.html.substring(0, 500) }} />
-      ) : (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, opacity: 0.5 }}>
-          <Code size={12} color={tokens.textSecondary || '#888'} />
-          <span style={{ fontSize: 8, color: tokens.textSecondary || '#888' }}>Custom HTML block</span>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function GradientHero({ props, tokens }) {
-  const from = props.gradientFrom || '#6C4FD1';
-  const to = props.gradientTo || '#E07B30';
-  return (
-    <div style={{ height: 90, background: `linear-gradient(135deg, ${from}, ${to})`, position: 'relative', overflow: 'hidden', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '10px 12px' }}>
-      <Sparkles size={14} color="rgba(255,255,255,0.5)" style={{ position: 'absolute', top: 8, right: 8 }} />
-      {props.title && (
-        <p style={{ color: '#fff', fontSize: 12, fontWeight: 800, lineHeight: 1.3, marginBottom: 2, position: 'relative', zIndex: 1 }}>{props.title}</p>
-      )}
-      {props.subtitle && (
-        <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: 9, position: 'relative', zIndex: 1 }}>{props.subtitle}</p>
-      )}
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────
-// Widget registry — keys MUST match backend seedWidgetCatalog.js
-// ─────────────────────────────────────────────────────────────
-
-const WIDGET_RENDERERS = {
-  // FREE
-  hero_header:         HeroHeader,
-  quick_info_bar:      QuickInfoBar,
-  product_grid:        ProductGrid,
-  showcase_gallery:    ShowcaseGallery,
-  review_carousel:     ReviewCarousel,
-  contact_card:        ContactCard,
-  location_map:        LocationMap,
-  action_buttons:      ActionButtons,
-  retail_collection_box: RetailCollectionBoxPreview,
-  // NITRO_BRONZE
-  video_player:        VideoPlayer,
-  promo_banner:        PromoBanner,
-  social_feed:         SocialFeed,
-  // NITRO_SILVER
-  live_stats:          LiveStats,
-  animated_counter:    AnimatedCounter,
-  // NITRO_GOLD
-  custom_html:         CustomHtml,
-  gradient_hero:       GradientHero,
-};
-
-function FallbackTile({ tile, tokens }) {
-  const accent = tokens.accent || '#6C4FD1';
-  return (
-    <div style={{ margin: '4px 8px', borderRadius: 8, border: `1px dashed ${accent}40`, padding: '8px 10px', opacity: 0.7 }}>
-      <p style={{ fontSize: 9, fontWeight: 600, color: accent, textTransform: 'capitalize' }}>
-        {(tile.widgetType || '').replace(/_/g, ' ')}
-      </p>
-      {tile.props?.title && (
-        <p style={{ fontSize: 8, color: tokens.textSecondary || '#888', marginTop: 2 }}>{tile.props.title}</p>
-      )}
-    </div>
-  );
-}
-
-// Business-type-specific nav bar tabs
-function getNavTabs(businessType) {
-  const tabs = {
-    RESTAURANT: ['Home', 'Menu', 'Orders', 'Profile'],
-    HOTEL: ['Home', 'Rooms', 'Book', 'Profile'],
-    TRANSIT: ['Home', 'Trips', 'Tickets', 'Profile'],
-    RETAIL: ['Home', 'Shop', 'Orders', 'Profile'],
-    SERVICES: ['Home', 'Services', 'Book', 'Profile'],
-    GENERAL: ['Home', 'About', 'Contact', 'Profile'],
-  };
-  return tabs[businessType] || tabs.GENERAL;
-}
-
-// ─────────────────────────────────────────────────────────────
-// Main component
-// ─────────────────────────────────────────────────────────────
+function getNavTabs(businessType) { const tabs = { RESTAURANT: ['Home', 'Menu', 'Orders', 'Profile'], HOTEL: ['Home', 'Rooms', 'Book', 'Profile'], TRANSIT: ['Home', 'Trips', 'Tickets', 'Profile'], RETAIL: ['Home', 'Shop', 'Orders', 'Profile'], SERVICES: ['Home', 'Services', 'Book', 'Profile'], GENERAL: ['Home', 'About', 'Contact', 'Profile'] }; return tabs[businessType] || tabs.GENERAL; }
 
 export default function StorefrontPhonePreview({ draft, theme, widgets, business, businessType, selectedTileId, onSelectTile, editorMode = false, onDropTile }) {
   const [dropTarget, setDropTarget] = useState(null);
-  const tokens  = theme?.tokenSet || {};
-  const accent  = tokens.accent    || 'var(--f-tint-color)';
-  const bg      = tokens.background || '#ffffff';
-  const surface = tokens.surface    || '#f8f8f8';
-  const textPrimary = tokens.textPrimary || '#111111';
-  const tiles   = draft?.layoutJson?.tiles || [];
-
-  // Sort tiles by row position so they appear in layout order
-  const sortedTiles = [...tiles].sort((a, b) => (a.position?.row ?? 0) - (b.position?.row ?? 0));
-
-  const businessInfo = business || {
-    name: draft?.businessName || 'Your Business',
-    logoUrl: null,
-    coverPhotoUrl: null,
-    averageRating: null,
-    phoneNumber: null,
-    category: null,
-  };
-
+  const tokens = theme?.tokenSet || {};
+  const accent = themeColor(tokens, 'accent', 'var(--f-tint-color)');
+  const bg = themeColor(tokens, 'background', '#ffffff');
+  const surface = themeColor(tokens, 'surface', '#f8f8f8');
+  const textPrimary = themeColor(tokens, 'textPrimary', '#111111');
+  const tiles = useMemo(() => [...(draft?.layoutJson?.tiles || [])].sort((a, b) => (a.position?.row ?? 0) - (b.position?.row ?? 0)), [draft?.layoutJson?.tiles]);
+  const businessInfo = business || { name: draft?.businessName || 'Your Business', logoUrl: null, coverPhotoUrl: null, averageRating: null, phoneNumber: null, category: null };
   const navTabs = getNavTabs(businessType);
+  const frame = STOREFRONT_STUDIO_TOKENS.studio.frame;
 
-  return (
-    <GlassPanel solid className="p-3">
-      {/* Panel header */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-1.5">
-          <Smartphone className="w-3 h-3" style={{ color: 'var(--f-text-3)' }} />
-          <span className="text-xs font-semibold" style={{ color: 'var(--f-text-3)' }}>Live Preview</span>
-        </div>
-        {theme && (
-          <span className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-            style={{ background: 'var(--f-surface-sunken)', color: 'var(--f-tint-color)' }}>
-            {theme.name}
-          </span>
-        )}
+  return <div className="mx-auto w-full" data-testid="storefront-phone-preview"><div className="mb-2 flex items-center justify-between"><div className="flex items-center gap-1.5"><Smartphone className="h-3 w-3" style={{ color: 'var(--f-text-3)' }} /><span className="text-xs font-semibold" style={{ color: 'var(--f-text-3)' }}>Live Preview</span></div>{theme && <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{ background: 'var(--f-surface-sunken)', color: 'var(--f-tint-color)' }}>{theme.name}</span>}</div>
+    <div data-testid="studio-phone-frame" data-scrollable="true" className="mx-auto shadow-2xl" style={{ borderColor: 'var(--f-surface-raised)', width: px(frame.widthDp), height: px(frame.heightDp), borderWidth: px(frame.borderWidthDp), borderStyle: 'solid', borderRadius: px(frame.radiusDp), background: bg, overflowY: 'auto', overflowX: 'hidden' }}>
+      <div className="flex justify-between items-center" style={{ paddingTop: px(widgetGeometry.chrome.statusVerticalDp), paddingRight: px(widgetGeometry.chrome.statusHorizontalDp), paddingBottom: px(widgetGeometry.chrome.statusVerticalDp), paddingLeft: px(widgetGeometry.chrome.statusHorizontalDp), fontSize: typePx('caption', 10), background: accent, color: '#fff' }}><span className="font-semibold">9:41</span><div style={{ display: 'flex', gap: px(widgetGeometry.chrome.statusItemGapDp) }}><span>●●●</span><span>WiFi</span><span>100%</span></div></div>
+      <div style={{ paddingTop: px(widgetGeometry.chrome.identityPaddingTopDp), paddingRight: px(widgetGeometry.chrome.identityPaddingHorizontalDp), paddingBottom: px(widgetGeometry.chrome.identityPaddingBottomDp), paddingLeft: px(widgetGeometry.chrome.identityPaddingHorizontalDp), textAlign: 'center', background: surface, borderBottomWidth: px(1), borderBottomStyle: 'solid', borderBottomColor: themeColor(tokens, 'border', '#eee') }}>
+        {businessInfo.logoUrl ? <img src={businessInfo.logoUrl} alt="" style={{ width: px(widgetGeometry.chrome.logoDp), height: px(widgetGeometry.chrome.logoDp), borderRadius: '50%', objectFit: 'cover', marginTop: 0, marginRight: 'auto', marginBottom: px(widgetGeometry.chrome.logoBottomGapDp), marginLeft: 'auto' }} /> : <div style={{ width: px(widgetGeometry.chrome.logoDp), height: px(widgetGeometry.chrome.logoDp), borderRadius: '50%', background: accent, marginTop: 0, marginRight: 'auto', marginBottom: px(widgetGeometry.chrome.logoBottomGapDp), marginLeft: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: typePx('identity', 16), fontWeight: 900, color: '#fff' }}>{(businessInfo.name || 'B').charAt(0).toUpperCase()}</span></div>}
+        <p style={{ fontSize: typePx('small', 12), fontWeight: 700, color: textPrimary }}>{businessInfo.name || 'Your Business'}</p><p style={{ fontSize: typePx('caption', 10), color: themeColor(tokens, 'textSecondary', '#888'), marginTop: px(widgetGeometry.chrome.followTopGapDp) }}>Tap to follow</p>
       </div>
-
-      {/* Phone frame */}
-      <div
-        className="rounded-[28px] border-4 overflow-hidden shadow-2xl mx-auto"
-        style={{ borderColor: 'var(--f-surface-raised)', width: 220, background: bg }}
-      >
-        {/* Status bar */}
-        <div className="flex justify-between items-center px-4 py-1.5 text-[10px]"
-          style={{ background: accent, color: '#fff' }}>
-          <span className="font-semibold">9:41</span>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <span>●●●</span><span>WiFi</span><span>100%</span>
-          </div>
-        </div>
-
-        {/* Business identity strip */}
-        <div style={{ padding: '10px 12px 8px', textAlign: 'center', background: surface, borderBottom: `1px solid ${tokens.border || '#eee'}` }}>
-          {businessInfo.logoUrl ? (
-            <img src={businessInfo.logoUrl} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', margin: '0 auto 6px' }} />
-          ) : (
-            <div style={{ width: 40, height: 40, borderRadius: '50%', background: accent, margin: '0 auto 6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: 16, fontWeight: 900, color: '#fff' }}>
-                {(businessInfo.name || 'B').charAt(0).toUpperCase()}
-              </span>
-            </div>
-          )}
-          <p style={{ fontSize: 10, fontWeight: 700, color: textPrimary }}>{businessInfo.name || 'Your Business'}</p>
-          <p style={{ fontSize: 8, color: tokens.textSecondary || '#888', marginTop: 1 }}>Tap to follow</p>
-        </div>
-
-        {/* Widget tiles */}
-        <div style={{ minHeight: 280, overflowY: 'auto', background: bg }}>
-          {sortedTiles.length === 0 ? (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 120 }}>
-              <p style={{ fontSize: 9, color: tokens.textSecondary || '#aaa', textAlign: 'center' }}>
-                Add widgets from the left panel
-              </p>
-            </div>
-          ) : (
-            sortedTiles.map(tile => {
-              const Renderer = WIDGET_RENDERERS[tile.widgetType];
-              if (!Renderer) return <FallbackTile key={tile.id} tile={tile} tokens={tokens} />;
-              const selected = editorMode && selectedTileId === tile.id;
-              const isBefore = dropTarget?.tileId === tile.id && dropTarget.edge === 'before';
-              const isAfter = dropTarget?.tileId === tile.id && dropTarget.edge === 'after';
-              const resolveDrop = (event) => {
-                event.preventDefault();
-                const type = event.dataTransfer.getData('application/x-azm-studio-node');
-                if (!type || !editorMode || !onDropTile) return null;
-                const rect = event.currentTarget.getBoundingClientRect();
-                return { tileId: tile.id, edge: event.clientY < rect.top + rect.height / 2 ? 'before' : 'after', type };
-              };
-              return (
-                <div key={tile.id}>
-                  {isBefore && <div style={{ height: 3, margin: '0 8px', borderRadius: 999, background: accent }} aria-hidden="true" />}
-                  <div
-                    role={editorMode ? 'button' : undefined}
-                    tabIndex={editorMode ? 0 : undefined}
-                    onClick={editorMode ? (event) => { event.stopPropagation(); onSelectTile?.(tile.id); } : undefined}
-                    onKeyDown={editorMode ? (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelectTile?.(tile.id); } } : undefined}
-                    onDragOver={editorMode && onDropTile ? (event) => { const target = resolveDrop(event); if (target) setDropTarget(target); } : undefined}
-                    onDragLeave={editorMode ? () => setDropTarget((current) => current?.tileId === tile.id ? null : current) : undefined}
-                    onDrop={editorMode && onDropTile ? (event) => { const target = resolveDrop(event); setDropTarget(null); if (target) { event.stopPropagation(); onDropTile(target.tileId, target.edge, target.type); } } : undefined}
-                    style={{
-                      position: 'relative',
-                      borderBottom: `1px solid ${tokens.border || '#f0f0f0'}`,
-                      outline: selected ? `2px solid ${accent}` : 'none',
-                      outlineOffset: -2,
-                      cursor: editorMode ? 'pointer' : undefined,
-                    }}
-                  >
-                    {selected && (
-                      <div style={{ position: 'absolute', top: 3, right: 4, zIndex: 5, fontSize: 7, fontWeight: 800, color: '#fff', background: accent, borderRadius: 4, padding: '2px 4px', pointerEvents: 'none' }}>Editing</div>
-                    )}
-                    <Renderer props={tile.props || {}} business={businessInfo} tokens={tokens} />
-                  </div>
-                  {isAfter && <div style={{ height: 3, margin: '0 8px', borderRadius: 999, background: accent }} aria-hidden="true" />}
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        {/* Nav bar — adapts to business type */}
-        <div style={{ height: 32, background: surface, borderTop: `1px solid ${tokens.border || '#eee'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 16px' }}>
-          {navTabs.map((tab, i) => (
-            <div key={tab} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-              <div style={{ width: 14, height: 14, borderRadius: '50%', background: i === 0 ? accent : `${accent}20` }} />
-              <span style={{ fontSize: 5, color: i === 0 ? accent : tokens.textSecondary || '#aaa', fontWeight: i === 0 ? 700 : 400 }}>{tab}</span>
-            </div>
-          ))}
-        </div>
+      <div data-testid="studio-phone-scroll-content" style={{ background: bg, minHeight: px(frame.heightDp + widgetGeometry.chrome.scrollBreathingRoomDp) }}>
+        {tiles.length === 0 ? <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: px(widgetGeometry.emptyState.heightDp) }}><p style={{ fontSize: typePx('caption', 10), color: themeColor(tokens, 'textSecondary', '#aaa'), textAlign: 'center' }}>Add widgets from the left panel</p></div> : tiles.map(tile => { const Renderer = WIDGET_RENDERERS[tile.widgetType]; if (!Renderer) return <FallbackTile key={tile.id} tile={tile} tokens={tokens} />; const selected = editorMode && selectedTileId === tile.id; const isBefore = dropTarget?.tileId === tile.id && dropTarget.edge === 'before'; const isAfter = dropTarget?.tileId === tile.id && dropTarget.edge === 'after'; const resolveDrop = (event) => { event.preventDefault(); const type = event.dataTransfer?.getData('application/x-azm-studio-node'); if (!type || !editorMode || !onDropTile) return null; const rect = event.currentTarget.getBoundingClientRect(); return { tileId: tile.id, edge: event.clientY < rect.top + rect.height / 2 ? 'before' : 'after', type }; }; return <div key={tile.id} data-studio-drop-target="true" data-tile-id={tile.id}>{isBefore && <div style={{ height: px(widgetGeometry.dropIndicator.heightDp), marginTop: 0, marginRight: spacing('block', 10), marginBottom: 0, marginLeft: spacing('block', 10), borderRadius: 999, background: accent }} aria-hidden="true" />}<div role={editorMode ? 'button' : undefined} tabIndex={editorMode ? 0 : undefined} onClick={editorMode ? (event) => { event.stopPropagation(); onSelectTile?.(tile.id); } : undefined} onKeyDown={editorMode ? (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelectTile?.(tile.id); } } : undefined} onDragOver={editorMode && onDropTile ? (event) => { const target = resolveDrop(event); if (target) setDropTarget(target); } : undefined} onDragLeave={editorMode ? () => setDropTarget(current => current?.tileId === tile.id ? null : current) : undefined} onDrop={editorMode && onDropTile ? (event) => { const target = resolveDrop(event); setDropTarget(null); if (target) { event.stopPropagation(); onDropTile(target.tileId, target.edge, target.type); } } : undefined} style={{ position: 'relative', borderBottomWidth: px(1), borderBottomStyle: 'solid', borderBottomColor: themeColor(tokens, 'border', '#f0f0f0'), outlineWidth: selected ? px(widgetGeometry.selection.outlineDp) : 0, outlineStyle: selected ? 'solid' : 'none', outlineColor: accent, outlineOffset: -2, cursor: editorMode ? 'pointer' : undefined }}>{selected && <div style={{ position: 'absolute', top: px(widgetGeometry.selection.badgeTopDp), right: px(widgetGeometry.selection.badgeRightDp), zIndex: 5, fontSize: typePx('micro', 9), fontWeight: 800, color: '#fff', background: accent, borderRadius: px(widgetGeometry.selection.badgeRadiusDp), paddingTop: px(widgetGeometry.selection.badgePaddingVerticalDp), paddingRight: px(widgetGeometry.selection.badgePaddingHorizontalDp), paddingBottom: px(widgetGeometry.selection.badgePaddingVerticalDp), paddingLeft: px(widgetGeometry.selection.badgePaddingHorizontalDp), pointerEvents: 'none' }}>Editing</div>}<Renderer props={tile.props || {}} business={businessInfo} tokens={tokens} /></div>{isAfter && <div style={{ height: px(widgetGeometry.dropIndicator.heightDp), marginTop: 0, marginRight: spacing('block', 10), marginBottom: 0, marginLeft: spacing('block', 10), borderRadius: 999, background: accent }} aria-hidden="true" />}</div>; })}
       </div>
-    </GlassPanel>
-  );
+      <div style={{ height: px(widgetGeometry.chrome.navHeightDp), background: surface, borderTopWidth: px(1), borderTopStyle: 'solid', borderTopColor: themeColor(tokens, 'border', '#eee'), display: 'flex', alignItems: 'center', justifyContent: 'space-around', paddingLeft: px(widgetGeometry.chrome.navHorizontalPaddingDp), paddingRight: px(widgetGeometry.chrome.navHorizontalPaddingDp) }}>{navTabs.map((tab, i) => <div key={tab} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: px(widgetGeometry.chrome.navGapDp) }}><div style={{ width: px(widgetGeometry.chrome.navIconDp), height: px(widgetGeometry.chrome.navIconDp), borderRadius: '50%', background: i === 0 ? accent : `${accent}20` }} /><span style={{ fontSize: typePx('nav', 8), color: i === 0 ? accent : themeColor(tokens, 'textSecondary', '#aaa'), fontWeight: i === 0 ? 700 : 400 }}>{tab}</span></div>)}</div>
+    </div>
+  </div>;
 }
+
+export { WIDGET_RENDERERS };
