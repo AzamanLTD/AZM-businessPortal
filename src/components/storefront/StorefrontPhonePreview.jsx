@@ -177,7 +177,7 @@ function LocationMap({ props, tokens }) {
       <div style={{ height: 60, borderRadius: 8, background: '#e8f0e8', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0, opacity: 0.3 }}>
           {[10,20,30,40,50].map(y => <line key={y} x1="0" y1={`${y}%`} x2="100%" y2={`${y}%`} stroke="#888" strokeWidth="0.5" />)}
-          {[20,40,60,80].map(x => <line key={x} x1={`${x}%`} y1="0" x2={`${x}%"`} y2="100%" stroke="#888" strokeWidth="0.5" />)}
+          {[20,40,60,80].map(x => <line key={x} x1={`${x}%`} y1="0" x2={`${x}%`} y2="100%" stroke="#888" strokeWidth="0.5" />)}
         </svg>
         <div style={{ zIndex: 1, width: 24, height: 24, borderRadius: '50% 50% 50% 0', background: accent, transform: 'rotate(-45deg)', boxShadow: `0 2px 8px ${accent}80` }} />
       </div>
@@ -355,7 +355,7 @@ const WIDGET_RENDERERS = {
   review_carousel:     ReviewCarousel,
   contact_card:        ContactCard,
   location_map:        LocationMap,
-  action_buttons:        ActionButtons,
+  action_buttons:      ActionButtons,
   retail_collection_box: RetailCollectionBoxPreview,
   // NITRO_BRONZE
   video_player:        VideoPlayer,
