@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { storefrontApi } from '@/services/storefrontApi';
 import { patchLegacyTile } from '@/lib/storefrontStudioModel';
+import { resolveTilePosition } from '@/lib/storefrontLayoutCollision';
 
 /**
  * Preserve an already-published/editor Experience Blueprint when a generic
@@ -159,12 +160,23 @@ export function useStorefront(businessId) {
 
   const updateTile = useCallback((tileId, patch = {}) => {
     if (!draft) return;
+    const tiles = draft.layoutJson?.tiles ?? [];
+    const target = tiles.find((tile) => tile.id === tileId);
+    if (!target) return;
+
+    const resolvedPosition = patch.position
+      ? resolveTilePosition(tiles, tileId, patch.position) || target.position
+      : undefined;
+    const safePatch = patch.position
+      ? { ...patch, position: resolvedPosition }
+      : patch;
+
     const updated = {
       ...draft,
       layoutJson: {
         ...draft.layoutJson,
-        tiles: draft.layoutJson.tiles.map(t =>
-          t.id === tileId ? patchLegacyTile(t, patch) : t
+        tiles: tiles.map(t =>
+          t.id === tileId ? patchLegacyTile(t, safePatch) : t
         ),
       },
     };
