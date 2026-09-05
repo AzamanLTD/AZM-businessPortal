@@ -83,7 +83,6 @@ const TOKENS = {
     preview: {
       spacing: { block: 16, tight: 8 },
       type: { heroTitle: 24, heroSubtitle: 14, identity: 16, section: 12, body: 12, small: 12, caption: 10, micro: 9, stat: 16, counter: 28, nav: 8 },
-      // Grounded directly in the matching Flutter widget implementations.
       hero: { heightDp: { compact: 140, standard: 200, tall: 260 }, sideInsetDp: 20, bottomInsetDp: 16, titleBottomGapDp: 4 },
       quickInfo: { horizontalPaddingDp: 16, verticalPaddingDp: 10, itemGapDp: 10, runGapDp: 6, iconLabelGapDp: 4, iconSizeDp: 14, radiusDp: 12 },
       productGrid: { titleBottomGapDp: 10, crossAxisSpacingDp: 10, mainAxisSpacingDp: 10, childAspectRatio: 0.75, cardRadiusDp: 12, cardPaddingDp: 8, emptyHorizontalPaddingDp: 20, emptyVerticalPaddingDp: 28, emptyRadiusDp: 14, emptyIconDp: 30, emptyIconGapDp: 8, emptyBodyGapDp: 4, productTitleGapDp: 3, productImageFlex: 3 },
@@ -95,6 +94,9 @@ const TOKENS = {
       promo: { horizontalPaddingDp: 20, verticalPaddingDp: 16, radiusDp: 12, titleFontSizeDp: 18, subtitleFontSizeDp: 13, titleSubtitleGapDp: 2, ctaGapDp: 12 },
       social: { titleBottomGapDp: 10, platformIconDp: 20, platformIconGapDp: 6, viewportHeightDp: 180, gridCrossAxisCount: 2, gridSpacingDp: 8, itemWidthDp: 90, itemRadiusDp: 10, itemIconDp: 28 },
       liveStats: { horizontalPaddingDp: 16, verticalPaddingDp: 12, radiusDp: 12, valueFontSizeDp: 20, valueLabelGapDp: 2, iconDp: 12, iconLabelGapDp: 3, labelFontSizeDp: 11 },
+      animatedCounter: { horizontalPaddingDp: 16, verticalPaddingDp: 12, radiusDp: 12, valueFontSizeDp: 28, labelFontSizeDp: 12, labelGapDp: 2 },
+      customHtml: { paddingDp: 14, radiusDp: 12, emptyFontSizeDp: 13, contentFontSizeDp: 14 },
+      gradientHero: { heightDp: 280, radiusDp: 12, horizontalInsetDp: 24, bottomInsetDp: 28, titleFontSizeDp: 28, subtitleFontSizeDp: 16, titleSubtitleGapDp: 6 },
     },
   },
 
