@@ -4,7 +4,7 @@
  * in an HttpOnly cookie after the one-time business-session bootstrap.
  */
 
-import { updateSocketToken } from './socket';
+import { disconnectSocket, updateSocketToken } from './socket';
 
 const BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://azm-backend.onrender.com' : 'http://localhost:3000');
 const REQUEST_TIMEOUT_MS = 30_000;
@@ -16,7 +16,10 @@ export function setAccessToken(token) {
   if (accessToken) updateSocketToken(accessToken);
 }
 export function getAccessToken() { return accessToken; }
-export function clearAccessToken() { accessToken = null; }
+export function clearAccessToken() {
+  accessToken = null;
+  disconnectSocket();
+}
 
 async function fetchWithTimeout(url, options) {
   const controller = new AbortController();
