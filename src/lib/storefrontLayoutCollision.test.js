@@ -16,7 +16,7 @@ describe('storefrontLayoutCollision', () => {
 
   it('finds the nearest free slot for a colliding move', () => {
     const resolved = resolveTilePosition(tiles, 'new', { row: 2, col: 0, rowSpan: 2, colSpan: 2 });
-    expect(resolved).toMatchObject({ row: 4, col: 0, rowSpan: 2, colSpan: 2 });
+    expect(resolved).toMatchObject({ row: 5, col: 0, rowSpan: 2, colSpan: 2 });
   });
 
   it('clamps positions to the four-column canvas', () => {
@@ -24,11 +24,12 @@ describe('storefrontLayoutCollision', () => {
     expect(resolved).toMatchObject({ row: 0, col: 1, rowSpan: 1, colSpan: 3 });
   });
 
-  it('returns the original position when the occupied canvas has no free slot in range', () => {
+  it('finds a free row after a densely packed vertical stack', () => {
     const packed = Array.from({ length: 25 }, (_, row) => ({
       id: `tile-${row}`,
       position: { row, col: 0, rowSpan: 1, colSpan: 4 },
     }));
-    expect(resolveTilePosition(packed, 'new', { row: 10, col: 0, rowSpan: 1, colSpan: 4 })).toBeNull();
+    const resolved = resolveTilePosition(packed, 'new', { row: 10, col: 0, rowSpan: 1, colSpan: 4 });
+    expect(resolved).toMatchObject({ row: 25, col: 0, rowSpan: 1, colSpan: 4 });
   });
 });
