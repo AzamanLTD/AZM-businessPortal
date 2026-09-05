@@ -11,7 +11,7 @@ import { runtimeAdapterIsContainer, studioDocumentToRuntimeDraft } from '@/lib/s
 import { sanitizeStorefrontPreviewHtml } from '@/lib/storefrontPreviewSanitizer';
 import { useStorefrontStudio } from '@/hooks/useStorefrontStudio';
 
-const LABELS = { Page:'Page', section:'Section', stack:'Stack', row:'Row', column:'Column', grid:'Grid', overlay:'Overlay', hero:'Hero', 'product-grid':'Product Grid', 'product-carousel':'Product Carousel', 'product-card':'Product Card', 'category-rail':'Category Rail', button:'Button', 'icon-button':'Icon Button', text:'Text', image:'Image', video:'Video', rating:'Rating', reviews:'Reviews', contact:'Contact', location:'Location', promo:'Promotion', social:'Social', spacer:'Spacer', divider:'Divider' };
+const LABELS = { page:'Page', section:'Section', stack:'Stack', row:'Row', column:'Column', grid:'Grid', overlay:'Overlay', hero:'Hero', 'product-grid':'Product Grid', 'product-carousel':'Product Carousel', 'product-card':'Product Card', 'category-rail':'Category Rail', button:'Button', 'icon-button':'Icon Button', text:'Text', image:'Image', video:'Video', rating:'Rating', reviews:'Reviews', contact:'Contact', location:'Location', promo:'Promotion', social:'Social', spacer:'Spacer', divider:'Divider' };
 const VIEWPORTS = [
   { key: 'phone', label: 'Phone', Icon: Smartphone },
   { key: 'tablet', label: 'Tablet', Icon: Tablet },
