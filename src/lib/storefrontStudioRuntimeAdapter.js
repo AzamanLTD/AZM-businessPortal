@@ -8,6 +8,8 @@
 // rendering implementations.
 // =============================================================================
 
+import { normalizeStudioViewport, responsiveGrid, resolveResponsiveNode } from './storefrontStudioResponsive';
+
 const TYPE_TO_WIDGET = Object.freeze({
   hero: 'hero_header',
   'product-grid': 'product_grid',
@@ -93,16 +95,17 @@ function runtimeProps(node) {
   return props;
 }
 
-function appendNode({ document, node, tiles, rowRef }) {
-  if (node.layout?.visibility === false) return;
+function appendNode({ document, node, tiles, rowRef, viewport }) {
+  const resolvedNode = resolveResponsiveNode(node, viewport);
+  if (resolvedNode.layout?.visibility === false) return;
 
-  const widgetType = TYPE_TO_WIDGET[node.type];
+  const widgetType = TYPE_TO_WIDGET[resolvedNode.type];
   if (widgetType) {
-    const position = node.layout?.grid || {};
+    const position = responsiveGrid(resolvedNode, viewport);
     const row = Number.isFinite(position.row) ? position.row : rowRef.value;
     const col = Number.isFinite(position.col) ? position.col : 0;
     tiles.push({
-      id: node.id,
+      id: resolvedNode.id,
       widgetType,
       position: {
         row,
@@ -110,24 +113,25 @@ function appendNode({ document, node, tiles, rowRef }) {
         rowSpan: Number.isFinite(position.rowSpan) ? position.rowSpan : 2,
         colSpan: Number.isFinite(position.colSpan) ? position.colSpan : 4,
       },
-      props: runtimeProps(node),
+      props: runtimeProps(resolvedNode),
     });
     rowRef.value = Math.max(rowRef.value + 1, row + 1);
   }
 
-  for (const child of nodeChildren(document, node)) {
-    appendNode({ document, node: child, tiles, rowRef });
+  for (const child of nodeChildren(document, resolvedNode)) {
+    appendNode({ document, node: child, tiles, rowRef, viewport });
   }
 }
 
-export function studioDocumentToRuntimeTiles(document) {
+export function studioDocumentToRuntimeTiles(document, viewport = 'phone') {
   const tiles = [];
   const rowRef = { value: 0 };
   const home = document?.pages?.[0];
+  const resolvedViewport = normalizeStudioViewport(viewport);
 
   for (const nodeId of home?.root || []) {
     const node = document?.nodes?.[nodeId];
-    if (node) appendNode({ document, node, tiles, rowRef });
+    if (node) appendNode({ document, node, tiles, rowRef, viewport: resolvedViewport });
   }
 
   return tiles.sort((a, b) => {
@@ -136,12 +140,12 @@ export function studioDocumentToRuntimeTiles(document) {
   });
 }
 
-export function studioDocumentToRuntimeDraft(draft, document) {
+export function studioDocumentToRuntimeDraft(draft, document, viewport = 'phone') {
   return {
     ...(draft || {}),
     layoutJson: {
       ...clone(draft?.layoutJson || {}),
-      tiles: studioDocumentToRuntimeTiles(document),
+      tiles: studioDocumentToRuntimeTiles(document, viewport),
     },
   };
 }
