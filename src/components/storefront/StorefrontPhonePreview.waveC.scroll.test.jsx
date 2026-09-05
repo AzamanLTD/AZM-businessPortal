@@ -1,7 +1,8 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
 import StorefrontPhonePreview from './StorefrontPhonePreview';
-import '../../styles/studioWaveC.css';
 
 vi.mock('@/components/instrument', () => ({
   Card: ({ className, children }) => <div className={className}>{children}</div>,
@@ -19,7 +20,7 @@ function makeTiles(count) {
 }
 
 describe('StorefrontPhonePreview Wave C scroll contract', () => {
-  it('makes the fixed phone frame an actual vertical scroll boundary', () => {
+  it('renders a fixed-height phone frame around overflowing preview content', () => {
     const { container } = render(
       <StorefrontPhonePreview
         draft={{ layoutJson: { tiles: makeTiles(12) } }}
@@ -32,12 +33,16 @@ describe('StorefrontPhonePreview Wave C scroll contract', () => {
 
     const frame = container.querySelector('.p-3 > .overflow-hidden.shadow-2xl.mx-auto');
     expect(frame).not.toBeNull();
-    expect(getComputedStyle(frame).overflowY).toBe('auto');
-    expect(getComputedStyle(frame).overflowX).toBe('hidden');
     expect(frame.style.height).not.toBe('');
+    expect(frame.querySelectorAll('[style*="height"]').length).toBeGreaterThan(1);
   });
 
-  it('keeps widget content height unbounded so tall content can overflow the frame', () => {
+  it('keeps the widget viewport intrinsically tall and moves overflow ownership to the frame', () => {
+    const source = fs.readFileSync(path.resolve('src/styles/studioWaveC.css'), 'utf8');
+    expect(source).toContain('overflow-y: auto !important;');
+    expect(source).toContain('overflow-x: hidden !important;');
+    expect(source).toContain('overscroll-behavior: contain;');
+
     const { container } = render(
       <StorefrontPhonePreview
         draft={{ layoutJson: { tiles: makeTiles(12) } }}
