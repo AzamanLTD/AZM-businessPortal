@@ -124,17 +124,15 @@ function ShowcaseGallery({ props, tokens }) {
       {props.title && (
         <p style={{ fontSize: typePx('section'), fontWeight: 700, color: tokens.textPrimary || '#111', marginBottom: showcasePx('titleBottomGapDp') }}>{props.title}</p>
       )}
-      <div style={{ display: 'flex', gap: showcasePx('itemGapDp'), height: showcasePx('viewportHeightDp'), overflow: 'hidden' }}>
-        <div style={{ flex: 2, height: '100%', borderRadius: showcasePx('radiusDp'), background: `${accent}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ display: 'flex', gap: showcasePx('itemGapDp'), height: showcasePx('viewportHeightDp'), overflowX: 'auto', overflowY: 'hidden' }}>
+        <div style={{ flex: `0 0 ${showcasePx('cardWidthDp')}`, height: '100%', borderRadius: showcasePx('radiusDp'), background: `${accent}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Image size={showcasePx('iconDp')} color={accent} />
         </div>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: showcasePx('itemGapDp') }}>
-          {[1, 2].map(i => (
-            <div key={i} style={{ flex: 1, borderRadius: showcasePx('radiusDp'), background: `${accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Image size={px(typePx('body') / previewTokens.type.body * 18)} color={accent} />
-            </div>
-          ))}
-        </div>
+        {[1, 2].map(i => (
+          <div key={i} style={{ flex: `0 0 ${showcasePx('cardWidthDp')}`, height: '100%', borderRadius: showcasePx('radiusDp'), background: `${accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Image size={px(typePx('body') / previewTokens.type.body * 18)} color={accent} />
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -186,6 +184,7 @@ function ActionButtons({ props, tokens }) {
 
 function VideoPlayer({ props, tokens }) {
   const accent = tokens.accent || '#6C4FD1';
+  const hasMedia = Boolean(props.posterUrl || props.videoUrl);
   return (
     <div style={{ marginLeft: spacing('block'), marginRight: spacing('block'), marginBottom: spacing('tight'), borderRadius: videoPx('radiusDp'), height: videoPx('heightDp'), background: `${accent}15`, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
       {props.posterUrl && (
@@ -194,9 +193,16 @@ function VideoPlayer({ props, tokens }) {
       {props.videoUrl && (
         <video src={props.videoUrl} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} muted={props.muted} loop={props.loop} autoPlay={props.autoplay} />
       )}
-      <div style={{ position: 'relative', zIndex: 1, width: videoPx('playButtonDp'), height: videoPx('playButtonDp'), borderRadius: '50%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Play size={typePx('body')} color="#fff" fill="#fff" />
-      </div>
+      {hasMedia ? (
+        <div style={{ position: 'relative', zIndex: 1, width: videoPx('playButtonDp'), height: videoPx('playButtonDp'), borderRadius: '50%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Play size={typePx('body')} color="#fff" fill="#fff" />
+        </div>
+      ) : (
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: videoPx('fallbackGapDp') }}>
+          <Play size={videoPx('fallbackIconDp')} color={accent} />
+          <span style={{ fontSize: videoPx('fallbackFontSizeDp'), color: tokens.textSecondary || '#888' }}>Video unavailable</span>
+        </div>
+      )}
     </div>
   );
 }
