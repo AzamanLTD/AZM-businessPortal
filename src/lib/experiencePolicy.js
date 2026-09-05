@@ -65,8 +65,21 @@ const CATEGORY_EXPERIENCE_POLICY = Object.freeze({
   }),
 });
 
+const CATEGORY_ALIASES = Object.freeze({
+  REAL_ESTATE: 'HOTEL',
+  FREELANCE_SERVICES: 'DEFAULT',
+  TECHNOLOGY: 'DEFAULT',
+  EDUCATION: 'DEFAULT',
+  HEALTH_WELLNESS: 'DEFAULT',
+  ENTERTAINMENT: 'DEFAULT',
+  FINANCIAL_SERVICES: 'DEFAULT',
+  OTHER: 'DEFAULT',
+});
+
 export function experiencePolicyForCategory(category) {
-  return CATEGORY_EXPERIENCE_POLICY[String(category || '').trim().toUpperCase()] || CATEGORY_EXPERIENCE_POLICY.DEFAULT;
+  const normalized = String(category || '').trim().toUpperCase();
+  const canonical = CATEGORY_ALIASES[normalized] || normalized;
+  return CATEGORY_EXPERIENCE_POLICY[canonical] || CATEGORY_EXPERIENCE_POLICY.DEFAULT;
 }
 
-export { CATEGORY_EXPERIENCE_POLICY };
+export { CATEGORY_EXPERIENCE_POLICY, CATEGORY_ALIASES };
