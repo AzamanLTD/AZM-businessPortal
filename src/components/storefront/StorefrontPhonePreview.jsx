@@ -13,6 +13,9 @@ const px = (value) => toPreviewPx(value);
 const spacing = (name) => px(previewTokens.spacing[name]);
 const typePx = (name) => px(previewTokens.type[name]);
 const themeColor = (tokens, key, fallback) => tokens?.[key] || fallback;
+const showcasePx = (name) => px(previewTokens.showcase[name]);
+const locationPx = (name) => px(previewTokens.location[name]);
+const videoPx = (name) => px(previewTokens.video[name]);
 
 function HeroHeader({ props, business, tokens }) {
   const bg = props.mediaUrl ? `url(${props.mediaUrl}) center/cover no-repeat` : themeColor(tokens, 'accent', '#6C4FD1');
@@ -117,21 +120,19 @@ function ContactCard({ props, business, tokens }) {
 function ShowcaseGallery({ props, tokens }) {
   const accent = tokens.accent || '#6C4FD1';
   return (
-    <div style={{ padding: '8px 8px 6px' }}>
+    <div style={{ paddingLeft: spacing('block'), paddingRight: spacing('block'), paddingTop: spacing('block'), paddingBottom: spacing('tight') }}>
       {props.title && (
-        <p style={{ fontSize: 9, fontWeight: 700, color: tokens.textPrimary || '#111', marginBottom: 5 }}>{props.title}</p>
+        <p style={{ fontSize: typePx('section'), fontWeight: 700, color: tokens.textPrimary || '#111', marginBottom: showcasePx('titleBottomGapDp') }}>{props.title}</p>
       )}
-      <div style={{ display: 'flex', gap: 4 }}>
-        <div style={{ flex: 2, height: 55, borderRadius: 6, background: `${accent}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Image size={18} color={accent} />
+      <div style={{ display: 'flex', gap: showcasePx('itemGapDp'), height: showcasePx('viewportHeightDp'), overflowX: 'auto', overflowY: 'hidden' }}>
+        <div style={{ flex: `0 0 ${showcasePx('cardWidthDp')}`, height: '100%', borderRadius: showcasePx('radiusDp'), background: `${accent}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Image size={showcasePx('iconDp')} color={accent} />
         </div>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {[1, 2].map(i => (
-            <div key={i} style={{ flex: 1, borderRadius: 6, background: `${accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Image size={10} color={accent} />
-            </div>
-          ))}
-        </div>
+        {[1, 2].map(i => (
+          <div key={i} style={{ flex: `0 0 ${showcasePx('cardWidthDp')}`, height: '100%', borderRadius: showcasePx('radiusDp'), background: `${accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Image size={px(typePx('body') / previewTokens.type.body * 18)} color={accent} />
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -140,20 +141,20 @@ function ShowcaseGallery({ props, tokens }) {
 function LocationMap({ props, tokens }) {
   const accent = tokens.accent || '#6C4FD1';
   return (
-    <div style={{ padding: '8px 8px 6px' }}>
+    <div style={{ paddingLeft: spacing('block'), paddingRight: spacing('block'), paddingTop: spacing('block'), paddingBottom: spacing('tight') }}>
       {props.title && (
-        <p style={{ fontSize: 9, fontWeight: 700, color: tokens.textPrimary || '#111', marginBottom: 5 }}>{props.title}</p>
+        <p style={{ fontSize: typePx('section'), fontWeight: 700, color: tokens.textPrimary || '#111', marginBottom: locationPx('titleBottomGapDp') }}>{props.title}</p>
       )}
-      <div style={{ height: 60, borderRadius: 8, background: '#e8f0e8', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ height: locationPx('mapHeightDp'), borderRadius: locationPx('radiusDp'), background: '#e8f0e8', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0, opacity: 0.3 }}>
-          {[10,20,30,40,50].map(y => <line key={y} x1="0" y1={`${y}%`} x2="100%" y2={`${y}%`} stroke="#888" strokeWidth="0.5" />)}
-          {[20,40,60,80].map(x => <line key={x} x1={`${x}%`} y1="0" x2={`${x}%`} y2="100%" stroke="#888" strokeWidth="0.5" />)}
+          {Array.from({ length: 5 }, (_, i) => <line key={`h-${i}`} x1="0" y1={`${(i + 1) * 10}%`} x2="100%" y2={`${(i + 1) * 10}%`} stroke="#888" strokeWidth="0.5" />)}
+          {Array.from({ length: 4 }, (_, i) => <line key={`v-${i}`} x1={`${(i + 1) * 20}%`} y1="0" x2={`${(i + 1) * 20}%`} y2="100%" stroke="#888" strokeWidth="0.5" />)}
         </svg>
-        <div style={{ zIndex: 1, width: 24, height: 24, borderRadius: '50% 50% 50% 0', background: accent, transform: 'rotate(-45deg)', boxShadow: `0 2px 8px ${accent}80` }} />
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
-        <MapPin size={9} color={accent} />
-        <span style={{ fontSize: 8, color: tokens.textSecondary || '#888' }}>View on Maps</span>
+        <div style={{ zIndex: 1, width: locationPx('pinDp'), height: locationPx('pinDp'), borderRadius: '50% 50% 50% 0', background: accent, transform: 'rotate(-45deg)', boxShadow: `0 ${px(2)} ${px(8)} ${accent}80` }} />
+        <div style={{ position: 'absolute', left: locationPx('badgeLeftDp'), bottom: locationPx('badgeBottomDp'), display: 'flex', alignItems: 'center', gap: px(4), paddingLeft: locationPx('badgePaddingHorizontalDp'), paddingRight: locationPx('badgePaddingHorizontalDp'), paddingTop: locationPx('badgePaddingVerticalDp'), paddingBottom: locationPx('badgePaddingVerticalDp'), borderRadius: locationPx('badgeRadiusDp'), background: '#fff', boxShadow: `0 ${px(1)} ${px(4)} rgba(0,0,0,0.12)` }}>
+          <MapPin size={typePx('caption')} color={accent} />
+          <span style={{ fontSize: locationPx('badgeFontSizeDp'), color: tokens.textSecondary || '#888' }}>View on Maps</span>
+        </div>
       </div>
     </div>
   );
@@ -183,17 +184,25 @@ function ActionButtons({ props, tokens }) {
 
 function VideoPlayer({ props, tokens }) {
   const accent = tokens.accent || '#6C4FD1';
+  const hasMedia = Boolean(props.posterUrl || props.videoUrl);
   return (
-    <div style={{ margin: '0 8px 4px', borderRadius: 8, height: 70, background: `${accent}15`, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+    <div style={{ marginLeft: spacing('block'), marginRight: spacing('block'), marginBottom: spacing('tight'), borderRadius: videoPx('radiusDp'), height: videoPx('heightDp'), background: `${accent}15`, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
       {props.posterUrl && (
         <img src={props.posterUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
       )}
       {props.videoUrl && (
         <video src={props.videoUrl} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} muted={props.muted} loop={props.loop} autoPlay={props.autoplay} />
       )}
-      <div style={{ position: 'relative', zIndex: 1, width: 28, height: 28, borderRadius: '50%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Play size={12} color="#fff" fill="#fff" />
-      </div>
+      {hasMedia ? (
+        <div style={{ position: 'relative', zIndex: 1, width: videoPx('playButtonDp'), height: videoPx('playButtonDp'), borderRadius: '50%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Play size={typePx('body')} color="#fff" fill="#fff" />
+        </div>
+      ) : (
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: videoPx('fallbackGapDp') }}>
+          <Play size={videoPx('fallbackIconDp')} color={accent} />
+          <span style={{ fontSize: videoPx('fallbackFontSizeDp'), color: tokens.textSecondary || '#888' }}>Video unavailable</span>
+        </div>
+      )}
     </div>
   );
 }
