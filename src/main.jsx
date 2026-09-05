@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from './App.jsx'
 import { TooltipProvider } from '@/components/instrument'
 import './styles/instrument.css'
+import './styles/studioWaveC.css'
 import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 
