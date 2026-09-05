@@ -48,4 +48,28 @@ describe('storefrontStudioResponsive', () => {
     expect(desktop.layout.widthMode).toBe('contained');
     expect(desktop.props.textScale).toBe(1.15);
   });
+
+  it('inherits lower-breakpoint intent when a larger breakpoint omits a key', () => {
+    const node = {
+      id: 'catalog',
+      type: 'product-grid',
+      props: { columns: 4, title: 'Catalog' },
+      layout: { gap: 16 },
+      responsive: {
+        phone: { columnCount: 1, gap: 8, layout: { widthMode: 'full' } },
+        tablet: { columnCount: 2 },
+        desktop: { props: { textScale: 1.1 } },
+      },
+    };
+
+    const desktop = resolveResponsiveNode(node, 'desktop');
+
+    expect(desktop.props.columns).toBe(2);
+    expect(desktop.props.textScale).toBe(1.1);
+    expect(desktop.layout.gap).toBe(8);
+    expect(desktop.layout.widthMode).toBe('full');
+    expect(desktop.responsive).toEqual(node.responsive);
+    expect(node.props.columns).toBe(4);
+    expect(node.layout.gap).toBe(16);
+  });
 });
