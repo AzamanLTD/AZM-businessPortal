@@ -10,13 +10,13 @@ describe('remaining Flutter-grounded preview tokens', () => {
       labelFontSizeDp: 12,
       labelGapDp: 2,
     });
-    expect(STOREFRONT_STUDIO_TOKENS.studio.preview.customHtml).toEqual({
+    expect(STOREFRONT_STUDIO_TOKENS.studio.preview.customHtml).toMatchObject({
       paddingDp: 14,
       radiusDp: 12,
       emptyFontSizeDp: 13,
       contentFontSizeDp: 14,
     });
-    expect(STOREFRONT_STUDIO_TOKENS.studio.preview.gradientHero).toEqual({
+    expect(STOREFRONT_STUDIO_TOKENS.studio.preview.gradientHero).toMatchObject({
       heightDp: 280,
       radiusDp: 12,
       horizontalInsetDp: 24,

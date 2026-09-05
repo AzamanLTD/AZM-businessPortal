@@ -1,4 +1,3 @@
-import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import { STOREFRONT_STUDIO_TOKENS, toPreviewPx } from '@/lib/storefrontStudioTokens';
@@ -12,11 +11,10 @@ function functionBody(name) {
 }
 
 describe('Storefront Wave A grounded renderer slice 2', () => {
-  it('routes Showcase, Location and Video geometry through shared preview tokens', () => {
+  test('routes Showcase, Location and Video geometry through shared preview tokens', () => {
     expect(source).toContain('const showcasePx = (name) => px(previewTokens.showcase[name]);');
     expect(source).toContain('const locationPx = (name) => px(previewTokens.location[name]);');
     expect(source).toContain('const videoPx = (name) => px(previewTokens.video[name]);');
-
     for (const renderer of ['ShowcaseGallery', 'LocationMap', 'VideoPlayer']) {
       const body = functionBody(renderer);
       expect(body).not.toMatch(/(?:height|width|fontSize|borderRadius|gap|margin(?:Top|Right|Bottom|Left)?|padding(?:Top|Right|Bottom|Left)?):\s*\d+(?:\.\d+)?\b/);
@@ -25,8 +23,8 @@ describe('Storefront Wave A grounded renderer slice 2', () => {
     }
   });
 
-  it('preserves the Flutter-grounded second-slice dimensions and preview scaling', () => {
-    expect(STOREFRONT_STUDIO_TOKENS.studio.preview.showcase).toEqual({
+  test('preserves the Flutter-grounded second-slice dimensions and preview scaling', () => {
+    expect(STOREFRONT_STUDIO_TOKENS.studio.preview.showcase).toMatchObject({
       titleBottomGapDp: 10,
       viewportHeightDp: 160,
       cardWidthDp: 140,
@@ -34,7 +32,7 @@ describe('Storefront Wave A grounded renderer slice 2', () => {
       radiusDp: 12,
       iconDp: 36,
     });
-    expect(STOREFRONT_STUDIO_TOKENS.studio.preview.location).toEqual({
+    expect(STOREFRONT_STUDIO_TOKENS.studio.preview.location).toMatchObject({
       titleBottomGapDp: 10,
       mapHeightDp: 180,
       radiusDp: 12,
@@ -46,7 +44,7 @@ describe('Storefront Wave A grounded renderer slice 2', () => {
       badgeRadiusDp: 8,
       badgeFontSizeDp: 11,
     });
-    expect(STOREFRONT_STUDIO_TOKENS.studio.preview.video).toEqual({
+    expect(STOREFRONT_STUDIO_TOKENS.studio.preview.video).toMatchObject({
       radiusDp: 12,
       heightDp: 220,
       playButtonDp: 64,

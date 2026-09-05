@@ -19,6 +19,14 @@ const videoPx = (name) => px(previewTokens.video[name]);
 const promoPx = (name) => px(previewTokens.promo[name]);
 const socialPx = (name) => px(previewTokens.social[name]);
 const liveStatsPx = (name) => px(previewTokens.liveStats[name]);
+const counterPx = (name) => px(previewTokens.animatedCounter[name]);
+const customHtmlPx = (name) => px(previewTokens.customHtml[name]);
+const gradientHeroPx = (name) => px(previewTokens.gradientHero[name]);
+const actionPx = (name) => px(previewTokens.actionButtons[name]);
+const fallbackPx = (name) => px(previewTokens.fallback[name]);
+const selectionPx = (name) => px(previewTokens.selection[name]);
+const chromePx = (name) => px(previewTokens.chrome[name]);
+const framePx = (name) => px(STOREFRONT_STUDIO_TOKENS.studio.frame[name]);
 
 function HeroHeader({ props, business, tokens }) {
   const bg = props.mediaUrl ? `url(${props.mediaUrl}) center/cover no-repeat` : themeColor(tokens, 'accent', '#6C4FD1');
@@ -43,7 +51,7 @@ function QuickInfoBar({ props, business, tokens }) {
   const accent = themeColor(tokens, 'accent', '#6C4FD1');
   const textColor = themeColor(tokens, 'textSecondary', '#888');
   return (
-    <div style={{ paddingLeft: px(previewTokens.quickInfo.horizontalPaddingDp), paddingRight: px(previewTokens.quickInfo.horizontalPaddingDp), paddingTop: px(previewTokens.quickInfo.verticalPaddingDp), paddingBottom: px(previewTokens.quickInfo.verticalPaddingDp), display: 'flex', columnGap: px(previewTokens.quickInfo.itemGapDp), rowGap: px(previewTokens.quickInfo.runGapDp), alignItems: 'center', borderWidth: px(1), borderStyle: 'solid', borderColor: themeColor(tokens, 'border', '#eee'), borderRadius: px(previewTokens.quickInfo.radiusDp), flexWrap: 'wrap' }}>
+    <div style={{ paddingLeft: px(previewTokens.quickInfo.horizontalPaddingDp), paddingRight: px(previewTokens.quickInfo.horizontalPaddingDp), paddingTop: px(previewTokens.quickInfo.verticalPaddingDp), paddingBottom: px(previewTokens.quickInfo.verticalPaddingDp), display: 'flex', columnGap: px(previewTokens.quickInfo.itemGapDp), rowGap: px(previewTokens.quickInfo.runGapDp), alignItems: 'center', borderWidth: px(previewTokens.quickInfo.borderWidthDp), borderStyle: 'solid', borderColor: themeColor(tokens, 'border', '#eee'), borderRadius: px(previewTokens.quickInfo.radiusDp), flexWrap: 'wrap' }}>
       {props.showRating && business?.averageRating && <div style={{ display: 'flex', alignItems: 'center', gap: px(previewTokens.quickInfo.iconLabelGapDp) }}><Star size={px(previewTokens.quickInfo.iconSizeDp)} fill={accent} color={accent} /><span style={{ fontSize: typePx('body'), color: accent, fontWeight: 700 }}>{Number(business.averageRating).toFixed(1)}</span></div>}
       {props.showCategory && business?.category && <span style={{ fontSize: typePx('body'), color: textColor, textTransform: 'capitalize' }}>{business.category.toLowerCase().replace(/_/g, ' ')}</span>}
       {props.showHours && <div style={{ display: 'flex', alignItems: 'center', gap: px(previewTokens.quickInfo.iconLabelGapDp) }}><Clock size={px(previewTokens.quickInfo.iconSizeDp)} color={textColor} /><span style={{ fontSize: typePx('body'), color: textColor }}>Open Now</span></div>}
@@ -64,10 +72,10 @@ function ProductGrid({ props, tokens }) {
       <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, columnGap: px(previewTokens.productGrid.crossAxisSpacingDp), rowGap: px(previewTokens.productGrid.mainAxisSpacingDp) }}>
         {items.map((_, i) => (
           <div key={i} style={{ borderRadius: px(previewTokens.productGrid.cardRadiusDp), overflow: 'hidden', background: surface, aspectRatio: previewTokens.productGrid.childAspectRatio }}>
-            <div style={{ height: '55%', background: `${accent}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ShoppingBag size={px(typePx('body') / previewTokens.type.body * 28)} color={accent} /></div>
+            <div style={{ height: '55%', background: `${accent}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ShoppingBag size={px(previewTokens.productGrid.iconDp)} color={accent} /></div>
             <div style={{ padding: px(previewTokens.productGrid.cardPaddingDp) }}>
-              <div style={{ height: typePx('micro'), background: `${accent}30`, borderRadius: px(2), marginBottom: px(4) }} />
-              {props.showPrice && <div style={{ height: px(8), width: '60%', background: `${accent}50`, borderRadius: px(2) }} />}
+              <div style={{ height: typePx('micro'), background: `${accent}30`, borderRadius: px(previewTokens.productGrid.placeholderRadiusDp), marginBottom: px(previewTokens.productGrid.placeholderGapDp) }} />
+              {props.showPrice && <div style={{ height: px(previewTokens.productGrid.priceBarHeightDp), width: '60%', background: `${accent}50`, borderRadius: px(previewTokens.productGrid.placeholderRadiusDp) }} />}
             </div>
           </div>
         ))}
@@ -84,10 +92,10 @@ function ReviewCarousel({ props, tokens }) {
       {props.title && <p style={{ fontSize: typePx('section'), fontWeight: 700, color: themeColor(tokens, 'textPrimary', '#111'), marginBottom: px(previewTokens.review.titleBottomGapDp) }}>{props.title}</p>}
       <div style={{ height: px(previewTokens.review.viewportHeightDp), display: 'flex', gap: px(previewTokens.review.cardGapDp), overflow: 'hidden' }}>
         {[5, 4].map((stars, i) => (
-          <div key={i} style={{ width: px(previewTokens.review.cardWidthDp), flexShrink: 0, background: surface, borderRadius: px(previewTokens.review.cardRadiusDp), padding: px(previewTokens.review.cardPaddingDp), borderWidth: px(1), borderStyle: 'solid', borderColor: themeColor(tokens, 'border', '#eee') }}>
-            <div style={{ display: 'flex', gap: px(2), marginBottom: px(previewTokens.review.bodyGapDp) }}>{Array.from({ length: 5 }).map((_, j) => <Star key={j} size={px(previewTokens.review.starSizeDp)} fill={j < stars ? accent : 'none'} color={accent} />)}</div>
-            <div style={{ height: typePx('caption'), background: '#ddd', borderRadius: px(2), marginBottom: px(2) }} />
-            <div style={{ height: typePx('caption'), width: '70%', background: '#ddd', borderRadius: px(2) }} />
+          <div key={i} style={{ width: px(previewTokens.review.cardWidthDp), flexShrink: 0, background: surface, borderRadius: px(previewTokens.review.cardRadiusDp), padding: px(previewTokens.review.cardPaddingDp), borderWidth: px(previewTokens.review.borderWidthDp), borderStyle: 'solid', borderColor: themeColor(tokens, 'border', '#eee') }}>
+            <div style={{ display: 'flex', gap: px(previewTokens.review.starGapDp), marginBottom: px(previewTokens.review.bodyGapDp) }}>{Array.from({ length: 5 }).map((_, j) => <Star key={j} size={px(previewTokens.review.starSizeDp)} fill={j < stars ? accent : 'none'} color={accent} />)}</div>
+            <div style={{ height: typePx('caption'), background: '#ddd', borderRadius: px(previewTokens.review.skeletonRadiusDp), marginBottom: px(previewTokens.review.skeletonGapDp) }} />
+            <div style={{ height: typePx('caption'), width: '70%', background: '#ddd', borderRadius: px(previewTokens.review.skeletonRadiusDp) }} />
           </div>
         ))}
       </div>
@@ -110,8 +118,8 @@ function ContactCard({ props, business, tokens }) {
   return (
     <div style={{ padding: px(previewTokens.contact.cardPaddingDp), display: 'flex', gap: px(previewTokens.contact.itemGapDp), justifyContent: 'center', flexWrap: 'wrap' }}>
       {actions.map(({ icon: Icon, label, color }, i) => (
-        <div key={i} style={{ flex: 1, borderRadius: px(previewTokens.contact.cardRadiusDp), borderWidth: px(1), borderStyle: 'solid', borderColor: `${color}40`, padding: px(8), display: 'flex', flexDirection: 'column', alignItems: 'center', gap: px(4) }}>
-          <div style={{ width: px(40), height: px(40), borderRadius: '50%', background: `${color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon size={px(previewTokens.contact.iconDp)} color={color} /></div>
+        <div key={i} style={{ flex: 1, borderRadius: px(previewTokens.contact.cardRadiusDp), borderWidth: px(previewTokens.contact.borderWidthDp), borderStyle: 'solid', borderColor: `${color}40`, padding: px(previewTokens.contact.actionInnerGapDp * 2), display: 'flex', flexDirection: 'column', alignItems: 'center', gap: px(previewTokens.contact.actionInnerGapDp) }}>
+          <div style={{ width: px(previewTokens.contact.actionCircleDp), height: px(previewTokens.contact.actionCircleDp), borderRadius: '50%', background: `${color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon size={px(previewTokens.contact.iconDp)} color={color} /></div>
           <span style={{ fontSize: typePx('body'), color, fontWeight: 600 }}>{label}</span>
           {label === 'Call' && phone && <span style={{ fontSize: typePx('caption'), color: themeColor(tokens, 'textSecondary', '#aaa') }}>{phone.substring(0, 10)}</span>}
         </div>
@@ -133,7 +141,7 @@ function ShowcaseGallery({ props, tokens }) {
         </div>
         {[1, 2].map(i => (
           <div key={i} style={{ flex: `0 0 ${showcasePx('cardWidthDp')}`, height: '100%', borderRadius: showcasePx('radiusDp'), background: `${accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Image size={px(typePx('body') / previewTokens.type.body * 18)} color={accent} />
+            <Image size={showcasePx('secondaryIconDp')} color={accent} />
           </div>
         ))}
       </div>
@@ -153,8 +161,8 @@ function LocationMap({ props, tokens }) {
           {Array.from({ length: 5 }, (_, i) => <line key={`h-${i}`} x1="0" y1={`${(i + 1) * 10}%`} x2="100%" y2={`${(i + 1) * 10}%`} stroke="#888" strokeWidth="0.5" />)}
           {Array.from({ length: 4 }, (_, i) => <line key={`v-${i}`} x1={`${(i + 1) * 20}%`} y1="0" x2={`${(i + 1) * 20}%`} y2="100%" stroke="#888" strokeWidth="0.5" />)}
         </svg>
-        <div style={{ zIndex: 1, width: locationPx('pinDp'), height: locationPx('pinDp'), borderRadius: '50% 50% 50% 0', background: accent, transform: 'rotate(-45deg)', boxShadow: `0 ${px(2)} ${px(8)} ${accent}80` }} />
-        <div style={{ position: 'absolute', left: locationPx('badgeLeftDp'), bottom: locationPx('badgeBottomDp'), display: 'flex', alignItems: 'center', gap: px(4), paddingLeft: locationPx('badgePaddingHorizontalDp'), paddingRight: locationPx('badgePaddingHorizontalDp'), paddingTop: locationPx('badgePaddingVerticalDp'), paddingBottom: locationPx('badgePaddingVerticalDp'), borderRadius: locationPx('badgeRadiusDp'), background: '#fff', boxShadow: `0 ${px(1)} ${px(4)} rgba(0,0,0,0.12)` }}>
+        <div style={{ zIndex: 1, width: locationPx('pinDp'), height: locationPx('pinDp'), borderRadius: '50% 50% 50% 0', background: accent, transform: 'rotate(-45deg)', boxShadow: `0 ${locationPx('shadowYDp')} ${locationPx('shadowBlurDp')} ${accent}80` }} />
+        <div style={{ position: 'absolute', left: locationPx('badgeLeftDp'), bottom: locationPx('badgeBottomDp'), display: 'flex', alignItems: 'center', gap: locationPx('badgeGapDp'), paddingLeft: locationPx('badgePaddingHorizontalDp'), paddingRight: locationPx('badgePaddingHorizontalDp'), paddingTop: locationPx('badgePaddingVerticalDp'), paddingBottom: locationPx('badgePaddingVerticalDp'), borderRadius: locationPx('badgeRadiusDp'), background: '#fff', boxShadow: `0 ${locationPx('badgeShadowYDp')} ${locationPx('badgeShadowBlurDp')} rgba(0,0,0,0.12)` }}>
           <MapPin size={typePx('caption')} color={accent} />
           <span style={{ fontSize: locationPx('badgeFontSizeDp'), color: tokens.textSecondary || '#888' }}>View on Maps</span>
         </div>
@@ -173,10 +181,10 @@ function ActionButtons({ props, tokens }) {
   if (props.showShare)  btns.push({ label: 'Share', bg: '#f0f0f0', color: '#555' });
   if (btns.length === 0) btns.push({ label: customLabel || 'Order Now', bg: accent, color: '#fff' });
   return (
-    <div style={{ padding: '8px 8px 6px', display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+    <div style={{ paddingLeft: actionPx('horizontalPaddingDp'), paddingRight: actionPx('horizontalPaddingDp'), paddingTop: actionPx('topPaddingDp'), paddingBottom: actionPx('bottomPaddingDp'), display: 'flex', gap: actionPx('itemGapDp'), flexWrap: 'wrap' }}>
       {btns.map(({ label, bg, color }, i) => (
-        <div key={i} style={{ flex: 1, minWidth: 40, borderRadius: 6, padding: '5px 6px', background: bg, textAlign: 'center' }}>
-          <span style={{ fontSize: 8, color, fontWeight: 700 }}>{label}</span>
+        <div key={i} style={{ flex: 1, minWidth: actionPx('minWidthDp'), borderRadius: actionPx('radiusDp'), paddingTop: actionPx('verticalPaddingDp'), paddingBottom: actionPx('verticalPaddingDp'), paddingLeft: actionPx('buttonHorizontalPaddingDp'), paddingRight: actionPx('buttonHorizontalPaddingDp'), background: bg, textAlign: 'center' }}>
+          <span style={{ fontSize: typePx('micro'), color, fontWeight: 700 }}>{label}</span>
         </div>
       ))}
     </div>
@@ -215,11 +223,11 @@ function PromoBanner({ props, tokens }) {
   const bg = props.backgroundColor || `${accent}15`;
   const border = props.backgroundColor ? `${props.backgroundColor}40` : `${accent}30`;
   return (
-    <div style={{ marginLeft: spacing('block'), marginRight: spacing('block'), borderRadius: promoPx('radiusDp'), background: bg, border: `1px solid ${border}`, paddingLeft: promoPx('horizontalPaddingDp'), paddingRight: promoPx('horizontalPaddingDp'), paddingTop: promoPx('verticalPaddingDp'), paddingBottom: promoPx('verticalPaddingDp') }}>
+    <div style={{ marginLeft: spacing('block'), marginRight: spacing('block'), borderRadius: promoPx('radiusDp'), background: bg, borderWidth: promoPx('borderWidthDp'), borderStyle: 'solid', borderColor: border, paddingLeft: promoPx('horizontalPaddingDp'), paddingRight: promoPx('horizontalPaddingDp'), paddingTop: promoPx('verticalPaddingDp'), paddingBottom: promoPx('verticalPaddingDp') }}>
       {props.title && <p style={{ fontSize: promoPx('titleFontSizeDp'), fontWeight: 700, color: props.backgroundColor ? '#fff' : accent, marginBottom: promoPx('titleSubtitleGapDp') }}>{props.title}</p>}
       {props.subtitle && <p style={{ fontSize: promoPx('subtitleFontSizeDp'), color: props.backgroundColor ? 'rgba(255,255,255,0.85)' : (tokens.textSecondary || '#666'), lineHeight: 1.3 }}>{props.subtitle}</p>}
       {props.ctaText && (
-        <div style={{ marginTop: promoPx('ctaGapDp'), display: 'inline-flex', alignItems: 'center', gap: px(previewTokens.type.nav), padding: `${promoPx('verticalPaddingDp')} ${promoPx('ctaGapDp')}`, borderRadius: promoPx('titleSubtitleGapDp'), background: props.backgroundColor ? 'rgba(255,255,255,0.2)' : accent }}>
+        <div style={{ marginTop: promoPx('ctaGapDp'), display: 'inline-flex', alignItems: 'center', gap: px(previewTokens.type.nav), padding: `${promoPx('verticalPaddingDp')} ${promoPx('ctaGapDp')}`, borderRadius: promoPx('ctaRadiusDp'), background: props.backgroundColor ? 'rgba(255,255,255,0.2)' : accent }}>
           <span style={{ fontSize: typePx('micro'), fontWeight: 700, color: '#fff' }}>{props.ctaText}</span>
           <ChevronRight size={typePx('small')} color="#fff" />
         </div>
@@ -281,12 +289,12 @@ function LiveStats({ props, tokens }) {
 function AnimatedCounter({ props, tokens }) {
   const accent = tokens.accent || '#6C4FD1';
   return (
-    <div style={{ padding: '10px 8px', textAlign: 'center' }}>
-      <p style={{ fontSize: 22, fontWeight: 900, color: accent }}>
+    <div style={{ paddingLeft: counterPx('horizontalPaddingDp'), paddingRight: counterPx('horizontalPaddingDp'), paddingTop: counterPx('verticalPaddingDp'), paddingBottom: counterPx('verticalPaddingDp'), borderRadius: counterPx('radiusDp'), textAlign: 'center' }}>
+      <p style={{ fontSize: counterPx('valueFontSizeDp'), fontWeight: 900, color: accent }}>
         {props.prefix || ''}{props.value ?? 0}{props.suffix || ''}
       </p>
       {props.label && (
-        <p style={{ fontSize: 8, color: tokens.textSecondary || '#888', marginTop: 2 }}>{props.label}</p>
+        <p style={{ fontSize: counterPx('labelFontSizeDp'), color: tokens.textSecondary || '#888', marginTop: counterPx('labelGapDp') }}>{props.label}</p>
       )}
     </div>
   );
@@ -297,14 +305,14 @@ function AnimatedCounter({ props, tokens }) {
 function CustomHtml({ props, tokens }) {
   // Preview the raw HTML in a constrained box (sanitization happens on render in Flutter)
   return (
-    <div style={{ margin: '0 8px 4px', borderRadius: 8, border: `1px solid ${tokens.border || '#eee'}`, padding: '6px 8px', overflow: 'hidden' }}>
+    <div style={{ marginRight: customHtmlPx('marginHorizontalDp'), marginBottom: customHtmlPx('marginBottomDp'), marginLeft: customHtmlPx('marginHorizontalDp'), borderRadius: customHtmlPx('radiusDp'), borderWidth: customHtmlPx('borderWidthDp'), borderStyle: 'solid', borderColor: tokens.border || '#eee', padding: customHtmlPx('paddingDp'), overflow: 'hidden' }}>
       {props.html ? (
-        <div style={{ fontSize: 8, color: tokens.textPrimary || '#111', lineHeight: 1.4, maxHeight: 60, overflow: 'hidden' }}
+        <div style={{ fontSize: customHtmlPx('contentFontSizeDp'), color: tokens.textPrimary || '#111', lineHeight: previewTokens.customHtml.contentLineHeight, maxHeight: customHtmlPx('contentMaxHeightDp'), overflow: 'hidden' }}
           dangerouslySetInnerHTML={{ __html: props.html.substring(0, 500) }} />
       ) : (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, opacity: 0.5 }}>
-          <Code size={12} color={tokens.textSecondary || '#888'} />
-          <span style={{ fontSize: 8, color: tokens.textSecondary || '#888' }}>Custom HTML block</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: customHtmlPx('emptyGapDp'), opacity: 0.5 }}>
+          <Code size={typePx('body')} color={tokens.textSecondary || '#888'} />
+          <span style={{ fontSize: customHtmlPx('emptyFontSizeDp'), color: tokens.textSecondary || '#888' }}>Custom HTML block</span>
         </div>
       )}
     </div>
@@ -315,14 +323,14 @@ function GradientHero({ props, tokens }) {
   const from = props.gradientFrom || '#6C4FD1';
   const to = props.gradientTo || '#E07B30';
   return (
-    <div style={{ height: 90, background: `linear-gradient(135deg, ${from}, ${to})`, position: 'relative', overflow: 'hidden', flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '10px 12px' }}>
-      <Sparkles size={14} color="rgba(255,255,255,0.5)" style={{ position: 'absolute', top: 8, right: 8 }} />
-      {props.title && (
-        <p style={{ color: '#fff', fontSize: 12, fontWeight: 800, lineHeight: 1.3, marginBottom: 2, position: 'relative', zIndex: 1 }}>{props.title}</p>
-      )}
-      {props.subtitle && (
-        <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: 9, position: 'relative', zIndex: 1 }}>{props.subtitle}</p>
-      )}
+    <div style={{ height: gradientHeroPx('heightDp'), background: `linear-gradient(135deg, ${from}, ${to})`, borderRadius: gradientHeroPx('radiusDp'), position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
+      <Sparkles size={gradientHeroPx('iconDp')} color="rgba(255,255,255,0.5)" style={{ position: 'absolute', top: gradientHeroPx('iconInsetDp'), right: gradientHeroPx('iconInsetDp') }} />
+      <div style={{ position: 'absolute', left: gradientHeroPx('horizontalInsetDp'), right: gradientHeroPx('horizontalInsetDp'), bottom: gradientHeroPx('bottomInsetDp'), zIndex: 1 }}>
+        {props.title && (
+          <p style={{ color: '#fff', fontSize: gradientHeroPx('titleFontSizeDp'), fontWeight: 800, lineHeight: previewTokens.gradientHero.lineHeight, marginBottom: gradientHeroPx('titleSubtitleGapDp') }}>{props.title}</p>
+        )}
+        {props.subtitle && <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: gradientHeroPx('subtitleFontSizeDp') }}>{props.subtitle}</p>}
+      </div>
     </div>
   );
 }
@@ -357,12 +365,12 @@ const WIDGET_RENDERERS = {
 function FallbackTile({ tile, tokens }) {
   const accent = tokens.accent || '#6C4FD1';
   return (
-    <div style={{ margin: '4px 8px', borderRadius: 8, border: `1px dashed ${accent}40`, padding: '8px 10px', opacity: 0.7 }}>
-      <p style={{ fontSize: 9, fontWeight: 600, color: accent, textTransform: 'capitalize' }}>
+    <div style={{ marginTop: fallbackPx('marginVerticalDp'), marginRight: fallbackPx('marginHorizontalDp'), marginBottom: fallbackPx('marginVerticalDp'), marginLeft: fallbackPx('marginHorizontalDp'), borderRadius: fallbackPx('radiusDp'), borderWidth: fallbackPx('borderWidthDp'), borderStyle: 'dashed', borderColor: `${accent}40`, paddingTop: fallbackPx('paddingVerticalDp'), paddingRight: fallbackPx('paddingHorizontalDp'), paddingBottom: fallbackPx('paddingVerticalDp'), paddingLeft: fallbackPx('paddingHorizontalDp'), opacity: 0.7 }}>
+      <p style={{ fontSize: fallbackPx('titleFontSizeDp'), fontWeight: 600, color: accent, textTransform: 'capitalize' }}>
         {(tile.widgetType || '').replace(/_/g, ' ')}
       </p>
       {tile.props?.title && (
-        <p style={{ fontSize: 8, color: tokens.textSecondary || '#888', marginTop: 2 }}>{tile.props.title}</p>
+        <p style={{ fontSize: fallbackPx('subtitleFontSizeDp'), color: tokens.textSecondary || '#888', marginTop: fallbackPx('titleSubtitleGapDp') }}>{tile.props.title}</p>
       )}
     </div>
   );
@@ -409,16 +417,16 @@ export default function StorefrontPhonePreview({ draft, theme, widgets, business
   const navTabs = getNavTabs(businessType);
 
   return (
-    <GlassPanel solid className="p-3">
+    <Card className="p-3">
       {/* Panel header */}
       <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-1.5">
-          <Smartphone className="w-3 h-3" style={{ color: 'var(--f-text-3)' }} />
+        <div className="flex items-center" style={{ gap: chromePx('panelGapDp') }}>
+          <Smartphone style={{ width: typePx('nav'), height: typePx('nav'), color: 'var(--f-text-3)' }} />
           <span className="text-xs font-semibold" style={{ color: 'var(--f-text-3)' }}>Live Preview</span>
         </div>
         {theme && (
-          <span className="text-[10px] px-2 py-0.5 rounded-full font-medium"
-            style={{ background: 'var(--f-surface-sunken)', color: 'var(--f-tint-color)' }}>
+          <span className="px-2 py-0.5 rounded-full font-medium"
+            style={{ background: 'var(--f-surface-sunken)', color: 'var(--f-tint-color)', fontSize: typePx('micro') }}>
             {theme.name}
           </span>
         )}
@@ -426,38 +434,38 @@ export default function StorefrontPhonePreview({ draft, theme, widgets, business
 
       {/* Phone frame */}
       <div
-        className="rounded-[28px] border-4 overflow-hidden shadow-2xl mx-auto"
-        style={{ borderColor: 'var(--f-surface-raised)', width: 220, background: bg }}
+        className="overflow-hidden shadow-2xl mx-auto"
+        style={{ borderColor: 'var(--f-surface-raised)', borderWidth: framePx('borderWidthDp'), borderStyle: 'solid', borderRadius: framePx('radiusDp'), width: framePx('widthDp'), height: framePx('heightDp'), background: bg }}
       >
         {/* Status bar */}
-        <div className="flex justify-between items-center px-4 py-1.5 text-[10px]"
-          style={{ background: accent, color: '#fff' }}>
+        <div className="flex justify-between items-center"
+          style={{ paddingLeft: chromePx('statusBarHorizontalPaddingDp'), paddingRight: chromePx('statusBarHorizontalPaddingDp'), paddingTop: chromePx('statusBarVerticalPaddingDp'), paddingBottom: chromePx('statusBarVerticalPaddingDp'), fontSize: chromePx('statusBarFontSizeDp'), background: accent, color: '#fff' }}>
           <span className="font-semibold">9:41</span>
-          <div style={{ display: 'flex', gap: 4 }}>
+          <div style={{ display: 'flex', gap: chromePx('statusBarIconGapDp') }}>
             <span>●●●</span><span>WiFi</span><span>100%</span>
           </div>
         </div>
 
         {/* Business identity strip */}
-        <div style={{ padding: '10px 12px 8px', textAlign: 'center', background: surface, borderBottom: `1px solid ${tokens.border || '#eee'}` }}>
+        <div style={{ paddingTop: chromePx('identityVerticalPaddingTopDp'), paddingRight: chromePx('identityHorizontalPaddingDp'), paddingBottom: chromePx('identityVerticalPaddingBottomDp'), paddingLeft: chromePx('identityHorizontalPaddingDp'), textAlign: 'center', background: surface, borderBottom: `${chromePx('identityBorderWidthDp')} solid ${tokens.border || '#eee'}` }}>
           {businessInfo.logoUrl ? (
-            <img src={businessInfo.logoUrl} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', margin: '0 auto 6px' }} />
+            <img src={businessInfo.logoUrl} alt="" style={{ width: chromePx('identityAvatarDp'), height: chromePx('identityAvatarDp'), borderRadius: '50%', objectFit: 'cover', margin: `0 auto ${chromePx('identityAvatarBottomGapDp')}` }} />
           ) : (
-            <div style={{ width: 40, height: 40, borderRadius: '50%', background: accent, margin: '0 auto 6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: 16, fontWeight: 900, color: '#fff' }}>
+            <div style={{ width: chromePx('identityAvatarDp'), height: chromePx('identityAvatarDp'), borderRadius: '50%', background: accent, margin: `0 auto ${chromePx('identityAvatarBottomGapDp')}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontSize: typePx('identity'), fontWeight: 900, color: '#fff' }}>
                 {(businessInfo.name || 'B').charAt(0).toUpperCase()}
               </span>
             </div>
           )}
-          <p style={{ fontSize: 10, fontWeight: 700, color: textPrimary }}>{businessInfo.name || 'Your Business'}</p>
-          <p style={{ fontSize: 8, color: tokens.textSecondary || '#888', marginTop: 1 }}>Tap to follow</p>
+          <p style={{ fontSize: chromePx('identityNameFontSizeDp'), fontWeight: 700, color: textPrimary }}>{businessInfo.name || 'Your Business'}</p>
+          <p style={{ fontSize: chromePx('identityFollowFontSizeDp'), color: tokens.textSecondary || '#888', marginTop: chromePx('identityFollowTopGapDp') }}>Tap to follow</p>
         </div>
 
         {/* Widget tiles */}
-        <div style={{ minHeight: 280, overflowY: 'auto', background: bg }}>
+        <div style={{ minHeight: chromePx('widgetViewportMinHeightDp'), overflowY: 'auto', overflowX: 'hidden', background: bg, overscrollBehavior: 'contain' }}>
           {sortedTiles.length === 0 ? (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 120 }}>
-              <p style={{ fontSize: 9, color: tokens.textSecondary || '#aaa', textAlign: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: chromePx('emptyStateHeightDp') }}>
+              <p style={{ fontSize: typePx('caption'), color: tokens.textSecondary || '#aaa', textAlign: 'center' }}>
                 Add widgets from the left panel
               </p>
             </div>
@@ -477,7 +485,7 @@ export default function StorefrontPhonePreview({ draft, theme, widgets, business
               };
               return (
                 <div key={tile.id}>
-                  {isBefore && <div style={{ height: 3, margin: '0 8px', borderRadius: 999, background: accent }} aria-hidden="true" />}
+                  {isBefore && <div style={{ height: selectionPx('dropMarkerHeightDp'), marginLeft: selectionPx('dropMarkerMarginHorizontalDp'), marginRight: selectionPx('dropMarkerMarginHorizontalDp'), borderRadius: selectionPx('dropMarkerRadiusDp'), background: accent }} aria-hidden="true" />}
                   <div
                     role={editorMode ? 'button' : undefined}
                     tabIndex={editorMode ? 0 : undefined}
@@ -488,18 +496,18 @@ export default function StorefrontPhonePreview({ draft, theme, widgets, business
                     onDrop={editorMode && onDropTile ? (event) => { const target = resolveDrop(event); setDropTarget(null); if (target) { event.stopPropagation(); onDropTile(target.tileId, target.edge, target.type); } } : undefined}
                     style={{
                       position: 'relative',
-                      borderBottom: `1px solid ${tokens.border || '#f0f0f0'}`,
-                      outline: selected ? `2px solid ${accent}` : 'none',
-                      outlineOffset: -2,
+                      borderBottom: `${selectionPx('borderWidthDp')} solid ${tokens.border || '#f0f0f0'}`,
+                      outline: selected ? `${selectionPx('outlineWidthDp')} solid ${accent}` : 'none',
+                      outlineOffset: selectionPx('outlineOffsetDp') * -1,
                       cursor: editorMode ? 'pointer' : undefined,
                     }}
                   >
                     {selected && (
-                      <div style={{ position: 'absolute', top: 3, right: 4, zIndex: 5, fontSize: 7, fontWeight: 800, color: '#fff', background: accent, borderRadius: 4, padding: '2px 4px', pointerEvents: 'none' }}>Editing</div>
+                      <div style={{ position: 'absolute', top: selectionPx('badgeTopDp'), right: selectionPx('badgeRightDp'), zIndex: 5, fontSize: fallbackPx('titleFontSizeDp'), fontWeight: 800, color: '#fff', background: accent, borderRadius: selectionPx('badgeRadiusDp'), paddingTop: selectionPx('badgeVerticalPaddingDp'), paddingRight: selectionPx('badgeHorizontalPaddingDp'), paddingBottom: selectionPx('badgeVerticalPaddingDp'), paddingLeft: selectionPx('badgeHorizontalPaddingDp'), pointerEvents: 'none' }}>Editing</div>
                     )}
                     <Renderer props={tile.props || {}} business={businessInfo} tokens={tokens} />
                   </div>
-                  {isAfter && <div style={{ height: 3, margin: '0 8px', borderRadius: 999, background: accent }} aria-hidden="true" />}
+                  {isAfter && <div style={{ height: selectionPx('dropMarkerHeightDp'), marginLeft: selectionPx('dropMarkerMarginHorizontalDp'), marginRight: selectionPx('dropMarkerMarginHorizontalDp'), borderRadius: selectionPx('dropMarkerRadiusDp'), background: accent }} aria-hidden="true" />}
                 </div>
               );
             })
@@ -507,15 +515,15 @@ export default function StorefrontPhonePreview({ draft, theme, widgets, business
         </div>
 
         {/* Nav bar — adapts to business type */}
-        <div style={{ height: 32, background: surface, borderTop: `1px solid ${tokens.border || '#eee'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 16px' }}>
+        <div style={{ height: chromePx('navHeightDp'), background: surface, borderTop: `${chromePx('identityBorderWidthDp')} solid ${tokens.border || '#eee'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-around', paddingLeft: chromePx('navHorizontalPaddingDp'), paddingRight: chromePx('navHorizontalPaddingDp') }}>
           {navTabs.map((tab, i) => (
-            <div key={tab} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-              <div style={{ width: 14, height: 14, borderRadius: '50%', background: i === 0 ? accent : `${accent}20` }} />
-              <span style={{ fontSize: 5, color: i === 0 ? accent : tokens.textSecondary || '#aaa', fontWeight: i === 0 ? 700 : 400 }}>{tab}</span>
+            <div key={tab} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: chromePx('navItemGapDp') }}>
+              <div style={{ width: chromePx('navIndicatorDp'), height: chromePx('navIndicatorDp'), borderRadius: '50%', background: i === 0 ? accent : `${accent}20` }} />
+              <span style={{ fontSize: chromePx('navLabelFontSizeDp'), color: i === 0 ? accent : tokens.textSecondary || '#aaa', fontWeight: i === 0 ? 700 : 400 }}>{tab}</span>
             </div>
           ))}
         </div>
       </div>
-    </GlassPanel>
+    </Card>
   );
 }
