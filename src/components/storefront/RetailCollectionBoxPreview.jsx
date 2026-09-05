@@ -55,7 +55,7 @@ export default function RetailCollectionBoxPreview({ props = {}, tokens = {} }) 
   if (products.length === 0) {
     return (
       <div style={{ padding: `${toPreviewPx(8)}px ${toPreviewPx(8)}px`, color: textSecondary }}>
-        <span style={{ fontSize: toPreviewPx(12) }}>No products in {collectionTitle}</span>
+        <span style={{ fontSize: toPreviewPx(12) }}>{collectionTitle} is empty</span>
       </div>
     );
   }
@@ -97,7 +97,7 @@ export default function RetailCollectionBoxPreview({ props = {}, tokens = {} }) 
         height: rowHeight,
         overflowX: 'auto',
         overflowY: 'hidden',
-        paddingTop: toPreviewPx(retailTokens.titleBottomGapDp),
+        marginTop: toPreviewPx(retailTokens.titleBottomGapDp),
         scrollbarWidth: 'none',
       }}>
         {products.map((product) => (
@@ -105,7 +105,7 @@ export default function RetailCollectionBoxPreview({ props = {}, tokens = {} }) 
             key={product.id || product.name}
             style={{
               flex: `0 0 ${cardWidth}px`,
-              height: rowHeight - toPreviewPx(retailTokens.titleBottomGapDp),
+              height: rowHeight,
               background: surface,
               border: `1px solid ${border}`,
               borderRadius: cardRadius,
