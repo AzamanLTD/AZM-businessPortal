@@ -15,7 +15,9 @@ const deepFreeze = (value) => {
 
 const TOKENS = {
   device: {
-    phone: { widthDp: 412, heightDp: 892 },
+    phone: { widthDp: 412, heightDp: 892, displayWidthPx: 220 },
+    tablet: { widthDp: 768, heightDp: 1024, displayWidthPx: 320 },
+    desktop: { widthDp: 1280, heightDp: 900, displayWidthPx: 640 },
   },
 
   // The current Studio phone frame is 220 CSS px wide. Keep one explicit scale
