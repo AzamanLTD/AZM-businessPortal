@@ -40,6 +40,21 @@ describe('storefrontStudioModel', () => {
     expect(doc.pages[0].root).toEqual(['tile-1']);
   });
 
+  it('migrates retail collection boxes to a first-class semantic node', () => {
+    const doc = migrateLegacyTiles({
+      tiles: [{
+        id: 'collection-1',
+        widgetType: 'retail_collection_box',
+        props: { title: 'Summer collection', maxItems: 6 },
+      }],
+    });
+
+    expect(doc.nodes['collection-1']).toMatchObject({
+      type: 'retail-collection-box',
+      props: { title: 'Summer collection', maxItems: 6, legacyWidgetType: 'retail_collection_box' },
+    });
+  });
+
   it('uses stable deterministic ids for legacy tiles without ids', () => {
     const source = {
       tiles: [
