@@ -43,10 +43,14 @@ function applyResponsiveOverride(target, raw) {
 }
 
 /**
- * Resolve a node's responsive intent using mobile-first inheritance.
- * Phone is the base responsive layer; tablet inherits phone and desktop
- * inherits tablet unless it explicitly overrides a value. The persisted node
- * is never mutated and the returned `responsive` definition remains intact.
+ * Resolve a node's responsive intent with explicit breakpoint inheritance.
+ * Tablet inherits phone intent when a tablet layer exists; desktop inherits
+ * tablet intent when a tablet layer exists. A desktop-only document remains
+ * backward-compatible with the pre-cascade behavior and resolves desktop from
+ * its base node plus the explicit desktop override.
+ *
+ * The persisted node is never mutated and the returned `responsive` definition
+ * remains intact.
  */
 export function resolveResponsiveNode(node, viewport = 'phone') {
   if (!node) return node;
@@ -56,11 +60,25 @@ export function resolveResponsiveNode(node, viewport = 'phone') {
   const responsive = node.responsive;
   if (!responsive || typeof responsive !== 'object') return next;
 
-  const targetIndex = VIEWPORT_ORDER.indexOf(resolvedViewport);
-  for (let index = 0; index <= targetIndex; index += 1) {
-    applyResponsiveOverride(next, responsive[VIEWPORT_ORDER[index]]);
+  if (resolvedViewport === 'phone') {
+    applyResponsiveOverride(next, responsive.phone);
+    return next;
   }
 
+  if (resolvedViewport === 'tablet') {
+    applyResponsiveOverride(next, responsive.phone);
+    applyResponsiveOverride(next, responsive.tablet);
+    return next;
+  }
+
+  // Preserve the established desktop fallback when no tablet definition exists;
+  // once tablet intent exists, desktop naturally inherits the complete tablet
+  // layer before applying its own explicit overrides.
+  if (responsive.tablet && typeof responsive.tablet === 'object') {
+    applyResponsiveOverride(next, responsive.phone);
+    applyResponsiveOverride(next, responsive.tablet);
+  }
+  applyResponsiveOverride(next, responsive.desktop);
   return next;
 }
 
