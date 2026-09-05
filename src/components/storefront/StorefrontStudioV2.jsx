@@ -20,8 +20,8 @@ const VIEWPORTS = [
 const buttonClass = 'rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold disabled:opacity-40';
 
 function devicePreviewStyle(viewport) {
-  const device = STOREFRONT_STUDIO_TOKENS.device[normalizeStudioViewport(viewport)];
-  const phone = STOREFRONT_STUDIO_TOKENS.device.phone;
+  const device = STOREFRONT_STUDIO_TOKENS.studio.previewDevices[normalizeStudioViewport(viewport)];
+  const phone = STOREFRONT_STUDIO_TOKENS.studio.previewDevices.phone;
   const scale = device.displayWidthPx / phone.displayWidthPx;
   return {
     width: device.displayWidthPx,
@@ -43,11 +43,11 @@ function StudioStage({ draft, business, document, selection, viewport, onDrop, o
     tokenSet: document?.theme?.tokens || {},
   }), [draft?.themeName, document?.theme?.tokens]);
   const normalizedViewport = normalizeStudioViewport(viewport);
-  const device = STOREFRONT_STUDIO_TOKENS.device[normalizedViewport];
+  const device = STOREFRONT_STUDIO_TOKENS.studio.previewDevices[normalizedViewport];
   const emulationSize = devicePreviewStyle(normalizedViewport);
-  const scale = device.displayWidthPx / STOREFRONT_STUDIO_TOKENS.device.phone.displayWidthPx;
-  const phoneWidth = STOREFRONT_STUDIO_TOKENS.device.phone.displayWidthPx;
-  const phoneHeight = Math.round(STOREFRONT_STUDIO_TOKENS.device.phone.heightDp * STOREFRONT_STUDIO_TOKENS.PREVIEW_SCALE);
+  const scale = device.displayWidthPx / STOREFRONT_STUDIO_TOKENS.studio.previewDevices.phone.displayWidthPx;
+  const phoneWidth = STOREFRONT_STUDIO_TOKENS.studio.previewDevices.phone.displayWidthPx;
+  const phoneHeight = Math.round(STOREFRONT_STUDIO_TOKENS.studio.previewDevices.phone.heightDp * STOREFRONT_STUDIO_TOKENS.PREVIEW_SCALE);
 
   return (
     <div className="relative" onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
