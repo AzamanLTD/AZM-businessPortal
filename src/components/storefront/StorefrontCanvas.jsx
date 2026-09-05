@@ -39,6 +39,7 @@ export default function StorefrontCanvas({
 }) {
   const tiles = draft?.layoutJson?.tiles ?? [];
   const canvasRef = useRef(null);
+  const dragPreviewRef = useRef(null);
   const [dragState, setDragState] = useState(null);
   const [dragPreview, setDragPreview] = useState(null);
   const [canvasWidth, setCanvasWidth] = useState(600);
@@ -83,6 +84,7 @@ export default function StorefrontCanvas({
       origPosition: originalPosition,
       mode,
     });
+    dragPreviewRef.current = originalPosition;
     setDragPreview(originalPosition);
     onSelectTile(tile.id);
   }, [onSelectTile]);
@@ -111,15 +113,19 @@ export default function StorefrontCanvas({
       return { ...dragState.origPosition, colSpan: newColSpan, rowSpan: newRowSpan };
     };
 
-    const handleMove = (e) => setDragPreview(calculatePreview(e));
+    const handleMove = (e) => {
+      const nextPreview = calculatePreview(e);
+      dragPreviewRef.current = nextPreview;
+      setDragPreview(nextPreview);
+    };
 
     const handleUp = () => {
-      setDragPreview((preview) => {
-        if (preview && JSON.stringify(preview) !== JSON.stringify(dragState.origPosition)) {
-          onUpdateTile(dragState.tileId, { position: preview });
-        }
-        return null;
-      });
+      const preview = dragPreviewRef.current;
+      if (preview && JSON.stringify(preview) !== JSON.stringify(dragState.origPosition)) {
+        onUpdateTile(dragState.tileId, { position: preview });
+      }
+      dragPreviewRef.current = null;
+      setDragPreview(null);
       setDragState(null);
     };
 
