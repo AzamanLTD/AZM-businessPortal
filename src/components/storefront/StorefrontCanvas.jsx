@@ -40,6 +40,7 @@ export default function StorefrontCanvas({
   const tiles = draft?.layoutJson?.tiles ?? [];
   const canvasRef = useRef(null);
   const [dragState, setDragState] = useState(null);
+  const [dragPreview, setDragPreview] = useState(null);
   const [canvasWidth, setCanvasWidth] = useState(600);
 
   useEffect(() => {
@@ -64,27 +65,34 @@ export default function StorefrontCanvas({
   const startDrag = useCallback((e, tile, mode) => {
     e.stopPropagation();
     e.preventDefault();
+    const originalPosition = {
+      ...(tile.position || {}),
+      col: tile.position?.col ?? 0,
+      row: tile.position?.row ?? 0,
+      colSpan: tile.position?.colSpan ?? 4,
+      rowSpan: tile.position?.rowSpan ?? 2,
+    };
     setDragState({
       tileId: tile.id,
       startX: e.clientX,
       startY: e.clientY,
-      origCol: tile.position?.col ?? 0,
-      origRow: tile.position?.row ?? 0,
-      origColSpan: tile.position?.colSpan ?? 4,
-      origRowSpan: tile.position?.rowSpan ?? 2,
+      origCol: originalPosition.col,
+      origRow: originalPosition.row,
+      origColSpan: originalPosition.colSpan,
+      origRowSpan: originalPosition.rowSpan,
+      origPosition: originalPosition,
       mode,
     });
+    setDragPreview(originalPosition);
     onSelectTile(tile.id);
   }, [onSelectTile]);
 
   useEffect(() => {
     if (!dragState) return;
 
-    const handleMove = (e) => {
+    const calculatePreview = (e) => {
       const deltaX = e.clientX - dragState.startX;
       const deltaY = e.clientY - dragState.startY;
-      const tile = tiles.find(t => t.id === dragState.tileId);
-      if (!tile) return;
 
       if (dragState.mode === 'move') {
         const newCol = Math.max(0, Math.min(
@@ -92,31 +100,36 @@ export default function StorefrontCanvas({
           GRID_COLS - dragState.origColSpan
         ));
         const newRow = Math.max(0, dragState.origRow + Math.round(deltaY / (ROW_HEIGHT + GAP)));
-        // IMPORTANT: updateTile's second argument is a props patch. Send only
-        // `position` so grid geometry cannot leak into tile.props.
-        onUpdateTile(tile.id, {
-          position: { ...tile.position, col: newCol, row: newRow },
-        });
-      } else if (dragState.mode === 'resize') {
-        const newColSpan = Math.max(1, Math.min(
-          dragState.origColSpan + Math.round(deltaX / (colWidth + GAP)),
-          GRID_COLS - dragState.origCol
-        ));
-        const newRowSpan = Math.max(1, dragState.origRowSpan + Math.round(deltaY / (ROW_HEIGHT + GAP)));
-        onUpdateTile(tile.id, {
-          position: { ...tile.position, colSpan: newColSpan, rowSpan: newRowSpan },
-        });
+        return { ...dragState.origPosition, col: newCol, row: newRow };
       }
+
+      const newColSpan = Math.max(1, Math.min(
+        dragState.origColSpan + Math.round(deltaX / (colWidth + GAP)),
+        GRID_COLS - dragState.origCol
+      ));
+      const newRowSpan = Math.max(1, dragState.origRowSpan + Math.round(deltaY / (ROW_HEIGHT + GAP)));
+      return { ...dragState.origPosition, colSpan: newColSpan, rowSpan: newRowSpan };
     };
 
-    const handleUp = () => setDragState(null);
+    const handleMove = (e) => setDragPreview(calculatePreview(e));
+
+    const handleUp = () => {
+      setDragPreview((preview) => {
+        if (preview && JSON.stringify(preview) !== JSON.stringify(dragState.origPosition)) {
+          onUpdateTile(dragState.tileId, { position: preview });
+        }
+        return null;
+      });
+      setDragState(null);
+    };
+
     window.addEventListener('mousemove', handleMove);
     window.addEventListener('mouseup', handleUp);
     return () => {
       window.removeEventListener('mousemove', handleMove);
       window.removeEventListener('mouseup', handleUp);
     };
-  }, [dragState, tiles, colWidth, onUpdateTile]);
+  }, [dragState, colWidth, onUpdateTile]);
 
   const maxRow = tiles.reduce((max, t) => {
     const rowEnd = (t.position?.row ?? 0) + (t.position?.rowSpan ?? 2);
@@ -153,6 +166,7 @@ export default function StorefrontCanvas({
           <span className="text-xs px-2 py-1 rounded-md" style={{ background: 'var(--f-surface-sunken)', color: 'var(--f-text-3)' }}>
             {GRID_COLS} cols
           </span>
+          {dragState && <span className="text-[10px] font-semibold" style={{ color: 'var(--f-tint-color)' }}>Editing locally — release to save</span>}
         </div>
       </div>
 
@@ -172,10 +186,12 @@ export default function StorefrontCanvas({
         }}
       >
         {tiles.map((tile) => {
-          const col = tile.position?.col ?? 0;
-          const row = tile.position?.row ?? 0;
-          const colSpan = tile.position?.colSpan ?? 4;
-          const rowSpan = tile.position?.rowSpan ?? 2;
+          const activePreview = dragState?.tileId === tile.id ? dragPreview : null;
+          const position = activePreview || tile.position || {};
+          const col = position.col ?? 0;
+          const row = position.row ?? 0;
+          const colSpan = position.colSpan ?? 4;
+          const rowSpan = position.rowSpan ?? 2;
           const pos = gridToPx(col, row, colSpan, rowSpan);
           const isSelected = selectedTileId === tile.id;
           const Icon = WIDGET_ICONS[tile.widgetType] || Layers;
