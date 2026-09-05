@@ -61,18 +61,30 @@ function StudioStage({ draft, business, document, selection, viewport, onDrop, o
           aria-label={`${device.widthDp} by ${device.heightDp} ${normalizedViewport} preview`}
           style={emulationSize}
         >
-          <div style={{ width: phoneWidth, height: phoneHeight, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
-            <StorefrontPhonePreview
-              draft={runtimeDraft}
-              theme={theme}
-              widgets={[]}
-              business={business}
-              businessType={business?.businessType || business?.type || 'GENERAL'}
-              selectedTileId={selection[0] || null}
-              onSelectTile={onSelect}
-              editorMode
-              onDropTile={onDropTile}
-            />
+          <div
+            data-testid="studio-device-scroll-viewport"
+            style={{
+              width: emulationSize.width,
+              height: emulationSize.height,
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              overscrollBehavior: 'contain',
+              WebkitOverflowScrolling: 'touch',
+            }}
+          >
+            <div style={{ width: phoneWidth, height: phoneHeight, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
+              <StorefrontPhonePreview
+                draft={runtimeDraft}
+                theme={theme}
+                widgets={[]}
+                business={business}
+                businessType={business?.businessType || business?.type || 'GENERAL'}
+                selectedTileId={selection[0] || null}
+                onSelectTile={onSelect}
+                editorMode
+                onDropTile={onDropTile}
+              />
+            </div>
           </div>
         </div>
       </div>
