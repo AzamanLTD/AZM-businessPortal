@@ -89,6 +89,9 @@ const TOKENS = {
       productGrid: { titleBottomGapDp: 10, crossAxisSpacingDp: 10, mainAxisSpacingDp: 10, childAspectRatio: 0.75, cardRadiusDp: 12, cardPaddingDp: 8, emptyHorizontalPaddingDp: 20, emptyVerticalPaddingDp: 28, emptyRadiusDp: 14, emptyIconDp: 30, emptyIconGapDp: 8, emptyBodyGapDp: 4, productTitleGapDp: 3, productImageFlex: 3 },
       review: { titleBottomGapDp: 10, viewportHeightDp: 136, cardWidthDp: 260, cardRadiusDp: 12, cardPaddingDp: 12, cardGapDp: 10, starSizeDp: 15, bodyGapDp: 8, emptyPaddingDp: 14, emptyRadiusDp: 12 },
       contact: { cardPaddingDp: 14, cardRadiusDp: 12, itemGapDp: 10, iconDp: 16, labelFontSizeDp: 13 },
+      showcase: { titleBottomGapDp: 10, viewportHeightDp: 160, cardWidthDp: 140, itemGapDp: 10, radiusDp: 12, iconDp: 36 },
+      location: { titleBottomGapDp: 10, mapHeightDp: 180, radiusDp: 12, pinDp: 48, badgeBottomDp: 8, badgeLeftDp: 8, badgePaddingHorizontalDp: 10, badgePaddingVerticalDp: 4, badgeRadiusDp: 8, badgeFontSizeDp: 11 },
+      video: { radiusDp: 12, heightDp: 220, playButtonDp: 64, fallbackIconDp: 40, fallbackGapDp: 8, fallbackFontSizeDp: 12 },
     },
   },
 
