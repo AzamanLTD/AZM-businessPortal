@@ -1,1 +1,0 @@
-Studio acceptance work is tracked in Planning and enforced by StudioWaveAcceptance.contract.test.js.
