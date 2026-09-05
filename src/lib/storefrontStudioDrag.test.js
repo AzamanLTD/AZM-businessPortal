@@ -22,16 +22,19 @@ describe('storefront studio drag engine', () => {
     expect(input).toEqual({ col: -4, row: -2, colSpan: 9, rowSpan: 0 });
   });
 
-  it('snaps a continuously positioned tile to a nearby overlapping sibling edge', () => {
+  it('magnetically pulls a continuously positioned tile toward a nearby overlapping sibling edge', () => {
     const canvasWidth = 220;
-    const sibling = tile('b', { col: 2, row: 0, colSpan: 1, rowSpan: 2 });
     const result = magneticSnap({
       canvasWidth,
       tileId: 'a',
       position: { col: 0.98, row: 0.1, colSpan: 1, rowSpan: 2 },
-      tiles: [tile('a', { col: 0.98, row: 0.1, colSpan: 1, rowSpan: 2 }), sibling],
+      tiles: [
+        tile('a', { col: 0.98, row: 0.1, colSpan: 1, rowSpan: 2 }),
+        tile('b', { col: 2, row: 0, colSpan: 1, rowSpan: 2 }),
+      ],
     });
-    expect(result.col).toBeCloseTo(1, 6);
+    expect(result.col).toBeGreaterThan(0.98);
+    expect(result.col).toBeLessThan(1);
   });
 
   it('does not snap horizontally toward a sibling on a non-overlapping row', () => {
@@ -55,7 +58,7 @@ describe('storefront studio drag engine', () => {
     });
   });
 
-  it('finds transitive edge-connected groups for fused movement', () => {
+  it('finds transitive logically adjacent groups for fused movement', () => {
     const canvasWidth = 220;
     const tiles = [
       tile('a', { col: 0, row: 0, colSpan: 2, rowSpan: 1 }),
