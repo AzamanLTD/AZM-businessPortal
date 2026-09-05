@@ -3,6 +3,7 @@
 // Every widget type has its own mini-renderer that uses the tile's actual props.
 // Widget types aligned with backend seedWidgetCatalog.js
 import { Card } from '@/components/instrument';
+import RetailCollectionBoxPreview from './RetailCollectionBoxPreview';
 import { useState } from 'react';
 import { Smartphone, Star, MapPin, Phone, MessageCircle, ShoppingBag, Image, Users, Clock, ChevronRight, Play, ExternalLink, Globe, BarChart, Hash, Code, Sparkles, Instagram, TrendingUp } from "lucide-react";
 
@@ -355,6 +356,7 @@ const WIDGET_RENDERERS = {
   contact_card:        ContactCard,
   location_map:        LocationMap,
   action_buttons:      ActionButtons,
+  retail_collection_box: RetailCollectionBoxPreview,
   // NITRO_BRONZE
   video_player:        VideoPlayer,
   promo_banner:        PromoBanner,

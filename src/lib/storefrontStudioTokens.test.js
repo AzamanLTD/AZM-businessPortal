@@ -13,6 +13,18 @@ describe('storefront studio tokens', () => {
     expect(STOREFRONT_STUDIO_TOKENS.layout.hero.subtitleFontSizeDp).toBe(14);
     expect(STOREFRONT_STUDIO_TOKENS.layout.quickInfo.labelFontSizeDp).toBe(12);
     expect(STOREFRONT_STUDIO_TOKENS.layout.productGrid.childAspectRatio).toBe(0.75);
+    expect(STOREFRONT_STUDIO_TOKENS.layout.retailCollection).toMatchObject({
+      titleBottomGapDp: 10,
+      subtitleGapDp: 3,
+      rowHeightDp: 250,
+      cardWidthDp: 168,
+      itemGapDp: 10,
+      cardRadiusDp: 16,
+      cardPaddingDp: 10,
+      cardTopPaddingDp: 9,
+      cardBottomPaddingDp: 10,
+      productTitleGapDp: 4,
+    });
   });
 
   test('uses one uniform preview scale derived from the 412dp phone and 220px frame', () => {
