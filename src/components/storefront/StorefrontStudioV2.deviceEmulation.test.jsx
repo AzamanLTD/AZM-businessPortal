@@ -3,11 +3,12 @@ import { STOREFRONT_STUDIO_TOKENS } from '@/lib/storefrontStudioTokens';
 import { normalizeStudioViewport } from '@/lib/storefrontStudioResponsive';
 
 describe('Storefront Studio device emulation contract', () => {
-  it('keeps explicit phone/tablet/desktop presets grounded in the shared device tokens', () => {
-    const { device, PREVIEW_SCALE } = STOREFRONT_STUDIO_TOKENS;
-    expect(device.phone).toEqual(expect.objectContaining({ widthDp: 412, heightDp: 892, displayWidthPx: 220 }));
-    expect(device.tablet.displayWidthPx).toBeGreaterThan(device.phone.displayWidthPx);
-    expect(device.desktop.displayWidthPx).toBeGreaterThan(device.tablet.displayWidthPx);
+  it('keeps measured Flutter geometry separate from Studio display presets', () => {
+    const { device, studio, PREVIEW_SCALE } = STOREFRONT_STUDIO_TOKENS;
+    expect(device.phone).toEqual({ widthDp: 412, heightDp: 892 });
+    expect(studio.previewDevices.phone).toEqual({ widthDp: 412, heightDp: 892, displayWidthPx: 220 });
+    expect(studio.previewDevices.tablet.displayWidthPx).toBeGreaterThan(studio.previewDevices.phone.displayWidthPx);
+    expect(studio.previewDevices.desktop.displayWidthPx).toBeGreaterThan(studio.previewDevices.tablet.displayWidthPx);
     expect(Math.round(device.phone.heightDp * PREVIEW_SCALE)).toBe(476);
   });
 
@@ -18,5 +19,5 @@ describe('Storefront Studio device emulation contract', () => {
 });
 
 function deviceViewportWidth(viewport) {
-  return STOREFRONT_STUDIO_TOKENS.device[normalizeStudioViewport(viewport)].displayWidthPx;
+  return STOREFRONT_STUDIO_TOKENS.studio.previewDevices[normalizeStudioViewport(viewport)].displayWidthPx;
 }
