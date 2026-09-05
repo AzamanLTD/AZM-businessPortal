@@ -137,6 +137,42 @@ export default function StorefrontCanvas({
     };
   }, [dragState, colWidth, onUpdateTile]);
 
+  const handleCanvasKeyDown = useCallback((e) => {
+    const tile = tiles.find((candidate) => candidate.id === selectedTileId);
+    if (!tile || dragState) return;
+
+    const directionByKey = {
+      ArrowLeft: [-1, 0],
+      ArrowRight: [1, 0],
+      ArrowUp: [0, -1],
+      ArrowDown: [0, 1],
+    };
+    const direction = directionByKey[e.key];
+    if (!direction) return;
+
+    e.preventDefault();
+    const step = e.shiftKey ? 2 : 1;
+    const current = tile.position || {};
+    const colSpan = current.colSpan ?? 4;
+    const rowSpan = current.rowSpan ?? 2;
+    const col = Math.max(0, Math.min(
+      (current.col ?? 0) + direction[0] * step,
+      GRID_COLS - colSpan
+    ));
+    const row = Math.max(0, (current.row ?? 0) + direction[1] * step);
+
+    if (col === (current.col ?? 0) && row === (current.row ?? 0)) return;
+    onUpdateTile(tile.id, {
+      position: {
+        ...current,
+        col,
+        row,
+        colSpan,
+        rowSpan,
+      },
+    });
+  }, [tiles, selectedTileId, dragState, onUpdateTile]);
+
   const maxRow = tiles.reduce((max, t) => {
     const rowEnd = (t.position?.row ?? 0) + (t.position?.rowSpan ?? 2);
     return Math.max(max, rowEnd);
@@ -190,6 +226,10 @@ export default function StorefrontCanvas({
           backgroundSize: `${colWidth + GAP}px ${ROW_HEIGHT + GAP}px`,
           backgroundPosition: '0 0',
         }}
+        tabIndex={0}
+        role="application"
+        aria-label="Storefront layout canvas. Use arrow keys to nudge the selected tile. Hold Shift for larger steps."
+        onKeyDown={handleCanvasKeyDown}
       >
         {tiles.map((tile) => {
           const activePreview = dragState?.tileId === tile.id ? dragPreview : null;
