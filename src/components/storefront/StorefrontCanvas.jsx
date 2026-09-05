@@ -12,7 +12,7 @@ import { useCallback, useRef, useState, useEffect } from 'react';
 import { Trash2, Plus, Image, Info, ShoppingBag, Star, Phone, MapPin, MousePointerClick, Video, BadgePercent, Instagram, BarChart, Hash, Code, Sparkles, Layers, Move } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { STOREFRONT_STUDIO_TOKENS } from '@/lib/storefrontStudioTokens';
-import { clampGridPosition, connectedGroupIds, gridGeometry, magneticSnap } from '@/lib/storefrontStudioDrag';
+import { clampGridPosition, commitGridPosition, connectedGroupIds, gridGeometry, magneticSnap } from '@/lib/storefrontStudioDrag';
 
 const WIDGET_ICONS = {
   hero_header: Image,
@@ -72,13 +72,7 @@ export default function StorefrontCanvas({
     };
   };
 
-  const clearDrag = useCallback((pointerId) => {
-    const target = document.querySelector(`[data-studio-drag-pointer="${pointerId}"]`);
-    try {
-      target?.releasePointerCapture?.(pointerId);
-    } catch {
-      // Pointer may already have been released by the browser.
-    }
+  const clearDrag = useCallback(() => {
     dragPreviewRef.current = {};
     setDragPreview({});
     setDragState(null);
@@ -131,11 +125,8 @@ export default function StorefrontCanvas({
 
     let nextPreview;
     if (dragState.mode === 'move') {
-      const previewCol = Math.max(0, Math.min(
-        dragState.origCol + Math.round(deltaX / colWidth),
-        GRID_COLS - dragState.origColSpan,
-      ));
-      const previewRow = Math.max(0, dragState.origRow + Math.round(deltaY / (ROW_HEIGHT + GAP)));
+      const previewCol = dragState.origCol + deltaX / colWidth;
+      const previewRow = dragState.origRow + deltaY / (ROW_HEIGHT + GAP);
       const rootPosition = clampGridPosition({
         ...dragState.origPosition,
         col: previewCol,
@@ -180,19 +171,29 @@ export default function StorefrontCanvas({
   const finishDrag = useCallback((e) => {
     if (!dragState || e.pointerId !== dragState.pointerId) return;
     const preview = dragPreviewRef.current;
+    try {
+      e.currentTarget.releasePointerCapture?.(e.pointerId);
+    } catch {
+      // Browser may have released capture already.
+    }
     for (const id of dragState.groupIds) {
       const nextPosition = preview[id];
       const originalPosition = dragState.originalPositions[id];
       if (nextPosition && !samePosition(nextPosition, originalPosition)) {
-        onUpdateTile(id, { position: nextPosition });
+        onUpdateTile(id, { position: commitGridPosition(nextPosition) });
       }
     }
-    clearDrag(e.pointerId);
+    clearDrag();
   }, [clearDrag, dragState, onUpdateTile]);
 
   const handlePointerCancel = useCallback((e) => {
     if (!dragState || e.pointerId !== dragState.pointerId) return;
-    clearDrag(e.pointerId);
+    try {
+      e.currentTarget.releasePointerCapture?.(e.pointerId);
+    } catch {
+      // Browser may have released capture already.
+    }
+    clearDrag();
   }, [clearDrag, dragState]);
 
   const handleCanvasKeyDown = useCallback((e) => {
@@ -337,7 +338,7 @@ export default function StorefrontCanvas({
                       </p>
                     )}
                     <p className="text-[10px] mt-0.5" style={{ color: 'var(--f-text-3)', opacity: 0.7 }}>
-                      {position.colSpan}×{position.rowSpan} · col {position.col} row {position.row}
+                      {Math.round(position.colSpan)}×{Math.round(position.rowSpan)} · col {Number(position.col).toFixed(2)} row {Number(position.row).toFixed(2)}
                     </p>
                   </div>
                   {isSelected && (
