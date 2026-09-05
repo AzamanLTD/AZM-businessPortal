@@ -3,6 +3,7 @@
 // businessId is only used as a React dependency to know WHEN to load.
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { storefrontApi } from '@/services/storefrontApi';
+import { patchLegacyTile } from '@/lib/storefrontStudioModel';
 
 /**
  * Preserve an already-published/editor Experience Blueprint when a generic
@@ -111,7 +112,7 @@ export function useStorefront(businessId) {
       } else if (err.statusCode === 402 && err.violations) {
         // PHASE 8: Surface Nitro 402 violations to the UI
         const summary = err.violations.map(v =>
-          `${v.type === 'theme' ? 'Theme' : 'Widget'} \"${v.key}\" requires ${v.requiredTier.replace('NITRO_', '')} tier`
+          `${v.type === 'theme' ? 'Theme' : 'Widget'} "${v.key}" requires ${v.requiredTier.replace('NITRO_', '')} tier`
         ).join('; ');
         setError(`Nitro eligibility failed: ${summary}. Stake more AZM to unlock.`);
         err.userMessage = `Nitro eligibility failed: ${summary}`;
@@ -156,14 +157,14 @@ export function useStorefront(businessId) {
     scheduleAutoSave(updated.layoutJson, draft.themeId);
   }, [draft, scheduleAutoSave]);
 
-  const updateTile = useCallback((tileId, newProps) => {
+  const updateTile = useCallback((tileId, patch = {}) => {
     if (!draft) return;
     const updated = {
       ...draft,
       layoutJson: {
         ...draft.layoutJson,
         tiles: draft.layoutJson.tiles.map(t =>
-          t.id === tileId ? { ...t, props: { ...t.props, ...newProps } } : t
+          t.id === tileId ? patchLegacyTile(t, patch) : t
         ),
       },
     };
