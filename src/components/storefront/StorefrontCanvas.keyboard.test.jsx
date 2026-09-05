@@ -60,7 +60,7 @@ describe('StorefrontCanvas keyboard nudging', () => {
             tiles: [{
               id: 'tile-1',
               widgetType: 'hero_header',
-              position: { row: 0, col: 2, rowSpan: 1, colSpan: 2 },
+              position: { row: 0, col: 0, rowSpan: 1, colSpan: 2 },
               props: {},
             }],
           },
