@@ -1,11 +1,6 @@
 // src/lib/storefrontStudioRuntimeAdapter.js
 // =============================================================================
 // Storefront Studio V2 -> live storefront preview bridge
-//
-// The editor owns a semantic tree, while the established customer preview still
-// consumes the legacy widget-tile contract. Keep that compatibility boundary in
-// one pure adapter so Studio and the customer runtime cannot drift into separate
-// rendering implementations.
 // =============================================================================
 
 import { normalizeStudioViewport, responsiveGrid, resolveResponsiveNode } from './storefrontStudioResponsive';
@@ -17,6 +12,7 @@ const TYPE_TO_WIDGET = Object.freeze({
   'product-carousel': 'product_grid',
   'product-card': 'product_grid',
   'category-rail': 'product_grid',
+  'retail-collection-box': 'retail_collection_box',
   reviews: 'review_carousel',
   contact: 'contact_card',
   location: 'location_map',
@@ -58,43 +54,23 @@ function runtimeProps(node) {
   const props = clone(node.props || {});
 
   if (node.type === 'text') {
-    return {
-      ...props,
-      customInfo: props.value ?? props.text ?? 'Text block',
-    };
+    return { ...props, customInfo: props.value ?? props.text ?? 'Text block' };
   }
-
   if (node.type === 'rating') {
-    return {
-      ...props,
-      showRating: true,
-      customInfo: props.customInfo || props.label,
-    };
+    return { ...props, showRating: true, customInfo: props.customInfo || props.label };
   }
-
   if (node.type === 'product-carousel' || node.type === 'category-rail') {
-    return {
-      ...props,
-      title: props.title || (node.type === 'category-rail' ? 'Browse categories' : 'Explore more'),
-    };
+    return { ...props, title: props.title || (node.type === 'category-rail' ? 'Browse categories' : 'Explore more') };
   }
-
   if (node.type === 'product-card') {
-    return {
-      ...props,
-      title: props.title || props.name || 'Product',
-      maxItems: 1,
-    };
+    return { ...props, title: props.title || props.name || 'Product', maxItems: 1 };
   }
-
   if (node.type === 'button' || node.type === 'icon-button') {
-    return {
-      ...props,
-      showOrder: props.showOrder !== false,
-      customLabel: props.label || props.text,
-    };
+    return { ...props, showOrder: props.showOrder !== false, customLabel: props.label || props.text };
   }
-
+  if (node.type === 'retail-collection-box') {
+    return { ...props, title: props.title || 'Collection', maxItems: Number.isFinite(props.maxItems) ? props.maxItems : 6 };
+  }
   return props;
 }
 
