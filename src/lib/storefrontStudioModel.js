@@ -51,8 +51,8 @@ export function createStudioNode({ id, type, children = [], props = {}, style = 
     children: [...children],
     props: { ...props },
     style: { ...style },
-    layout: { ...layout },
     responsive: { ...responsive },
+    layout: { ...layout },
     actions: { ...actions },
   };
 }
@@ -91,9 +91,33 @@ export function migrateLegacyTiles(layoutJson = {}) {
   const tiles = Array.isArray(layoutJson.tiles) ? layoutJson.tiles : [];
   const doc = createEmptyStudioDocument();
   const root = [];
+  const allocatedIds = new Set();
 
-  for (const tile of tiles) {
-    const id = String(tile.id || `node_${Math.random().toString(36).slice(2, 10)}`);
+  const allocateId = (tile, index) => {
+    const explicitId = tile?.id == null ? '' : String(tile.id).trim();
+    if (explicitId) {
+      if (!allocatedIds.has(explicitId)) {
+        allocatedIds.add(explicitId);
+        return explicitId;
+      }
+      let duplicate = `${explicitId}-${index + 1}`;
+      let suffix = 2;
+      while (allocatedIds.has(duplicate)) duplicate = `${explicitId}-${index + 1}-${suffix++}`;
+      allocatedIds.add(duplicate);
+      return duplicate;
+    }
+
+    const base = `legacy_${index + 1}`;
+    let generated = base;
+    let suffix = 2;
+    while (allocatedIds.has(generated)) generated = `${base}_${suffix++}`;
+    allocatedIds.add(generated);
+    return generated;
+  };
+
+  for (let index = 0; index < tiles.length; index += 1) {
+    const tile = tiles[index] || {};
+    const id = allocateId(tile, index);
     const type = legacyType(tile.widgetType);
     const node = createStudioNode({
       id,
