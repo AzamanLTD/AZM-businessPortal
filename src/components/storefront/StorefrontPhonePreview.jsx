@@ -16,6 +16,9 @@ const themeColor = (tokens, key, fallback) => tokens?.[key] || fallback;
 const showcasePx = (name) => px(previewTokens.showcase[name]);
 const locationPx = (name) => px(previewTokens.location[name]);
 const videoPx = (name) => px(previewTokens.video[name]);
+const promoPx = (name) => px(previewTokens.promo[name]);
+const socialPx = (name) => px(previewTokens.social[name]);
+const liveStatsPx = (name) => px(previewTokens.liveStats[name]);
 
 function HeroHeader({ props, business, tokens }) {
   const bg = props.mediaUrl ? `url(${props.mediaUrl}) center/cover no-repeat` : themeColor(tokens, 'accent', '#6C4FD1');
@@ -212,13 +215,13 @@ function PromoBanner({ props, tokens }) {
   const bg = props.backgroundColor || `${accent}15`;
   const border = props.backgroundColor ? `${props.backgroundColor}40` : `${accent}30`;
   return (
-    <div style={{ margin: '0 8px 4px', borderRadius: 8, background: bg, border: `1px solid ${border}`, padding: '8px 10px' }}>
-      {props.title && <p style={{ fontSize: 9, fontWeight: 700, color: props.backgroundColor ? '#fff' : accent, marginBottom: 2 }}>{props.title}</p>}
-      {props.subtitle && <p style={{ fontSize: 8, color: props.backgroundColor ? 'rgba(255,255,255,0.85)' : (tokens.textSecondary || '#666'), lineHeight: 1.3 }}>{props.subtitle}</p>}
+    <div style={{ marginLeft: spacing('block'), marginRight: spacing('block'), borderRadius: promoPx('radiusDp'), background: bg, border: `1px solid ${border}`, paddingLeft: promoPx('horizontalPaddingDp'), paddingRight: promoPx('horizontalPaddingDp'), paddingTop: promoPx('verticalPaddingDp'), paddingBottom: promoPx('verticalPaddingDp') }}>
+      {props.title && <p style={{ fontSize: promoPx('titleFontSizeDp'), fontWeight: 700, color: props.backgroundColor ? '#fff' : accent, marginBottom: promoPx('titleSubtitleGapDp') }}>{props.title}</p>}
+      {props.subtitle && <p style={{ fontSize: promoPx('subtitleFontSizeDp'), color: props.backgroundColor ? 'rgba(255,255,255,0.85)' : (tokens.textSecondary || '#666'), lineHeight: 1.3 }}>{props.subtitle}</p>}
       {props.ctaText && (
-        <div style={{ marginTop: 4, display: 'inline-flex', alignItems: 'center', gap: 2, padding: '3px 8px', borderRadius: 4, background: props.backgroundColor ? 'rgba(255,255,255,0.2)' : accent }}>
-          <span style={{ fontSize: 7, fontWeight: 700, color: props.backgroundColor ? '#fff' : '#fff' }}>{props.ctaText}</span>
-          <ChevronRight size={8} color={props.backgroundColor ? '#fff' : '#fff'} />
+        <div style={{ marginTop: promoPx('ctaGapDp'), display: 'inline-flex', alignItems: 'center', gap: px(previewTokens.type.nav), padding: `${promoPx('verticalPaddingDp')} ${promoPx('ctaGapDp')}`, borderRadius: promoPx('titleSubtitleGapDp'), background: props.backgroundColor ? 'rgba(255,255,255,0.2)' : accent }}>
+          <span style={{ fontSize: typePx('micro'), fontWeight: 700, color: '#fff' }}>{props.ctaText}</span>
+          <ChevronRight size={typePx('small')} color="#fff" />
         </div>
       )}
     </div>
@@ -232,17 +235,17 @@ function SocialFeed({ props, tokens }) {
   const PlatformIcon = platformIcons[platform] || Instagram;
   const count = Math.min(props.maxPosts || 6, 3);
   return (
-    <div style={{ padding: '8px 8px 6px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 5 }}>
-        <PlatformIcon size={12} color={accent} />
-        <p style={{ fontSize: 9, fontWeight: 700, color: tokens.textPrimary || '#111' }}>
-          {props.handle ? `@${props.handle}` : `Latest Posts`}
+    <div style={{ paddingLeft: spacing('block'), paddingRight: spacing('block'), paddingTop: spacing('block'), paddingBottom: spacing('tight') }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: socialPx('platformIconGapDp'), marginBottom: socialPx('titleBottomGapDp') }}>
+        <PlatformIcon size={socialPx('platformIconDp')} color={accent} />
+        <p style={{ fontSize: typePx('section'), fontWeight: 700, color: tokens.textPrimary || '#111' }}>
+          {props.handle ? `@${props.handle}` : 'Latest Posts'}
         </p>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 3 }}>
+      <div style={{ height: socialPx('viewportHeightDp'), display: 'grid', gridTemplateColumns: `repeat(${previewTokens.social.gridCrossAxisCount}, 1fr)`, gap: socialPx('gridSpacingDp'), overflow: 'hidden' }}>
         {Array.from({ length: count }).map((_, i) => (
-          <div key={i} style={{ aspectRatio: '1', borderRadius: 6, background: `${accent}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Image size={12} color={`${accent}80`} />
+          <div key={i} style={{ width: socialPx('itemWidthDp'), height: '100%', borderRadius: socialPx('itemRadiusDp'), background: `${accent}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Image size={socialPx('itemIconDp')} color={`${accent}80`} />
           </div>
         ))}
       </div>
@@ -261,11 +264,14 @@ function LiveStats({ props, tokens }) {
   if (props.showRating) stats.push({ label: 'Rating', value: '4.8★' });
   if (stats.length === 0) stats.push({ label: 'Followers', value: '1.2K' }, { label: 'Reviews', value: '340' });
   return (
-    <div style={{ padding: '8px 8px 6px', display: 'flex', justifyContent: 'space-around' }}>
+    <div style={{ paddingLeft: liveStatsPx('horizontalPaddingDp'), paddingRight: liveStatsPx('horizontalPaddingDp'), paddingTop: liveStatsPx('verticalPaddingDp'), paddingBottom: liveStatsPx('verticalPaddingDp'), borderRadius: liveStatsPx('radiusDp') }}>
       {stats.map((s, i) => (
         <div key={i} style={{ textAlign: 'center' }}>
-          <p style={{ fontSize: 12, fontWeight: 800, color: accent }}>{s.value}</p>
-          <p style={{ fontSize: 7, color: tokens.textSecondary || '#888', marginTop: 1 }}>{s.label}</p>
+          <p style={{ fontSize: liveStatsPx('valueFontSizeDp'), fontWeight: 800, color: accent }}>{s.value}</p>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: liveStatsPx('iconLabelGapDp'), marginTop: liveStatsPx('valueLabelGapDp') }}>
+            <BarChart size={liveStatsPx('iconDp')} color={tokens.textSecondary || '#888'} />
+            <p style={{ fontSize: liveStatsPx('labelFontSizeDp'), color: tokens.textSecondary || '#888' }}>{s.label}</p>
+          </div>
         </div>
       ))}
     </div>
