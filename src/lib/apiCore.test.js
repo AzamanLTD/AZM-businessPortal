@@ -72,4 +72,28 @@ describe('apiCore session token lifecycle', () => {
       stakedBalance: 0,
     });
   });
+
+  it('leaves multipart Content-Type unset so the browser can add its boundary', async () => {
+    const { clearAccessToken, request } = await import('./apiCore');
+    clearAccessToken();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      statusText: 'OK',
+      json: async () => ({ success: true }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    const formData = new FormData();
+    formData.append('file', new Blob(['image-bytes'], { type: 'image/png' }), 'tile.png');
+
+    await request('/api/storefront/me/media', {
+      method: 'POST',
+      headers: {},
+      body: formData,
+    });
+
+    const [, init] = fetchMock.mock.calls[0];
+    expect(init.body).toBe(formData);
+    expect(init.headers.get('Content-Type')).toBeNull();
+  });
 });
