@@ -11,7 +11,7 @@ import { runtimeAdapterIsContainer, studioDocumentToRuntimeDraft } from '@/lib/s
 import { sanitizeStorefrontPreviewHtml } from '@/lib/storefrontPreviewSanitizer';
 import { useStorefrontStudio } from '@/hooks/useStorefrontStudio';
 
-const LABELS = { page:'Page', section:'Section', stack:'Stack', row:'Row', column:'Column', grid:'Grid', overlay:'Overlay', hero:'Hero', 'product-grid':'Product Grid', 'product-carousel':'Product Carousel', 'product-card':'Product Card', 'category-rail':'Category Rail', button:'Button', 'icon-button':'Icon Button', text:'Text', image:'Image', video:'Video', rating:'Rating', reviews:'Reviews', contact:'Contact', location:'Location', promo:'Promotion', social:'Social', spacer:'Spacer', divider:'Divider' };
+const LABELS = { Page:'Page', section:'Section', stack:'Stack', row:'Row', column:'Column', grid:'Grid', overlay:'Overlay', hero:'Hero', 'product-grid':'Product Grid', 'product-carousel':'Product Carousel', 'product-card':'Product Card', 'category-rail':'Category Rail', button:'Button', 'icon-button':'Icon Button', text:'Text', image:'Image', video:'Video', rating:'Rating', reviews:'Reviews', contact:'Contact', location:'Location', promo:'Promotion', social:'Social', spacer:'Spacer', divider:'Divider' };
 const VIEWPORTS = [
   { key: 'phone', label: 'Phone', Icon: Smartphone },
   { key: 'tablet', label: 'Tablet', Icon: Tablet },
@@ -61,18 +61,30 @@ function StudioStage({ draft, business, document, selection, viewport, onDrop, o
           aria-label={`${device.widthDp} by ${device.heightDp} ${normalizedViewport} preview`}
           style={emulationSize}
         >
-          <div style={{ width: phoneWidth, height: phoneHeight, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
-            <StorefrontPhonePreview
-              draft={runtimeDraft}
-              theme={theme}
-              widgets={[]}
-              business={business}
-              businessType={business?.businessType || business?.type || 'GENERAL'}
-              selectedTileId={selection[0] || null}
-              onSelectTile={onSelect}
-              editorMode
-              onDropTile={onDropTile}
-            />
+          <div
+            data-testid="studio-device-scroll-viewport"
+            style={{
+              width: emulationSize.width,
+              height: emulationSize.height,
+              overflowY: 'auto',
+              overflowX: 'hidden',
+              overscrollBehavior: 'contain',
+              WebkitOverflowScrolling: 'touch',
+            }}
+          >
+            <div style={{ width: phoneWidth, height: phoneHeight, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
+              <StorefrontPhonePreview
+                draft={runtimeDraft}
+                theme={theme}
+                widgets={[]}
+                business={business}
+                businessType={business?.businessType || business?.type || 'GENERAL'}
+                selectedTileId={selection[0] || null}
+                onSelectTile={onSelect}
+                editorMode
+                onDropTile={onDropTile}
+              />
+            </div>
           </div>
         </div>
       </div>
