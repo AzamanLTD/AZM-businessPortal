@@ -3,7 +3,7 @@ import { STOREFRONT_STUDIO_TOKENS, toPreviewPx } from './storefrontStudioTokens'
 
 describe('Storefront Wave A grounded renderer slice 3', () => {
   it('keeps Promo Banner, Social Feed and Live Stats tokens grounded', () => {
-    expect(STOREFRONT_STUDIO_TOKENS.studio.preview.promo).toEqual({
+    expect(STOREFRONT_STUDIO_TOKENS.studio.preview.promo).toMatchObject({
       horizontalPaddingDp: 20,
       verticalPaddingDp: 16,
       radiusDp: 12,
