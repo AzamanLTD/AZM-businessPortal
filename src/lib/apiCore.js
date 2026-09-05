@@ -65,7 +65,14 @@ export async function request(path, options = {}) {
     // and business selection authoritative. A caller must not be able to
     // accidentally replace the live JWT or selected business context.
     const headers = new Headers(options.headers || {});
-    headers.set('Content-Type', 'application/json');
+    const isFormDataBody = typeof FormData !== 'undefined' && options.body instanceof FormData;
+    if (isFormDataBody) {
+      // The browser must generate multipart/form-data with its boundary. A
+      // manually supplied Content-Type makes the upload body unparsable.
+      headers.delete('Content-Type');
+    } else if (!headers.has('Content-Type')) {
+      headers.set('Content-Type', 'application/json');
+    }
     if (token) headers.set('Authorization', `Bearer ${token}`);
     else headers.delete('Authorization');
     const adminBizId = localStorage.getItem('admin_selected_biz');
@@ -92,11 +99,20 @@ export async function request(path, options = {}) {
       clearAccessToken();
       localStorage.removeItem('biz_user');
       if (window.location.pathname !== '/') window.location.replace('/');
-      throw new Error('Session expired');
+      const err = new Error('Session expired');
+      err.statusCode = 401;
+      if (data.code) err.code = data.code;
+      throw err;
     }
     const err = new Error(msg);
+    // Preserve the server error contract for every non-2xx response. Callers
+    // use statusCode/code for optimistic-concurrency conflicts and other typed
+    // recovery paths; dropping them turns recoverable server responses into
+    // generic failures.
+    err.statusCode = res.status;
+    if (data.code) err.code = data.code;
     if (res.status === 402) {
-      err.statusCode = 402; err.violations = data.violations; err.tier = data.tier; err.stakedBalance = data.stakedBalance;
+      err.violations = data.violations; err.tier = data.tier; err.stakedBalance = data.stakedBalance;
     }
     throw err;
   }
