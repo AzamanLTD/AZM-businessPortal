@@ -42,6 +42,18 @@ describe('storefrontStudioTree', () => {
     expect(() => moveNode(doc, 'section', { parentId: 'button' })).toThrow(/descendants/);
   });
 
+  it('preserves the source page when moving a root node without an explicit parent', () => {
+    const doc = fixture();
+    doc.pages.push({ id: 'about', name: 'About', root: ['about-section'] });
+    doc.nodes['about-section'] = createStudioNode({ id: 'about-section', type: 'section', children: ['about-text'] });
+    doc.nodes['about-text'] = createStudioNode({ id: 'about-text', type: 'text', props: { value: 'About' } });
+
+    const moved = moveNode(doc, 'about-section', { index: 0 });
+
+    expect(moved.pages[0].root).toEqual(['section']);
+    expect(moved.pages[1].root).toEqual(['about-section']);
+  });
+
   it('removes a selected subtree and all descendants', () => {
     const doc = fixture();
     const next = removeNodes(doc, ['stack']);
@@ -60,5 +72,17 @@ describe('storefrontStudioTree', () => {
     expect(result.doc.nodes['stack-duplicate'].children).toEqual(['button-duplicate', 'text-duplicate']);
     expect(result.doc.nodes['button-duplicate'].props.label).toBe('Buy');
     expect(result.doc.nodes.section.children).toEqual(['stack', 'stack-duplicate']);
+  });
+
+  it('preserves the source page when duplicating a root subtree without an explicit parent', () => {
+    const doc = fixture();
+    doc.pages.push({ id: 'about', name: 'About', root: ['about-section'] });
+    doc.nodes['about-section'] = createStudioNode({ id: 'about-section', type: 'section', children: ['about-text'] });
+    doc.nodes['about-text'] = createStudioNode({ id: 'about-text', type: 'text', props: { value: 'About' } });
+
+    const result = duplicateSubtree(doc, 'about-section', { index: 0, createId: (id) => `${id}-copy` });
+
+    expect(result.doc.pages[0].root).toEqual(['section']);
+    expect(result.doc.pages[1].root).toEqual(['about-section-copy', 'about-section']);
   });
 });
