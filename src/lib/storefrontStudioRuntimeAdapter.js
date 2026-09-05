@@ -9,6 +9,7 @@
 // =============================================================================
 
 import { normalizeStudioViewport, responsiveGrid, resolveResponsiveNode } from './storefrontStudioResponsive';
+import { STOREFRONT_STUDIO_TOKENS } from './storefrontStudioTokens';
 
 const TYPE_TO_WIDGET = Object.freeze({
   hero: 'hero_header',
@@ -39,6 +40,8 @@ const CONTAINER_TYPES = new Set([
   'grid',
   'overlay',
 ]);
+
+const DEFAULT_GRID = STOREFRONT_STUDIO_TOKENS.studio.defaultGrid;
 
 const clone = (value) => {
   if (value === undefined) return undefined;
@@ -110,8 +113,8 @@ function appendNode({ document, node, tiles, rowRef, viewport }) {
       position: {
         row,
         col,
-        rowSpan: Number.isFinite(position.rowSpan) ? position.rowSpan : 2,
-        colSpan: Number.isFinite(position.colSpan) ? position.colSpan : 4,
+        rowSpan: Number.isFinite(position.rowSpan) ? position.rowSpan : DEFAULT_GRID.rowSpan,
+        colSpan: Number.isFinite(position.colSpan) ? position.colSpan : DEFAULT_GRID.colSpan,
       },
       props: runtimeProps(resolvedNode),
     });
