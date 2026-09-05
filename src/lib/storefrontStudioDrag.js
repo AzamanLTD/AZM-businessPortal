@@ -29,13 +29,11 @@ export function gridGeometry(canvasWidth, position = {}) {
   };
 }
 
-const axisDistance = (aStart, aEnd, bStart, bEnd) => {
-  if (aEnd < bStart) return bStart - aEnd;
-  if (bEnd < aStart) return aStart - bEnd;
-  return 0;
+const spansOverlap = (startA, spanA, startB, spanB) => {
+  const endA = startA + spanA;
+  const endB = startB + spanB;
+  return startA < endB && startB < endA;
 };
-
-const near = (a, b, threshold) => Math.abs(a - b) <= threshold;
 
 export function connectedGroupIds(tiles, rootId, canvasWidth) {
   const byId = new Map((tiles || []).map((tile) => [tile.id, tile]));
@@ -46,17 +44,25 @@ export function connectedGroupIds(tiles, rootId, canvasWidth) {
   while (queue.length) {
     const currentId = queue.shift();
     const current = byId.get(currentId);
-    const currentBox = gridGeometry(canvasWidth, current.position);
+    const currentPosition = current.position || {};
+    const currentCol = Number(currentPosition.col ?? 0);
+    const currentRow = Number(currentPosition.row ?? 0);
+    const currentColSpan = Number(currentPosition.colSpan ?? 4);
+    const currentRowSpan = Number(currentPosition.rowSpan ?? 2);
+
     for (const candidate of tiles || []) {
       if (!candidate?.id || ids.has(candidate.id) || candidate.id === currentId) continue;
-      const box = gridGeometry(canvasWidth, candidate.position);
-      const horizontalTouch = near(axisDistance(currentBox.top, currentBox.bottom, box.top, box.bottom), 0, SNAP_CROSS_PX)
-        && (near(currentBox.right, box.left, SNAP_ALONG_PX) || near(box.right, currentBox.left, SNAP_ALONG_PX));
-      const verticalTouch = near(axisDistance(currentBox.left, currentBox.right, box.left, box.right), 0, SNAP_CROSS_PX)
-        && (near(currentBox.bottom, box.top, SNAP_ALONG_PX) || near(box.bottom, currentBox.top, SNAP_ALONG_PX));
-      const overlapsX = currentBox.left < box.right && box.left < currentBox.right;
-      const overlapsY = currentBox.top < box.bottom && box.top < currentBox.bottom;
-      if ((horizontalTouch && overlapsY) || (verticalTouch && overlapsX)) {
+      const position = candidate.position || {};
+      const col = Number(position.col ?? 0);
+      const row = Number(position.row ?? 0);
+      const colSpan = Number(position.colSpan ?? 4);
+      const rowSpan = Number(position.rowSpan ?? 2);
+      const horizontalAdjacent = (currentCol + currentColSpan === col || col + colSpan === currentCol)
+        && spansOverlap(currentRow, currentRowSpan, row, rowSpan);
+      const verticalAdjacent = (currentRow + currentRowSpan === row || row + rowSpan === currentRow)
+        && spansOverlap(currentCol, currentColSpan, col, colSpan);
+
+      if (horizontalAdjacent || verticalAdjacent) {
         ids.add(candidate.id);
         queue.push(candidate.id);
       }
@@ -86,8 +92,8 @@ export function magneticSnap({ position, tiles, tileId, canvasWidth }) {
 
   for (const tile of candidates) {
     const box = gridGeometry(canvasWidth, tile.position);
-    const crossY = axisDistance(movingBox.top, movingBox.bottom, box.top, box.bottom);
-    const crossX = axisDistance(movingBox.left, movingBox.right, box.left, box.right);
+    const crossY = Math.max(0, Math.max(movingBox.top, box.top) - Math.min(movingBox.bottom, box.bottom));
+    const crossX = Math.max(0, Math.max(movingBox.left, box.left) - Math.min(movingBox.right, box.right));
     const xTargets = [box.left, box.right - (movingBox.right - movingBox.left)];
     const yTargets = [box.top, box.bottom - (movingBox.bottom - movingBox.top)];
     const allowX = crossY <= SNAP_CROSS_PX;
