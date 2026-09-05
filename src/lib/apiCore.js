@@ -92,11 +92,20 @@ export async function request(path, options = {}) {
       clearAccessToken();
       localStorage.removeItem('biz_user');
       if (window.location.pathname !== '/') window.location.replace('/');
-      throw new Error('Session expired');
+      const err = new Error('Session expired');
+      err.statusCode = 401;
+      if (data.code) err.code = data.code;
+      throw err;
     }
     const err = new Error(msg);
+    // Preserve the server error contract for every non-2xx response. Callers
+    // use statusCode/code for optimistic-concurrency conflicts and other typed
+    // recovery paths; dropping them turns recoverable server responses into
+    // generic failures.
+    err.statusCode = res.status;
+    if (data.code) err.code = data.code;
     if (res.status === 402) {
-      err.statusCode = 402; err.violations = data.violations; err.tier = data.tier; err.stakedBalance = data.stakedBalance;
+      err.violations = data.violations; err.tier = data.tier; err.stakedBalance = data.stakedBalance;
     }
     throw err;
   }
