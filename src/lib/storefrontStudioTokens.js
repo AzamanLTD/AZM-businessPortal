@@ -60,6 +60,18 @@ const TOKENS = {
     actionButtons: {
       itemGapDp: 8,
     },
+    retailCollection: {
+      titleBottomGapDp: 10,
+      subtitleGapDp: 3,
+      rowHeightDp: 250,
+      cardWidthDp: 168,
+      itemGapDp: 10,
+      cardRadiusDp: 16,
+      cardPaddingDp: 10,
+      cardTopPaddingDp: 9,
+      cardBottomPaddingDp: 10,
+      productTitleGapDp: 4,
+    },
   },
 
   studio: {
