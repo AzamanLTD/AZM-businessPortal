@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import StorefrontCanvas from './StorefrontCanvas';
 
 const originalResizeObserver = globalThis.ResizeObserver;
