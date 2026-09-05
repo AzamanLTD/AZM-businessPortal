@@ -11,7 +11,7 @@ import { runtimeAdapterIsContainer, studioDocumentToRuntimeDraft } from '@/lib/s
 import { sanitizeStorefrontPreviewHtml } from '@/lib/storefrontPreviewSanitizer';
 import { useStorefrontStudio } from '@/hooks/useStorefrontStudio';
 
-const LABELS = { page:'Page', section:'Section', stack:'Stack', row:'Row', column:'Column', overlay:'Overlay', hero:'Hero', 'product-grid':'Product Grid', 'product-carousel':'Product Carousel', 'product-card':'Product Card', 'category-rail':'Category Rail', button:'Button', 'icon-button':'Icon Button', text:'Text', image:'Image', video:'Video', rating:'Rating', reviews:'Reviews', contact:'Contact', location:'Location', promo:'Promotion', social:'Social', spacer:'Spacer', divider:'Divider' };
+const LABELS = { page:'Page', section:'Section', stack:'Stack', row:'Row', column:'Column', grid:'Grid', overlay:'Overlay', hero:'Hero', 'product-grid':'Product Grid', 'product-carousel':'Product Carousel', 'product-card':'Product Card', 'category-rail':'Category Rail', button:'Button', 'icon-button':'Icon Button', text:'Text', image:'Image', video:'Video', rating:'Rating', reviews:'Reviews', contact:'Contact', location:'Location', promo:'Promotion', social:'Social', spacer:'Spacer', divider:'Divider' };
 const VIEWPORTS = [
   { key: 'phone', label: 'Phone', Icon: Smartphone },
   { key: 'tablet', label: 'Tablet', Icon: Tablet },
@@ -21,13 +21,11 @@ const buttonClass = 'rounded-lg border px-2.5 py-1.5 text-[11px] font-semibold d
 
 function devicePreviewStyle(viewport) {
   const device = STOREFRONT_STUDIO_TOKENS.device[normalizeStudioViewport(viewport)];
-  const scale = device.displayWidthPx / STOREFRONT_STUDIO_TOKENS.device.phone.displayWidthPx;
+  const phone = STOREFRONT_STUDIO_TOKENS.device.phone;
+  const scale = device.displayWidthPx / phone.displayWidthPx;
   return {
     width: device.displayWidthPx,
     height: Math.round(device.heightDp * STOREFRONT_STUDIO_TOKENS.PREVIEW_SCALE * scale),
-    transform: `scale(${scale})`,
-    transformOrigin: 'top center',
-    marginBottom: Math.round(device.heightDp * STOREFRONT_STUDIO_TOKENS.PREVIEW_SCALE * scale) - Math.round(STOREFRONT_STUDIO_TOKENS.device.phone.heightDp * STOREFRONT_STUDIO_TOKENS.PREVIEW_SCALE),
   };
 }
 
@@ -44,8 +42,12 @@ function StudioStage({ draft, business, document, selection, viewport, onDrop, o
     name: draft?.themeName || 'Studio',
     tokenSet: document?.theme?.tokens || {},
   }), [draft?.themeName, document?.theme?.tokens]);
-  const device = STOREFRONT_STUDIO_TOKENS.device[normalizeStudioViewport(viewport)];
-  const emulationStyle = devicePreviewStyle(viewport);
+  const normalizedViewport = normalizeStudioViewport(viewport);
+  const device = STOREFRONT_STUDIO_TOKENS.device[normalizedViewport];
+  const emulationSize = devicePreviewStyle(normalizedViewport);
+  const scale = device.displayWidthPx / STOREFRONT_STUDIO_TOKENS.device.phone.displayWidthPx;
+  const phoneWidth = STOREFRONT_STUDIO_TOKENS.device.phone.displayWidthPx;
+  const phoneHeight = Math.round(STOREFRONT_STUDIO_TOKENS.device.phone.heightDp * STOREFRONT_STUDIO_TOKENS.PREVIEW_SCALE);
 
   return (
     <div className="relative" onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
@@ -55,21 +57,23 @@ function StudioStage({ draft, business, document, selection, viewport, onDrop, o
       <div className="flex justify-center overflow-visible pt-2" onClick={(e) => e.stopPropagation()}>
         <div
           data-testid="studio-device-emulator"
-          data-viewport={normalizeStudioViewport(viewport)}
-          aria-label={`${device.widthDp} by ${device.heightDp} ${normalizeStudioViewport(viewport)} preview`}
-          style={emulationStyle}
+          data-viewport={normalizedViewport}
+          aria-label={`${device.widthDp} by ${device.heightDp} ${normalizedViewport} preview`}
+          style={emulationSize}
         >
-          <StorefrontPhonePreview
-            draft={runtimeDraft}
-            theme={theme}
-            widgets={[]}
-            business={business}
-            businessType={business?.businessType || business?.type || 'GENERAL'}
-            selectedTileId={selection[0] || null}
-            onSelectTile={onSelect}
-            editorMode
-            onDropTile={onDropTile}
-          />
+          <div style={{ width: phoneWidth, height: phoneHeight, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
+            <StorefrontPhonePreview
+              draft={runtimeDraft}
+              theme={theme}
+              widgets={[]}
+              business={business}
+              businessType={business?.businessType || business?.type || 'GENERAL'}
+              selectedTileId={selection[0] || null}
+              onSelectTile={onSelect}
+              editorMode
+              onDropTile={onDropTile}
+            />
+          </div>
         </div>
       </div>
     </div>
