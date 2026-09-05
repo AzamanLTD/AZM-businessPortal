@@ -6,85 +6,62 @@ import { Card } from '@/components/instrument';
 import RetailCollectionBoxPreview from './RetailCollectionBoxPreview';
 import { useState } from 'react';
 import { Smartphone, Star, MapPin, Phone, MessageCircle, ShoppingBag, Image, Users, Clock, ChevronRight, Play, ExternalLink, Globe, BarChart, Hash, Code, Sparkles, Instagram, TrendingUp } from "lucide-react";
+import { STOREFRONT_STUDIO_TOKENS, toPreviewPx } from '@/lib/storefrontStudioTokens';
 
-// ─────────────────────────────────────────────────────────────
-// Individual mini-widget renderers (mirror Flutter widget layout)
-// ─────────────────────────────────────────────────────────────
+const previewTokens = STOREFRONT_STUDIO_TOKENS.studio.preview;
+const px = (value) => toPreviewPx(value);
+const spacing = (name) => px(previewTokens.spacing[name]);
+const typePx = (name) => px(previewTokens.type[name]);
+const themeColor = (tokens, key, fallback) => tokens?.[key] || fallback;
 
 function HeroHeader({ props, business, tokens }) {
-  const bg = props.mediaUrl
-    ? `url(${props.mediaUrl}) center/cover no-repeat`
-    : tokens.accent || '#6C4FD1';
+  const bg = props.mediaUrl ? `url(${props.mediaUrl}) center/cover no-repeat` : themeColor(tokens, 'accent', '#6C4FD1');
   const overlayAlpha = Math.round((props.overlayOpacity ?? 0.3) * 255).toString(16).padStart(2, '0');
-  const overlayColor = `#000000${overlayAlpha}`;
-  const heightMap = { compact: 60, standard: 80, tall: 100 };
-  const heightPx = heightMap[props.height] || 80;
+  const height = previewTokens.hero.heightDp[props.height] || previewTokens.hero.heightDp.standard;
 
   return (
-    <div style={{ height: heightPx, background: bg, position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
-      <div style={{ position: 'absolute', inset: 0, background: overlayColor }} />
+    <div style={{ height: px(height), background: bg, position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
+      <div style={{ position: 'absolute', inset: 0, background: `#000000${overlayAlpha}` }} />
       {!props.mediaUrl && business?.coverPhotoUrl && (
         <img src={business.coverPhotoUrl} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
       )}
-      <div style={{ position: 'relative', zIndex: 1, padding: '10px 12px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', height: '100%' }}>
-        {props.title && (
-          <p style={{ color: '#fff', fontSize: 11, fontWeight: 700, lineHeight: 1.3, marginBottom: 2 }}>{props.title}</p>
-        )}
-        {props.subtitle && (
-          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 9 }}>{props.subtitle}</p>
-        )}
+      <div style={{ position: 'absolute', left: px(previewTokens.hero.sideInsetDp), right: px(previewTokens.hero.sideInsetDp), bottom: px(previewTokens.hero.bottomInsetDp), zIndex: 1 }}>
+        {props.title && <p style={{ color: '#fff', fontSize: typePx('heroTitle'), fontWeight: 700, lineHeight: 1.3, marginBottom: px(previewTokens.hero.titleBottomGapDp) }}>{props.title}</p>}
+        {props.subtitle && <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: typePx('heroSubtitle'), paddingTop: px(previewTokens.hero.titleBottomGapDp) }}>{props.subtitle}</p>}
       </div>
     </div>
   );
 }
 
 function QuickInfoBar({ props, business, tokens }) {
-  const accent = tokens.accent || '#6C4FD1';
-  const textColor = tokens.textSecondary || '#888';
+  const accent = themeColor(tokens, 'accent', '#6C4FD1');
+  const textColor = themeColor(tokens, 'textSecondary', '#888');
   return (
-    <div style={{ padding: '6px 10px', display: 'flex', gap: 8, alignItems: 'center', borderBottom: `1px solid ${tokens.border || '#eee'}`, flexWrap: 'wrap' }}>
-      {props.showRating && business?.averageRating && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Star size={8} fill={accent} color={accent} />
-          <span style={{ fontSize: 9, color: accent, fontWeight: 700 }}>{Number(business.averageRating).toFixed(1)}</span>
-        </div>
-      )}
-      {props.showCategory && business?.category && (
-        <span style={{ fontSize: 8, color: textColor, textTransform: 'capitalize' }}>{business.category.toLowerCase().replace(/_/g, ' ')}</span>
-      )}
-      {props.showHours && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Clock size={7} color={textColor} />
-          <span style={{ fontSize: 8, color: textColor }}>Open Now</span>
-        </div>
-      )}
-      {props.customInfo && (
-        <span style={{ fontSize: 8, color: textColor }}>{props.customInfo}</span>
-      )}
+    <div style={{ paddingLeft: px(previewTokens.quickInfo.horizontalPaddingDp), paddingRight: px(previewTokens.quickInfo.horizontalPaddingDp), paddingTop: px(previewTokens.quickInfo.verticalPaddingDp), paddingBottom: px(previewTokens.quickInfo.verticalPaddingDp), display: 'flex', columnGap: px(previewTokens.quickInfo.itemGapDp), rowGap: px(previewTokens.quickInfo.runGapDp), alignItems: 'center', borderWidth: px(1), borderStyle: 'solid', borderColor: themeColor(tokens, 'border', '#eee'), borderRadius: px(previewTokens.quickInfo.radiusDp), flexWrap: 'wrap' }}>
+      {props.showRating && business?.averageRating && <div style={{ display: 'flex', alignItems: 'center', gap: px(previewTokens.quickInfo.iconLabelGapDp) }}><Star size={px(previewTokens.quickInfo.iconSizeDp)} fill={accent} color={accent} /><span style={{ fontSize: typePx('body'), color: accent, fontWeight: 700 }}>{Number(business.averageRating).toFixed(1)}</span></div>}
+      {props.showCategory && business?.category && <span style={{ fontSize: typePx('body'), color: textColor, textTransform: 'capitalize' }}>{business.category.toLowerCase().replace(/_/g, ' ')}</span>}
+      {props.showHours && <div style={{ display: 'flex', alignItems: 'center', gap: px(previewTokens.quickInfo.iconLabelGapDp) }}><Clock size={px(previewTokens.quickInfo.iconSizeDp)} color={textColor} /><span style={{ fontSize: typePx('body'), color: textColor }}>Open Now</span></div>}
+      {props.customInfo && <span style={{ fontSize: typePx('body'), color: textColor }}>{props.customInfo}</span>}
     </div>
   );
 }
 
 function ProductGrid({ props, tokens }) {
-  const accent = tokens.accent || '#6C4FD1';
-  const surface = tokens.surface || '#f8f8f8';
+  const accent = themeColor(tokens, 'accent', '#6C4FD1');
+  const surface = themeColor(tokens, 'surface', '#f8f8f8');
   const cols = props.columns || 2;
   const count = Math.min(props.maxItems || 4, 4);
   const items = Array.from({ length: count });
   return (
-    <div style={{ padding: '8px 8px 4px' }}>
-      {props.title && (
-        <p style={{ fontSize: 9, fontWeight: 700, color: tokens.textPrimary || '#111', marginBottom: 6 }}>{props.title}</p>
-      )}
-      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 4 }}>
+    <div style={{ paddingLeft: spacing('block'), paddingRight: spacing('block'), paddingTop: spacing('block'), paddingBottom: spacing('tight') }}>
+      {props.title && <p style={{ fontSize: typePx('section'), fontWeight: 700, color: themeColor(tokens, 'textPrimary', '#111'), marginBottom: px(previewTokens.productGrid.titleBottomGapDp) }}>{props.title}</p>}
+      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, columnGap: px(previewTokens.productGrid.crossAxisSpacingDp), rowGap: px(previewTokens.productGrid.mainAxisSpacingDp) }}>
         {items.map((_, i) => (
-          <div key={i} style={{ borderRadius: 6, overflow: 'hidden', background: surface }}>
-            <div style={{ height: 40, background: `${accent}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <ShoppingBag size={14} color={accent} />
-            </div>
-            <div style={{ padding: '3px 4px' }}>
-              <div style={{ height: 5, background: `${accent}30`, borderRadius: 2, marginBottom: 2 }} />
-              {props.showPrice && <div style={{ height: 4, width: '60%', background: `${accent}50`, borderRadius: 2 }} />}
+          <div key={i} style={{ borderRadius: px(previewTokens.productGrid.cardRadiusDp), overflow: 'hidden', background: surface, aspectRatio: previewTokens.productGrid.childAspectRatio }}>
+            <div style={{ height: '55%', background: `${accent}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ShoppingBag size={px(typePx('body') / previewTokens.type.body * 28)} color={accent} /></div>
+            <div style={{ padding: px(previewTokens.productGrid.cardPaddingDp) }}>
+              <div style={{ height: typePx('micro'), background: `${accent}30`, borderRadius: px(2), marginBottom: px(4) }} />
+              {props.showPrice && <div style={{ height: px(8), width: '60%', background: `${accent}50`, borderRadius: px(2) }} />}
             </div>
           </div>
         ))}
@@ -94,29 +71,26 @@ function ProductGrid({ props, tokens }) {
 }
 
 function ReviewCarousel({ props, tokens }) {
-  const accent = tokens.accent || '#6C4FD1';
-  const surface = tokens.surface || '#f8f8f8';
+  const accent = themeColor(tokens, 'accent', '#6C4FD1');
+  const surface = themeColor(tokens, 'surface', '#f8f8f8');
   return (
-    <div style={{ padding: '8px 8px 6px' }}>
-      {props.title && (
-        <p style={{ fontSize: 9, fontWeight: 700, color: tokens.textPrimary || '#111', marginBottom: 5 }}>{props.title}</p>
-      )}
-      {[5, 4].map((stars, i) => (
-        <div key={i} style={{ background: surface, borderRadius: 6, padding: '5px 7px', marginBottom: 4 }}>
-          <div style={{ display: 'flex', gap: 1, marginBottom: 2 }}>
-            {Array.from({ length: stars }).map((_, j) => <Star key={j} size={7} fill={accent} color={accent} />)}
+    <div style={{ paddingLeft: spacing('block'), paddingRight: spacing('block'), paddingTop: spacing('block'), paddingBottom: spacing('tight') }}>
+      {props.title && <p style={{ fontSize: typePx('section'), fontWeight: 700, color: themeColor(tokens, 'textPrimary', '#111'), marginBottom: px(previewTokens.review.titleBottomGapDp) }}>{props.title}</p>}
+      <div style={{ height: px(previewTokens.review.viewportHeightDp), display: 'flex', gap: px(previewTokens.review.cardGapDp), overflow: 'hidden' }}>
+        {[5, 4].map((stars, i) => (
+          <div key={i} style={{ width: px(previewTokens.review.cardWidthDp), flexShrink: 0, background: surface, borderRadius: px(previewTokens.review.cardRadiusDp), padding: px(previewTokens.review.cardPaddingDp), borderWidth: px(1), borderStyle: 'solid', borderColor: themeColor(tokens, 'border', '#eee') }}>
+            <div style={{ display: 'flex', gap: px(2), marginBottom: px(previewTokens.review.bodyGapDp) }}>{Array.from({ length: 5 }).map((_, j) => <Star key={j} size={px(previewTokens.review.starSizeDp)} fill={j < stars ? accent : 'none'} color={accent} />)}</div>
+            <div style={{ height: typePx('caption'), background: '#ddd', borderRadius: px(2), marginBottom: px(2) }} />
+            <div style={{ height: typePx('caption'), width: '70%', background: '#ddd', borderRadius: px(2) }} />
           </div>
-          <div style={{ height: 4, background: '#ddd', borderRadius: 2, marginBottom: 2 }} />
-          <div style={{ height: 4, width: '70%', background: '#ddd', borderRadius: 2 }} />
-          <p style={{ fontSize: 7, color: tokens.textSecondary || '#aaa', marginTop: 2 }}>— Customer</p>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
 
 function ContactCard({ props, business, tokens }) {
-  const accent = tokens.accent || '#6C4FD1';
+  const accent = themeColor(tokens, 'accent', '#6C4FD1');
   const phone = business?.phoneNumber || null;
   const actions = [];
   if (props.showPhone && phone) actions.push({ icon: Phone, label: 'Call', color: accent });
@@ -128,16 +102,12 @@ function ContactCard({ props, business, tokens }) {
     actions.push({ icon: MessageCircle, label: 'WhatsApp', color: '#25D366' });
   }
   return (
-    <div style={{ padding: '8px 8px 6px', display: 'flex', gap: 6, justifyContent: 'center' }}>
+    <div style={{ padding: px(previewTokens.contact.cardPaddingDp), display: 'flex', gap: px(previewTokens.contact.itemGapDp), justifyContent: 'center', flexWrap: 'wrap' }}>
       {actions.map(({ icon: Icon, label, color }, i) => (
-        <div key={i} style={{ flex: 1, borderRadius: 8, border: `1px solid ${color}40`, padding: '6px 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-          <div style={{ width: 22, height: 22, borderRadius: '50%', background: `${color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Icon size={11} color={color} />
-          </div>
-          <span style={{ fontSize: 7, color, fontWeight: 600 }}>{label}</span>
-          {label === 'Call' && phone && (
-            <span style={{ fontSize: 6, color: tokens.textSecondary || '#aaa' }}>{phone.substring(0, 10)}</span>
-          )}
+        <div key={i} style={{ flex: 1, borderRadius: px(previewTokens.contact.cardRadiusDp), borderWidth: px(1), borderStyle: 'solid', borderColor: `${color}40`, padding: px(8), display: 'flex', flexDirection: 'column', alignItems: 'center', gap: px(4) }}>
+          <div style={{ width: px(40), height: px(40), borderRadius: '50%', background: `${color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon size={px(previewTokens.contact.iconDp)} color={color} /></div>
+          <span style={{ fontSize: typePx('body'), color, fontWeight: 600 }}>{label}</span>
+          {label === 'Call' && phone && <span style={{ fontSize: typePx('caption'), color: themeColor(tokens, 'textSecondary', '#aaa') }}>{phone.substring(0, 10)}</span>}
         </div>
       ))}
     </div>
