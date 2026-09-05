@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   clampGridPosition,
+  commitGridPosition,
   connectedGroupIds,
   gridGeometry,
   magneticSnap,
@@ -21,15 +22,37 @@ describe('storefront studio drag engine', () => {
     expect(input).toEqual({ col: -4, row: -2, colSpan: 9, rowSpan: 0 });
   });
 
-  it('snaps a moved tile to a sibling edge inside the measured threshold', () => {
-    const canvasWidth = 412 * (220 / 412);
+  it('snaps a continuously positioned tile to a nearby overlapping sibling edge', () => {
+    const canvasWidth = 220;
+    const sibling = tile('b', { col: 2, row: 0, colSpan: 1, rowSpan: 2 });
     const result = magneticSnap({
       canvasWidth,
       tileId: 'a',
-      position: { col: 0, row: 1, colSpan: 2, rowSpan: 2 },
-      tiles: [tile('a', { col: 0, row: 1, colSpan: 2, rowSpan: 2 }), tile('b', { col: 2, row: 1, colSpan: 2, rowSpan: 2 })],
+      position: { col: 0.98, row: 0.1, colSpan: 1, rowSpan: 2 },
+      tiles: [tile('a', { col: 0.98, row: 0.1, colSpan: 1, rowSpan: 2 }), sibling],
     });
-    expect(result.col).toBe(0);
+    expect(result.col).toBeCloseTo(1, 6);
+  });
+
+  it('does not snap horizontally toward a sibling on a non-overlapping row', () => {
+    const canvasWidth = 220;
+    const position = { col: 0.98, row: 0.1, colSpan: 1, rowSpan: 1 };
+    const result = magneticSnap({
+      canvasWidth,
+      tileId: 'a',
+      position,
+      tiles: [tile('a', position), tile('b', { col: 2, row: 3, colSpan: 1, rowSpan: 1 })],
+    });
+    expect(result.col).toBeCloseTo(position.col, 6);
+  });
+
+  it('rounds only on persistence so live pointer previews remain continuous', () => {
+    expect(commitGridPosition({ col: 1.49, row: 2.51, colSpan: 1.2, rowSpan: 2.8 })).toEqual({
+      col: 1,
+      row: 3,
+      colSpan: 1,
+      rowSpan: 3,
+    });
   });
 
   it('finds transitive edge-connected groups for fused movement', () => {
