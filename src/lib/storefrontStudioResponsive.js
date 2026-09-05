@@ -6,6 +6,7 @@
 // =============================================================================
 
 const VIEWPORTS = new Set(['phone', 'tablet', 'desktop']);
+const VIEWPORT_ORDER = ['phone', 'tablet', 'desktop'];
 
 const LAYOUT_KEYS = new Set([
   'direction',
@@ -25,28 +26,59 @@ export function normalizeStudioViewport(viewport) {
   return VIEWPORTS.has(viewport) ? viewport : 'phone';
 }
 
+function applyResponsiveOverride(target, raw) {
+  if (!raw || typeof raw !== 'object') return target;
+
+  target.layout = { ...(target.layout || {}), ...(raw.layout || {}) };
+  target.props = { ...(target.props || {}), ...(raw.props || {}) };
+
+  for (const [key, value] of Object.entries(raw)) {
+    if (key === 'layout' || key === 'props') continue;
+    if (LAYOUT_KEYS.has(key)) target.layout[key] = clone(value);
+    else if (key === 'columnCount') target.props.columns = clone(value);
+    else if (key === 'textScale' || key === 'carousel') target.props[key] = clone(value);
+  }
+
+  return target;
+}
+
 /**
- * Resolve a node's responsive intent. Overrides may be expressed as the
- * documented semantic keys or explicitly under `layout` / `props`.
+ * Resolve a node's responsive intent with explicit breakpoint inheritance.
+ * Tablet inherits phone intent when a tablet layer exists; desktop inherits
+ * tablet intent when a tablet layer exists. A desktop-only document remains
+ * backward-compatible with the pre-cascade behavior and resolves desktop from
+ * its base node plus the explicit desktop override.
+ *
+ * The persisted node is never mutated and the returned `responsive` definition
+ * remains intact.
  */
 export function resolveResponsiveNode(node, viewport = 'phone') {
   if (!node) return node;
 
   const resolvedViewport = normalizeStudioViewport(viewport);
-  const raw = node.responsive?.[resolvedViewport];
-  if (!raw || typeof raw !== 'object') return clone(node);
-
   const next = clone(node);
-  next.layout = { ...(next.layout || {}), ...(raw.layout || {}) };
-  next.props = { ...(next.props || {}), ...(raw.props || {}) };
+  const responsive = node.responsive;
+  if (!responsive || typeof responsive !== 'object') return next;
 
-  for (const [key, value] of Object.entries(raw)) {
-    if (key === 'layout' || key === 'props') continue;
-    if (LAYOUT_KEYS.has(key)) next.layout[key] = clone(value);
-    else if (key === 'columnCount') next.props.columns = clone(value);
-    else if (key === 'textScale' || key === 'carousel') next.props[key] = clone(value);
+  if (resolvedViewport === 'phone') {
+    applyResponsiveOverride(next, responsive.phone);
+    return next;
   }
 
+  if (resolvedViewport === 'tablet') {
+    applyResponsiveOverride(next, responsive.phone);
+    applyResponsiveOverride(next, responsive.tablet);
+    return next;
+  }
+
+  // Preserve the established desktop fallback when no tablet definition exists;
+  // once tablet intent exists, desktop naturally inherits the complete tablet
+  // layer before applying its own explicit overrides.
+  if (responsive.tablet && typeof responsive.tablet === 'object') {
+    applyResponsiveOverride(next, responsive.phone);
+    applyResponsiveOverride(next, responsive.tablet);
+  }
+  applyResponsiveOverride(next, responsive.desktop);
   return next;
 }
 
