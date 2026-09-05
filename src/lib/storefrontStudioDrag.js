@@ -1,8 +1,8 @@
 import { STOREFRONT_STUDIO_TOKENS, toPreviewPx } from './storefrontStudioTokens';
 
-const GRID_COLS = STOREFRONT_STUDIO_TOKENS.studio.canvas?.gridCols ?? 4;
-const ROW_HEIGHT_DP = STOREFRONT_STUDIO_TOKENS.studio.canvas?.rowHeightDp ?? 80;
-const GAP_DP = STOREFRONT_STUDIO_TOKENS.studio.canvas?.gapDp ?? 12;
+const GRID_COLS = STOREFRONT_STUDIO_TOKENS.studio.canvas.gridCols;
+const ROW_HEIGHT_DP = STOREFRONT_STUDIO_TOKENS.studio.canvas.rowHeightDp;
+const GAP_DP = STOREFRONT_STUDIO_TOKENS.studio.canvas.gapDp;
 const SNAP_ALONG_PX = toPreviewPx(STOREFRONT_STUDIO_TOKENS.snap.alongSiblingDp);
 const SNAP_CROSS_PX = toPreviewPx(STOREFRONT_STUDIO_TOKENS.snap.crossSiblingDp);
 const PULL_SHARPNESS = STOREFRONT_STUDIO_TOKENS.snap.pullSharpness;
@@ -104,8 +104,15 @@ export function magneticSnap({ position, tiles, tileId, canvasWidth }) {
     }
   }
 
-  if (Number.isFinite(bestX.distance)) result.col = Math.max(0, Math.min(GRID_COLS - Number(result.colSpan ?? 4), Math.round(pull(result.col, bestX.value, 1))));
-  if (Number.isFinite(bestY.distance)) result.row = Math.max(0, Math.round(pull(result.row, bestY.value, 1)));
+  if (Number.isFinite(bestX.distance)) {
+    result.col = Math.max(0, Math.min(
+      GRID_COLS - Number(result.colSpan ?? 4),
+      pull(result.col, bestX.value, 1),
+    ));
+  }
+  if (Number.isFinite(bestY.distance)) {
+    result.row = Math.max(0, pull(result.row, bestY.value, 1));
+  }
   return result;
 }
 
@@ -118,5 +125,16 @@ export function clampGridPosition(position = {}) {
     rowSpan,
     col: Math.max(0, Math.min(GRID_COLS - colSpan, Number(position.col ?? 0))),
     row: Math.max(0, Number(position.row ?? 0)),
+  };
+}
+
+export function commitGridPosition(position = {}) {
+  const clamped = clampGridPosition(position);
+  return {
+    ...clamped,
+    colSpan: Math.round(clamped.colSpan),
+    rowSpan: Math.round(clamped.rowSpan),
+    col: Math.round(clamped.col),
+    row: Math.round(clamped.row),
   };
 }
