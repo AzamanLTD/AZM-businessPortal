@@ -5,8 +5,10 @@
 // can derive a deterministic layout for each customer viewport.
 // =============================================================================
 
-const VIEWPORTS = new Set(['phone', 'tablet', 'desktop']);
+import { STOREFRONT_STUDIO_TOKENS } from './storefrontStudioTokens';
+
 const VIEWPORT_ORDER = ['phone', 'tablet', 'desktop'];
+const VIEWPORTS = new Set(VIEWPORT_ORDER);
 
 const LAYOUT_KEYS = new Set([
   'direction',
@@ -21,6 +23,9 @@ function clone(value) {
   if (value === undefined) return undefined;
   return JSON.parse(JSON.stringify(value));
 }
+
+export const STUDIO_VIEWPORTS = Object.freeze(VIEWPORT_ORDER);
+export const STUDIO_PHONE_DEVICE = STOREFRONT_STUDIO_TOKENS.device.phone;
 
 export function normalizeStudioViewport(viewport) {
   return VIEWPORTS.has(viewport) ? viewport : 'phone';
