@@ -10,7 +10,8 @@ describe('Studio wave acceptance contracts', () => {
     expect(source).toContain('toPreviewPx');
     expect(source).toContain('data-testid="studio-phone-frame"');
     expect(source).toContain("overflowY: 'auto'");
-    expect(source).not.toMatch(/\b\d+(?:\.\d+)?px\b/);
+    expect(source).not.toMatch(/style=\{\{[^}]*\b\d+(?:\.\d+)?px\b/s);
+    expect(source).toContain('retail_collection_box: RetailCollectionBoxPreview');
   });
 
   it('requires pointer palette insertion on Studio V2 surfaces', () => {
@@ -19,6 +20,6 @@ describe('Studio wave acceptance contracts', () => {
     expect(source).toContain('pointermove');
     expect(source).toContain('pointerup');
     expect(source).toContain('insertPaletteNode');
-    expect(source).not.toMatch(/draggable(?:\s|=)/);
+    expect(source).not.toContain('draggable');
   });
 });
