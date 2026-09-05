@@ -50,9 +50,9 @@ export function connectedGroupIds(tiles, rootId, canvasWidth) {
     for (const candidate of tiles || []) {
       if (!candidate?.id || ids.has(candidate.id) || candidate.id === currentId) continue;
       const box = gridGeometry(canvasWidth, candidate.position);
-      const horizontalTouch = near(axisDistance(currentBox.left, currentBox.right, box.left, box.right), 0, SNAP_CROSS_PX)
+      const horizontalTouch = near(axisDistance(currentBox.top, currentBox.bottom, box.top, box.bottom), 0, SNAP_CROSS_PX)
         && (near(currentBox.right, box.left, SNAP_ALONG_PX) || near(box.right, currentBox.left, SNAP_ALONG_PX));
-      const verticalTouch = near(axisDistance(currentBox.top, currentBox.bottom, box.top, box.bottom), 0, SNAP_CROSS_PX)
+      const verticalTouch = near(axisDistance(currentBox.left, currentBox.right, box.left, box.right), 0, SNAP_CROSS_PX)
         && (near(currentBox.bottom, box.top, SNAP_ALONG_PX) || near(box.bottom, currentBox.top, SNAP_ALONG_PX));
       const overlapsX = currentBox.left < box.right && box.left < currentBox.right;
       const overlapsY = currentBox.top < box.bottom && box.top < currentBox.bottom;
@@ -86,20 +86,29 @@ export function magneticSnap({ position, tiles, tileId, canvasWidth }) {
 
   for (const tile of candidates) {
     const box = gridGeometry(canvasWidth, tile.position);
+    const crossY = axisDistance(movingBox.top, movingBox.bottom, box.top, box.bottom);
+    const crossX = axisDistance(movingBox.left, movingBox.right, box.left, box.right);
     const xTargets = [box.left, box.right - (movingBox.right - movingBox.left)];
     const yTargets = [box.top, box.bottom - (movingBox.bottom - movingBox.top)];
-    for (const targetLeft of xTargets) {
-      const currentLeft = movingBox.left;
-      const distance = Math.abs(targetLeft - currentLeft);
-      if (distance <= SNAP_ALONG_PX && distance < bestX.distance) {
-        bestX = { distance, value: result.col + (targetLeft - currentLeft) / colUnit };
+    const allowX = crossY <= SNAP_CROSS_PX;
+    const allowY = crossX <= SNAP_CROSS_PX;
+
+    if (allowX) {
+      for (const targetLeft of xTargets) {
+        const currentLeft = movingBox.left;
+        const distance = Math.abs(targetLeft - currentLeft);
+        if (distance <= SNAP_ALONG_PX && distance < bestX.distance) {
+          bestX = { distance, value: result.col + (targetLeft - currentLeft) / colUnit };
+        }
       }
     }
-    for (const targetTop of yTargets) {
-      const currentTop = movingBox.top;
-      const distance = Math.abs(targetTop - currentTop);
-      if (distance <= SNAP_ALONG_PX && distance < bestY.distance) {
-        bestY = { distance, value: result.row + (targetTop - currentTop) / rowUnit };
+    if (allowY) {
+      for (const targetTop of yTargets) {
+        const currentTop = movingBox.top;
+        const distance = Math.abs(targetTop - currentTop);
+        if (distance <= SNAP_ALONG_PX && distance < bestY.distance) {
+          bestY = { distance, value: result.row + (targetTop - currentTop) / rowUnit };
+        }
       }
     }
   }
