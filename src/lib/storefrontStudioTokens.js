@@ -92,6 +92,9 @@ const TOKENS = {
       showcase: { titleBottomGapDp: 10, viewportHeightDp: 160, cardWidthDp: 140, itemGapDp: 10, radiusDp: 12, iconDp: 36 },
       location: { titleBottomGapDp: 10, mapHeightDp: 180, radiusDp: 12, pinDp: 48, badgeBottomDp: 8, badgeLeftDp: 8, badgePaddingHorizontalDp: 10, badgePaddingVerticalDp: 4, badgeRadiusDp: 8, badgeFontSizeDp: 11 },
       video: { radiusDp: 12, heightDp: 220, playButtonDp: 64, fallbackIconDp: 40, fallbackGapDp: 8, fallbackFontSizeDp: 12 },
+      promo: { horizontalPaddingDp: 20, verticalPaddingDp: 16, radiusDp: 12, titleFontSizeDp: 18, subtitleFontSizeDp: 13, titleSubtitleGapDp: 2, ctaGapDp: 12 },
+      social: { titleBottomGapDp: 10, platformIconDp: 20, platformIconGapDp: 6, viewportHeightDp: 180, gridCrossAxisCount: 2, gridSpacingDp: 8, itemWidthDp: 90, itemRadiusDp: 10, itemIconDp: 28 },
+      liveStats: { horizontalPaddingDp: 16, verticalPaddingDp: 12, radiusDp: 12, valueFontSizeDp: 20, valueLabelGapDp: 2, iconDp: 12, iconLabelGapDp: 3, labelFontSizeDp: 11 },
     },
   },
 
