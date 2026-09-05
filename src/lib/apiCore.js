@@ -65,7 +65,14 @@ export async function request(path, options = {}) {
     // and business selection authoritative. A caller must not be able to
     // accidentally replace the live JWT or selected business context.
     const headers = new Headers(options.headers || {});
-    headers.set('Content-Type', 'application/json');
+    const isFormDataBody = typeof FormData !== 'undefined' && options.body instanceof FormData;
+    if (isFormDataBody) {
+      // The browser must generate multipart/form-data with its boundary. A
+      // manually supplied Content-Type makes the upload body unparsable.
+      headers.delete('Content-Type');
+    } else if (!headers.has('Content-Type')) {
+      headers.set('Content-Type', 'application/json');
+    }
     if (token) headers.set('Authorization', `Bearer ${token}`);
     else headers.delete('Authorization');
     const adminBizId = localStorage.getItem('admin_selected_biz');
