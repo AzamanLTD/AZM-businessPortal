@@ -22,6 +22,7 @@ export const STUDIO_NODE_TYPES = Object.freeze([
   'product-carousel',
   'product-card',
   'category-rail',
+  'retail-collection-box',
   'button',
   'icon-button',
   'text',
@@ -81,6 +82,7 @@ function legacyType(widgetType) {
     video_player: 'video',
     promo_banner: 'promo',
     social_feed: 'social',
+    retail_collection_box: 'retail-collection-box',
     custom_html: 'section',
     gradient_hero: 'hero',
   };

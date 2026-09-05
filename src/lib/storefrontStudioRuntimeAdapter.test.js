@@ -30,6 +30,26 @@ describe('storefrontStudioRuntimeAdapter', () => {
     ]);
   });
 
+  it('emits the canonical retail collection runtime widget type', () => {
+    const document = {
+      pages: [{ id: 'home', root: ['collection'] }],
+      nodes: {
+        collection: {
+          id: 'collection', type: 'retail-collection-box', children: [],
+          props: { title: 'Summer collection' }, layout: {},
+        },
+      },
+    };
+
+    expect(studioDocumentToRuntimeTiles(document)).toEqual([
+      expect.objectContaining({
+        id: 'collection',
+        widgetType: 'retail_collection_box',
+        props: expect.objectContaining({ title: 'Summer collection', maxItems: 6 }),
+      }),
+    ]);
+  });
+
   it('omits hidden nodes from the runtime preview', () => {
     const document = {
       pages: [{ id: 'home', root: ['visible', 'hidden'] }],
