@@ -1,0 +1,6 @@
+/* The device frame owns the outer scroll boundary for tall storefront previews. */
+.p-3 > .overflow-hidden.shadow-2xl.mx-auto {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain;
+}
