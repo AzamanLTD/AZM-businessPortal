@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import fs from 'node:fs';
+import path from 'node:path';
 import { STOREFRONT_STUDIO_TOKENS } from './storefrontStudioTokens';
 
-const previewPath = fileURLToPath(new URL('../components/storefront/StorefrontPhonePreview.jsx', import.meta.url));
-const source = readFileSync(previewPath, 'utf8');
+const source = fs.readFileSync(path.resolve('src/components/storefront/StorefrontPhonePreview.jsx'), 'utf8');
 const rendererHelpers = ['counterPx', 'customHtmlPx', 'gradientHeroPx', 'actionPx', 'fallbackPx', 'selectionPx', 'chromePx', 'framePx'];
 const widgetTypes = ['hero_header', 'quick_info_bar', 'product_grid', 'showcase_gallery', 'review_carousel', 'contact_card', 'location_map', 'action_buttons', 'retail_collection_box', 'video_player', 'promo_banner', 'social_feed', 'live_stats', 'animated_counter', 'custom_html', 'gradient_hero'];
 
