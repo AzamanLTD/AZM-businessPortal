@@ -66,7 +66,11 @@ export function moveNode(doc, nodeId, { parentId = null, index = -1 } = {}) {
   const source = ensureDocument(doc); const node = source.nodes[nodeId]; if (!node) throw new Error(`Studio node not found: ${nodeId}`);
   if (parentId && (parentId === nodeId || descendantsOf(source, nodeId).has(parentId))) throw new Error('A node cannot be moved into itself or its descendants.');
   if (parentId && !canContain(source.nodes[parentId])) throw new Error('Target node cannot contain children.');
-  const next = detachFromParent(source, nodeId); const siblings = parentId ? next.nodes[parentId].children : next.pages[0]?.root;
+  const sourceParent = getStudioParentId(source, nodeId);
+  const next = detachFromParent(source, nodeId);
+  const targetPageId = !parentId && source.pages.some((page) => page.id === sourceParent) ? sourceParent : null;
+  const targetPage = targetPageId ? next.pages.find((page) => page.id === targetPageId) : next.pages[0];
+  const siblings = parentId ? next.nodes[parentId].children : targetPage?.root;
   if (!Array.isArray(siblings)) throw new Error('Studio insertion target is unavailable.'); const at = index < 0 ? siblings.length : Math.max(0, Math.min(index, siblings.length)); siblings.splice(at, 0, nodeId); return next;
 }
 
@@ -81,7 +85,7 @@ export function duplicateSubtree(doc, nodeId, { parentId = null, index = -1, cre
   const next = clone(source); const idMap = new Map();
   const allocate = (id) => { let candidate = createId(id); let suffix = 2; while (next.nodes[candidate] || idMap.has(candidate)) candidate = `${createId(id)}-${suffix++}`; return candidate; };
   const copy = (oldId) => { const original = source.nodes[oldId]; const newId = allocate(oldId); idMap.set(oldId, newId); const newNode = { ...clone(original), id: newId, children: [] }; next.nodes[newId] = newNode; for (const child of original.children || []) newNode.children.push(copy(child)); return newId; };
-  const newRootId = copy(nodeId); const detached = detachFromParent(next, newRootId); const siblings = parentId ? detached.nodes[parentId]?.children : detached.pages[0]?.root;
+  const newRootId = copy(nodeId); const detached = detachFromParent(next, newRootId); const sourceParent = getStudioParentId(source, nodeId); const targetPageId = !parentId && source.pages.some((page) => page.id === sourceParent) ? sourceParent : null; const targetPage = targetPageId ? detached.pages.find((page) => page.id === targetPageId) : detached.pages[0]; const siblings = parentId ? detached.nodes[parentId]?.children : targetPage?.root;
   if (!Array.isArray(siblings)) throw new Error('Studio duplication target is unavailable.'); const at = index < 0 ? siblings.length : Math.max(0, Math.min(index, siblings.length)); siblings.splice(at, 0, newRootId); return { doc: detached, newRootId, idMap };
 }
 
