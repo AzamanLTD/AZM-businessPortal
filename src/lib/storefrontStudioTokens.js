@@ -85,6 +85,11 @@ const TOKENS = {
       rowSpan: 2,
       colSpan: 4,
     },
+    canvas: {
+      gridCols: 4,
+      rowHeightDp: 80,
+      gapDp: 12,
+    },
   },
 
   snap: {
