@@ -33,6 +33,41 @@ const PROJECTION_EVENTS = {
   marketing: new Set(['AD_POST_CREATED']),
 };
 
+/**
+ * Apply a business notification to the appropriate read-model cache roots.
+ * The callbacks are injected so this routing contract is independently
+ * executable without mounting React or a live Socket.IO connection.
+ */
+export function handleBusinessNotificationProjection(payload, { refreshNotifs, invalidateRoots }) {
+  const type = payload?.type;
+  refreshNotifs();
+
+  if (PROJECTION_EVENTS.order.has(type)) {
+    invalidateRoots('orders', 'recent-orders', 'biz-stats');
+  }
+  if (PROJECTION_EVENTS.invoice.has(type)) {
+    invalidateRoots('invoices', 'biz-invoices', 'biz-invoice', 'invoice-stats');
+  }
+  if (PROJECTION_EVENTS.reservation.has(type)) {
+    invalidateRoots('reservations', 'reservation-stats');
+  }
+  if (PROJECTION_EVENTS.transit.has(type)) {
+    invalidateRoots('transit', 'transit-bookings', 'transit-trips');
+  }
+  if (PROJECTION_EVENTS.dineIn.has(type)) {
+    invalidateRoots('dine-in', 'dine-in-tabs', 'openTabs', 'dineInTab');
+  }
+  if (PROJECTION_EVENTS.trust.has(type)) {
+    invalidateRoots('business-profile', 'biz-profile', 'biz-stats');
+  }
+  if (PROJECTION_EVENTS.businessProfile.has(type)) {
+    invalidateRoots('business-profile', 'biz-profile', 'business');
+  }
+  if (PROJECTION_EVENTS.marketing.has(type)) {
+    invalidateRoots('marketing', 'ads', 'business-ads');
+  }
+}
+
 export function useBizNotifications() {
   const qc = useQueryClient();
   const socket = getSocket();
@@ -57,35 +92,7 @@ export function useBizNotifications() {
       roots.forEach((root) => qc.invalidateQueries({ queryKey: [root] }));
     };
 
-    const handleBizNotif = (payload) => {
-      const type = payload?.type;
-      refreshNotifs();
-
-      if (PROJECTION_EVENTS.order.has(type)) {
-        invalidateRoots('orders', 'recent-orders', 'biz-stats');
-      }
-      if (PROJECTION_EVENTS.invoice.has(type)) {
-        invalidateRoots('invoices', 'biz-invoices', 'biz-invoice', 'invoice-stats');
-      }
-      if (PROJECTION_EVENTS.reservation.has(type)) {
-        invalidateRoots('reservations', 'reservation-stats');
-      }
-      if (PROJECTION_EVENTS.transit.has(type)) {
-        invalidateRoots('transit', 'transit-bookings', 'transit-trips');
-      }
-      if (PROJECTION_EVENTS.dineIn.has(type)) {
-        invalidateRoots('dine-in', 'dine-in-tabs', 'openTabs', 'dineInTab');
-      }
-      if (PROJECTION_EVENTS.trust.has(type)) {
-        invalidateRoots('business-profile', 'biz-profile', 'biz-stats');
-      }
-      if (PROJECTION_EVENTS.businessProfile.has(type)) {
-        invalidateRoots('business-profile', 'biz-profile', 'business');
-      }
-      if (PROJECTION_EVENTS.marketing.has(type)) {
-        invalidateRoots('marketing', 'ads', 'business-ads');
-      }
-    };
+    const handleBizNotif = (payload) => handleBusinessNotificationProjection(payload, { refreshNotifs, invalidateRoots });
 
     socket.on('biz_notification', handleBizNotif);
     socket.on('biz_notifications_updated', refreshNotifs);
