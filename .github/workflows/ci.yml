@@ -38,5 +38,11 @@ jobs:
       - name: Run tests
         run: npx vitest run
 
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser E2E (Wave C rendered acceptance)
+        run: npx playwright test
+
       - name: Build
         run: npm run build
