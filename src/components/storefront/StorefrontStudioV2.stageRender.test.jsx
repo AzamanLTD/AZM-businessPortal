@@ -42,10 +42,10 @@ function makeResponsiveDraft() {
   };
 }
 
-function renderStudio() {
+function renderStudio(draft = makeResponsiveDraft()) {
   return render(
     <StorefrontStudioV2
-      draft={makeResponsiveDraft()}
+      draft={draft}
       saveDraft={() => {}}
       business={{ businessName: 'Test Business', name: 'Test Business' }}
       onClose={() => {}}
@@ -106,7 +106,11 @@ describe('Storefront Studio V2 rendered device-emulation contract', () => {
 
 describe('Storefront Studio V2 rendered responsive relayout proof', () => {
   it('changes the rendered storefront structure when the viewport changes', () => {
-    renderStudio();
+    // Hold the exact draft object the component consumes so the
+    // non-mutation proof targets the rendered source, not a fresh fixture.
+    const draft = makeResponsiveDraft();
+    const sourceSnapshot = JSON.stringify(draft.layoutJson.experience);
+    renderStudio(draft);
 
     // phone intent -> 1 column
     expect(screen.getByTestId('studio-device-emulator').getAttribute('data-viewport')).toBe('phone');
@@ -120,8 +124,8 @@ describe('Storefront Studio V2 rendered responsive relayout proof', () => {
     selectViewport('Desktop');
     expect(getRenderedGridColumns()).toBe('repeat(4, 1fr)');
 
-    // The resolved intent never mutated the persisted document source.
-    const sourceColumns = makeResponsiveDraft().layoutJson.experience.nodes['grid-1'].props.columns;
-    expect(sourceColumns).toBe(4);
+    // Resolving every breakpoint left the persisted source object untouched.
+    expect(draft.layoutJson.experience.nodes['grid-1'].props.columns).toBe(4);
+    expect(JSON.stringify(draft.layoutJson.experience)).toBe(sourceSnapshot);
   });
 });
