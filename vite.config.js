@@ -13,5 +13,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.js'],
+    // Playwright browser E2E lives in e2e/ with its own runner — keep the two suites from importing each other.
+    exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**'],
   },
 })

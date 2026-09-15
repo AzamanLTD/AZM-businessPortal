@@ -136,11 +136,11 @@ function ShowcaseGallery({ props, tokens }) {
         <p style={{ fontSize: typePx('section'), fontWeight: 700, color: tokens.textPrimary || '#111', marginBottom: showcasePx('titleBottomGapDp') }}>{props.title}</p>
       )}
       <div style={{ display: 'flex', gap: showcasePx('itemGapDp'), height: showcasePx('viewportHeightDp'), overflowX: 'auto', overflowY: 'hidden' }}>
-        <div style={{ flex: `0 0 ${showcasePx('cardWidthDp')}`, height: '100%', borderRadius: showcasePx('radiusDp'), background: `${accent}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ flex: `0 0 ${showcasePx('cardWidthDp')}px`, height: '100%', borderRadius: showcasePx('radiusDp'), background: `${accent}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Image size={showcasePx('iconDp')} color={accent} />
         </div>
         {[1, 2].map(i => (
-          <div key={i} style={{ flex: `0 0 ${showcasePx('cardWidthDp')}`, height: '100%', borderRadius: showcasePx('radiusDp'), background: `${accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div key={i} style={{ flex: `0 0 ${showcasePx('cardWidthDp')}px`, height: '100%', borderRadius: showcasePx('radiusDp'), background: `${accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Image size={showcasePx('secondaryIconDp')} color={accent} />
           </div>
         ))}
@@ -161,8 +161,8 @@ function LocationMap({ props, tokens }) {
           {Array.from({ length: 5 }, (_, i) => <line key={`h-${i}`} x1="0" y1={`${(i + 1) * 10}%`} x2="100%" y2={`${(i + 1) * 10}%`} stroke="#888" strokeWidth="0.5" />)}
           {Array.from({ length: 4 }, (_, i) => <line key={`v-${i}`} x1={`${(i + 1) * 20}%`} y1="0" x2={`${(i + 1) * 20}%`} y2="100%" stroke="#888" strokeWidth="0.5" />)}
         </svg>
-        <div style={{ zIndex: 1, width: locationPx('pinDp'), height: locationPx('pinDp'), borderRadius: '50% 50% 50% 0', background: accent, transform: 'rotate(-45deg)', boxShadow: `0 ${locationPx('shadowYDp')} ${locationPx('shadowBlurDp')} ${accent}80` }} />
-        <div style={{ position: 'absolute', left: locationPx('badgeLeftDp'), bottom: locationPx('badgeBottomDp'), display: 'flex', alignItems: 'center', gap: locationPx('badgeGapDp'), paddingLeft: locationPx('badgePaddingHorizontalDp'), paddingRight: locationPx('badgePaddingHorizontalDp'), paddingTop: locationPx('badgePaddingVerticalDp'), paddingBottom: locationPx('badgePaddingVerticalDp'), borderRadius: locationPx('badgeRadiusDp'), background: '#fff', boxShadow: `0 ${locationPx('badgeShadowYDp')} ${locationPx('badgeShadowBlurDp')} rgba(0,0,0,0.12)` }}>
+        <div style={{ zIndex: 1, width: locationPx('pinDp'), height: locationPx('pinDp'), borderRadius: '50% 50% 50% 0', background: accent, transform: 'rotate(-45deg)', boxShadow: `0 ${locationPx('shadowYDp')}px ${locationPx('shadowBlurDp')}px ${accent}80` }} />
+        <div style={{ position: 'absolute', left: locationPx('badgeLeftDp'), bottom: locationPx('badgeBottomDp'), display: 'flex', alignItems: 'center', gap: locationPx('badgeGapDp'), paddingLeft: locationPx('badgePaddingHorizontalDp'), paddingRight: locationPx('badgePaddingHorizontalDp'), paddingTop: locationPx('badgePaddingVerticalDp'), paddingBottom: locationPx('badgePaddingVerticalDp'), borderRadius: locationPx('badgeRadiusDp'), background: '#fff', boxShadow: `0 ${locationPx('badgeShadowYDp')}px ${locationPx('badgeShadowBlurDp')}px rgba(0,0,0,0.12)` }}>
           <MapPin size={typePx('caption')} color={accent} />
           <span style={{ fontSize: locationPx('badgeFontSizeDp'), color: tokens.textSecondary || '#888' }}>View on Maps</span>
         </div>
@@ -227,7 +227,7 @@ function PromoBanner({ props, tokens }) {
       {props.title && <p style={{ fontSize: promoPx('titleFontSizeDp'), fontWeight: 700, color: props.backgroundColor ? '#fff' : accent, marginBottom: promoPx('titleSubtitleGapDp') }}>{props.title}</p>}
       {props.subtitle && <p style={{ fontSize: promoPx('subtitleFontSizeDp'), color: props.backgroundColor ? 'rgba(255,255,255,0.85)' : (tokens.textSecondary || '#666'), lineHeight: 1.3 }}>{props.subtitle}</p>}
       {props.ctaText && (
-        <div style={{ marginTop: promoPx('ctaGapDp'), display: 'inline-flex', alignItems: 'center', gap: px(previewTokens.type.nav), padding: `${promoPx('verticalPaddingDp')} ${promoPx('ctaGapDp')}`, borderRadius: promoPx('ctaRadiusDp'), background: props.backgroundColor ? 'rgba(255,255,255,0.2)' : accent }}>
+        <div style={{ marginTop: promoPx('ctaGapDp'), display: 'inline-flex', alignItems: 'center', gap: px(previewTokens.type.nav), padding: `${promoPx('verticalPaddingDp')}px ${promoPx('ctaGapDp')}px`, borderRadius: promoPx('ctaRadiusDp'), background: props.backgroundColor ? 'rgba(255,255,255,0.2)' : accent }}>
           <span style={{ fontSize: typePx('micro'), fontWeight: 700, color: '#fff' }}>{props.ctaText}</span>
           <ChevronRight size={typePx('small')} color="#fff" />
         </div>
@@ -416,120 +416,133 @@ export default function StorefrontPhonePreview({ draft, theme, widgets, business
 
   const navTabs = getNavTabs(businessType);
 
+  const panelHeader = (
+    <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center" style={{ gap: chromePx('panelGapDp') }}>
+        <Smartphone style={{ width: typePx('nav'), height: typePx('nav'), color: 'var(--f-text-3)' }} />
+        <span className="text-xs font-semibold" style={{ color: 'var(--f-text-3)' }}>Live Preview</span>
+      </div>
+      {theme && (
+        <span className="px-2 py-0.5 rounded-full font-medium"
+          style={{ background: 'var(--f-surface-sunken)', color: 'var(--f-tint-color)', fontSize: typePx('micro') }}>
+          {theme.name}
+        </span>
+      )}
+    </div>
+  );
+
+  {/* Phone frame — the outer device frame owns the Wave C scroll contract.
+      The hook is semantic (data-testid) so it survives class refactors. */}
+
+  const deviceFrame = (
+  <div
+    data-testid="studio-device-frame"
+    className="shadow-2xl mx-auto"
+    style={{
+      borderColor: 'var(--f-surface-raised)', borderWidth: framePx('borderWidthDp'), borderStyle: 'solid',
+      borderRadius: framePx('radiusDp'), width: framePx('widthDp'), height: framePx('heightDp'), background: bg,
+      overflowY: 'auto', overflowX: 'hidden', overscrollBehavior: 'contain',
+    }}
+  >
+    {/* Status bar */}
+    <div className="flex justify-between items-center"
+      style={{ paddingLeft: chromePx('statusBarHorizontalPaddingDp'), paddingRight: chromePx('statusBarHorizontalPaddingDp'), paddingTop: chromePx('statusBarVerticalPaddingDp'), paddingBottom: chromePx('statusBarVerticalPaddingDp'), fontSize: chromePx('statusBarFontSizeDp'), background: accent, color: '#fff' }}>
+      <span className="font-semibold">9:41</span>
+      <div style={{ display: 'flex', gap: chromePx('statusBarIconGapDp') }}>
+        <span>●●●</span><span>WiFi</span><span>100%</span>
+      </div>
+    </div>
+
+    {/* Business identity strip */}
+    <div style={{ paddingTop: chromePx('identityVerticalPaddingTopDp'), paddingRight: chromePx('identityHorizontalPaddingDp'), paddingBottom: chromePx('identityVerticalPaddingBottomDp'), paddingLeft: chromePx('identityHorizontalPaddingDp'), textAlign: 'center', background: surface, borderBottom: `${chromePx('identityBorderWidthDp')}px solid ${tokens.border || '#eee'}` }}>
+      {businessInfo.logoUrl ? (
+        <img src={businessInfo.logoUrl} alt="" style={{ width: chromePx('identityAvatarDp'), height: chromePx('identityAvatarDp'), borderRadius: '50%', objectFit: 'cover', margin: `0 auto ${chromePx('identityAvatarBottomGapDp')}px` }} />
+      ) : (
+        <div style={{ width: chromePx('identityAvatarDp'), height: chromePx('identityAvatarDp'), borderRadius: '50%', background: accent, margin: `0 auto ${chromePx('identityAvatarBottomGapDp')}px`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ fontSize: typePx('identity'), fontWeight: 900, color: '#fff' }}>
+            {(businessInfo.name || 'B').charAt(0).toUpperCase()}
+          </span>
+        </div>
+      )}
+      <p style={{ fontSize: chromePx('identityNameFontSizeDp'), fontWeight: 700, color: textPrimary }}>{businessInfo.name || 'Your Business'}</p>
+      <p style={{ fontSize: chromePx('identityFollowFontSizeDp'), color: tokens.textSecondary || '#888', marginTop: chromePx('identityFollowTopGapDp') }}>Tap to follow</p>
+    </div>
+
+    {/* Widget tiles */}
+    <div style={{ minHeight: chromePx('widgetViewportMinHeightDp'), background: bg }}>
+      {sortedTiles.length === 0 ? (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: chromePx('emptyStateHeightDp') }}>
+          <p style={{ fontSize: typePx('caption'), color: tokens.textSecondary || '#aaa', textAlign: 'center' }}>
+            Add widgets from the left panel
+          </p>
+        </div>
+      ) : (
+        sortedTiles.map(tile => {
+          const Renderer = WIDGET_RENDERERS[tile.widgetType];
+          if (!Renderer) return <FallbackTile key={tile.id} tile={tile} tokens={tokens} />;
+          const selected = editorMode && selectedTileId === tile.id;
+          const isBefore = dropTarget?.tileId === tile.id && dropTarget.edge === 'before';
+          const isAfter = dropTarget?.tileId === tile.id && dropTarget.edge === 'after';
+          const resolveDrop = (event) => {
+            event.preventDefault();
+            const type = event.dataTransfer.getData('application/x-azm-studio-node');
+            if (!type || !editorMode || !onDropTile) return null;
+            const rect = event.currentTarget.getBoundingClientRect();
+            return { tileId: tile.id, edge: event.clientY < rect.top + rect.height / 2 ? 'before' : 'after', type };
+          };
+          return (
+            <div key={tile.id}>
+              {isBefore && <div style={{ height: selectionPx('dropMarkerHeightDp'), marginLeft: selectionPx('dropMarkerMarginHorizontalDp'), marginRight: selectionPx('dropMarkerMarginHorizontalDp'), borderRadius: selectionPx('dropMarkerRadiusDp'), background: accent }} aria-hidden="true" />}
+              <div
+                role={editorMode ? 'button' : undefined}
+                tabIndex={editorMode ? 0 : undefined}
+                onClick={editorMode ? (event) => { event.stopPropagation(); onSelectTile?.(tile.id); } : undefined}
+                onKeyDown={editorMode ? (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelectTile?.(tile.id); } } : undefined}
+                onDragOver={editorMode && onDropTile ? (event) => { const target = resolveDrop(event); if (target) setDropTarget(target); } : undefined}
+                onDragLeave={editorMode ? () => setDropTarget((current) => current?.tileId === tile.id ? null : current) : undefined}
+                onDrop={editorMode && onDropTile ? (event) => { const target = resolveDrop(event); setDropTarget(null); if (target) { event.stopPropagation(); onDropTile(target.tileId, target.edge, target.type); } } : undefined}
+                style={{
+                  position: 'relative',
+                  borderBottom: `${selectionPx('borderWidthDp')}px solid ${tokens.border || '#f0f0f0'}`,
+                  outline: selected ? `${selectionPx('outlineWidthDp')}px solid ${accent}` : 'none',
+                  outlineOffset: selectionPx('outlineOffsetDp') * -1,
+                  cursor: editorMode ? 'pointer' : undefined,
+                }}
+              >
+                {selected && (
+                  <div style={{ position: 'absolute', top: selectionPx('badgeTopDp'), right: selectionPx('badgeRightDp'), zIndex: 5, fontSize: fallbackPx('titleFontSizeDp'), fontWeight: 800, color: '#fff', background: accent, borderRadius: selectionPx('badgeRadiusDp'), paddingTop: selectionPx('badgeVerticalPaddingDp'), paddingRight: selectionPx('badgeHorizontalPaddingDp'), paddingBottom: selectionPx('badgeVerticalPaddingDp'), paddingLeft: selectionPx('badgeHorizontalPaddingDp'), pointerEvents: 'none' }}>Editing</div>
+                )}
+                <Renderer props={tile.props || {}} business={businessInfo} tokens={tokens} />
+              </div>
+              {isAfter && <div style={{ height: selectionPx('dropMarkerHeightDp'), marginLeft: selectionPx('dropMarkerMarginHorizontalDp'), marginRight: selectionPx('dropMarkerMarginHorizontalDp'), borderRadius: selectionPx('dropMarkerRadiusDp'), background: accent }} aria-hidden="true" />}
+            </div>
+          );
+        })
+      )}
+    </div>
+
+    {/* Nav bar — adapts to business type */}
+    <div style={{ height: chromePx('navHeightDp'), background: surface, borderTop: `${chromePx('identityBorderWidthDp')}px solid ${tokens.border || '#eee'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-around', paddingLeft: chromePx('navHorizontalPaddingDp'), paddingRight: chromePx('navHorizontalPaddingDp') }}>
+      {navTabs.map((tab, i) => (
+        <div key={tab} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: chromePx('navItemGapDp') }}>
+          <div style={{ width: chromePx('navIndicatorDp'), height: chromePx('navIndicatorDp'), borderRadius: '50%', background: i === 0 ? accent : `${accent}20` }} />
+          <span style={{ fontSize: chromePx('navLabelFontSizeDp'), color: i === 0 ? accent : tokens.textSecondary || '#aaa', fontWeight: i === 0 ? 700 : 400 }}>{tab}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+  );
+
+  // In editor mode (the Studio stage) the device frame is mounted bare so its box is
+  // exactly the element the bounded emulation viewport sizes to: the emulation viewport
+  // must never clip the frame itself (Wave C layer contract — the device frame is the
+  // sole scroll and clipping owner). The standalone preview panel keeps its Card chrome.
+  if (editorMode) return deviceFrame;
+
   return (
     <Card className="p-3">
-      {/* Panel header */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center" style={{ gap: chromePx('panelGapDp') }}>
-          <Smartphone style={{ width: typePx('nav'), height: typePx('nav'), color: 'var(--f-text-3)' }} />
-          <span className="text-xs font-semibold" style={{ color: 'var(--f-text-3)' }}>Live Preview</span>
-        </div>
-        {theme && (
-          <span className="px-2 py-0.5 rounded-full font-medium"
-            style={{ background: 'var(--f-surface-sunken)', color: 'var(--f-tint-color)', fontSize: typePx('micro') }}>
-            {theme.name}
-          </span>
-        )}
-      </div>
-
-      {/* Phone frame — the outer device frame owns the Wave C scroll contract.
-          The hook is semantic (data-testid) so it survives class refactors. */}
-      <div
-        data-testid="studio-device-frame"
-        className="shadow-2xl mx-auto"
-        style={{
-          borderColor: 'var(--f-surface-raised)', borderWidth: framePx('borderWidthDp'), borderStyle: 'solid',
-          borderRadius: framePx('radiusDp'), width: framePx('widthDp'), height: framePx('heightDp'), background: bg,
-          overflowY: 'auto', overflowX: 'hidden', overscrollBehavior: 'contain',
-        }}
-      >
-        {/* Status bar */}
-        <div className="flex justify-between items-center"
-          style={{ paddingLeft: chromePx('statusBarHorizontalPaddingDp'), paddingRight: chromePx('statusBarHorizontalPaddingDp'), paddingTop: chromePx('statusBarVerticalPaddingDp'), paddingBottom: chromePx('statusBarVerticalPaddingDp'), fontSize: chromePx('statusBarFontSizeDp'), background: accent, color: '#fff' }}>
-          <span className="font-semibold">9:41</span>
-          <div style={{ display: 'flex', gap: chromePx('statusBarIconGapDp') }}>
-            <span>●●●</span><span>WiFi</span><span>100%</span>
-          </div>
-        </div>
-
-        {/* Business identity strip */}
-        <div style={{ paddingTop: chromePx('identityVerticalPaddingTopDp'), paddingRight: chromePx('identityHorizontalPaddingDp'), paddingBottom: chromePx('identityVerticalPaddingBottomDp'), paddingLeft: chromePx('identityHorizontalPaddingDp'), textAlign: 'center', background: surface, borderBottom: `${chromePx('identityBorderWidthDp')} solid ${tokens.border || '#eee'}` }}>
-          {businessInfo.logoUrl ? (
-            <img src={businessInfo.logoUrl} alt="" style={{ width: chromePx('identityAvatarDp'), height: chromePx('identityAvatarDp'), borderRadius: '50%', objectFit: 'cover', margin: `0 auto ${chromePx('identityAvatarBottomGapDp')}` }} />
-          ) : (
-            <div style={{ width: chromePx('identityAvatarDp'), height: chromePx('identityAvatarDp'), borderRadius: '50%', background: accent, margin: `0 auto ${chromePx('identityAvatarBottomGapDp')}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: typePx('identity'), fontWeight: 900, color: '#fff' }}>
-                {(businessInfo.name || 'B').charAt(0).toUpperCase()}
-              </span>
-            </div>
-          )}
-          <p style={{ fontSize: chromePx('identityNameFontSizeDp'), fontWeight: 700, color: textPrimary }}>{businessInfo.name || 'Your Business'}</p>
-          <p style={{ fontSize: chromePx('identityFollowFontSizeDp'), color: tokens.textSecondary || '#888', marginTop: chromePx('identityFollowTopGapDp') }}>Tap to follow</p>
-        </div>
-
-        {/* Widget tiles */}
-        <div style={{ minHeight: chromePx('widgetViewportMinHeightDp'), background: bg }}>
-          {sortedTiles.length === 0 ? (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: chromePx('emptyStateHeightDp') }}>
-              <p style={{ fontSize: typePx('caption'), color: tokens.textSecondary || '#aaa', textAlign: 'center' }}>
-                Add widgets from the left panel
-              </p>
-            </div>
-          ) : (
-            sortedTiles.map(tile => {
-              const Renderer = WIDGET_RENDERERS[tile.widgetType];
-              if (!Renderer) return <FallbackTile key={tile.id} tile={tile} tokens={tokens} />;
-              const selected = editorMode && selectedTileId === tile.id;
-              const isBefore = dropTarget?.tileId === tile.id && dropTarget.edge === 'before';
-              const isAfter = dropTarget?.tileId === tile.id && dropTarget.edge === 'after';
-              const resolveDrop = (event) => {
-                event.preventDefault();
-                const type = event.dataTransfer.getData('application/x-azm-studio-node');
-                if (!type || !editorMode || !onDropTile) return null;
-                const rect = event.currentTarget.getBoundingClientRect();
-                return { tileId: tile.id, edge: event.clientY < rect.top + rect.height / 2 ? 'before' : 'after', type };
-              };
-              return (
-                <div key={tile.id}>
-                  {isBefore && <div style={{ height: selectionPx('dropMarkerHeightDp'), marginLeft: selectionPx('dropMarkerMarginHorizontalDp'), marginRight: selectionPx('dropMarkerMarginHorizontalDp'), borderRadius: selectionPx('dropMarkerRadiusDp'), background: accent }} aria-hidden="true" />}
-                  <div
-                    role={editorMode ? 'button' : undefined}
-                    tabIndex={editorMode ? 0 : undefined}
-                    onClick={editorMode ? (event) => { event.stopPropagation(); onSelectTile?.(tile.id); } : undefined}
-                    onKeyDown={editorMode ? (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelectTile?.(tile.id); } } : undefined}
-                    onDragOver={editorMode && onDropTile ? (event) => { const target = resolveDrop(event); if (target) setDropTarget(target); } : undefined}
-                    onDragLeave={editorMode ? () => setDropTarget((current) => current?.tileId === tile.id ? null : current) : undefined}
-                    onDrop={editorMode && onDropTile ? (event) => { const target = resolveDrop(event); setDropTarget(null); if (target) { event.stopPropagation(); onDropTile(target.tileId, target.edge, target.type); } } : undefined}
-                    style={{
-                      position: 'relative',
-                      borderBottom: `${selectionPx('borderWidthDp')} solid ${tokens.border || '#f0f0f0'}`,
-                      outline: selected ? `${selectionPx('outlineWidthDp')} solid ${accent}` : 'none',
-                      outlineOffset: selectionPx('outlineOffsetDp') * -1,
-                      cursor: editorMode ? 'pointer' : undefined,
-                    }}
-                  >
-                    {selected && (
-                      <div style={{ position: 'absolute', top: selectionPx('badgeTopDp'), right: selectionPx('badgeRightDp'), zIndex: 5, fontSize: fallbackPx('titleFontSizeDp'), fontWeight: 800, color: '#fff', background: accent, borderRadius: selectionPx('badgeRadiusDp'), paddingTop: selectionPx('badgeVerticalPaddingDp'), paddingRight: selectionPx('badgeHorizontalPaddingDp'), paddingBottom: selectionPx('badgeVerticalPaddingDp'), paddingLeft: selectionPx('badgeHorizontalPaddingDp'), pointerEvents: 'none' }}>Editing</div>
-                    )}
-                    <Renderer props={tile.props || {}} business={businessInfo} tokens={tokens} />
-                  </div>
-                  {isAfter && <div style={{ height: selectionPx('dropMarkerHeightDp'), marginLeft: selectionPx('dropMarkerMarginHorizontalDp'), marginRight: selectionPx('dropMarkerMarginHorizontalDp'), borderRadius: selectionPx('dropMarkerRadiusDp'), background: accent }} aria-hidden="true" />}
-                </div>
-              );
-            })
-          )}
-        </div>
-
-        {/* Nav bar — adapts to business type */}
-        <div style={{ height: chromePx('navHeightDp'), background: surface, borderTop: `${chromePx('identityBorderWidthDp')} solid ${tokens.border || '#eee'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-around', paddingLeft: chromePx('navHorizontalPaddingDp'), paddingRight: chromePx('navHorizontalPaddingDp') }}>
-          {navTabs.map((tab, i) => (
-            <div key={tab} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: chromePx('navItemGapDp') }}>
-              <div style={{ width: chromePx('navIndicatorDp'), height: chromePx('navIndicatorDp'), borderRadius: '50%', background: i === 0 ? accent : `${accent}20` }} />
-              <span style={{ fontSize: chromePx('navLabelFontSizeDp'), color: i === 0 ? accent : tokens.textSecondary || '#aaa', fontWeight: i === 0 ? 700 : 400 }}>{tab}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      {panelHeader}
+      {deviceFrame}
     </Card>
   );
 }
