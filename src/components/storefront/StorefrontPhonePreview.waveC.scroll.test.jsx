@@ -1,7 +1,5 @@
-import { render } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import fs from 'node:fs';
-import path from 'node:path';
 import StorefrontPhonePreview from './StorefrontPhonePreview';
 
 vi.mock('@/components/instrument', () => ({
@@ -19,44 +17,75 @@ function makeTiles(count) {
   }));
 }
 
-describe('StorefrontPhonePreview Wave C scroll contract', () => {
-  it('renders a fixed-height phone frame around overflowing preview content', () => {
-    const { container } = render(
-      <StorefrontPhonePreview
-        draft={{ layoutJson: { tiles: makeTiles(12) } }}
-        theme={{ name: 'Test', tokenSet: {} }}
-        widgets={[]}
-        business={{ name: 'Test Business' }}
-        businessType="GENERAL"
-      />,
-    );
+function renderTallPreview() {
+  return render(
+    <StorefrontPhonePreview
+      draft={{ layoutJson: { tiles: makeTiles(12) } }}
+      theme={{ name: 'Test', tokenSet: {} }}
+      widgets={[]}
+      business={{ name: 'Test Business' }}
+      businessType="GENERAL"
+    />,
+  );
+}
 
-    const frame = container.querySelector('.p-3 > .overflow-hidden.shadow-2xl.mx-auto');
-    expect(frame).not.toBeNull();
-    expect(frame.style.height).not.toBe('');
-    expect(frame.querySelectorAll('[style*="height"]').length).toBeGreaterThan(1);
+describe('StorefrontPhonePreview Wave C rendered device-frame contract', () => {
+  it('exposes the device frame through a stable semantic hook', () => {
+    renderTallPreview();
+    const frame = screen.getByTestId('studio-device-frame');
+    expect(frame).toBeTruthy();
   });
 
-  it('keeps the widget viewport intrinsically tall and moves overflow ownership to the frame', () => {
-    const source = fs.readFileSync(path.resolve('src/styles/studioWaveC.css'), 'utf8');
-    expect(source).toContain('overflow-y: auto !important;');
-    expect(source).toContain('overflow-x: hidden !important;');
-    expect(source).toContain('overscroll-behavior: contain;');
+  it('owns the scroll contract at the frame boundary instead of a global stylesheet', () => {
+    renderTallPreview();
+    const frame = screen.getByTestId('studio-device-frame');
+    expect(frame.style.overflowY).toBe('auto');
+    expect(frame.style.overflowX).toBe('hidden');
+    expect(frame.style.overscrollBehavior).toBe('contain');
+  });
 
-    const { container } = render(
+  it('keeps the frame at deterministic device geometry while tall content renders inside it', () => {
+    renderTallPreview();
+    const frame = screen.getByTestId('studio-device-frame');
+    expect(frame.style.width).not.toBe('');
+    expect(frame.style.height).not.toBe('');
+
+    // The tall fixture genuinely renders inside the frame — the frame is the
+    // container whose fixed device height the rendered content exceeds.
+    const sections = within(frame).getAllByText(/^Section \d+$/);
+    expect(sections).toHaveLength(12);
+  });
+
+  it('keeps the widget viewport intrinsically tall and free of competing overflow ownership', () => {
+    renderTallPreview();
+    const frame = screen.getByTestId('studio-device-frame');
+    const widgetViewport = Array.from(frame.querySelectorAll('div')).find((element) => element.style.minHeight);
+    expect(widgetViewport).toBeTruthy();
+    // Intrinsically tall: no accidental height cap on the content path.
+    expect(widgetViewport.style.height).toBe('');
+    expect(widgetViewport.style.maxHeight).toBe('');
+    // The frame is the sole vertical scroll owner on the path.
+    expect(widgetViewport.style.overflowY).toBe('');
+    expect(widgetViewport.style.overflowX).toBe('');
+    expect(widgetViewport.style.overscrollBehavior).toBe('');
+  });
+
+  it('preserves horizontal-scroll widget regions inside the frame', () => {
+    render(
       <StorefrontPhonePreview
-        draft={{ layoutJson: { tiles: makeTiles(12) } }}
+        draft={{ layoutJson: { tiles: [
+          { id: 'showcase-1', widgetType: 'showcase_gallery', position: { row: 0, col: 0, colSpan: 4, rowSpan: 1 }, props: { title: 'Gallery' } },
+        ] } }}
         theme={{ name: 'Test', tokenSet: {} }}
         widgets={[]}
         business={{ name: 'Test Business' }}
         businessType="GENERAL"
       />,
     );
-
-    const frame = container.querySelector('.p-3 > .overflow-hidden.shadow-2xl.mx-auto');
-    const widgetViewport = Array.from(frame.querySelectorAll('div')).find((element) => element.style.minHeight);
-    expect(widgetViewport).toBeTruthy();
-    expect(widgetViewport.style.height).toBe('');
-    expect(widgetViewport.style.maxHeight).toBe('');
+    const frame = screen.getByTestId('studio-device-frame');
+    const gallery = Array.from(frame.querySelectorAll('div')).find((element) => element.style.overflowX === 'auto');
+    expect(gallery).toBeTruthy();
+    // The gallery keeps its own vertical containment while scrolling horizontally.
+    expect(gallery.style.overflowY).toBe('hidden');
   });
 });
