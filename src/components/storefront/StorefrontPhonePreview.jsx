@@ -432,10 +432,16 @@ export default function StorefrontPhonePreview({ draft, theme, widgets, business
         )}
       </div>
 
-      {/* Phone frame */}
+      {/* Phone frame — the outer device frame owns the Wave C scroll contract.
+          The hook is semantic (data-testid) so it survives class refactors. */}
       <div
-        className="overflow-hidden shadow-2xl mx-auto"
-        style={{ borderColor: 'var(--f-surface-raised)', borderWidth: framePx('borderWidthDp'), borderStyle: 'solid', borderRadius: framePx('radiusDp'), width: framePx('widthDp'), height: framePx('heightDp'), background: bg }}
+        data-testid="studio-device-frame"
+        className="shadow-2xl mx-auto"
+        style={{
+          borderColor: 'var(--f-surface-raised)', borderWidth: framePx('borderWidthDp'), borderStyle: 'solid',
+          borderRadius: framePx('radiusDp'), width: framePx('widthDp'), height: framePx('heightDp'), background: bg,
+          overflowY: 'auto', overflowX: 'hidden', overscrollBehavior: 'contain',
+        }}
       >
         {/* Status bar */}
         <div className="flex justify-between items-center"
@@ -462,7 +468,7 @@ export default function StorefrontPhonePreview({ draft, theme, widgets, business
         </div>
 
         {/* Widget tiles */}
-        <div style={{ minHeight: chromePx('widgetViewportMinHeightDp'), overflowY: 'auto', overflowX: 'hidden', background: bg, overscrollBehavior: 'contain' }}>
+        <div style={{ minHeight: chromePx('widgetViewportMinHeightDp'), background: bg }}>
           {sortedTiles.length === 0 ? (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: chromePx('emptyStateHeightDp') }}>
               <p style={{ fontSize: typePx('caption'), color: tokens.textSecondary || '#aaa', textAlign: 'center' }}>
