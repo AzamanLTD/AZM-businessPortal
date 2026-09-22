@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { employeeApi } from '@/lib/marketplaceApi';
 import { usePermission } from '@/hooks/usePermission';
 import {
@@ -37,12 +37,19 @@ import {
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
 
+// r26: OWNER is never assignable — owner authority derives from business
+// ownership (the backend refuses role=OWNER at the service boundary too).
 const ROLES = [
-  { value: 'OWNER', label: 'Owner' },
   { value: 'MANAGER', label: 'Manager' },
   { value: 'SUPERVISOR', label: 'Supervisor' },
   { value: 'STAFF', label: 'Staff' },
-  { value: 'TRAINEE', label: 'Trainee' },
+  { value: 'DRIVER', label: 'Driver' },
+  { value: 'HOUSEKEEPER', label: 'Housekeeper' },
+  { value: 'WAITER', label: 'Waiter' },
+  { value: 'CHEF', label: 'Chef' },
+  { value: 'RECEPTIONIST', label: 'Receptionist' },
+  { value: 'CONCIERGE', label: 'Concierge' },
+  { value: 'SECURITY', label: 'Security' },
 ];
 
 const STATUSES = [
@@ -65,12 +72,13 @@ const STATUS_COLORS = {
 const AVAILABLE_PERMISSIONS = [
   { value: 'employees.view', label: 'View Employees' },
   { value: 'employees.create', label: 'Add Employees' },
-  { value: 'employees.manage', label: 'Manage Employees' },
+  { value: 'employees.update', label: 'Edit Employees' },
+  { value: 'employees.terminate', label: 'Terminate Employees' },
   { value: 'employees.permissions', label: 'Update Permissions' },
 ];
 
 export default function Employees() {
-    const { hasPermission } = usePermission();
+    const { hasPermission, permissions: actorPermissions } = usePermission();
 
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -97,7 +105,7 @@ export default function Employees() {
     payrollType: 'HOURLY',
     salaryAmount: '',
     hourlyRate: '',
-    paymentPreference: 'USDC',
+    paymentPreference: 'AZAMAN_BALANCE',
   });
 
   const [editForm, setEditForm] = useState({
@@ -107,10 +115,42 @@ export default function Employees() {
     payrollType: 'HOURLY',
     salaryAmount: '',
     hourlyRate: '',
-    paymentPreference: 'USDC',
+    paymentPreference: 'AZAMAN_BALANCE',
   });
 
   const [permissionsForm, setPermissionsForm] = useState([]);
+  const [preservedPermissions, setPreservedPermissions] = useState([]);
+  const [availablePermissions, setAvailablePermissions] = useState(AVAILABLE_PERMISSIONS);
+  // r26/P0-B — backend-authoritative per-role default sets (from
+  // /permission-templates), used to offer ONLY assignable roles.
+  const [roleTemplates, setRoleTemplates] = useState({});
+
+  // r26 — DELEGATION CEILING: the catalog the modal offers is limited to
+  // what the ACTOR may administer. Owners/admins (['*']) see the full
+  // catalog; a manager sees only their own effective permissions (the
+  // backend enforces the same rule — the UI just stops offering grants
+  // the server would refuse).
+  const actorIsUnlimited = !actorPermissions || actorPermissions.includes('*');
+  const catalog = useMemo(() => {
+    if (actorIsUnlimited) return availablePermissions;
+    return availablePermissions.filter((perm) => actorPermissions.includes(perm.value));
+  }, [availablePermissions, actorIsUnlimited, actorPermissions]);
+
+  // r26/P0-B — ROLE EXPOSURE follows the same backend-authoritative ceiling:
+  // a role is offered only when its default template sits inside the actor's
+  // own effective permissions (owners/admins see everything). The UI filter is
+  // a convenience ONLY — the backend enforces the ceiling on both the creation
+  // and role-change routes, and shows the server's refusal if it ever drifts.
+  const assignableRoles = useMemo(() => {
+    if (actorIsUnlimited) return ROLES;
+    const templateEntries = Object.entries(roleTemplates);
+    if (!templateEntries.length) return ROLES; // catalog unavailable: unfiltered, backend still guards
+    return ROLES.filter(({ value }) => {
+      const templatePerms = templateEntries.find(([role]) => role === value)?.[1];
+      if (!Array.isArray(templatePerms)) return false;
+      return templatePerms.every((perm) => actorPermissions.includes(perm));
+    });
+  }, [actorIsUnlimited, actorPermissions, roleTemplates]);
 
   // Fetch employees
   const fetchEmployees = async () => {
@@ -127,6 +167,22 @@ export default function Employees() {
 
   useEffect(() => {
     fetchEmployees();
+    employeeApi.permissionTemplates()
+      .then((res) => {
+        const groups = res.data?.permissionKeys;
+        if (groups && typeof groups === 'object') {
+          const catalog = Object.values(groups)
+            .flat()
+            .filter((item) => item?.key && item.key !== '*')
+            .map((item) => ({ value: item.key, label: item.label || item.key, module: item.module }));
+          if (catalog.length) setAvailablePermissions(catalog);
+        }
+        const templates = res.data?.employeeTemplates;
+        if (templates && typeof templates === 'object') setRoleTemplates(templates);
+      })
+      .catch(() => {
+        // Keep the canonical workforce fallback if the catalog request is unavailable.
+      });
   }, []);
 
   // Filtered employees for local display (search + dropdown filters)
@@ -178,7 +234,7 @@ export default function Employees() {
         payrollType: 'HOURLY',
         salaryAmount: '',
         hourlyRate: '',
-        paymentPreference: 'USDC',
+        paymentPreference: 'AZAMAN_BALANCE',
       });
       fetchEmployees();
     } catch (err) {
@@ -189,8 +245,12 @@ export default function Employees() {
   // Edit Employee Submission
   const handleEditEmployee = async () => {
     try {
-      const payload = {
-        role: editForm.role,
+      // r26/P0-B — role is authority-bearing and rides its DEDICATED route
+      // (PATCH /employees/:id/role, guarded by employees.permissions with a
+      // server-side delegation ceiling). Ordinary profile/compensation
+      // fields stay on the generic employees.update PATCH, which now
+      // refuses `role` outright.
+      const profilePayload = {
         title: editForm.title,
         department: editForm.department,
         payrollType: editForm.payrollType,
@@ -199,23 +259,35 @@ export default function Employees() {
         paymentPreference: editForm.paymentPreference,
       };
 
-      await employeeApi.update(selectedEmployee.id, payload);
+      const roleChanged = editForm.role !== selectedEmployee.role;
+      if (roleChanged) {
+        // Server verdict first: a refused role change must not half-apply.
+        const res = await employeeApi.updateRole(selectedEmployee.id, editForm.role);
+        if (res.data?.employee) {
+          setSelectedEmployee((prev) => (prev ? { ...prev, ...res.data.employee } : prev));
+        }
+      }
+      await employeeApi.update(selectedEmployee.id, profilePayload);
       toast.go('Employee updated successfully');
       setIsEditOpen(false);
       if (isSelectedOpen) {
         // Update selected view modal too
-        setSelectedEmployee((prev) => ({ ...prev, ...payload }));
+        setSelectedEmployee((prev) => ({ ...prev, ...profilePayload, role: editForm.role }));
       }
       fetchEmployees();
     } catch (err) {
       toast.stop(err.response?.data?.message || 'Failed to update employee');
+      fetchEmployees();
     }
   };
 
   // Permissions Submission
   const handleUpdatePermissions = async () => {
     try {
-      await employeeApi.updatePermissions(selectedEmployee.id, permissionsForm);
+      // Preserved (locked) grants ride along unchanged — the stored set is
+      // authoritative server-side, so omitting them would revoke them.
+      const payload = Array.from(new Set([...permissionsForm, ...preservedPermissions]));
+      await employeeApi.updatePermissions(selectedEmployee.id, payload);
       toast.go('Permissions updated successfully');
       setIsPermsOpen(false);
       fetchEmployees();
@@ -242,11 +314,13 @@ export default function Employees() {
   const handleToggleStatus = async (emp) => {
     try {
       const nextStatus = emp.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
-      await employeeApi.update(emp.id, { status: nextStatus });
+      // r26: status transitions go through the DEDICATED route behind the
+      // employees.terminate authority (the generic PATCH refuses status).
+      await employeeApi.updateStatus(emp.id, nextStatus);
       toast.go(`Employee ${nextStatus === 'ACTIVE' ? 'reactivated' : 'suspended'}`);
       fetchEmployees();
     } catch (err) {
-      toast.stop('Failed to update employee status');
+      toast.stop(err.response?.data?.message || 'Failed to update employee status');
     }
   };
 
@@ -260,14 +334,20 @@ export default function Employees() {
       payrollType: emp.payrollType || 'HOURLY',
       salaryAmount: emp.salaryAmount || '',
       hourlyRate: emp.hourlyRate || '',
-      paymentPreference: emp.paymentPreference || 'USDC',
+      paymentPreference: emp.paymentPreference || 'AZAMAN_BALANCE',
     });
     setIsEditOpen(true);
   };
 
   const openPermissionsModal = (emp) => {
     setSelectedEmployee(emp);
-    setPermissionsForm(emp.permissions || []);
+    const stored = emp.effectivePermissions || emp.permissions || [];
+    // Grants made above the actor's ceiling (by the owner) stay VISIBLE and
+    // PRESERVED: they render as locked-on switches the actor can neither
+    // grant nor remove — but resubmitting the form keeps them intact.
+    const delegable = new Set(catalog.map((p) => p.value));
+    setPermissionsForm(Array.from(new Set(stored)).filter((p) => delegable.has(p)));
+    setPreservedPermissions(stored.filter((p) => !delegable.has(p)));
     setIsPermsOpen(true);
   };
 
@@ -278,7 +358,8 @@ export default function Employees() {
   };
 
   const canCreate = hasPermission('employees.create');
-  const canManage = hasPermission('employees.manage');
+  const canUpdate = hasPermission('employees.update');
+  const canTerminate = hasPermission('employees.terminate');
   const canPermissions = hasPermission('employees.permissions');
 
   return (
@@ -416,7 +497,7 @@ export default function Employees() {
                           </button>
                         }
                         items={[
-                          ...(canManage
+                          ...(canUpdate
                             ? [
                                 {
                                   label: 'Edit Info',
@@ -439,7 +520,7 @@ export default function Employees() {
                                 },
                               ]
                             : []),
-                          ...(canManage && !isTerminated
+                          ...(canTerminate && !isTerminated
                             ? [
                                 { divider: true },
                                 {
@@ -610,7 +691,7 @@ export default function Employees() {
               <Button variant="secondary" onClick={() => setIsSelectedOpen(false)}>
                 Close
               </Button>
-              {canManage && (
+              {canUpdate && (
                 <Button onClick={() => openEditModal(selectedEmployee)}>
                   <Edit2 className="w-4 h-4" /> Edit Profile
                 </Button>
@@ -638,7 +719,7 @@ export default function Employees() {
               label="Role"
               value={addForm.role}
               onChange={(e) => setAddForm({ ...addForm, role: e.target.value })}
-              options={ROLES}
+              options={assignableRoles}
             />
             <Input
               label="Job Title"
@@ -700,7 +781,7 @@ export default function Employees() {
               label="Role"
               value={editForm.role}
               onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-              options={ROLES}
+              options={assignableRoles}
             />
             <Input
               label="Job Title"
@@ -762,7 +843,7 @@ export default function Employees() {
           </p>
 
           <div className="space-y-3">
-            {AVAILABLE_PERMISSIONS.map((perm) => {
+            {catalog.map((perm) => {
               const isChecked = permissionsForm.includes(perm.value);
               return (
                 <div
@@ -785,6 +866,28 @@ export default function Employees() {
               );
             })}
           </div>
+
+          {preservedPermissions.length > 0 && (
+            <div className="space-y-2 p-3 rounded-xl bg-[var(--f-surface)] border border-dashed border-[var(--f-line)]">
+              <p className="text-xs font-semibold text-[var(--f-text-2)]">
+                Granted above your delegation ceiling — locked
+              </p>
+              {preservedPermissions.map((perm) => (
+                <p key={perm} className="text-xs text-[var(--f-text-3)] font-mono">
+                  {perm}
+                </p>
+              ))}
+              <p className="text-[10px] text-[var(--f-text-3)]">
+                These stay on the employee. Only a business owner or admin can change them.
+              </p>
+            </div>
+          )}
+
+          {!actorIsUnlimited && (
+            <p className="text-[10px] text-[var(--f-text-3)]">
+              You can only grant permissions you hold yourself (delegation ceiling).
+            </p>
+          )}
 
           <div className="flex justify-end gap-3 pt-4 border-t border-[var(--f-line)]">
             <Button variant="secondary" onClick={() => setIsPermsOpen(false)}>
