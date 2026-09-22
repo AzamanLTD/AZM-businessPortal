@@ -121,6 +121,9 @@ export default function Employees() {
   const [permissionsForm, setPermissionsForm] = useState([]);
   const [preservedPermissions, setPreservedPermissions] = useState([]);
   const [availablePermissions, setAvailablePermissions] = useState(AVAILABLE_PERMISSIONS);
+  // r26/P0-B — backend-authoritative per-role default sets (from
+  // /permission-templates), used to offer ONLY assignable roles.
+  const [roleTemplates, setRoleTemplates] = useState({});
 
   // r26 — DELEGATION CEILING: the catalog the modal offers is limited to
   // what the ACTOR may administer. Owners/admins (['*']) see the full
@@ -132,6 +135,22 @@ export default function Employees() {
     if (actorIsUnlimited) return availablePermissions;
     return availablePermissions.filter((perm) => actorPermissions.includes(perm.value));
   }, [availablePermissions, actorIsUnlimited, actorPermissions]);
+
+  // r26/P0-B — ROLE EXPOSURE follows the same backend-authoritative ceiling:
+  // a role is offered only when its default template sits inside the actor's
+  // own effective permissions (owners/admins see everything). The UI filter is
+  // a convenience ONLY — the backend enforces the ceiling on both the creation
+  // and role-change routes, and shows the server's refusal if it ever drifts.
+  const assignableRoles = useMemo(() => {
+    if (actorIsUnlimited) return ROLES;
+    const templateEntries = Object.entries(roleTemplates);
+    if (!templateEntries.length) return ROLES; // catalog unavailable: unfiltered, backend still guards
+    return ROLES.filter(({ value }) => {
+      const templatePerms = templateEntries.find(([role]) => role === value)?.[1];
+      if (!Array.isArray(templatePerms)) return false;
+      return templatePerms.every((perm) => actorPermissions.includes(perm));
+    });
+  }, [actorIsUnlimited, actorPermissions, roleTemplates]);
 
   // Fetch employees
   const fetchEmployees = async () => {
@@ -151,12 +170,15 @@ export default function Employees() {
     employeeApi.permissionTemplates()
       .then((res) => {
         const groups = res.data?.permissionKeys;
-        if (!groups || typeof groups !== 'object') return;
-        const catalog = Object.values(groups)
-          .flat()
-          .filter((item) => item?.key && item.key !== '*')
-          .map((item) => ({ value: item.key, label: item.label || item.key, module: item.module }));
-        if (catalog.length) setAvailablePermissions(catalog);
+        if (groups && typeof groups === 'object') {
+          const catalog = Object.values(groups)
+            .flat()
+            .filter((item) => item?.key && item.key !== '*')
+            .map((item) => ({ value: item.key, label: item.label || item.key, module: item.module }));
+          if (catalog.length) setAvailablePermissions(catalog);
+        }
+        const templates = res.data?.employeeTemplates;
+        if (templates && typeof templates === 'object') setRoleTemplates(templates);
       })
       .catch(() => {
         // Keep the canonical workforce fallback if the catalog request is unavailable.
@@ -223,8 +245,12 @@ export default function Employees() {
   // Edit Employee Submission
   const handleEditEmployee = async () => {
     try {
-      const payload = {
-        role: editForm.role,
+      // r26/P0-B — role is authority-bearing and rides its DEDICATED route
+      // (PATCH /employees/:id/role, guarded by employees.permissions with a
+      // server-side delegation ceiling). Ordinary profile/compensation
+      // fields stay on the generic employees.update PATCH, which now
+      // refuses `role` outright.
+      const profilePayload = {
         title: editForm.title,
         department: editForm.department,
         payrollType: editForm.payrollType,
@@ -233,16 +259,25 @@ export default function Employees() {
         paymentPreference: editForm.paymentPreference,
       };
 
-      await employeeApi.update(selectedEmployee.id, payload);
+      const roleChanged = editForm.role !== selectedEmployee.role;
+      if (roleChanged) {
+        // Server verdict first: a refused role change must not half-apply.
+        const res = await employeeApi.updateRole(selectedEmployee.id, editForm.role);
+        if (res.data?.employee) {
+          setSelectedEmployee((prev) => (prev ? { ...prev, ...res.data.employee } : prev));
+        }
+      }
+      await employeeApi.update(selectedEmployee.id, profilePayload);
       toast.go('Employee updated successfully');
       setIsEditOpen(false);
       if (isSelectedOpen) {
         // Update selected view modal too
-        setSelectedEmployee((prev) => ({ ...prev, ...payload }));
+        setSelectedEmployee((prev) => ({ ...prev, ...profilePayload, role: editForm.role }));
       }
       fetchEmployees();
     } catch (err) {
       toast.stop(err.response?.data?.message || 'Failed to update employee');
+      fetchEmployees();
     }
   };
 
@@ -684,7 +719,7 @@ export default function Employees() {
               label="Role"
               value={addForm.role}
               onChange={(e) => setAddForm({ ...addForm, role: e.target.value })}
-              options={ROLES}
+              options={assignableRoles}
             />
             <Input
               label="Job Title"
@@ -746,7 +781,7 @@ export default function Employees() {
               label="Role"
               value={editForm.role}
               onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-              options={ROLES}
+              options={assignableRoles}
             />
             <Input
               label="Job Title"

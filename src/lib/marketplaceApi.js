@@ -160,6 +160,9 @@ export const employeeApi = {
   // status changes server-side).
   updateStatus: (id, status) => request(`/api/business-os/employees/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   updatePermissions: (id, permissions) => request(`/api/business-os/employees/${id}/permissions`, { method: 'POST', body: JSON.stringify({ permissions }) }),
+  // r26/P0-B — role changes are authority-bearing: dedicated route behind the
+  // employees.permissions authority, with a server-side delegation ceiling.
+  updateRole: (id, role) => request(`/api/business-os/employees/${id}/role`, { method: 'PATCH', body: JSON.stringify({ role }) }),
   permissionTemplates: () => request('/api/business-os/permission-templates'),
   // Self-service (employee's own data)
   me: () => request('/api/business-os/employees/me'),
