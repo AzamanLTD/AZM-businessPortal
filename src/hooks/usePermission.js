@@ -63,9 +63,13 @@ export function usePermission() {
         }
 
         const emp = data.employee;
-        const perms = emp.permissions?.includes('*') || emp.role === 'OWNER'
+        // r26/P0-6: the backend returns effectivePermissions — the exact
+        // set requirePermission() enforces. Prefer it; fall back to the
+        // stored set only for older backend builds.
+        const effective = emp.effectivePermissions || emp.permissions || [];
+        const perms = effective.includes('*') || emp.role === 'OWNER'
           ? ['*']
-          : (emp.permissions || []);
+          : effective;
 
         if (!cancelled) {
           setPermissions(perms);

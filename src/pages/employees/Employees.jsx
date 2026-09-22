@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { employeeApi } from '@/lib/marketplaceApi';
 import { usePermission } from '@/hooks/usePermission';
 import {
@@ -37,8 +37,9 @@ import {
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
 
+// r26: OWNER is never assignable — owner authority derives from business
+// ownership (the backend refuses role=OWNER at the service boundary too).
 const ROLES = [
-  { value: 'OWNER', label: 'Owner' },
   { value: 'MANAGER', label: 'Manager' },
   { value: 'SUPERVISOR', label: 'Supervisor' },
   { value: 'STAFF', label: 'Staff' },
@@ -77,7 +78,7 @@ const AVAILABLE_PERMISSIONS = [
 ];
 
 export default function Employees() {
-    const { hasPermission } = usePermission();
+    const { hasPermission, permissions: actorPermissions } = usePermission();
 
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -118,7 +119,19 @@ export default function Employees() {
   });
 
   const [permissionsForm, setPermissionsForm] = useState([]);
+  const [preservedPermissions, setPreservedPermissions] = useState([]);
   const [availablePermissions, setAvailablePermissions] = useState(AVAILABLE_PERMISSIONS);
+
+  // r26 — DELEGATION CEILING: the catalog the modal offers is limited to
+  // what the ACTOR may administer. Owners/admins (['*']) see the full
+  // catalog; a manager sees only their own effective permissions (the
+  // backend enforces the same rule — the UI just stops offering grants
+  // the server would refuse).
+  const actorIsUnlimited = !actorPermissions || actorPermissions.includes('*');
+  const catalog = useMemo(() => {
+    if (actorIsUnlimited) return availablePermissions;
+    return availablePermissions.filter((perm) => actorPermissions.includes(perm.value));
+  }, [availablePermissions, actorIsUnlimited, actorPermissions]);
 
   // Fetch employees
   const fetchEmployees = async () => {
@@ -141,7 +154,7 @@ export default function Employees() {
         if (!groups || typeof groups !== 'object') return;
         const catalog = Object.values(groups)
           .flat()
-          .filter((item) => item?.key)
+          .filter((item) => item?.key && item.key !== '*')
           .map((item) => ({ value: item.key, label: item.label || item.key, module: item.module }));
         if (catalog.length) setAvailablePermissions(catalog);
       })
@@ -236,7 +249,10 @@ export default function Employees() {
   // Permissions Submission
   const handleUpdatePermissions = async () => {
     try {
-      await employeeApi.updatePermissions(selectedEmployee.id, permissionsForm);
+      // Preserved (locked) grants ride along unchanged — the stored set is
+      // authoritative server-side, so omitting them would revoke them.
+      const payload = Array.from(new Set([...permissionsForm, ...preservedPermissions]));
+      await employeeApi.updatePermissions(selectedEmployee.id, payload);
       toast.go('Permissions updated successfully');
       setIsPermsOpen(false);
       fetchEmployees();
@@ -263,11 +279,13 @@ export default function Employees() {
   const handleToggleStatus = async (emp) => {
     try {
       const nextStatus = emp.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
-      await employeeApi.update(emp.id, { status: nextStatus });
+      // r26: status transitions go through the DEDICATED route behind the
+      // employees.terminate authority (the generic PATCH refuses status).
+      await employeeApi.updateStatus(emp.id, nextStatus);
       toast.go(`Employee ${nextStatus === 'ACTIVE' ? 'reactivated' : 'suspended'}`);
       fetchEmployees();
     } catch (err) {
-      toast.stop('Failed to update employee status');
+      toast.stop(err.response?.data?.message || 'Failed to update employee status');
     }
   };
 
@@ -288,7 +306,13 @@ export default function Employees() {
 
   const openPermissionsModal = (emp) => {
     setSelectedEmployee(emp);
-    setPermissionsForm(emp.permissions || []);
+    const stored = emp.effectivePermissions || emp.permissions || [];
+    // Grants made above the actor's ceiling (by the owner) stay VISIBLE and
+    // PRESERVED: they render as locked-on switches the actor can neither
+    // grant nor remove — but resubmitting the form keeps them intact.
+    const delegable = new Set(catalog.map((p) => p.value));
+    setPermissionsForm(Array.from(new Set(stored)).filter((p) => delegable.has(p)));
+    setPreservedPermissions(stored.filter((p) => !delegable.has(p)));
     setIsPermsOpen(true);
   };
 
@@ -784,7 +808,7 @@ export default function Employees() {
           </p>
 
           <div className="space-y-3">
-            {availablePermissions.map((perm) => {
+            {catalog.map((perm) => {
               const isChecked = permissionsForm.includes(perm.value);
               return (
                 <div
@@ -807,6 +831,28 @@ export default function Employees() {
               );
             })}
           </div>
+
+          {preservedPermissions.length > 0 && (
+            <div className="space-y-2 p-3 rounded-xl bg-[var(--f-surface)] border border-dashed border-[var(--f-line)]">
+              <p className="text-xs font-semibold text-[var(--f-text-2)]">
+                Granted above your delegation ceiling — locked
+              </p>
+              {preservedPermissions.map((perm) => (
+                <p key={perm} className="text-xs text-[var(--f-text-3)] font-mono">
+                  {perm}
+                </p>
+              ))}
+              <p className="text-[10px] text-[var(--f-text-3)]">
+                These stay on the employee. Only a business owner or admin can change them.
+              </p>
+            </div>
+          )}
+
+          {!actorIsUnlimited && (
+            <p className="text-[10px] text-[var(--f-text-3)]">
+              You can only grant permissions you hold yourself (delegation ceiling).
+            </p>
+          )}
 
           <div className="flex justify-end gap-3 pt-4 border-t border-[var(--f-line)]">
             <Button variant="secondary" onClick={() => setIsPermsOpen(false)}>

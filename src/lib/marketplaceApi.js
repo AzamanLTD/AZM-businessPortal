@@ -155,6 +155,10 @@ export const employeeApi = {
   create: (data) => request('/api/business-os/employees', { method: 'POST', body: JSON.stringify(data) }),
   update: (id, data) => request(`/api/business-os/employees/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   remove: (id) => request(`/api/business-os/employees/${id}`, { method: 'DELETE' }),
+  // r26: ACTIVE <-> SUSPENDED transitions use the DEDICATED status route
+  // behind the employees.terminate authority (the generic PATCH refuses
+  // status changes server-side).
+  updateStatus: (id, status) => request(`/api/business-os/employees/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   updatePermissions: (id, permissions) => request(`/api/business-os/employees/${id}/permissions`, { method: 'POST', body: JSON.stringify({ permissions }) }),
   permissionTemplates: () => request('/api/business-os/permission-templates'),
   // Self-service (employee's own data)
