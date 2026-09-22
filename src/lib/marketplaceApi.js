@@ -134,14 +134,66 @@ export const marketplaceApi = {
 // ── Employee Management ──────────────────────────────────────────────────
 // All endpoints are under /api/business-os/ and use the request() function already imported at top of file
 
+// Module 01 (permissions): every method maps to a REAL mounted route in
+// AZM-backend routes/businessOSRoutes.js. The previous adapter mixed missing
+// methods with a phantom /employees/:id/terminate route (404) and a payload
+// vocabulary the backend never understood (permissions as a boolean object
+// instead of a dotted-key string array). Permissions now flow from the
+// canonical catalog exposed at GET /api/business-os/permission-templates.
 export const employeeApi = {
-  getEmployees: () => request('/api/business-os/employees'),
-  addEmployee: (data) => request('/api/business-os/employees', { method: 'POST', body: JSON.stringify(data) }),
-  terminateEmployee: (id, reason) => request(`/api/business-os/employees/${id}/terminate`, { method: 'POST', body: JSON.stringify({ reason }) }),
-  getShifts: (start, end) => request(`/api/business-os/shifts?startDate=${start}&endDate=${end}`),
+  // GET /api/business-os/employees -> { success, employees }
+  list: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request(`/api/business-os/employees${qs ? `?${qs}` : ''}`);
+  },
+  // POST /api/business-os/employees — requires 'employees.create'.
+  // Payload: { azmId, role, title, department, payrollType, salaryAmount,
+  // hourlyRate, permissions: ['employees.view', ...] }
+  create: (data) => request('/api/business-os/employees', { method: 'POST', body: JSON.stringify(data) }),
+  // GET /api/business-os/employees/:id
+  get: (id) => request(`/api/business-os/employees/${id}`),
+  // PATCH /api/business-os/employees/:id — requires 'employees.update'
+  update: (id, data) => request(`/api/business-os/employees/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  // DELETE /api/business-os/employees/:id — requires 'employees.terminate'
+  remove: (id) => request(`/api/business-os/employees/${id}`, { method: 'DELETE' }),
+  // Termination keeps the reason: there is no /terminate route; PATCH the
+  // status (backend stamps terminationDate automatically).
+  terminate: (id, reason) =>
+    request(`/api/business-os/employees/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'TERMINATED', ...(reason ? { notes: reason } : {}) }),
+    }),
+  // POST /api/business-os/employees/:id/permissions — requires 'employees.permissions'
+  updatePermissions: (id, permissions) =>
+    request(`/api/business-os/employees/${id}/permissions`, { method: 'POST', body: JSON.stringify({ permissions }) }),
+  // GET /api/business-os/dashboard/employee-stats -> { success, stats }
+  dashboard: () => request('/api/business-os/dashboard/employee-stats'),
+  // GET /api/business-os/permission-templates -> { success, templates, permissionKeys }
+  // permissionKeys is the canonical catalog grouped by module.
+  permissionTemplates: () => request('/api/business-os/permission-templates'),
+  // Shifts / swaps
+  getShifts: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return request(`/api/business-os/shifts${qs ? `?${qs}` : ''}`);
+  },
   createShift: (data) => request('/api/business-os/shifts', { method: 'POST', body: JSON.stringify(data) }),
+  // GET /api/business-os/shifts/swaps -> { success, swaps }
+  swapRequests: () => request('/api/business-os/shifts/swaps'),
+  approveSwap: (id) => request(`/api/business-os/shifts/swaps/${id}/approve`, { method: 'POST' }),
+  rejectSwap: (id) => request(`/api/business-os/shifts/swaps/${id}/reject`, { method: 'POST' }),
+  // Time off
+  timeOffRequests: () => request('/api/business-os/time-off'),
   requestTimeOff: (data) => request('/api/business-os/time-off', { method: 'POST', body: JSON.stringify(data) }),
-  processPayroll: (data) => request('/api/business-os/payroll/process', { method: 'POST', body: JSON.stringify(data) }),
+  approveTimeOff: (id) => request(`/api/business-os/time-off/${id}/approve`, { method: 'POST' }),
+  rejectTimeOff: (id) => request(`/api/business-os/time-off/${id}/reject`, { method: 'POST' }),
+  // Payroll — period format is 'YYYY-MM' (see payrollService.processAllPayroll)
+  runPayroll: (data) => request('/api/business-os/payroll/process', { method: 'POST', body: JSON.stringify(data) }),
+
+  // ── Legacy aliases (older call sites) ────────────────────────────────────
+  getEmployees: () => employeeApi.list(),
+  addEmployee: (data) => employeeApi.create(data),
+  terminateEmployee: (id, reason) => employeeApi.terminate(id, reason),
+  processPayroll: (data) => employeeApi.runPayroll(data),
 };
 
 export const financeApi = {
