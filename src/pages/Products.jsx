@@ -1,17 +1,58 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { products as productsApi } from '@/lib/api';
-import { Card, Badge, Button, Input, Textarea, Select, Empty, Skeleton, Modal } from '@/components/ui';
+import { products as productsApi, request, locations as locationsApi } from '@/lib/api';
+import { restaurantOpsApi, inventoryApi } from '@/lib/marketplaceApi';
+import { usePermission } from '@/hooks/usePermission';
+import {
+  Card,
+  Tag,
+  Button,
+  Input,
+  Textarea,
+  Select,
+  Empty,
+  Skel,
+  Dialog,
+  Switch
+} from '@/components/instrument';
 import { fmtUSDC, fmt } from '@/lib/utils';
-import { Package, Plus, Pencil, ToggleLeft, ToggleRight, AlertCircle, X, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import {
+  Package,
+  Plus,
+  Pencil,
+  ToggleLeft,
+  ToggleRight,
+  AlertCircle,
+  X,
+  Loader2,
+  FolderPlus,
+  Trash2,
+  Copy,
+  ChevronUp,
+  ChevronDown,
+  Percent,
+  Clock,
+  Layers,
+  Sparkles,
+  Link2,
+  Tag as TagIcon
+} from 'lucide-react';
+import { toast } from '@/lib/toast';
 import { uploadImageToCloudinary, isCloudinaryConfigured, validateImageFile } from '@/lib/cloudinary';
 
+// Pre-defined food tags for quick chips
+const DIETARY_TAGS = [
+  { value: 'SPICY', label: 'Spicy 🌶️' },
+  { value: 'VEGAN', label: 'Vegan 🌱' },
+  { value: 'GLUTEN_FREE', label: 'Gluten-Free 🌾' },
+  { value: 'POPULAR', label: 'Popular 🔥' },
+  { value: 'NEW', label: 'New ✨' },
+];
+
 const CATEGORIES = [
-  { value: '', label: 'Select category...' },
+  { value: 'FOOD_BEVERAGE',      label: 'Food & Beverage' },
   { value: 'FREELANCE_SERVICES', label: 'Freelance Services' },
   { value: 'RETAIL',             label: 'Retail' },
-  { value: 'FOOD_BEVERAGE',      label: 'Food & Beverage' },
   { value: 'TECHNOLOGY',         label: 'Technology' },
   { value: 'REAL_ESTATE',        label: 'Real Estate' },
   { value: 'EDUCATION',          label: 'Education' },
@@ -22,295 +63,1310 @@ const CATEGORIES = [
   { value: 'OTHER',              label: 'Other' },
 ];
 
-const BLANK = { name: '', description: '', priceUsdc: '', category: '', imageUrls: [] };
+// Blank layouts for form operations
+const BLANK_PRODUCT = {
+  name: '',
+  description: '',
+  priceUsdc: '',
+  category: 'FOOD_BEVERAGE',
+  imageUrls: [],
+  isActive: true,
+  slug: '',
+  locationId: '',
+  deliveryTerms: '',
+  estimatedDelivery: '',
+  catalogSectionId: '',
+  isAvailable: true,
+  preparationMins: '',
+  tags: [],
+  calorieCount: '',
+  variants: [], // UI representation as array of rows
+  modifierGroups: [], // UI representation as array of groups
+};
+
+const BLANK_SECTION = {
+  name: '',
+  description: '',
+  displayOrder: 0,
+  availableFrom: '',
+  availableTo: '',
+  imageUrl: '',
+  isActive: true,
+  locationId: '',
+};
+
 const MAX_IMAGES = 5;
 
 export default function Products() {
   const qc = useQueryClient();
-  const [modal, setModal]   = useState(null); // null | 'create' | { ...product }
-  const [form, setForm]     = useState(BLANK);
+  
+  // Permissions gating
+  const { hasPermission } = usePermission();
+  const canManageProducts = hasPermission('products.manage');
+  const canManageInventory = hasPermission('inventory.manage');
+
+  // Filter States
+  const [selectedLocationId, setSelectedLocationId] = useState('');
+  const [selectedSectionId, setSelectedSectionId] = useState('');
+
+  // Modals & Forms State
+  const [productDialog, setProductModal] = useState(null); // null | 'create' | product_obj
+  const [productForm, setProductForm] = useState(BLANK_PRODUCT);
+  
+  const [sectionDialog, setSectionModal] = useState(null); // null | 'create' | section_obj
+  const [sectionForm, setSectionForm] = useState(BLANK_SECTION);
+  
+  const [bulkDialog, setBulkModal] = useState(null); // null | 'price'
+  const [bulkPricePercent, setBulkPricePercent] = useState('');
+  const [bulkTargetSectionId, setBulkTargetSectionId] = useState('');
+
   const [formError, setFormError] = useState('');
   const [uploading, setUploading] = useState(false);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['products'],
-    queryFn:  () => productsApi.list(),
+  // Core API Queries
+  const { data: locationsData } = useQuery({
+    queryKey: ['locations'],
+    queryFn: () => locationsApi.list(),
+  });
+  const locationsList = locationsData?.locations || [];
+
+  // Set initial locationId filter if locations load
+  useState(() => {
+    if (locationsList.length > 0 && !selectedLocationId) {
+      setSelectedLocationId(locationsList[0].id);
+    }
   });
 
-  const createMutation = useMutation({
-    mutationFn: (d) => productsApi.create(d),
-    onSuccess: () => { toast.success('Product created'); qc.invalidateQueries(['products']); closeModal(); },
+  const { data: sectionsData, isLoading: isSectionsLoading } = useQuery({
+    queryKey: ['catalog-sections', selectedLocationId],
+    queryFn: () => request(`/api/business/catalog/sections${selectedLocationId ? `?locationId=${selectedLocationId}` : ''}`),
+  });
+  const sectionsList = sectionsData || [];
+
+  const { data: productsData, isLoading: isProductsLoading } = useQuery({
+    queryKey: ['products', selectedLocationId, selectedSectionId],
+    queryFn: () => {
+      const params = {};
+      if (selectedLocationId) params.locationId = selectedLocationId;
+      if (selectedSectionId) params.category = selectedSectionId; // We can query by section or local filters
+      return productsApi.list(params);
+    },
+  });
+  const productsList = productsData?.products || [];
+
+  const { data: soldOutData } = useQuery({
+    queryKey: ['sold-out-items'],
+    queryFn: () => restaurantOpsApi.get86edItems(),
+  });
+  const soldOutIds = new Set(soldOutData?.items || []);
+
+  const { data: inventoryItemsData } = useQuery({
+    queryKey: ['inventory-items'],
+    queryFn: () => inventoryApi.list(),
+    enabled: canManageInventory,
+  });
+  const inventoryItems = inventoryItemsData || [];
+
+  const { data: recipesData } = useQuery({
+    queryKey: ['recipes'],
+    queryFn: () => inventoryApi.recipes(),
+    enabled: canManageInventory,
+  });
+  const recipesMap = recipesData || {};
+
+  // MUTATIONS - SECTIONS
+  const createSectionMutation = useMutation({
+    mutationFn: (data) => request('/api/business/catalog/sections', { method: 'POST', body: JSON.stringify(data) }),
+    onSuccess: () => {
+      toast.go('Catalog section created');
+      qc.invalidateQueries(['catalog-sections']);
+      closeSectionModal();
+    },
     onError: (e) => setFormError(e.message),
   });
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data: d }) => productsApi.update(id, d),
-    onSuccess: () => { toast.success('Product updated'); qc.invalidateQueries(['products']); closeModal(); },
+  const updateSectionMutation = useMutation({
+    mutationFn: ({ id, data }) => request(`/api/business/catalog/sections/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+    onSuccess: () => {
+      toast.go('Catalog section updated');
+      qc.invalidateQueries(['catalog-sections']);
+      closeSectionModal();
+    },
     onError: (e) => setFormError(e.message),
   });
 
-  const toggleMutation = useMutation({
-    mutationFn: ({ id, isActive }) => productsApi.update(id, { isActive }),
-    onSuccess: (_, { isActive }) => {
-      toast.success(isActive ? 'Product activated' : 'Product deactivated');
+  const deleteSectionMutation = useMutation({
+    mutationFn: (id) => request(`/api/business/catalog/sections/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      toast.go('Catalog section deleted');
+      qc.invalidateQueries(['catalog-sections']);
+    },
+    onError: (e) => toast.stop(e.message),
+  });
+
+  // MUTATIONS - PRODUCTS
+  const createProductMutation = useMutation({
+    mutationFn: (data) => productsApi.create(data),
+    onSuccess: (newProduct) => {
+      toast.go('Product created');
+      handlePostSaveRecipe(newProduct.id);
+      qc.invalidateQueries(['products']);
+      closeProductModal();
+    },
+    onError: (e) => setFormError(e.message),
+  });
+
+  const updateProductMutation = useMutation({
+    mutationFn: ({ id, data }) => productsApi.update(id, data),
+    onSuccess: (_, { id }) => {
+      toast.go('Product updated');
+      handlePostSaveRecipe(id);
+      qc.invalidateQueries(['products']);
+      closeProductModal();
+    },
+    onError: (e) => setFormError(e.message),
+  });
+
+  const deleteProductMutation = useMutation({
+    mutationFn: (id) => productsApi.remove(id),
+    onSuccess: () => {
+      toast.go('Product deleted');
       qc.invalidateQueries(['products']);
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => toast.stop(e.message),
   });
 
-  const openCreate = () => { setForm(BLANK); setFormError(''); setModal('create'); };
-  const openEdit   = (p) => {
-    setForm({
-      name: p.name,
+  // MUTATION - SOLD OUT / 86'd
+  const toggle86Mutation = useMutation({
+    mutationFn: ({ productId, isSoldOut }) => restaurantOpsApi.toggle86({ productId, isSoldOut }),
+    onSuccess: () => {
+      qc.invalidateQueries(['sold-out-items']);
+      toast.go('Availability status toggled');
+    },
+    onError: (e) => toast.stop(e.message),
+  });
+
+  // Inline recipe ingredient mutations
+  const [inlineIngredients, setInlineIngredients] = useState([]); // Array of { inventoryItemId, quantityRequired }
+
+  const handlePostSaveRecipe = async (productId) => {
+    if (!canManageInventory) return;
+    try {
+      const existingRecipes = recipesMap[productId] || [];
+      // Remove all existing ingredients not present in inlineIngredients, or simple reset/unlink & link
+      for (const ingredient of existingRecipes) {
+        await inventoryApi.unlinkIngredient(productId, ingredient.inventoryItemId);
+      }
+      for (const ingredient of inlineIngredients) {
+        if (ingredient.inventoryItemId && ingredient.quantityRequired) {
+          await inventoryApi.linkIngredient(productId, {
+            inventoryItemId: ingredient.inventoryItemId,
+            quantityRequired: Number(ingredient.quantityRequired),
+          });
+        }
+      }
+      qc.invalidateQueries(['recipes']);
+    } catch (err) {
+      console.error('Failed to sync ingredients:', err);
+    }
+  };
+
+  // Bulk Operations Actions
+  const handleBulkPriceAdjustment = async () => {
+    if (!bulkTargetSectionId) {
+      toast.stop('Please select a target catalog section.');
+      return;
+    }
+    const delta = Number(bulkPricePercent);
+    if (isNaN(delta) || delta === 0) {
+      toast.stop('Please specify a valid percentage delta.');
+      return;
+    }
+
+    const itemsToAdjust = productsList.filter(p => p.catalogSectionId === bulkTargetSectionId);
+    if (itemsToAdjust.length === 0) {
+      toast.stop('No items found in this catalog section.');
+      return;
+    }
+
+    const multiplier = 1 + delta / 100;
+    let successCount = 0;
+
+    for (const item of itemsToAdjust) {
+      try {
+        const newPrice = Math.max(0.01, Math.round(item.priceUsdc * multiplier * 100) / 100);
+        await productsApi.update(item.id, { priceUsdc: newPrice });
+        successCount++;
+      } catch (err) {
+        console.error(`Failed to adjust price for ${item.name}`, err);
+      }
+    }
+
+    toast.go(`Successfully adjusted prices for ${successCount} items!`);
+    qc.invalidateQueries(['products']);
+    setBulkModal(null);
+    setBulkPricePercent('');
+  };
+
+  const handleDuplicateProduct = async (product) => {
+    try {
+      const duplicateData = {
+        ...product,
+        name: `${product.name} (Copy)`,
+        slug: product.slug ? `${product.slug}-copy` : undefined,
+      };
+      delete duplicateData.id;
+      delete duplicateData.created_date;
+      delete duplicateData.updated_date;
+
+      await productsApi.create(duplicateData);
+      toast.go(`Duplicated ${product.name}`);
+      qc.invalidateQueries(['products']);
+    } catch (err) {
+      toast.stop(`Duplication failed: ${err.message}`);
+    }
+  };
+
+  // Reorder display order of section
+  const handleReorderSection = async (section, direction) => {
+    const adjacentIndex = direction === 'up' 
+      ? sectionsList.findIndex(s => s.displayOrder < section.displayOrder)
+      : sectionsList.findIndex(s => s.displayOrder > section.displayOrder);
+
+    if (adjacentIndex === -1) return; // Top or bottom limits reached
+
+    const adjacentSection = sectionsList[adjacentIndex];
+    const originalOrder = section.displayOrder;
+
+    try {
+      await request(`/api/business/catalog/sections/${section.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ displayOrder: adjacentSection.displayOrder }),
+      });
+      await request(`/api/business/catalog/sections/${adjacentSection.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ displayOrder: originalOrder }),
+      });
+      toast.go('Section order updated');
+      qc.invalidateQueries(['catalog-sections']);
+    } catch (err) {
+      toast.stop('Failed to reorder sections');
+    }
+  };
+
+  // Form Modals Actions
+  const openCreateProduct = () => {
+    if (!canManageProducts) return toast.stop('Unauthorized');
+    setProductForm({
+      ...BLANK_PRODUCT,
+      locationId: selectedLocationId,
+    });
+    setInlineIngredients([]);
+    setFormError('');
+    setProductModal('create');
+  };
+
+  const openEditProduct = (p) => {
+    if (!canManageProducts) return toast.stop('Unauthorized');
+    
+    // Parse potentially nested string fields (e.g. variants and modifierGroups if stored as string JSON)
+    let parsedVariants = [];
+    try {
+      parsedVariants = typeof p.variants === 'string' ? JSON.parse(p.variants) : (p.variants || []);
+    } catch (e) { parsedVariants = []; }
+
+    let parsedModifiers = [];
+    try {
+      parsedModifiers = typeof p.modifierGroups === 'string' ? JSON.parse(p.modifierGroups) : (p.modifierGroups || []);
+    } catch (e) { parsedModifiers = []; }
+
+    let parsedImages = [];
+    try {
+      parsedImages = typeof p.imageUrls === 'string' ? JSON.parse(p.imageUrls) : (p.imageUrls || []);
+    } catch (e) { parsedImages = []; }
+
+    let parsedTags = [];
+    try {
+      parsedTags = typeof p.tags === 'string' ? JSON.parse(p.tags) : (p.tags || []);
+    } catch (e) { parsedTags = []; }
+
+    setProductForm({
+      name: p.name || '',
       description: p.description || '',
-      priceUsdc: String(p.priceUsdc),
-      category: p.category || '',
-      imageUrls: Array.isArray(p.imageUrls) ? p.imageUrls : [],
+      priceUsdc: String(p.priceUsdc || ''),
+      category: p.category || 'FOOD_BEVERAGE',
+      imageUrls: parsedImages,
+      isActive: p.isActive !== false,
+      slug: p.slug || '',
+      locationId: p.locationId || selectedLocationId,
+      deliveryTerms: p.deliveryTerms || '',
+      estimatedDelivery: p.estimatedDelivery || '',
+      catalogSectionId: p.catalogSectionId || '',
+      isAvailable: p.isAvailable !== false,
+      preparationMins: String(p.preparationMins || ''),
+      tags: parsedTags,
+      calorieCount: String(p.calorieCount || ''),
+      variants: parsedVariants,
+      modifierGroups: parsedModifiers,
+    });
+
+    const activeIngredients = recipesMap[p.id] || [];
+    setInlineIngredients(activeIngredients.map(item => ({
+      inventoryItemId: item.inventoryItemId,
+      quantityRequired: String(item.quantityRequired)
+    })));
+
+    setFormError('');
+    setProductModal(p);
+  };
+
+  const closeProductModal = () => {
+    setProductModal(null);
+    setFormError('');
+    setUploading(false);
+  };
+
+  const openCreateSection = () => {
+    if (!canManageProducts) return toast.stop('Unauthorized');
+    const maxOrder = sectionsList.reduce((max, s) => Math.max(max, s.displayOrder || 0), 0);
+    setSectionForm({
+      ...BLANK_SECTION,
+      locationId: selectedLocationId,
+      displayOrder: maxOrder + 1,
     });
     setFormError('');
-    setModal(p);
+    setSectionModal('create');
   };
-  const closeModal = () => { setModal(null); setFormError(''); setUploading(false); };
 
-  const handleImageUpload = async (e) => {
+  const openEditSection = (s) => {
+    if (!canManageProducts) return toast.stop('Unauthorized');
+    setSectionForm({
+      name: s.name || '',
+      description: s.description || '',
+      displayOrder: s.displayOrder || 0,
+      availableFrom: s.availableFrom || '',
+      availableTo: s.availableTo || '',
+      imageUrl: s.imageUrl || '',
+      isActive: s.isActive !== false,
+      locationId: s.locationId || selectedLocationId,
+    });
+    setFormError('');
+    setSectionModal(s);
+  };
+
+  const closeSectionModal = () => {
+    setSectionModal(null);
+    setFormError('');
+  };
+
+  // Image Upload Logic
+  const handleImageUpload = async (e, type = 'product') => {
     const file = e.target.files?.[0];
-    e.target.value = ''; // allow re-selecting the same file
+    e.target.value = ''; // Reset input selection
     if (!file) return;
     const invalid = validateImageFile(file);
-    if (invalid) return toast.error(invalid);
+    if (invalid) return toast.stop(invalid);
     setUploading(true);
     try {
       const url = await uploadImageToCloudinary(file);
-      setForm(f => ({ ...f, imageUrls: [...f.imageUrls, url] }));
-      toast.success('Image uploaded');
+      if (type === 'product') {
+        setProductForm(f => ({ ...f, imageUrls: [...f.imageUrls, url] }));
+      } else {
+        setSectionForm(f => ({ ...f, imageUrl: url }));
+      }
+      toast.go('Image uploaded');
     } catch (err) {
-      toast.error(err.message || 'Upload failed');
+      toast.stop(err.message || 'Upload failed');
     } finally {
       setUploading(false);
     }
   };
 
-  const removeImage = (idx) =>
-    setForm(f => ({ ...f, imageUrls: f.imageUrls.filter((_, i) => i !== idx) }));
+  const removeProductImage = (idx) => {
+    setProductForm(f => ({ ...f, imageUrls: f.imageUrls.filter((_, i) => i !== idx) }));
+  };
 
-  const handleSubmit = () => {
+  // Submitting Forms
+  const handleSaveProduct = () => {
     setFormError('');
-    if (!form.name.trim())   return setFormError('Product name is required.');
-    if (!form.priceUsdc)     return setFormError('Price is required.');
-    const price = Number(form.priceUsdc);
-    if (isNaN(price) || price <= 0) return setFormError('Price must be a positive number.');
+    if (!productForm.name.trim()) return setFormError('Product name is required.');
+    if (!productForm.priceUsdc) return setFormError('Price is required.');
+    const price = Number(productForm.priceUsdc);
+    if (isNaN(price) || price < 0) return setFormError('Price must be a valid positive number.');
 
-    const urls = (form.imageUrls || []).map(u => u.trim()).filter(Boolean);
+    // Prepare payload
     const payload = {
-      name:        form.name.trim(),
-      description: form.description.trim() || null,
-      priceUsdc:   price,
-      category:    form.category || null,
-      imageUrls:   urls.length ? urls : null,
+      ...productForm,
+      name: productForm.name.trim(),
+      priceUsdc: price,
+      preparationMins: productForm.preparationMins ? Number(productForm.preparationMins) : null,
+      calorieCount: productForm.calorieCount ? Number(productForm.calorieCount) : null,
+      variants: productForm.variants,
+      modifierGroups: productForm.modifierGroups,
+      tags: productForm.tags,
     };
 
-    if (modal === 'create') {
-      createMutation.mutate(payload);
+    if (productModal === 'create') {
+      createProductMutation.mutate(payload);
     } else {
-      updateMutation.mutate({ id: modal.id, data: payload });
+      updateProductMutation.mutate({ id: productModal.id, data: payload });
     }
   };
 
-  const productList = data?.products || [];
-  const active   = productList.filter(p => p.isActive);
-  const inactive = productList.filter(p => !p.isActive);
+  const handleSaveSection = () => {
+    setFormError('');
+    if (!sectionForm.name.trim()) return setFormError('Section name is required.');
+
+    if (sectionModal === 'create') {
+      createSectionMutation.mutate(sectionForm);
+    } else {
+      updateSectionMutation.mutate({ id: sectionModal.id, data: sectionForm });
+    }
+  };
+
+  // Repeatable rows handlers for Variants
+  const addVariantRow = () => {
+    setProductForm(f => ({
+      ...f,
+      variants: [...f.variants, { name: '', priceDelta: 0 }]
+    }));
+  };
+
+  const updateVariantRow = (index, field, value) => {
+    setProductForm(f => {
+      const updated = [...f.variants];
+      updated[index] = { ...updated[index], [field]: field === 'priceDelta' ? Number(value) : value };
+      return { ...f, variants: updated };
+    });
+  };
+
+  const removeVariantRow = (index) => {
+    setProductForm(f => ({
+      ...f,
+      variants: f.variants.filter((_, i) => i !== index)
+    }));
+  };
+
+  // Repeatable rows handlers for Modifier Groups
+  const addModifierGroup = () => {
+    setProductForm(f => ({
+      ...f,
+      modifierGroups: [
+        ...f.modifierGroups,
+        { name: '', maxSelection: 1, options: [{ name: '', priceDelta: 0 }] }
+      ]
+    }));
+  };
+
+  const updateModifierGroupHeader = (groupIndex, field, value) => {
+    setProductForm(f => {
+      const updated = [...f.modifierGroups];
+      updated[groupIndex] = {
+        ...updated[groupIndex],
+        [field]: field === 'maxSelection' ? Number(value) : value
+      };
+      return { ...f, modifierGroups: updated };
+    });
+  };
+
+  const removeModifierGroup = (groupIndex) => {
+    setProductForm(f => ({
+      ...f,
+      modifierGroups: f.modifierGroups.filter((_, i) => i !== groupIndex)
+    }));
+  };
+
+  const addModifierOption = (groupIndex) => {
+    setProductForm(f => {
+      const updated = [...f.modifierGroups];
+      updated[groupIndex] = {
+        ...updated[groupIndex],
+        options: [...updated[groupIndex].options, { name: '', priceDelta: 0 }]
+      };
+      return { ...f, modifierGroups: updated };
+    });
+  };
+
+  const updateModifierOption = (groupIndex, optionIndex, field, value) => {
+    setProductForm(f => {
+      const updated = [...f.modifierGroups];
+      const updatedOptions = [...updated[groupIndex].options];
+      updatedOptions[optionIndex] = {
+        ...updatedOptions[optionIndex],
+        [field]: field === 'priceDelta' ? Number(value) : value
+      };
+      updated[groupIndex] = { ...updated[groupIndex], options: updatedOptions };
+      return { ...f, modifierGroups: updated };
+    });
+  };
+
+  const removeModifierOption = (groupIndex, optionIndex) => {
+    setProductForm(f => {
+      const updated = [...f.modifierGroups];
+      updated[groupIndex] = {
+        ...updated[groupIndex],
+        options: updated[groupIndex].options.filter((_, i) => i !== optionIndex)
+      };
+      return { ...f, modifierGroups: updated };
+    });
+  };
+
+  // Dietary chips toggle
+  const toggleTagChip = (tagValue) => {
+    setProductForm(f => {
+      const isSelected = f.tags.includes(tagValue);
+      const nextTags = isSelected
+        ? f.tags.filter(t => t !== tagValue)
+        : [...f.tags, tagValue];
+      return { ...f, tags: nextTags };
+    });
+  };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6 animate-fade-in">
-      <div className="flex items-start justify-between">
+    <div className="p-6 max-w-7xl mx-auto space-y-6  product-catalog-page">
+      {/* Header Panel */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-[var(--surface)] border border-[var(--line)] p-6 rounded-2xl">
         <div>
-          <h1 className="text-xl font-bold text-[var(--sn-text)]">Products</h1>
-          <p className="text-sm text-[var(--sn-text-muted)] mt-1">Manage your product catalogue.</p>
+          <h1 className="text-2xl font-black text-[var(--text)] flex items-center gap-2">
+            <Layers className="w-6 h-6 text-[var(--accent)]" /> Menu & Product Catalog
+          </h1>
+          <p className="text-sm text-[var(--text-3)] mt-1">
+            Build and optimize menu sections, dietary tags, variants, modifier rules, and inventory-linked recipe formulas.
+          </p>
         </div>
-        <Button onClick={openCreate}>
-          <Plus className="w-4 h-4" /> Add Product
-        </Button>
+
+        <div className="flex flex-wrap gap-2">
+          {canManageProducts && (
+            <>
+              <Button onClick={openCreateSection} variant="secondary">
+                <FolderPlus className="w-4 h-4" /> Add Section
+              </Button>
+              <Button onClick={() => setBulkModal('price')} variant="secondary">
+                <Percent className="w-4 h-4" /> Bulk Updates
+              </Button>
+              <Button onClick={openCreateProduct} variant="primary">
+                <Plus className="w-4 h-4" /> Add Product
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
-      {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1,2,3].map(i => <Skeleton key={i} className="h-40" />)}
-        </div>
-      ) : productList.length === 0 ? (
-        <Empty
-          icon={Package}
-          title="No products yet"
-          description="Add your first product so customers can find and order from you."
-          action={<Button onClick={openCreate}><Plus className="w-4 h-4" /> Add Product</Button>}
+      {/* Control / Filter Bar */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[var(--surface)] border border-[var(--line)] p-4 rounded-xl">
+        <Select
+          label="Outlet Location"
+          options={[{ value: '', label: 'All Locations' }, ...locationsList.map(l => ({ value: l.id, label: l.name }))]}
+          value={selectedLocationId}
+          onChange={(e) => {
+            setSelectedLocationId(e.target.value);
+            setSelectedSectionId('');
+          }}
         />
-      ) : (
-        <>
-          {active.length > 0 && (
-            <section>
-              <p className="text-xs font-semibold text-[var(--sn-text-muted)] uppercase tracking-wider mb-3">
-                Active — {active.length}
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {active.map(p => <ProductCard key={p.id} product={p} onEdit={openEdit} onToggle={toggleMutation} />)}
-              </div>
-            </section>
-          )}
-          {inactive.length > 0 && (
-            <section>
-              <p className="text-xs font-semibold text-[var(--sn-text-muted)] uppercase tracking-wider mb-3">
-                Inactive — {inactive.length}
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 opacity-60">
-                {inactive.map(p => <ProductCard key={p.id} product={p} onEdit={openEdit} onToggle={toggleMutation} />)}
-              </div>
-            </section>
-          )}
-        </>
-      )}
 
-      {/* Create / Edit modal */}
-      <Modal
-        open={!!modal}
-        onClose={closeModal}
-        title={modal === 'create' ? 'Add New Product' : 'Edit Product'}
-        className="max-w-lg"
+        <Select
+          label="Menu Section Filter"
+          options={[{ value: '', label: 'All Sections' }, ...sectionsList.map(s => ({ value: s.id, label: s.name }))]}
+          value={selectedSectionId}
+          onChange={(e) => setSelectedSectionId(e.target.value)}
+        />
+
+        <div className="flex flex-col gap-1.5 justify-end">
+          <label className="text-xs font-semibold text-[var(--text-3)] uppercase tracking-wider">Quick Metrics</label>
+          <div className="flex items-center gap-4 text-sm font-semibold py-2 px-3 bg-[var(--f-ink-900)] rounded-xl border border-[var(--line)] text-[var(--text-3)]">
+            <span>Total: <strong className="text-[var(--text)]">{productsList.length}</strong></span>
+            <span>Sold Out (86'd): <strong className="text-[var(--stop)]">{soldOutIds.size}</strong></span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Split Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        {/* Left Column: Sections Reordering Panel */}
+        <div className="lg:col-span-1 space-y-4">
+          <div className="flex items-center justify-between border-b border-[var(--line)] pb-2">
+            <h3 className="text-sm font-bold text-[var(--text)]">Menu Sections</h3>
+            <Tag tone="neutral">{sectionsList.length}</Tag>
+          </div>
+
+          {isSectionsLoading ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map(i => <Skel key={i} className="h-14" />)}
+            </div>
+          ) : sectionsList.length === 0 ? (
+            <div className="p-4 rounded-xl border border-[var(--line)] bg-[var(--f-ink-900)] text-center text-xs text-[var(--text-3)]">
+              No custom sections built.
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {sectionsList
+                .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
+                .map((section, idx) => (
+                  <div
+                    key={section.id}
+                    className="flex items-center justify-between p-3 rounded-xl border border-[var(--line)] bg-[var(--surface)]:border-[var(--accent)] transition-all"
+                  >
+                    <div className="flex-1 min-w-0 pr-2">
+                      <p className="text-xs font-bold text-[var(--text)] truncate">{section.name}</p>
+                      {section.availableFrom && (
+                        <p className="text-[10px] text-[var(--text-3)] flex items-center gap-1 mt-0.5">
+                          <Clock className="w-2.5 h-2.5 text-[var(--accent)]" />
+                          {section.availableFrom} - {section.availableTo}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      {canManageProducts && (
+                        <>
+                          <button
+                            onClick={() => handleReorderSection(section, 'up')}
+                            disabled={idx === 0}
+                            className="p-1 rounded bg-[var(--f-ink-900)]:bg-[var(--line)] disabled:opacity-30 text-[var(--text-3)]"
+                          >
+                            <ChevronUp className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => handleReorderSection(section, 'down')}
+                            disabled={idx === sectionsList.length - 1}
+                            className="p-1 rounded bg-[var(--f-ink-900)]:bg-[var(--line)] disabled:opacity-30 text-[var(--text-3)]"
+                          >
+                            <ChevronDown className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => openEditSection(section)}
+                            className="p-1 rounded bg-[var(--f-ink-900)]:bg-[var(--line)] text-[var(--accent)]"
+                          >
+                            <Pencil className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm('Delete section? Items in this section will become unassigned.')) {
+                                deleteSectionMutation.mutate(section.id);
+                              }
+                            }}
+                            className="p-1 rounded bg-[var(--f-ink-900)]:bg-[var(--stop)]/20 text-[var(--stop)]"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
+
+        {/* Right Column: Dynamic Menu / Catalog Card Grid */}
+        <div className="lg:col-span-3 space-y-6">
+          <div className="border-b border-[var(--line)] pb-2 flex items-center justify-between">
+            <h3 className="text-sm font-bold text-[var(--text)]">Active Items & Catalog Listings</h3>
+            <span className="text-xs text-[var(--text-3)]">Sort: Active first</span>
+          </div>
+
+          {isProductsLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[1, 2, 4].map(i => <Skel key={i} className="h-44" />)}
+            </div>
+          ) : productsList.length === 0 ? (
+            <Empty
+              icon={Package}
+              title="No Products Found"
+              description="Create a product item or update your outlet filter settings."
+              action={
+                canManageProducts && (
+                  <Button onClick={openCreateProduct}>
+                    <Plus className="w-4 h-4" /> Add Product Now
+                  </Button>
+                )
+              }
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {productsList.map((product) => {
+                const isSoldOut = soldOutIds.has(product.id);
+                return (
+                  <Card
+                    key={product.id}
+                    className="flex flex-col justify-between border-[var(--line)] bg-[var(--surface)] relative overflow-hidden group"
+                    style={{ opacity: product.isActive ? 1 : 0.6 }}
+                  >
+                    <div>
+                      {/* Product Status Indicator bar */}
+                      <div className="flex items-center justify-between mb-3">
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            padding: "2px 8px",
+                            borderRadius: "var(--r2)",
+                            fontSize: 10,
+                            fontWeight: 700,
+                            color: product.isActive ? "var(--go)" : "var(--text-3)",
+                            background: product.isActive ? "rgba(16,185,129,0.1)" : "rgba(156,163,175,0.1)",
+                          }}
+                        >
+                          {product.isActive ? "Active Menu Item" : "Inactive"}
+                        </span>
+
+                        {/* Sold Out Switch Directly on Item Card */}
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-3)]">
+                            {isSoldOut ? 'Sold Out' : 'Available'}
+                          </span>
+                          <Switch
+                            checked={!isSoldOut}
+                            onChange={(checked) => {
+                              toggle86Mutation.mutate({ productId: product.id, isSoldOut: !checked });
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        {/* Thumbnail */}
+                        {product.imageUrls && product.imageUrls[0] ? (
+                          <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 border border-[var(--line)]">
+                            <img src={product.imageUrls[0]} alt="" className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className="w-20 h-20 rounded-xl bg-[var(--f-ink-900)] border border-[var(--line)] flex items-center justify-center flex-shrink-0">
+                            <Package className="w-8 h-8 text-[var(--line)]" />
+                          </div>
+                        )}
+
+                        <div className="min-w-0 flex-1">
+                          <h4 className="text-sm font-bold text-[var(--text)] truncate">{product.name}</h4>
+                          <p className="text-xs text-[var(--text-3)] line-clamp-2 mt-0.5">{product.description}</p>
+                          <div className="text-sm font-black text-[var(--accent)] mt-2 f-mono">
+                            {fmtUSDC(product.priceUsdc)}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Display dietary tags */}
+                      {product.tags && product.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-3">
+                          {product.tags.map(t => {
+                            const found = DIETARY_TAGS.find(dt => dt.value === t);
+                            return (
+                              <span key={t} className="text-[10px] bg-[var(--f-ink-900)] border border-[var(--line)] px-1.5 py-0.5 rounded text-[var(--text-3)]">
+                                {found ? found.label : t}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2 border-t border-[var(--line)] pt-3 mt-4">
+                      <div className="text-[10px] text-[var(--text-3)]">
+                        {product.preparationMins ? `${product.preparationMins} mins prep` : 'Instant'}
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        {canManageProducts && (
+                          <>
+                            <button
+                              onClick={() => handleDuplicateProduct(product)}
+                              title="Duplicate listing"
+                              className="p-1.5 rounded-xl bg-[var(--f-ink-900)]:bg-[var(--line)] text-[var(--text-3)] transition-colors"
+                            >
+                              <Copy className="w-3.5 h-3.5" />
+                            </button>
+                            <Button size="sm" variant="secondary" onClick={() => openEditProduct(product)}>
+                              <Pencil className="w-3.5 h-3.5" /> Edit
+                            </Button>
+                            <button
+                              onClick={() => {
+                                if (confirm('Are you absolutely sure you want to permanently delete this product?')) {
+                                  deleteProductMutation.mutate(product.id);
+                                }
+                              }}
+                              className="p-1.5 rounded-xl bg-[var(--f-ink-900)]:bg-[var(--stop)]/10 text-[var(--stop)] transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* DIALOG 1: SECTION CREATION / EDITING */}
+      <Dialog
+        open={!!sectionModal}
+        onClose={closeSectionModal}
+        title={sectionModal === 'create' ? 'Create Catalog Section' : 'Edit Catalog Section'}
+        className="max-w-md"
       >
         <div className="space-y-4">
           <Input
-            label="Product Name"
-            placeholder="e.g. Logo Design, 1kg Tomatoes, Web Consultation..."
-            value={form.name}
-            onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+            label="Section Name"
+            placeholder="e.g. Breakfast Specialties, Mains, Refreshing Beverages"
+            value={sectionForm.name}
+            onChange={(e) => setSectionForm(sf => ({ ...sf, name: e.target.value }))}
           />
+
           <Textarea
-            label="Description (optional)"
-            placeholder="What does this product or service include?"
-            value={form.description}
-            onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+            label="Brief Description (optional)"
+            placeholder="Introduce this section to customers..."
+            value={sectionForm.description}
+            onChange={(e) => setSectionForm(sf => ({ ...sf, description: e.target.value }))}
           />
-          <Input
-            label="Price (USDC)"
-            type="number"
-            step="0.01"
-            min="0"
-            placeholder="0.00"
-            value={form.priceUsdc}
-            onChange={e => setForm(f => ({ ...f, priceUsdc: e.target.value }))}
+
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Available From"
+              type="time"
+              value={sectionForm.availableFrom}
+              onChange={(e) => setSectionForm(sf => ({ ...sf, availableFrom: e.target.value }))}
+            />
+            <Input
+              label="Available To"
+              type="time"
+              value={sectionForm.availableTo}
+              onChange={(e) => setSectionForm(sf => ({ ...sf, availableTo: e.target.value }))}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-[var(--text-3)] uppercase tracking-wider">Cover Image URL</label>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Upload or insert direct URL"
+                value={sectionForm.imageUrl}
+                onChange={(e) => setSectionForm(sf => ({ ...sf, imageUrl: e.target.value }))}
+                className="flex-1"
+              />
+              <label className="px-4 py-3 rounded-xl bg-[var(--f-ink-900)] border border-[var(--line)]:border-[var(--accent)] text-xs text-[var(--text-3)] cursor-pointer flex items-center justify-center">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, 'section')}
+                  className="hidden"
+                />
+                Upload
+              </label>
+            </div>
+          </div>
+
+          {formError && (
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--stop)]/15 border border-[var(--stop)]/35 text-[var(--stop)]">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <p className="text-xs">{formError}</p>
+            </div>
+          )}
+
+          <div className="flex gap-3 pt-3">
+            <Button variant="secondary" onClick={closeSectionModal} className="flex-1">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSaveSection}
+              className="flex-1"
+            >
+              Save Section
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* DIALOG 2: COMPREHENSIVE PRODUCT EDITOR */}
+      <Dialog
+        open={!!productModal}
+        onClose={closeProductModal}
+        title={productModal === 'create' ? 'Add New Menu Item' : 'Edit Menu Product'}
+        className="max-w-2xl overflow-y-auto max-h-[85vh]"
+      >
+        <div className="space-y-6">
+          
+          {/* Main Info Fields */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Item Title"
+              placeholder="e.g. Organic Beef Burger, Fresh Lemonade"
+              value={productForm.name}
+              onChange={(e) => setProductForm(pf => ({ ...pf, name: e.target.value }))}
+            />
+
+            <Input
+              label="Base Price (USDC)"
+              placeholder="0.00"
+              type="number"
+              step="0.01"
+              value={productForm.priceUsdc}
+              onChange={(e) => setProductForm(pf => ({ ...pf, priceUsdc: e.target.value }))}
+            />
+          </div>
+
+          <Textarea
+            label="Product Description"
+            placeholder="Detailed description of flavors, portions, preparation, etc."
+            value={productForm.description}
+            onChange={(e) => setProductForm(pf => ({ ...pf, description: e.target.value }))}
           />
-          <Select
-            label="Category"
-            options={CATEGORIES}
-            value={form.category}
-            onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-          />
-          {/* Product images */}
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Select
+              label="Catalog Section"
+              options={[{ value: '', label: 'None' }, ...sectionsList.map(s => ({ value: s.id, label: s.name }))]}
+              value={productForm.catalogSectionId}
+              onChange={(e) => setProductForm(pf => ({ ...pf, catalogSectionId: e.target.value }))}
+            />
+
+            <Input
+              label="Preparation Time (Minutes)"
+              placeholder="e.g. 15"
+              type="number"
+              value={productForm.preparationMins}
+              onChange={(e) => setProductForm(pf => ({ ...pf, preparationMins: e.target.value }))}
+            />
+
+            <Input
+              label="Calorie Count"
+              placeholder="e.g. 450"
+              type="number"
+              value={productForm.calorieCount}
+              onChange={(e) => setProductForm(pf => ({ ...pf, calorieCount: e.target.value }))}
+            />
+          </div>
+
+          {/* Toggleable Chip Tags */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-[var(--text-3)] uppercase tracking-wider flex items-center gap-1">
+              <TagIcon className="w-3.5 h-3.5" /> Dietary & Tag Pickers
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {DIETARY_TAGS.map(chip => {
+                const isSelected = productForm.tags.includes(chip.value);
+                return (
+                  <button
+                    key={chip.value}
+                    type="button"
+                    onClick={() => toggleTagChip(chip.value)}
+                    className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+                    style={{
+                      background: isSelected ? 'var(--accent)' : 'var(--f-ink-900)',
+                      border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--line)'}`,
+                      color: isSelected ? 'var(--f-ink-900)' : 'var(--text)',
+                    }}
+                  >
+                    {chip.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Repeatable Row Editors - Product Variants */}
+          <div className="bg-[var(--f-ink-900)] p-4 rounded-xl border border-[var(--line)] space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-[var(--text-3)] uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[var(--accent)]" /> Product Variants
+              </label>
+              <Button type="button" size="sm" variant="outline" onClick={addVariantRow}>
+                <Plus className="w-3 h-3" /> Add Size/Type
+              </Button>
+            </div>
+
+            {productForm.variants.length === 0 ? (
+              <p className="text-xs text-[var(--text-3)] italic">No product size variations added yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {productForm.variants.map((variant, index) => (
+                  <div key={index} className="flex gap-2 items-center">
+                    <Input
+                      placeholder="e.g. Small, Regular, Extra Large"
+                      value={variant.name}
+                      onChange={(e) => updateVariantRow(index, 'name', e.target.value)}
+                      className="flex-1"
+                    />
+                    <Input
+                      placeholder="Price Delta (e.g. +2.00 or -1.50)"
+                      type="number"
+                      step="0.01"
+                      value={variant.priceDelta}
+                      onChange={(e) => updateVariantRow(index, 'priceDelta', e.target.value)}
+                      className="w-1/3"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeVariantRow(index)}
+                      className="p-2.5 rounded-xl:bg-[var(--stop)]/10 text-[var(--stop)]"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Repeatable Row Editors - Modifier Options Groups */}
+          <div className="bg-[var(--f-ink-900)] p-4 rounded-xl border border-[var(--line)] space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-[var(--text-3)] uppercase tracking-wider flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-[var(--accent)]" /> Add-on & Modifier Selection Rules
+              </label>
+              <Button type="button" size="sm" variant="outline" onClick={addModifierGroup}>
+                <Plus className="w-3 h-3" /> Add Modifier Group
+              </Button>
+            </div>
+
+            {productForm.modifierGroups.length === 0 ? (
+              <p className="text-xs text-[var(--text-3)] italic">No complex custom option rules built yet.</p>
+            ) : (
+              <div className="space-y-6">
+                {productForm.modifierGroups.map((group, groupIndex) => (
+                  <div key={groupIndex} className="p-3 rounded-xl border border-[var(--line)] bg-[var(--surface)] space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="Group Label (e.g. Extra Cheese / Addons)"
+                        value={group.name}
+                        onChange={(e) => updateModifierGroupHeader(groupIndex, 'name', e.target.value)}
+                        className="flex-1"
+                      />
+                      <Input
+                        label="Max Selections"
+                        type="number"
+                        min="1"
+                        placeholder="Max"
+                        value={group.maxSelection}
+                        onChange={(e) => updateModifierGroupHeader(groupIndex, 'maxSelection', e.target.value)}
+                        className="w-24"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeModifierGroup(groupIndex)}
+                        className="p-2.5 rounded-xl:bg-[var(--stop)]/10 text-[var(--stop)]"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Options inside this group */}
+                    <div className="pl-4 border-l-2 border-[var(--line)] space-y-2">
+                      {group.options.map((opt, optIndex) => (
+                        <div key={optIndex} className="flex gap-2 items-center">
+                          <Input
+                            placeholder="Option title (e.g. Bacon, Extra Patty)"
+                            value={opt.name}
+                            onChange={(e) => updateModifierOption(groupIndex, optIndex, 'name', e.target.value)}
+                            className="flex-1"
+                          />
+                          <Input
+                            placeholder="Delta Price"
+                            type="number"
+                            step="0.01"
+                            value={opt.priceDelta}
+                            onChange={(e) => updateModifierOption(groupIndex, optIndex, 'priceDelta', e.target.value)}
+                            className="w-28"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeModifierOption(groupIndex, optIndex)}
+                            className="p-2 text-[var(--stop)]:bg-[var(--stop)]/10 rounded"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => addModifierOption(groupIndex)}
+                        className="text-xs font-bold text-[var(--accent)] flex items-center gap-1:underline"
+                      >
+                        <Plus className="w-3.5 h-3.5" /> Add Choice Option
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Ingredient Recipe formulas Linker */}
+          {canManageInventory && (
+            <div className="bg-[var(--f-ink-900)] p-4 rounded-xl border border-[var(--line)] space-y-4">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-[var(--text-3)] uppercase tracking-wider flex items-center gap-1.5">
+                  <Link2 className="w-3.5 h-3.5 text-[var(--accent)]" /> Linked Ingredients (Recipes API)
+                </label>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setInlineIngredients(items => [...items, { inventoryItemId: '', quantityRequired: '' }])}
+                >
+                  <Plus className="w-3 h-3" /> Link Ingredient
+                </Button>
+              </div>
+
+              {inlineIngredients.length === 0 ? (
+                <p className="text-xs text-[var(--text-3)] italic">No connected ingredients. Stock will not auto-deduct.</p>
+              ) : (
+                <div className="space-y-2">
+                  {inlineIngredients.map((item, index) => (
+                    <div key={index} className="flex gap-2 items-center">
+                      <Select
+                        options={[{ value: '', label: 'Select stock item...' }, ...inventoryItems.map(inv => ({ value: inv.id, label: `${inv.name} (In stock: ${inv.quantity || 0})` }))]}
+                        value={item.inventoryItemId}
+                        onChange={(e) => {
+                          const next = [...inlineIngredients];
+                          next[index].inventoryItemId = e.target.value;
+                          setInlineIngredients(next);
+                        }}
+                        className="flex-1"
+                      />
+                      <Input
+                        placeholder="Required Quantity"
+                        type="number"
+                        value={item.quantityRequired}
+                        onChange={(e) => {
+                          const next = [...inlineIngredients];
+                          next[index].quantityRequired = e.target.value;
+                          setInlineIngredients(next);
+                        }}
+                        className="w-1/3"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setInlineIngredients(items => items.filter((_, idx) => idx !== index))}
+                        className="p-2.5 rounded-xl:bg-[var(--stop)]/10 text-[var(--stop)]"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Image Upload Gallery Section */}
           <div className="space-y-3">
-            <p className="text-xs font-semibold text-[var(--sn-text-muted)] uppercase tracking-wider">Product Images</p>
+            <p className="text-xs font-semibold text-[var(--text-3)] uppercase tracking-wider">Product Gallery Images</p>
             <div className="grid grid-cols-3 gap-2">
-              {form.imageUrls.map((url, idx) => (
-                <div key={idx} className="relative aspect-square rounded-xl overflow-hidden bg-[var(--az-black)] border border-[var(--sn-border)] group">
+              {productForm.imageUrls.map((url, idx) => (
+                <div key={idx} className="relative aspect-square rounded-xl overflow-hidden bg-[var(--f-ink-900)] border border-[var(--line)] group">
                   <img src={url} alt="" className="w-full h-full object-cover" />
                   {idx === 0 && (
-                    <span className="absolute bottom-1 left-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-[var(--sn-purple)] text-[var(--az-black)]">COVER</span>
+                    <span className="absolute bottom-1 left-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-[var(--accent)] text-[var(--f-ink-900)]">COVER</span>
                   )}
                   <button
                     type="button"
-                    onClick={() => removeImage(idx)}
-                    className="absolute top-1 right-1 w-5 h-5 bg-[var(--sn-red)] rounded-full flex items-center justify-center text-white hover:scale-110 transition-transform"
+                    onClick={() => removeProductImage(idx)}
+                    className="absolute top-1 right-1 w-5 h-5 bg-[var(--stop)] rounded-full flex items-center justify-center text-[var(--text)]:scale-110 transition-transform"
                   >
                     <X className="w-3 h-3" />
                   </button>
                 </div>
               ))}
-              {form.imageUrls.length < MAX_IMAGES && (
-                <label className={`aspect-square rounded-xl border-2 border-dashed border-[var(--sn-border)] flex flex-col items-center justify-center transition-colors ${uploading ? 'opacity-60' : 'cursor-pointer hover:border-[var(--sn-purple)]'}`}>
+              {productForm.imageUrls.length < MAX_IMAGES && (
+                <label className={`aspect-square rounded-xl border-2 border-dashed border-[var(--line)] flex flex-col items-center justify-center transition-colors ${uploading ? 'opacity-60' : 'cursor-pointer:border-[var(--accent)]'}`}>
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
-                    onChange={handleImageUpload}
+                    onChange={(e) => handleImageUpload(e, 'product')}
                     disabled={uploading}
                     className="hidden"
                   />
-                  {uploading
-                    ? <Loader2 className="w-5 h-5 text-[var(--sn-purple)] animate-spin" />
-                    : <><Plus className="w-5 h-5 text-[var(--sn-text-muted)]" /><span className="text-xs text-[var(--sn-text-muted)] mt-1">Add Image</span></>
-                  }
+                  {uploading ? (
+                    <Loader2 className="w-5 h-5 text-[var(--accent)] animate-spin" />
+                  ) : (
+                    <>
+                      <Plus className="w-5 h-5 text-[var(--text-3)]" />
+                      <span className="text-xs text-[var(--text-3)] mt-1">Add Image</span>
+                    </>
+                  )}
                 </label>
               )}
             </div>
-            <p className="text-xs text-[var(--sn-text-muted)]">
+            <p className="text-[11px] text-[var(--text-3)]">
               {isCloudinaryConfigured()
-                ? 'Up to 5 images, 5MB each (JPEG/PNG/WebP). The first image is the cover.'
-                : 'Image upload is not configured. Set VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET to enable uploads.'}
+                ? 'Up to 5 images. The first image will be set as the main display cover.'
+                : 'Asset upload service offline. Paste links directly or configure your cloud providers.'}
             </p>
           </div>
 
           {formError && (
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--sn-red)] border border-[var(--sn-red)]">
-              <AlertCircle className="w-4 h-4 text-[var(--sn-red)] flex-shrink-0" />
-              <p className="text-xs text-[var(--sn-red)]">{formError}</p>
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--stop)]/15 border border-[var(--stop)]/35 text-[var(--stop)]">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <p className="text-xs">{formError}</p>
             </div>
           )}
 
-          <div className="flex gap-3 pt-2">
-            <Button variant="secondary" onClick={closeModal} className="flex-1">Cancel</Button>
+          <div className="flex gap-3 pt-4 border-t border-[var(--line)]">
+            <Button variant="secondary" onClick={closeProductModal} className="flex-1">
+              Cancel
+            </Button>
             <Button
-              onClick={handleSubmit}
-              loading={createMutation.isPending || updateMutation.isPending}
+              onClick={handleSaveProduct}
               className="flex-1"
             >
-              {modal === 'create' ? 'Create Product' : 'Save Changes'}
+              Save Product Details
             </Button>
           </div>
         </div>
-      </Modal>
+      </Dialog>
+
+      {/* DIALOG 3: BULK PRICE ADJUSTMENT & OPERATIONS */}
+      <Dialog
+        open={bulkModal === 'price'}
+        onClose={() => setBulkModal(null)}
+        title="Bulk Price Adjustment Wizard"
+        className="max-w-md"
+      >
+        <div className="space-y-4">
+          <p className="text-xs text-[var(--text-3)] leading-relaxed">
+            Apply a percentage price delta increase or decrease to all products inside a selected section. (e.g. enter <strong className="text-[var(--accent)]">5</strong> for +5% increase or <strong className="text-[var(--stop)]">-10</strong> for a 10% discount).
+          </p>
+
+          <Select
+            label="Target Catalog Section"
+            options={[{ value: '', label: 'Select category section...' }, ...sectionsList.map(s => ({ value: s.id, label: s.name }))]}
+            value={bulkTargetSectionId}
+            onChange={(e) => setBulkTargetSectionId(e.target.value)}
+          />
+
+          <Input
+            label="Percentage Change (%)"
+            placeholder="e.g. 5"
+            type="number"
+            value={bulkPricePercent}
+            onChange={(e) => setBulkPricePercent(e.target.value)}
+          />
+
+          <div className="flex gap-3 pt-3">
+            <Button variant="secondary" onClick={() => setBulkModal(null)} className="flex-1">
+              Cancel
+            </Button>
+            <Button onClick={handleBulkPriceAdjustment} variant="primary" className="flex-1">
+              Execute Bulk Pricing
+            </Button>
+          </div>
+        </div>
+      </Dialog>
+
+      {/* Custom Styles */}
+      <style>{`
+        .product-catalog-page {
+          --az-black: #09090b;
+          --f-surface: var(--surface);
+        }
+        .product-catalog-page select option {
+          background-color: var(--surface) !important;
+          color: var(--text) !important;
+        }
+      `}</style>
     </div>
-  );
-}
-
-function ProductCard({ product: p, onEdit, onToggle }) {
-  return (
-    <Card className="flex flex-col gap-3">
-      {/* Image or placeholder */}
-      {Array.isArray(p.imageUrls) && p.imageUrls[0] ? (
-        <div className="w-full h-32 rounded-xl overflow-hidden">
-          <img src={p.imageUrls[0]} alt={p.name} className="w-full h-full object-cover" />
-        </div>
-      ) : (
-        <div className="w-full h-24 rounded-xl bg-[var(--az-black)] border border-[var(--sn-border)] flex items-center justify-center">
-          <Package className="w-8 h-8 text-[var(--sn-border)]" />
-        </div>
-      )}
-
-      <div className="flex-1">
-        <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-semibold text-[var(--sn-text)] leading-snug">{p.name}</p>
-          <span className="text-sm font-bold text-[var(--sn-purple)] az-mono flex-shrink-0">{fmtUSDC(p.priceUsdc)}</span>
-        </div>
-        {p.description && (
-          <p className="text-xs text-[var(--sn-text-muted)] mt-1 line-clamp-2">{p.description}</p>
-        )}
-        <div className="flex items-center gap-2 mt-2">
-          {p.category && <Badge color="var(--sn-purple)" bg="#a78bfa1a">{p.category.replace(/_/g, ' ')}</Badge>}
-          <span className="text-xs text-[var(--sn-text-muted)]">{fmt(p.totalOrders, 0)} orders</span>
-        </div>
-      </div>
-
-      <div className="flex gap-2 pt-1">
-        <Button variant="secondary" size="sm" onClick={() => onEdit(p)} className="flex-1">
-          <Pencil className="w-3.5 h-3.5" /> Edit
-        </Button>
-        <button
-          onClick={() => onToggle.mutate({ id: p.id, isActive: !p.isActive })}
-          title={p.isActive ? 'Deactivate' : 'Activate'}
-          className="p-2 rounded-xl border border-[var(--sn-border)] hover:bg-[var(--sn-border)] transition-colors"
-        >
-          {p.isActive
-            ? <ToggleRight className="w-4 h-4 text-[var(--sn-purple)]" />
-            : <ToggleLeft className="w-4 h-4 text-[var(--sn-text-muted)]" />
-          }
-        </button>
-      </div>
-    </Card>
   );
 }

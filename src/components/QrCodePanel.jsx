@@ -1,6 +1,6 @@
 import { QRCodeCanvas } from 'qrcode.react';
 import { Download } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 // qrcode.react v4 exposes named exports (QRCodeCanvas / QRCodeSVG) — there is
 // no default export and no `renderAs` prop. QRCodeCanvas forwards `id` onto the
@@ -11,18 +11,18 @@ export default function QrCodePanel({ label, url }) {
 
   const downloadQr = () => {
     const canvas = document.getElementById(canvasId);
-    if (!canvas) { toast.error('Could not find QR canvas.'); return; }
+    if (!canvas) { toast.stop('Could not find QR canvas.'); return; }
     const dataUrl = canvas.toDataURL('image/png');
     const a = document.createElement('a');
     a.href = dataUrl;
     a.download = `azaman-qr-${label.replace(/\s+/g, '-').toLowerCase()}.png`;
     a.click();
-    toast.success('QR code downloaded');
+    toast.go('QR code downloaded');
   };
 
   return (
     <div className="flex items-center gap-4 p-4 bg-[#0a0a12] border border-[#1e1e2e] rounded-2xl">
-      <div className="bg-white p-2 rounded-xl flex-shrink-0">
+      <div className="bg-[var(--f-surface)] p-2 rounded-xl flex-shrink-0">
         <QRCodeCanvas
           id={canvasId}
           value={url}

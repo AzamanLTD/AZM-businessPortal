@@ -15,6 +15,14 @@ export function fmtUSDC(amount) {
   return `$${fmt(amount, 2)}`;
 }
 
+export function fmtCompact(amount) {
+  const n = Number(amount);
+  if (isNaN(n)) return '—';
+  if (Math.abs(n) >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (Math.abs(n) >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+  return n.toLocaleString('en-US', { maximumFractionDigits: 0 });
+}
+
 export function relativeTime(ts) {
   if (!ts) return null;
   const diff = Date.now() - new Date(ts).getTime();

@@ -1,22 +1,37 @@
+// src/pages/Settings.jsx
+// =============================================================================
+// Settings — Main hub with tabs for all governance sub-screens
+//
+// Tabs: Business Profile | Roles & Permissions | Notifications | Activity Log | Danger Zone
+// The existing Business Profile form (from the old Settings.jsx) lives in the
+// first tab; new governance screens are the remaining tabs.
+// =============================================================================
+
 import { useState, useEffect, useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { business as businessApi, locations as locApi } from '@/lib/api';
 import { marketplaceApi } from '@/lib/marketplaceApi';
 import { useAuth } from '@/lib/AuthContext';
-import { Card, Button, Input, Textarea, Select, Badge, Switch } from '@/components/ui';
+import { usePermission } from '@/hooks/usePermission';
+import { Card, Button, Input, Textarea, Tag, Switch, Tabs } from '@/components/instrument';
 import { KYB_STATUS_META } from '@/lib/utils';
-import { Building2, Save, CheckCircle2, Copy, Eye, BadgeCheck, QrCode, Wallet, ImagePlus, Palette, RotateCcw, Loader2, Camera } from 'lucide-react';
+import { Building2, Save, Eye, BadgeCheck, QrCode, Wallet, ImagePlus, Palette, Shield, Bell, History, AlertTriangle, CheckCircle2, Users, Code2 } from 'lucide-react';
 import { uploadImageToCloudinary, isCloudinaryConfigured, validateImageFile } from '@/lib/cloudinary';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 import PublicProfilePreview from '@/components/PublicProfilePreview';
 import QrCodePanel from '@/components/QrCodePanel';
+import RolesPermissions from '@/pages/settings/RolesPermissions';
+import NotificationPrefs from '@/pages/settings/NotificationPrefs';
+import ActivityLog from '@/pages/settings/ActivityLog';
+import DangerZone from '@/pages/settings/DangerZone';
+import TeamAccess from '@/pages/settings/TeamAccess';
+import BusinessMeta from '@/pages/settings/BusinessMeta';
+import Developer from '@/pages/settings/Developer';
 
 const CATEGORIES = [
-  // ── Primary: Transit, Restaurants, Hotels ──────────────────────────────
   { value: 'LOGISTICS',          label: 'Transit & Transport' },
   { value: 'FOOD_BEVERAGE',      label: 'Restaurants' },
   { value: 'REAL_ESTATE',        label: 'Hotels & Stays' },
-  // ── Secondary ───────────────────────────────────────────────────────────
   { value: 'RETAIL',             label: 'Retail' },
   { value: 'HEALTH_WELLNESS',    label: 'Health & Wellness' },
   { value: 'EDUCATION',          label: 'Education' },
@@ -27,608 +42,241 @@ const CATEGORIES = [
   { value: 'OTHER',              label: 'Other' },
 ];
 
-// ---------------------------------------------------------------------------
-// ImageUploadField
-// A reusable component: shows current image (or a placeholder), a click-to-
-// upload zone, and an optional manual URL input as a fallback.
-// ---------------------------------------------------------------------------
-function ImageUploadField({ label, hint, value, onChange, aspectClass = 'aspect-[3/1]', folder = 'azaman' }) {
-  const [uploading, setUploading] = useState(false);
-  const inputRef = useRef(null);
-
-  const handleFile = async (file) => {
-    if (!file) return;
-    const err = validateImageFile(file);
-    if (err) { toast.error(err); return; }
-
-    setUploading(true);
-    try {
-      const url = await uploadImageToCloudinary(file, folder);
-      onChange(url);
-      toast.success(`${label} updated`);
-    } catch (e) {
-      toast.error('Upload failed: ' + e.message);
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    handleFile(file);
-  };
-
-  return (
-    <div className="space-y-1.5">
-      <label className="text-xs font-semibold text-[var(--sn-text-muted)]">{label}</label>
-      {hint && <p className="text-xs text-[var(--sn-text-muted)] -mt-0.5">{hint}</p>}
-
-      {/* Upload zone */}
-      <div
-        className={`relative w-full ${aspectClass} rounded-xl border-2 border-dashed border-[var(--sn-border)] overflow-hidden group cursor-pointer transition-colors hover:border-[var(--sn-purple)]`}
-        onClick={() => !uploading && inputRef.current?.click()}
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={handleDrop}
-      >
-        {/* Current image */}
-        {value
-          ? <img src={value} alt={label} className="w-full h-full object-cover" />
-          : (
-            <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-[var(--az-black)]">
-              <ImagePlus className="w-7 h-7 text-[var(--sn-text-muted)]" />
-              <span className="text-xs text-[var(--sn-text-muted)]">Click or drag to upload</span>
-            </div>
-          )
-        }
-
-        {/* Overlay on hover */}
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
-          {uploading
-            ? <Loader2 className="w-6 h-6 text-white animate-spin" />
-            : <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                <Camera className="w-5 h-5" /> Change photo
-              </div>
-          }
-        </div>
-
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          className="hidden"
-          disabled={uploading}
-          onChange={(e) => handleFile(e.target.files?.[0])}
-        />
-      </div>
-
-      {/* Manual URL fallback — useful if Cloudinary isn't configured */}
-      {!isCloudinaryConfigured() && (
-        <input
-          type="url"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="https://res.cloudinary.com/..."
-          className="w-full text-xs rounded-lg border border-[var(--sn-border)] bg-[var(--az-black)] px-3 py-2 text-[var(--sn-text)] placeholder:text-[var(--sn-text-muted)] focus:border-[var(--sn-purple)] outline-none"
-        />
-      )}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// LogoUploadField
-// Square, shows initials when empty. Same click-to-upload pattern.
-// ---------------------------------------------------------------------------
-function LogoUploadField({ value, onChange, businessName }) {
-  const [uploading, setUploading] = useState(false);
-  const inputRef = useRef(null);
-
-  const initials = (businessName || 'B').trim().charAt(0).toUpperCase();
-
-  const handleFile = async (file) => {
-    if (!file) return;
-    const err = validateImageFile(file);
-    if (err) { toast.error(err); return; }
-
-    setUploading(true);
-    try {
-      const url = await uploadImageToCloudinary(file, 'azaman-logos');
-      onChange(url);
-      toast.success('Logo updated');
-    } catch (e) {
-      toast.error('Upload failed: ' + e.message);
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  return (
-    <div className="space-y-1.5">
-      <label className="text-xs font-semibold text-[var(--sn-text-muted)]">Business Logo</label>
-      <p className="text-xs text-[var(--sn-text-muted)] -mt-0.5">
-        Shown as your profile picture in the Azaman app. Square image recommended.
-      </p>
-      <div className="flex items-end gap-4">
-        {/* Avatar preview */}
-        <div
-          className="relative w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 border-2 border-dashed border-[var(--sn-border)] group cursor-pointer hover:border-[var(--sn-purple)] transition-colors"
-          onClick={() => !uploading && inputRef.current?.click()}
-        >
-          {value
-            ? <img src={value} alt="logo" className="w-full h-full object-cover" />
-            : (
-              <div className="w-full h-full flex items-center justify-center bg-[var(--sn-purple-subtle)]">
-                <span className="text-2xl font-black text-[var(--sn-purple)]">{initials}</span>
-              </div>
-            )
-          }
-          {/* Hover overlay */}
-          <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl">
-            {uploading
-              ? <Loader2 className="w-5 h-5 text-white animate-spin" />
-              : <Camera className="w-5 h-5 text-white" />
-            }
-          </div>
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="hidden"
-            disabled={uploading}
-            onChange={(e) => handleFile(e.target.files?.[0])}
-          />
-        </div>
-
-        <div className="flex-1 space-y-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => inputRef.current?.click()}
-            loading={uploading}
-            disabled={uploading}
-          >
-            <ImagePlus className="w-4 h-4 mr-1.5" /> Upload Logo
-          </Button>
-          {/* URL fallback if Cloudinary not configured */}
-          {!isCloudinaryConfigured() && (
-            <input
-              type="url"
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              placeholder="https://res.cloudinary.com/..."
-              className="w-full text-xs rounded-lg border border-[var(--sn-border)] bg-[var(--az-black)] px-3 py-2 text-[var(--sn-text)] placeholder:text-[var(--sn-text-muted)] focus:border-[var(--sn-purple)] outline-none"
-            />
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Main Settings Page
-// ---------------------------------------------------------------------------
 export default function Settings() {
   const { bizProfile, user, refreshProfile } = useAuth();
+  const { hasPermission } = usePermission();
+  const canManage = hasPermission('settings.manage');
   const qc = useQueryClient();
 
+  // ── Business Profile form state (from old Settings) ──────────────────────
   const [form, setForm] = useState({
-    businessName: '',
-    description:  '',
-    website:      '',
-    phoneNumber:  '',
-    contactEmail: '',
-    address:      '',
-    country:      '',
-    category:     '',
-    logoUrl:      '',
-    coverPhotoUrl: '',
-    adAccentColor: '',
+    businessName: '', description: '', website: '', phoneNumber: '',
+    contactEmail: '', address: '', country: '', category: '',
+    logoUrl: '', coverPhotoUrl: '', adAccentColor: '',
+    businessMeta: {},
   });
-  const [saved, setSaved] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-
-  const [penaltyPolicy, setPenaltyPolicy] = useState(null);
-  const [penaltyLoading, setPenaltyLoading] = useState(false);
-
-  useEffect(() => {
-    if (bizProfile?.id) {
-      marketplaceApi.getPenaltyPolicy(bizProfile.id)
-        .then(data => setPenaltyPolicy(data.policy))
-        .catch(() => {});
-    }
-  }, [bizProfile?.id]);
-
-  const { data: locsData } = useQuery({
-    queryKey: ['biz-locations'],
-    queryFn:  () => locApi.list(),
-    enabled:  !!bizProfile,
-  });
-  const locs = locsData?.locations || [];
-
-  const copyBizId = async () => {
-    if (!bizProfile?.bizId) return;
-    try {
-      await navigator.clipboard.writeText(bizProfile.bizId);
-      toast.success('BIZ ID copied to clipboard');
-    } catch {
-      toast.error('Could not copy. Please copy it manually.');
-    }
-  };
 
   useEffect(() => {
     if (bizProfile) {
       setForm({
         businessName: bizProfile.businessName || '',
         description:  bizProfile.description  || '',
-        website:      bizProfile.website       || '',
-        phoneNumber:  bizProfile.phoneNumber   || '',
-        contactEmail: bizProfile.contactEmail  || '',
-        address:      bizProfile.address       || '',
-        country:      bizProfile.country       || '',
-        category:     bizProfile.category      || '',
-        logoUrl:      bizProfile.logoUrl        || '',
+        website:       bizProfile.website      || '',
+        phoneNumber:   bizProfile.phoneNumber  || '',
+        contactEmail:  bizProfile.contactEmail || '',
+        address:       bizProfile.address      || '',
+        country:       bizProfile.country      || '',
+        category:      bizProfile.category     || '',
+        logoUrl:       bizProfile.logoUrl      || '',
         coverPhotoUrl: bizProfile.coverPhotoUrl || '',
         adAccentColor: bizProfile.adAccentColor || '',
+        businessMeta: bizProfile.businessMeta || {},
       });
     }
   }, [bizProfile]);
 
-  const updateMutation = useMutation({
+  const saveMutation = useMutation({
     mutationFn: (data) => businessApi.update(data),
     onSuccess: () => {
-      toast.success('Business profile updated');
+      toast.go('Settings saved');
       refreshProfile();
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => toast.stop('Save failed: ' + e.message),
   });
 
-  // Generic setter for text inputs (e.target.value pattern)
-  const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }));
-  // Direct value setter — used by image upload callbacks
-  const setUrl = (key) => (url) => setForm(f => ({ ...f, [key]: url }));
+  const handleSave = () => {
+    saveMutation.mutate({
+      businessName: form.businessName,
+      description:  form.description,
+      website:      form.website,
+      phoneNumber:  form.phoneNumber,
+      contactEmail: form.contactEmail,
+      address:      form.address,
+      country:      form.country,
+      category:     form.category,
+      logoUrl:      form.logoUrl,
+      coverPhotoUrl: form.coverPhotoUrl,
+      adAccentColor: form.adAccentColor || null,
+      businessMeta: form.businessMeta,
+    });
+  };
 
-  const HEX_RE = /^#[0-9A-Fa-f]{6}$/;
-  const isValidHex = (v) => v === '' || HEX_RE.test(v);
+  const copyBizId = async () => {
+    if (!bizProfile?.bizId) return;
+    try {
+      await navigator.clipboard.writeText(bizProfile.bizId);
+      toast.go('BIZ ID copied');
+    } catch { /* ignore */ }
+  };
 
-  const kybMeta = KYB_STATUS_META[bizProfile?.kybStatus || 'UNVERIFIED'];
-
-  return (
-    <div className="p-6 max-w-3xl mx-auto space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-xl font-bold text-[var(--sn-text)]">Business Settings</h1>
-        <p className="text-sm text-[var(--sn-text-muted)] mt-1">Update your business profile and contact information.</p>
-      </div>
-
-      {/* Account info */}
-      <Card className="space-y-4">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-[var(--sn-purple-subtle)] border border-[var(--sn-purple)] flex items-center justify-center flex-shrink-0">
-            <Building2 className="w-6 h-6 text-[var(--sn-purple)]" />
+  // ── Business Profile tab content ────────────────────────────────────────
+  const profileContent = (
+    <div className="space-y-6">
+      {/* Logo + Cover Photo */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Logo */}
+        <Card className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-[var(--accent)]" />
+            <h3 className="text-sm font-semibold text-[var(--text)]">Business Logo</h3>
           </div>
-          <div>
-            <p className="text-base font-bold text-[var(--sn-text)]">{bizProfile?.businessName || 'Your Business'}</p>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-xs text-[var(--sn-text-muted)] az-mono">{bizProfile?.bizId}</span>
-              <Badge color={kybMeta.color} bg={kybMeta.bg}>{kybMeta.label}</Badge>
-            </div>
-          </div>
-        </div>
-        <div className="pt-2 border-t border-[var(--sn-border)]">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-xs text-[var(--sn-text-muted)] mb-1">Signed in as</p>
-              <p className="text-sm text-[var(--sn-text)]">{user?.username}</p>
-            </div>
-            <div>
-              <p className="text-xs text-[var(--sn-text-muted)] mb-1">Email</p>
-              <p className="text-sm text-[var(--sn-text)]">{user?.email}</p>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Public profile preview */}
-      <Card className="space-y-4">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-bold text-[var(--sn-text)]">Public Profile</p>
-            <p className="text-xs text-[var(--sn-text-muted)] mt-1">This is how customers find you in the Azaman app.</p>
-          </div>
-          {bizProfile?.isVerified && (
-            <span className="flex items-center gap-1 text-xs font-semibold text-[var(--sn-purple)]">
-              <BadgeCheck className="w-4 h-4" /> Verified
-            </span>
-          )}
-        </div>
-
-        <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-[var(--az-black)] border border-[var(--sn-border)]">
-          <div className="min-w-0">
-            <p className="text-xs text-[var(--sn-text-muted)] mb-0.5">Your BIZ ID</p>
-            <p className="text-sm font-bold text-[var(--sn-text)] az-mono truncate">{bizProfile?.bizId || '—'}</p>
-          </div>
-          <Button variant="secondary" size="sm" onClick={copyBizId} className="flex-shrink-0">
-            <Copy className="w-3.5 h-3.5" /> Copy
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div className="p-3 rounded-xl bg-[var(--az-black)] border border-[var(--sn-border)]">
-            <p className="text-xs text-[var(--sn-text-muted)] mb-0.5">Category</p>
-            <p className="text-sm text-[var(--sn-text)]">{(bizProfile?.category || 'OTHER').replace(/_/g, ' ')}</p>
-          </div>
-          <div className="p-3 rounded-xl bg-[var(--az-black)] border border-[var(--sn-border)]">
-            <p className="text-xs text-[var(--sn-text-muted)] mb-0.5">Lifetime Orders</p>
-            <p className="text-sm text-[var(--sn-text)] az-mono">{bizProfile?.totalEscrows ?? 0}</p>
-          </div>
-        </div>
-
-        <Button
-          variant="outline"
-          onClick={() => setShowPreview(true)}
-          disabled={!bizProfile?.bizId}
-          className="w-full"
-        >
-          <Eye className="w-4 h-4" /> View Public Profile
-        </Button>
-      </Card>
-
-      {/* QR Codes */}
-      <Card className="space-y-4">
-        <div className="flex items-center gap-2">
-          <QrCode className="w-4 h-4 text-[var(--sn-purple)]" />
-          <h3 className="text-sm font-bold text-[var(--sn-text)]">QR Codes</h3>
-        </div>
-        <p className="text-xs text-[var(--sn-text-muted)]">
-          Let customers scan to open your business instantly in the Azaman app — no search needed.
-        </p>
-
-        {bizProfile?.bizId ? (
-          <div className="space-y-3">
-            <QrCodePanel
-              label={`${bizProfile?.businessName || 'Business'} — Main`}
-              url={`azaman://business/${bizProfile.bizId}`}
-            />
-            {locs.filter(l => l.isActive).map(loc => (
-              <QrCodePanel
-                key={loc.id}
-                label={`${loc.label} — Branch QR`}
-                url={`azaman://business/${bizProfile.bizId}/location/${loc.id}`}
-              />
-            ))}
-            {locs.filter(l => l.isActive).map(loc =>
-              (loc.tables || []).filter(t => t.isActive).map(tbl => (
-                <QrCodePanel
-                  key={tbl.id}
-                  label={`${loc.label} — ${tbl.label}`}
-                  url={`azaman://business/${bizProfile.bizId}/table/${tbl.id}`}
-                />
-              ))
-            )}
-          </div>
-        ) : (
-          <p className="text-xs text-[var(--sn-text-muted)]">Your BIZ ID is not ready yet. QR codes will appear here once available.</p>
-        )}
-      </Card>
-
-      {/* Edit form */}
-      <Card className="space-y-5">
-        <p className="text-sm font-bold text-[var(--sn-text)]">Business Information</p>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
-            label="Business Name"
-            value={form.businessName}
-            onChange={set('businessName')}
-            placeholder="Your business name"
-          />
-          <Select
-            label="Category"
-            value={form.category}
-            onChange={set('category')}
-            options={CATEGORIES}
-          />
-        </div>
-
-        <Textarea
-          label="Description"
-          value={form.description}
-          onChange={set('description')}
-          placeholder="Briefly describe what your business offers..."
-          rows={3}
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input label="Website"       value={form.website}      onChange={set('website')}      placeholder="https://yoursite.com" />
-          <Input label="Phone Number"  value={form.phoneNumber}   onChange={set('phoneNumber')}  placeholder="+233 20 000 0000" />
-          <Input label="Contact Email" value={form.contactEmail}  onChange={set('contactEmail')} placeholder="contact@business.com" type="email" />
-          <Input label="Country Code"  value={form.country}       onChange={set('country')}      placeholder="GH" maxLength={2} />
-        </div>
-
-        <Input label="Address" value={form.address} onChange={set('address')} placeholder="Business address" />
-
-        {/* ── Logo Upload ───────────────────────────────────────────────── */}
-        <LogoUploadField
-          value={form.logoUrl}
-          onChange={setUrl('logoUrl')}
-          businessName={form.businessName}
-        />
-
-        {/* ── Cover Photo ───────────────────────────────────────────────── */}
-        <ImageUploadField
-          label="Cover Photo"
-          hint="Shown as the hero banner on your public profile and the card background in the marketplace feed."
-          value={form.coverPhotoUrl}
-          onChange={setUrl('coverPhotoUrl')}
-          aspectClass="aspect-[3/1]"
-          folder="azaman-covers"
-        />
-
-        {/* ── Ad Appearance ─────────────────────────────────────────────── */}
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-[var(--sn-text-muted)] flex items-center gap-1.5">
-            <Palette className="w-3.5 h-3.5" /> Ad Appearance
-          </label>
-          <p className="text-xs text-[var(--sn-text-muted)] -mt-1">
-            Pick an accent color for your collapsed marketplace card. Leave blank to use the default color for your category.
-          </p>
-          <div className="flex items-center gap-3">
-            <div
-              className="w-10 h-10 rounded-lg border border-[var(--sn-border)] flex-shrink-0 overflow-hidden relative"
-              style={{ background: isValidHex(form.adAccentColor) && form.adAccentColor ? form.adAccentColor : 'var(--az-black)' }}
-            >
-              <input
-                type="color"
-                value={isValidHex(form.adAccentColor) && form.adAccentColor ? form.adAccentColor : '#6C4CE0'}
-                onChange={(e) => setForm(f => ({ ...f, adAccentColor: e.target.value.toUpperCase() }))}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                aria-label="Pick ad accent color"
-              />
+          <div className="flex items-center gap-4">
+            <div className="w-20 h-20 rounded-2xl overflow-hidden border border-[var(--line)] flex-shrink-0">
+              {form.logoUrl
+                ? <img src={form.logoUrl} alt="logo" className="w-full h-full object-cover" />
+                : <div className="w-full h-full flex items-center justify-center bg-[var(--surface-sunk)]">
+                    <span className="text-2xl font-black text-[var(--accent)]">{(form.businessName || 'B').charAt(0)}</span>
+                  </div>
+              }
             </div>
             <Input
-              label=""
-              value={form.adAccentColor}
-              onChange={(e) => setForm(f => ({ ...f, adAccentColor: e.target.value }))}
-              placeholder="#FFAA00"
-              maxLength={7}
-              className="flex-1"
+              placeholder="Logo URL"
+              value={form.logoUrl}
+              onChange={e => setForm({ ...form, logoUrl: e.target.value })}
+              disabled={!canManage}
             />
-            <Button
-              variant="outline"
-              size="sm"
-              type="button"
-              onClick={() => setForm(f => ({ ...f, adAccentColor: '' }))}
-              disabled={!form.adAccentColor}
-              className="flex-shrink-0"
+          </div>
+        </Card>
+
+        {/* Cover Photo */}
+        <Card className="space-y-3">
+          <h3 className="text-sm font-semibold text-[var(--text)]">Cover Photo</h3>
+          {form.coverPhotoUrl
+            ? <img src={form.coverPhotoUrl} alt="cover" className="w-full h-24 rounded-xl object-cover" />
+            : <div className="w-full h-24 rounded-xl border-2 border-dashed border-[var(--line)] flex items-center justify-center">
+                <ImagePlus className="w-6 h-6 text-[var(--text-3)]" />
+              </div>
+          }
+          <Input
+            placeholder="Cover photo URL"
+            value={form.coverPhotoUrl}
+            onChange={e => setForm({ ...form, coverPhotoUrl: e.target.value })}
+            disabled={!canManage}
+          />
+        </Card>
+      </div>
+
+      {/* Basic info */}
+      <Card className="space-y-4">
+        <h3 className="text-sm font-semibold text-[var(--text)]">Business Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Input label="Business Name" value={form.businessName} onChange={e => setForm({ ...form, businessName: e.target.value })} disabled={!canManage} />
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-[var(--text-3)] uppercase tracking-wider">Category</label>
+            <select
+              className="w-full px-4 py-3 rounded-xl bg-[var(--f-ink-900)] border border-[var(--line)] text-[var(--text)] text-sm outline-none focus:border-[var(--accent)]"
+              value={form.category}
+              onChange={e => setForm({ ...form, category: e.target.value })}
+              disabled={!canManage}
             >
-              <RotateCcw className="w-3.5 h-3.5" /> Reset
-            </Button>
+              <option value="">Select category</option>
+              {CATEGORIES.map(c => <option key={c.value} value={c.value} style={{ background: 'var(--surface)' }}>{c.label}</option>)}
+            </select>
           </div>
-          {!isValidHex(form.adAccentColor) && (
-            <p className="text-xs text-[var(--sn-destructive,#e05555)]">
-              Enter a 6-digit hex color like #FFAA00, or leave it blank.
-            </p>
-          )}
+          <Input label="Website" value={form.website} onChange={e => setForm({ ...form, website: e.target.value })} disabled={!canManage} />
+          <Input label="Phone" value={form.phoneNumber} onChange={e => setForm({ ...form, phoneNumber: e.target.value })} disabled={!canManage} />
+          <Input label="Email" value={form.contactEmail} onChange={e => setForm({ ...form, contactEmail: e.target.value })} disabled={!canManage} />
+          <Input label="Address" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} disabled={!canManage} />
         </div>
+        <Textarea label="Description" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} disabled={!canManage} rows={3} />
+      </Card>
 
-        <div className="flex items-center gap-3 pt-2">
-          {saved && (
-            <div className="flex items-center gap-2 text-xs text-[var(--sn-purple)]">
-              <CheckCircle2 className="w-4 h-4" /> Saved
-            </div>
-          )}
-          <Button
-            onClick={() => updateMutation.mutate(form)}
-            loading={updateMutation.isPending}
-            disabled={!isValidHex(form.adAccentColor)}
-            className="ml-auto"
-          >
-            <Save className="w-4 h-4" /> Save Changes
-          </Button>
+      {/* Accent color */}
+      <Card className="flex items-center gap-4">
+        <Palette className="w-5 h-5 text-[var(--accent)]" />
+        <div className="flex-1">
+          <h3 className="text-sm font-semibold text-[var(--text)]">Marketplace Accent Color</h3>
+          <p className="text-xs text-[var(--text-3)]">Customize the color of your marketplace card.</p>
+        </div>
+        <input
+          type="color"
+          value={form.adAccentColor || '#6C5FC7'}
+          onChange={e => setForm({ ...form, adAccentColor: e.target.value })}
+          disabled={!canManage}
+          className="w-12 h-10 rounded-lg border border-[var(--line)] cursor-pointer bg-transparent"
+        />
+      </Card>
+
+      {/* KYB status + BIZ ID */}
+      <Card className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2">
+          <TagCheck className="w-5 h-5" style={{ color: KYB_STATUS_META[bizProfile?.kybStatus || 'UNVERIFIED']?.color }} />
+          <div>
+            <span className="text-xs text-[var(--text-3)]">KYB Status</span>
+            <p className="text-sm font-semibold text-[var(--text)]">{KYB_STATUS_META[bizProfile?.kybStatus || 'UNVERIFIED']?.label || bizProfile?.kybStatus}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 ml-auto">
+          <Tag className="font-mono">{bizProfile?.bizId}</Tag>
+          <Button size="sm" variant="ghost" onClick={copyBizId}>Copy BIZ ID</Button>
         </div>
       </Card>
 
-      {/* Penalty Policy */}
-      <Card className="space-y-4">
-        <div>
-          <h3 className="text-sm font-bold text-[var(--sn-text)]">Penalty Policy</h3>
-          <p className="text-xs text-[var(--sn-text-muted)] mt-1">
-            Configure how no-shows are penalized for your business.
-          </p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="text-xs text-[var(--sn-text-muted)] font-semibold mb-1 block">Customer Penalty %</label>
-            <input
-              type="number"
-              min="0"
-              max="50"
-              step="1"
-              value={penaltyPolicy?.customerPenaltyPct ? Number(penaltyPolicy.customerPenaltyPct) * 100 : 10}
-              onChange={(e) => setPenaltyPolicy({ ...penaltyPolicy, customerPenaltyPct: Number(e.target.value) / 100 })}
-              className="w-full rounded-lg border border-[var(--sn-border)] bg-[var(--az-black)] p-2 text-sm text-[var(--sn-text)] focus:border-[var(--sn-purple)] outline-none"
-            />
-          </div>
-          <div>
-            <label className="text-xs text-[var(--sn-text-muted)] font-semibold mb-1 block">Business Penalty %</label>
-            <input
-              type="number"
-              min="0"
-              max="50"
-              step="1"
-              value={penaltyPolicy?.businessPenaltyPct ? Number(penaltyPolicy.businessPenaltyPct) * 100 : 10}
-              onChange={(e) => setPenaltyPolicy({ ...penaltyPolicy, businessPenaltyPct: Number(e.target.value) / 100 })}
-              className="w-full rounded-lg border border-[var(--sn-border)] bg-[var(--az-black)] p-2 text-sm text-[var(--sn-text)] focus:border-[var(--sn-purple)] outline-none"
-            />
-          </div>
-          <div>
-            <label className="text-xs text-[var(--sn-text-muted)] font-semibold mb-1 block">Grace Period (mins)</label>
-            <input
-              type="number"
-              min="0"
-              step="5"
-              value={penaltyPolicy?.gracePeriodMins || 30}
-              onChange={(e) => setPenaltyPolicy({ ...penaltyPolicy, gracePeriodMins: Number(e.target.value) })}
-              className="w-full rounded-lg border border-[var(--sn-border)] bg-[var(--az-black)] p-2 text-sm text-[var(--sn-text)] focus:border-[var(--sn-purple)] outline-none"
-            />
-          </div>
-        </div>
-        <Button
-          onClick={async () => {
-            setPenaltyLoading(true);
-            try {
-              await marketplaceApi.updatePenaltyPolicy(bizProfile.id, penaltyPolicy);
-              toast.success('Penalty policy updated.');
-            } catch (e) {
-              toast.error(e.message);
-            } finally {
-              setPenaltyLoading(false);
-            }
-          }}
-          loading={penaltyLoading}
-          variant="outline"
-        >
-          Save Penalty Policy
-        </Button>
-      </Card>
-
-      {/* Payroll & Smart Routing */}
-      <Card className="space-y-4">
-        <div>
-          <h3 className="text-sm font-bold text-[var(--sn-text)] flex items-center gap-2">
-            <Wallet className="w-4 h-4 text-[var(--sn-purple)]" />
-            Payroll & Smart Routing
-          </h3>
-          <p className="text-xs text-[var(--sn-text-muted)] mt-1">
-            Configure how payroll is disbursed to employees. Smart Routing allows employees to auto-split their salaries into USDC savings.
-          </p>
-        </div>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-3 rounded-xl bg-[var(--az-black)] border border-[var(--sn-border)]">
-            <div>
-              <p className="text-sm font-semibold text-[var(--sn-text)]">Allow Employee Smart Routing</p>
-              <p className="text-xs text-[var(--sn-text-muted)]">Employees can define percentage splits (e.g. 80% checking, 20% savings)</p>
-            </div>
-            <Switch defaultChecked />
-          </div>
-          <div className="flex items-center justify-between p-3 rounded-xl bg-[var(--az-black)] border border-[var(--sn-border)]">
-            <div>
-              <p className="text-sm font-semibold text-[var(--sn-text)]">Auto-Approve Time Off</p>
-              <p className="text-xs text-[var(--sn-text-muted)]">Automatically approve requests &lt; 2 days</p>
-            </div>
-            <Switch />
-          </div>
-        </div>
-      </Card>
-
-      <PublicProfilePreview
-        open={showPreview}
-        onClose={() => setShowPreview(false)}
-        bizId={bizProfile?.bizId}
+      {/* Category-specific fields */}
+      <BusinessMeta
+        meta={form.businessMeta}
+        setMeta={(m) => setForm({ ...form, businessMeta: m })}
+        category={form.category}
+        canManage={canManage}
       />
+
+      {/* Save + Preview buttons */}
+      <div className="flex items-center gap-3 justify-end">
+        <Button variant="ghost" onClick={() => setShowPreview(!showPreview)}>
+          <Eye className="w-4 h-4 mr-1.5" /> {showPreview ? 'Hide Preview' : 'Preview'}
+        </Button>
+        <Button onClick={handleSave} disabled={!canManage || saveMutation.isPending}>
+          <Save className="w-4 h-4 mr-1.5" /> Save Changes
+        </Button>
+      </div>
+
+      {!canManage && (
+        <p className="text-xs text-[var(--text-3)] italic text-center">
+          Only the owner or admins with "settings.manage" permission can edit these settings.
+        </p>
+      )}
+
+      {showPreview && bizProfile && (
+        <Card className="p-4">
+          <h3 className="text-sm font-semibold text-[var(--text)] mb-3">Public Profile Preview</h3>
+          <PublicProfilePreview bizProfile={{ ...bizProfile, ...form }} />
+        </Card>
+      )}
+
+      {bizProfile?.isPausedByOwner && (
+        <Card className="p-4 border-[var(--stop)]">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-[var(--stop)]" />
+            <p className="text-sm font-semibold text-[var(--stop)]">
+              Your business is currently paused. Go to the Danger Zone tab to resume.
+            </p>
+          </div>
+        </Card>
+      )}
+    </div>
+  );
+
+  // ── Build tabs array ────────────────────────────────────────────────────
+  const tabs = [
+    { label: 'Profile', icon: Building2, content: profileContent },
+    { label: 'Roles & Permissions', icon: Shield, content: <RolesPermissions /> },
+    { label: "Team Access", icon: Users, content: <TeamAccess /> },
+    { label: 'Notifications', icon: Bell, content: <NotificationPrefs /> },
+    { label: 'Activity Log', icon: History, content: <ActivityLog /> },
+    { label: 'Danger Zone', icon: AlertTriangle, content: <DangerZone /> },
+    { label: 'Developer', icon: Code2, content: <Developer /> },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-3">
+        <h1 className="text-2xl font-bold text-[var(--text)]">Settings</h1>
+        {bizProfile?.isPausedByOwner && (
+          <Tag tone="neutral" className="text-xs">Paused</Tag>
+        )}
+      </div>
+      <Tabs tabs={tabs} />
     </div>
   );
 }

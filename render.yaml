@@ -1,0 +1,32 @@
+# =============================================================================
+# Render Blueprint — azaman-business-portal
+# DEPRECATED: This service is now deployed on Vercel at https://azm-business-portal.vercel.app
+# This file is kept for reference only. Vercel deployment uses vercel.json + dashboard env vars.
+#
+# Static site deployment for the Azaman Business Portal (React + Vite SPA).
+# The _redirects file in public/ (copied to dist/ by the build) ensures all
+# routes serve index.html so client-side routing works on direct access.
+#
+# If this service is currently configured manually in the Render dashboard,
+# mirror these settings:
+#
+#   Build Command:            npm install && npm run build
+#   Publish Directory:        dist
+#   Auto-Deploy from branch:  main
+# =============================================================================
+services:
+  - type: static_site
+    name: azaman-business-portal
+    buildCommand: npm install && npm run build
+    staticPublishDirectory: dist
+    autoDeploy: true
+    branch: main
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_API_URL
+        value: https://azm-backend.onrender.com

@@ -1,12 +1,44 @@
 import { useState, useEffect } from 'react';
 import { employeeApi } from '@/lib/marketplaceApi';
-import { Card, Button, Badge, Input, Select, Modal, Empty, Skeleton, Avatar, DropdownMenu, Tooltip, Switch } from '@/components/ui';
-import { useToast } from '@/components/ui/Toast';
-import { Users, UserPlus, MoreVertical, Mail, Phone, DollarSign, Clock, Star, Calendar, Edit2, Trash2, Ban, CheckCircle2 } from 'lucide-react';
+import { usePermission } from '@/hooks/usePermission';
+import {
+  Card,
+  Button,
+  Tag,
+  Input,
+  Select,
+  Dialog,
+  Empty,
+  Skel,
+  Avatar,
+  DropdownMenu,
+  Tooltip,
+  Switch,
+  StatCard,
+  Textarea
+} from '@/components/instrument';
+import { VirtualizedGrid } from '@/components/instrument';
+import {
+  Users,
+  UserPlus,
+  Search,
+  MoreVertical,
+  Edit2,
+  Trash2,
+  Mail,
+  Phone,
+  Star,
+  Clock,
+  Calendar,
+  DollarSign,
+  Ban,
+  CheckCircle2,
+  Filter
+} from 'lucide-react';
+import { toast } from '@/lib/toast';
 
-// Roles mirror the backend EmployeeRole enum (Prisma). TRAINEE does not
-// exist in the enum and was removed — it produced a 500 on create.
 const ROLES = [
+  { value: 'OWNER', label: 'Owner' },
   { value: 'MANAGER', label: 'Manager' },
   { value: 'SUPERVISOR', label: 'Supervisor' },
   { value: 'STAFF', label: 'Staff' },
@@ -19,415 +51,771 @@ const ROLES = [
   { value: 'SECURITY', label: 'Security' },
 ];
 
-// PayrollType enum values (Prisma): SALARY | HOURLY | PIECE_RATE.
-// The old WEEKLY/BIWEEKLY/MONTHLY frequency values were never valid.
-const PAYROLL_TYPES = [
-  { value: 'SALARY', label: 'Monthly Salary' },
-  { value: 'HOURLY', label: 'Hourly Rate' },
+const STATUSES = [
+  { value: 'ACTIVE', label: 'Active' },
+  { value: 'SUSPENDED', label: 'Suspended' },
+  { value: 'TERMINATED', label: 'Terminated' },
 ];
 
-// Build the current ISO week (Mon-Sun) for the schedule tab.
-function currentWeekRange() {
-  const now = new Date();
-  const day = (now.getDay() + 6) % 7; // Monday = 0
-  const monday = new Date(now); monday.setDate(now.getDate() - day); monday.setHours(0, 0, 0, 0);
-  const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6); sunday.setHours(23, 59, 59, 999);
-  const iso = (d) => d.toISOString().slice(0, 10);
-  return { startDate: iso(monday), endDate: iso(sunday) };
-}
+const PAYROLL_TYPES = [
+  { value: 'SALARY', label: 'Salary' },
+  { value: 'HOURLY', label: 'Hourly' },
+];
 
-const STATUS_COLORS = { ACTIVE: 'var(--sn-purple)', SUSPENDED: 'var(--sn-red)', TERMINATED: 'var(--sn-text-muted)', ON_LEAVE: 'var(--sn-amber)' };
+const STATUS_COLORS = {
+  ACTIVE: 'var(--f-tint-color)',
+  SUSPENDED: 'var(--f-warn)',
+  TERMINATED: 'var(--f-bad)',
+};
+
+const AVAILABLE_PERMISSIONS = [
+  { value: 'employees.view', label: 'View Employees' },
+  { value: 'employees.create', label: 'Add Employees' },
+  { value: 'employees.update', label: 'Edit Employees' },
+  { value: 'employees.terminate', label: 'Terminate Employees' },
+  { value: 'employees.permissions', label: 'Update Permissions' },
+];
 
 export default function Employees() {
-  const { toast } = useToast();
-  const [employees, setEmployees] = useState(null);
-  const [shifts, setShifts] = useState(null);
-  const [swapRequests, setSwapRequests] = useState(null);
-  const [timeOffRequests, setTimeOffRequests] = useState(null);
-  const [dashboard, setDashboard] = useState(null);
-  const [addOpen, setAddOpen] = useState(false);
-  const [editEmp, setEditEmp] = useState(null);
-  const [tab, setTab] = useState(0);
-  const [form, setForm] = useState({ azmId: '', role: 'STAFF', jobTitle: '', monthlySalaryUsdc: '', hourlyRateUsdc: '', payrollType: 'SALARY' });
-  // permDraft is the SET of enabled dotted permission keys, e.g.
-  // ['employees.view', 'shifts.view'] — exactly what the backend stores in
-  // BusinessEmployee.permissions[] (Module 01 canonical catalog).
-  const [permDraft, setPermDraft] = useState([]);
-  const [permCatalog, setPermCatalog] = useState(null);
+    const { hasPermission } = usePermission();
 
-  const load = async () => {
-    try {
-      const [empRes, dashRes, shiftRes, swapRes, torRes, permRes] = await Promise.all([
-        employeeApi.list(),
-        employeeApi.dashboard(),
-        employeeApi.getShifts(currentWeekRange()),
-        employeeApi.swapRequests(),
-        employeeApi.timeOffRequests(),
-        employeeApi.permissionTemplates(),
-      ]);
-      const emps = empRes?.employees || [];
-      setEmployees(emps);
-      // /dashboard/employee-stats returns { stats: { totalEmployees,
-      // activeShifts, pendingTimeOff, monthlyPayroll } }. avgRating is not
-      // part of that payload — compute it from the employee rows.
-      const stats = dashRes?.stats || {};
-      const rated = emps.filter((e) => Number(e.ratingCount) > 0);
-      const avgRating = rated.length
-        ? rated.reduce((sum, e) => sum + Number(e.rating || 0), 0) / rated.length
-        : null;
-      setDashboard({
-        activeCount: stats.totalEmployees ?? 0,
-        onShiftNow: stats.activeShifts ?? 0,
-        monthlyPayrollUsdc: stats.monthlyPayroll != null ? Number(stats.monthlyPayroll) : 0,
-        pendingTimeOff: stats.pendingTimeOff ?? 0,
-        avgRating,
-      });
-      setShifts(shiftRes?.shifts || []);
-      setSwapRequests(swapRes?.swaps || []);
-      setTimeOffRequests(torRes?.requests || []);
-      setPermCatalog(permRes?.permissionKeys || null);
-    } catch (err) {
-      toast.error('Failed to load employee data');
-    }
-  };
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => { load(); }, []);
+  // Search & Filter State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('ALL');
+  const [statusFilter, setStatusFilter] = useState('ALL');
 
-  // Map the form to the backend's addEmployee payload vocabulary: jobTitle
-  // -> title, monthlySalaryUsdc -> salaryAmount, hourlyRateUsdc -> hourlyRate,
-  // payrollType uses the Prisma PayrollType enum, permissions is the dotted
-  // key array (no booleans).
-  const formToPayload = () => ({
-    azmId: form.azmId,
-    role: form.role,
-    title: form.jobTitle || undefined,
-    payrollType: form.payrollType,
-    salaryAmount: form.payrollType === 'SALARY' && form.monthlySalaryUsdc ? Number(form.monthlySalaryUsdc) : null,
-    hourlyRate: form.payrollType === 'HOURLY' && form.hourlyRateUsdc ? Number(form.hourlyRateUsdc) : null,
-    permissions: permDraft,
+  // Modals
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isPermsOpen, setIsPermsOpen] = useState(false);
+  const [isSelectedOpen, setIsSelectedOpen] = useState(false);
+
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+
+  // Form States
+  const [addForm, setAddForm] = useState({
+    azmId: '',
+    role: 'STAFF',
+    title: '',
+    department: '',
+    payrollType: 'HOURLY',
+    salaryAmount: '',
+    hourlyRate: '',
+    paymentPreference: 'AZAMAN_BALANCE',
   });
 
-  const resetForm = () => {
-    setForm({ azmId: '', role: 'STAFF', jobTitle: '', monthlySalaryUsdc: '', hourlyRateUsdc: '', payrollType: 'SALARY' });
-    setPermDraft([]);
-  };
+  const [editForm, setEditForm] = useState({
+    role: 'STAFF',
+    title: '',
+    department: '',
+    payrollType: 'HOURLY',
+    salaryAmount: '',
+    hourlyRate: '',
+    paymentPreference: 'AZAMAN_BALANCE',
+  });
 
-  const handleAdd = async () => {
+  const [permissionsForm, setPermissionsForm] = useState([]);
+  const [availablePermissions, setAvailablePermissions] = useState(AVAILABLE_PERMISSIONS);
+
+  // Fetch employees
+  const fetchEmployees = async () => {
     try {
-      await employeeApi.create(formToPayload());
-      toast.success('Employee added successfully');
-      setAddOpen(false);
-      resetForm();
-      load();
+      setLoading(true);
+      const res = await employeeApi.list();
+      setEmployees(res.data?.employees || []);
     } catch (err) {
-      toast.error(err.message || 'Failed to add employee');
+      toast.stop('Failed to load employee directory');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleEdit = async () => {
+  useEffect(() => {
+    fetchEmployees();
+    employeeApi.permissionTemplates()
+      .then((res) => {
+        const groups = res.data?.permissionKeys;
+        if (!groups || typeof groups !== 'object') return;
+        const catalog = Object.values(groups)
+          .flat()
+          .filter((item) => item?.key)
+          .map((item) => ({ value: item.key, label: item.label || item.key, module: item.module }));
+        if (catalog.length) setAvailablePermissions(catalog);
+      })
+      .catch(() => {
+        // Keep the canonical workforce fallback if the catalog request is unavailable.
+      });
+  }, []);
+
+  // Filtered employees for local display (search + dropdown filters)
+  const filteredEmployees = employees.filter((emp) => {
+    const name = emp.user?.fullName || '';
+    const email = emp.user?.email || '';
+    const matchesSearch =
+      name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      email.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesRole = roleFilter === 'ALL' || emp.role === roleFilter;
+    const matchesStatus = statusFilter === 'ALL' || emp.status === statusFilter;
+
+    return matchesSearch && matchesRole && matchesStatus;
+  });
+
+  // Calculate Stat Cards
+  const totalEmployees = employees.length;
+  const activeCount = employees.filter((e) => e.status === 'ACTIVE').length;
+  const suspendedCount = employees.filter((e) => e.status === 'SUSPENDED').length;
+  const avgRating =
+    employees.length > 0
+      ? employees.reduce((sum, e) => sum + (e.rating || 0), 0) / employees.length
+      : 0;
+
+  // Add Employee Submission
+  const handleAddEmployee = async () => {
     try {
-      await employeeApi.update(editEmp.id, formToPayload());
-      toast.success('Employee updated');
-      setEditEmp(null);
-      load();
+      const payload = {
+        azmId: addForm.azmId,
+        role: addForm.role,
+        title: addForm.title,
+        department: addForm.department,
+        payrollType: addForm.payrollType,
+        salaryAmount: addForm.payrollType === 'SALARY' ? parseFloat(addForm.salaryAmount || 0) : undefined,
+        hourlyRate: addForm.payrollType === 'HOURLY' ? parseFloat(addForm.hourlyRate || 0) : undefined,
+        paymentPreference: addForm.paymentPreference,
+      };
+
+      await employeeApi.create(payload);
+      toast.go('Employee added successfully');
+      setIsAddOpen(false);
+      // Reset form
+      setAddForm({
+        azmId: '',
+        role: 'STAFF',
+        title: '',
+        department: '',
+        payrollType: 'HOURLY',
+        salaryAmount: '',
+        hourlyRate: '',
+        paymentPreference: 'AZAMAN_BALANCE',
+      });
+      fetchEmployees();
     } catch (err) {
-      toast.error(err.message || 'Failed to update employee');
+      toast.stop(err.response?.data?.message || 'Failed to add employee');
     }
   };
 
-  const handleAction = async (emp, action) => {
-    const actions = {
-      suspend: () => employeeApi.update(emp.id, { status: 'SUSPENDED' }),
-      reinstate: () => employeeApi.update(emp.id, { status: 'ACTIVE' }),
-      terminate: () => employeeApi.update(emp.id, { status: 'TERMINATED' }),
-      remove: () => employeeApi.remove(emp.id),
-    };
+  // Edit Employee Submission
+  const handleEditEmployee = async () => {
     try {
-      await actions[action]();
-      toast.success(`Employee ${action}d`);
-      load();
+      const payload = {
+        role: editForm.role,
+        title: editForm.title,
+        department: editForm.department,
+        payrollType: editForm.payrollType,
+        salaryAmount: editForm.payrollType === 'SALARY' ? parseFloat(editForm.salaryAmount || 0) : undefined,
+        hourlyRate: editForm.payrollType === 'HOURLY' ? parseFloat(editForm.hourlyRate || 0) : undefined,
+        paymentPreference: editForm.paymentPreference,
+      };
+
+      await employeeApi.update(selectedEmployee.id, payload);
+      toast.go('Employee updated successfully');
+      setIsEditOpen(false);
+      if (isSelectedOpen) {
+        // Update selected view modal too
+        setSelectedEmployee((prev) => ({ ...prev, ...payload }));
+      }
+      fetchEmployees();
     } catch (err) {
-      toast.error(`Failed to ${action} employee`);
+      toast.stop(err.response?.data?.message || 'Failed to update employee');
     }
   };
 
-  const openEdit = (emp) => {
-    setEditEmp(emp);
-    setForm({
-      azmId: emp.user?.username || '',
-      role: emp.role,
-      jobTitle: emp.title || '',
-      monthlySalaryUsdc: emp.salaryAmount != null ? String(emp.salaryAmount) : '',
-      hourlyRateUsdc: emp.hourlyRate != null ? String(emp.hourlyRate) : '',
-      payrollType: emp.payrollType || 'SALARY',
+  // Permissions Submission
+  const handleUpdatePermissions = async () => {
+    try {
+      await employeeApi.updatePermissions(selectedEmployee.id, permissionsForm);
+      toast.go('Permissions updated successfully');
+      setIsPermsOpen(false);
+      fetchEmployees();
+    } catch (err) {
+      toast.stop(err.response?.data?.message || 'Failed to update permissions');
+    }
+  };
+
+  // Terminate Employee Action
+  const handleTerminateEmployee = async (id) => {
+    try {
+      await employeeApi.remove(id);
+      toast.go('Employee terminated successfully');
+      if (isSelectedOpen && selectedEmployee?.id === id) {
+        setIsSelectedOpen(false);
+      }
+      fetchEmployees();
+    } catch (err) {
+      toast.stop('Failed to terminate employee');
+    }
+  };
+
+  // Suspend/Reactivate status toggle
+  const handleToggleStatus = async (emp) => {
+    try {
+      const nextStatus = emp.status === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
+      await employeeApi.update(emp.id, { status: nextStatus });
+      toast.go(`Employee ${nextStatus === 'ACTIVE' ? 'reactivated' : 'suspended'}`);
+      fetchEmployees();
+    } catch (err) {
+      toast.stop('Failed to update employee status');
+    }
+  };
+
+  // Set up forms for selected user
+  const openEditModal = (emp) => {
+    setSelectedEmployee(emp);
+    setEditForm({
+      role: emp.role || 'STAFF',
+      title: emp.title || '',
+      department: emp.department || '',
+      payrollType: emp.payrollType || 'HOURLY',
+      salaryAmount: emp.salaryAmount || '',
+      hourlyRate: emp.hourlyRate || '',
+      paymentPreference: emp.paymentPreference || 'AZAMAN_BALANCE',
     });
-    // permissions is the stored dotted-key array (legacy snake_case rows are
-    // normalized by the backend on read of new writes, not here).
-    setPermDraft(Array.isArray(emp.permissions) ? emp.permissions : []);
+    setIsEditOpen(true);
   };
 
-  const tabs = [
-    { label: 'Team', icon: Users, count: employees?.length, content: <TeamGrid employees={employees} onEdit={openEdit} onAction={handleAction} loading={!employees} /> },
-    { label: 'Schedule', icon: Calendar, count: shifts?.length, content: <ScheduleTab shifts={shifts} loading={!shifts} /> },
-    { label: 'Swap Requests', icon: CheckCircle2, count: swapRequests?.length, content: <SwapTab swaps={swapRequests} onApprove={async (id) => { await employeeApi.approveSwap(id); toast.success('Swap approved'); load(); }} onReject={async (id) => { await employeeApi.rejectSwap(id); toast.info('Swap rejected'); load(); }} loading={!swapRequests} /> },
-    { label: 'Time Off', icon: Clock, count: timeOffRequests?.length, content: <TimeOffTab requests={timeOffRequests} onApprove={async (id) => { await employeeApi.approveTimeOff(id); toast.success('Time off approved'); load(); }} onReject={async (id) => { await employeeApi.rejectTimeOff(id); toast.info('Time off rejected'); load(); }} loading={!timeOffRequests} /> },
-    { label: 'Payroll', icon: DollarSign, content: <PayrollTab onRunPayroll={async (data) => { await employeeApi.runPayroll(data); toast.success('Payroll executed — Smart Routes dispatched'); load(); }} loading={!dashboard} /> },
-  ];
+  const openPermissionsModal = (emp) => {
+    setSelectedEmployee(emp);
+    setPermissionsForm(emp.permissions || []);
+    setIsPermsOpen(true);
+  };
+
+  const togglePermission = (perm) => {
+    setPermissionsForm((prev) =>
+      prev.includes(perm) ? prev.filter((p) => p !== perm) : [...prev, perm]
+    );
+  };
+
+  const canCreate = hasPermission('employees.create');
+  const canUpdate = hasPermission('employees.update');
+  const canTerminate = hasPermission('employees.terminate');
+  const canPermissions = hasPermission('employees.permissions');
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-[var(--sn-text)]">Employee Management</h1>
-          <p className="text-sm text-[var(--sn-text-muted)] mt-0.5">Manage your team, schedules, payroll, and more</p>
+          <h1 className="text-xl font-bold text-[var(--f-text)]">Employees</h1>
+          <p className="text-sm text-[var(--f-text-3)] mt-0.5">
+            Manage roles, compensation, schedules, and permissions
+          </p>
         </div>
-        <Button onClick={() => setAddOpen(true)}><UserPlus className="w-4 h-4" /> Add Employee</Button>
+        {canCreate && (
+          <Button data-tour="employees-add" onClick={() => setIsAddOpen(true)}>
+            <UserPlus className="w-4 h-4" /> Add Employee
+          </Button>
+        )}
       </div>
 
-      {/* Dashboard stats */}
-      {dashboard && (
-        <div className="grid grid-cols-4 gap-4">
-          <Card><p className="text-xs text-[var(--sn-text-muted)] uppercase mb-1">Active</p><p className="text-2xl font-bold text-[var(--sn-text)]">{dashboard.activeCount}</p></Card>
-          <Card><p className="text-xs text-[var(--sn-text-muted)] uppercase mb-1">On Shift Now</p><p className="text-2xl font-bold text-[var(--sn-purple)]">{dashboard.onShiftNow}</p></Card>
-          <Card><p className="text-xs text-[var(--sn-text-muted)] uppercase mb-1">Monthly Payroll</p><p className="text-2xl font-bold text-[var(--sn-text)]">{dashboard.monthlyPayrollUsdc?.toFixed(2)} USDC</p></Card>
-          <Card><p className="text-xs text-[var(--sn-text-muted)] uppercase mb-1">Avg Rating</p><p className="text-2xl font-bold text-[var(--sn-amber)]">{dashboard.avgRating?.toFixed(1)} ★</p></Card>
+      {/* Stats Row */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <StatCard
+          label="Total Employees"
+          value={totalEmployees}
+          icon={Users}
+          loading={loading}
+        />
+        <StatCard
+          label="Active Now"
+          value={activeCount}
+          icon={CheckCircle2}
+          color="var(--f-tint-color)"
+          loading={loading}
+        />
+        <StatCard
+          label="Suspended"
+          value={suspendedCount}
+          icon={Ban}
+          color="var(--f-warn)"
+          loading={loading}
+        />
+        <StatCard
+          label="Avg Rating"
+          value={avgRating > 0 ? `${avgRating.toFixed(1)} ★` : '—'}
+          icon={Star}
+          color="var(--f-warn)"
+          loading={loading}
+        />
+      </div>
+
+      {/* Filter Bar */}
+      <Card className="flex flex-col md:flex-row gap-4 items-center">
+        <div className="relative w-full md:flex-1">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--f-text-3)]" />
+          <Input
+            placeholder="Search by name or email..."
+            className="pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className="flex gap-3 w-full md:w-auto">
+          <Select
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            options={[{ value: 'ALL', label: 'All Roles' }, ...ROLES]}
+            className="w-full md:w-44"
+          />
+          <Select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            options={[{ value: 'ALL', label: 'All Statuses' }, ...STATUSES]}
+            className="w-full md:w-44"
+          />
+        </div>
+      </Card>
+
+      {/* Employee Grid */}
+      {loading ? (
+        <div data-tour="employees-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skel key={i} className="h-48" />
+          ))}
+        </div>
+      ) : filteredEmployees.length === 0 ? (
+        <Empty
+          icon={Users}
+          description="Try adjusting your filters or search query."
+        />
+      ) : (
+        <div style={{ height: 'calc(100vh - 380px)', minHeight: '400px' }} className="rounded-2xl">
+        <VirtualizedGrid
+          items={filteredEmployees}
+          columnCount={3}
+          estimateRowHeight={220}
+          gap={24}
+          renderItem={(emp) => {
+            const user = emp.user || {};
+            const isSuspended = emp.status === 'SUSPENDED';
+            const isTerminated = emp.status === 'TERMINATED';
+
+            return (
+              <Card
+                key={emp.id}
+                hover
+                onClick={() => {
+                  setSelectedEmployee(emp);
+                  setIsSelectedOpen(true);
+                }}
+                className="relative group flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <Avatar
+                        src={user.avatarUrl}
+                        name={user.fullName || user.username}
+                        size="lg"
+                      />
+                      <div>
+                        <h3 className="font-bold text-[var(--f-text)] truncate max-w-[150px]">
+                          {user.fullName || user.username || 'Unnamed'}
+                        </h3>
+                        <p className="text-xs text-[var(--f-text-3)] truncate max-w-[150px]">
+                          {emp.title || 'No Title'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenu
+                        trigger={
+                          <button className="p-1.5 rounded-lg hover:bg-[var(--f-surface-sunken)] text-[var(--f-text-3)]">
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+                        }
+                        items={[
+                          ...(canUpdate
+                            ? [
+                                {
+                                  label: 'Edit Info',
+                                  icon: Edit2,
+                                  onClick: () => openEditModal(emp),
+                                },
+                                {
+                                  label: isSuspended ? 'Reactivate' : 'Suspend',
+                                  icon: isSuspended ? CheckCircle2 : Ban,
+                                  onClick: () => handleToggleStatus(emp),
+                                },
+                              ]
+                            : []),
+                          ...(canPermissions
+                            ? [
+                                {
+                                  label: 'Update Permissions',
+                                  icon: Filter,
+                                  onClick: () => openPermissionsModal(emp),
+                                },
+                              ]
+                            : []),
+                          ...(canTerminate && !isTerminated
+                            ? [
+                                { divider: true },
+                                {
+                                  label: 'Terminate',
+                                  icon: Trash2,
+                                  danger: true,
+                                  onClick: () => handleTerminateEmployee(emp.id),
+                                },
+                              ]
+                            : []),
+                        ]}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <Tag color={STATUS_COLORS[emp.status] || 'var(--f-text-3)'}>
+                      {emp.status}
+                    </Tag>
+                    <Tag color="var(--f-tint-color)">{emp.role}</Tag>
+                    {emp.department && (
+                      <Tag color="var(--f-text-3)">{emp.department}</Tag>
+                    )}
+                  </div>
+                </div>
+
+                <div className="border-t border-[var(--f-line)] pt-4 mt-auto space-y-2">
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="flex items-center gap-1.5 text-[var(--f-text-3)]">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>{emp.totalHours || 0} hrs worked</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[var(--f-text-3)] justify-end">
+                      <Star className="w-3.5 h-3.5 text-[var(--f-warn)]" />
+                      <span className="font-semibold text-[var(--f-text)]">
+                        {emp.rating ? emp.rating.toFixed(1) : '—'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[var(--f-text-3)]">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>{emp.totalShifts || 0} shifts</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[var(--f-text-3)] justify-end">
+                      <DollarSign className="w-3.5 h-3.5" />
+                      <span className="font-semibold text-[var(--f-text)]">
+                        {emp.payrollType === 'SALARY'
+                          ? `${emp.salaryAmount || 0}/mo`
+                          : `${emp.hourlyRate || 0}/hr`}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            );
+          }}
+        />
         </div>
       )}
 
-      {/* Tabs */}
-      <EmployeeTabs tabs={tabs} active={tab} onChange={setTab} />
+      {/* Details Modal */}
+      <Dialog
+        open={isSelectedOpen}
+        onClose={() => setIsSelectedOpen(false)}
+        title="Employee Details"
+      >
+        {selectedEmployee && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <Avatar
+                src={selectedEmployee.user?.avatarUrl}
+                name={selectedEmployee.user?.fullName}
+                size="lg"
+              />
+              <div>
+                <h2 className="text-lg font-bold text-[var(--f-text)]">
+                  {selectedEmployee.user?.fullName || selectedEmployee.user?.username}
+                </h2>
+                <p className="text-sm text-[var(--f-text-3)]">
+                  {selectedEmployee.title} • {selectedEmployee.department}
+                </p>
+                <div className="flex items-center gap-2 mt-1.5">
+                  <Tag color={STATUS_COLORS[selectedEmployee.status]}>
+                    {selectedEmployee.status}
+                  </Tag>
+                  <Tag color="var(--f-tint-color)">{selectedEmployee.role}</Tag>
+                </div>
+              </div>
+            </div>
 
-      {/* Add Employee Modal */}
-      <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Add Employee by AZM-ID">
-        <EmployeeForm form={form} setForm={setForm} permDraft={permDraft} setPermDraft={setPermDraft} onSubmit={handleAdd} submitLabel="Add Employee" catalog={permCatalog} />
-      </Modal>
+            <div className="grid grid-cols-2 gap-4 border-t border-b border-[var(--f-line)] py-4">
+              <div className="space-y-1">
+                <span className="text-xs text-[var(--f-text-3)] block uppercase font-semibold">
+                  Compensation
+                </span>
+                <span className="text-sm text-[var(--f-text)] font-semibold">
+                  {selectedEmployee.payrollType === 'SALARY'
+                    ? `${selectedEmployee.salaryAmount || 0} USDC / month`
+                    : `${selectedEmployee.hourlyRate || 0} USDC / hour`}
+                </span>
+              </div>
+              <div className="space-y-1">
+                <span className="text-xs text-[var(--f-text-3)] block uppercase font-semibold">
+                  Hire Date
+                </span>
+                <span className="text-sm text-[var(--f-text)]">
+                  {selectedEmployee.hireDate
+                    ? new Date(selectedEmployee.hireDate).toLocaleDateString()
+                    : '—'}
+                </span>
+              </div>
+              <div className="space-y-1">
+                <span className="text-xs text-[var(--f-text-3)] block uppercase font-semibold">
+                  Email
+                </span>
+                <span className="text-sm text-[var(--f-text)] flex items-center gap-1 truncate">
+                  <Mail className="w-3.5 h-3.5 text-[var(--f-text-3)]" />
+                  {selectedEmployee.user?.email || '—'}
+                </span>
+              </div>
+              <div className="space-y-1">
+                <span className="text-xs text-[var(--f-text-3)] block uppercase font-semibold">
+                  Rating
+                </span>
+                <span className="text-sm text-[var(--f-warn)] flex items-center gap-1 font-semibold">
+                  <Star className="w-3.5 h-3.5 fill-[var(--f-warn)]" />
+                  {selectedEmployee.rating ? selectedEmployee.rating.toFixed(1) : 'No reviews'}
+                </span>
+              </div>
+            </div>
 
-      {/* Edit Employee Modal */}
-      <Modal open={!!editEmp} onClose={() => setEditEmp(null)} title={`Edit ${editEmp?.user?.fullName || editEmp?.user?.username || 'Employee'}`}>
-        {editEmp && <EmployeeForm form={form} setForm={setForm} permDraft={permDraft} setPermDraft={setPermDraft} onSubmit={handleEdit} submitLabel="Save Changes" catalog={permCatalog} />}
-      </Modal>
-    </div>
-  );
-}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center p-3 rounded-xl bg-[var(--f-surface)] border border-[var(--f-line)]">
+                <p className="text-xs text-[var(--f-text-3)] font-semibold">SHIFTS</p>
+                <p className="text-lg font-bold text-[var(--f-text)] mt-1">
+                  {selectedEmployee.totalShifts || 0}
+                </p>
+              </div>
+              <div className="text-center p-3 rounded-xl bg-[var(--f-surface)] border border-[var(--f-line)]">
+                <p className="text-xs text-[var(--f-text-3)] font-semibold">HOURS</p>
+                <p className="text-lg font-bold text-[var(--f-text)] mt-1">
+                  {selectedEmployee.totalHours || 0}
+                </p>
+              </div>
+              <div className="text-center p-3 rounded-xl bg-[var(--f-surface)] border border-[var(--f-line)]">
+                <p className="text-xs text-[var(--f-text-3)] font-semibold">DELAYS</p>
+                <p className="text-lg font-bold text-[var(--f-bad)] mt-1">
+                  {selectedEmployee.lateCount || 0} Late / {selectedEmployee.noShowCount || 0} No-Show
+                </p>
+              </div>
+            </div>
 
-function EmployeeTabs({ tabs, active, onChange }) {
-  return (
-    <div className="flex gap-1 p-1 rounded-xl border border-[var(--sn-border)] bg-[var(--sn-surface)]">
-      {tabs.map((tab, i) => (
-        <button
-          key={i}
-          onClick={() => onChange(i)}
-          className={`flex-1 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${active === i ? 'bg-[var(--sn-purple-subtle)] text-[var(--sn-purple)] border border-[var(--sn-purple-border)]' : 'text-[var(--sn-text-muted)] hover:text-[var(--sn-text-secondary)]'}`}
-        >
-          {tab.icon && <tab.icon className="w-4 h-4 inline mr-1.5" />}
-          {tab.label}
-          {tab.count !== undefined && tab.count > 0 && (
-            <span className="ml-1.5 text-xs px-1.5 py-0.5 rounded-full bg-[var(--sn-border)] text-[var(--sn-text-muted)]">{tab.count}</span>
-          )}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function EmployeeForm({ form, setForm, permDraft, setPermDraft, onSubmit, submitLabel, catalog }) {
-  // Group the canonical catalog ({ Module: [{key,label},...] }) into
-  // render-ready groups; fall back to nothing if the backend catalog is
-  // unavailable (role template defaults still apply server-side).
-  const permGroups = catalog
-    ? Object.entries(catalog).map(([module, items]) => ({ module, items }))
-    : [];
-  return (
-    <div className="space-y-4">
-      <Input label="Employee AZM-ID" placeholder="Their Azaman @username or email" value={form.azmId} onChange={e => setForm({ ...form, azmId: e.target.value })} />
-      <div className="grid grid-cols-2 gap-4">
-        <Select label="Role" value={form.role} onChange={e => setForm({ ...form, role: e.target.value })} options={ROLES} />
-        <Input label="Job Title" placeholder="e.g. Front Desk Agent" value={form.jobTitle} onChange={e => setForm({ ...form, jobTitle: e.target.value })} />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <Input label="Monthly Salary (USDC)" type="number" placeholder="e.g. 500" value={form.monthlySalaryUsdc} onChange={e => setForm({ ...form, monthlySalaryUsdc: e.target.value })} />
-        <Input label="Hourly Rate (USDC)" type="number" placeholder="e.g. 3.50" value={form.hourlyRateUsdc} onChange={e => setForm({ ...form, hourlyRateUsdc: e.target.value })} />
-      </div>
-      <Select label="Pay Type" value={form.payrollType} onChange={e => setForm({ ...form, payrollType: e.target.value })} options={PAYROLL_TYPES} />
-
-      {permGroups.length > 0 && (
-        <div>
-          <p className="text-xs font-semibold text-[var(--sn-text-muted)] uppercase tracking-wider mb-3">Permissions</p>
-          <div className="space-y-3">
-            {permGroups.map(group => (
-              <div key={group.module}>
-                <p className="text-[10px] font-bold text-[var(--sn-text-muted)] uppercase tracking-widest mb-2">{group.module}</p>
-                <div className="grid grid-cols-2 gap-3">
-                  {group.items.map(p => (
-                    <Switch
-                      key={p.key}
-                      label={p.label}
-                      checked={permDraft.includes(p.key)}
-                      onChange={(on) => setPermDraft(on ? [...permDraft, p.key] : permDraft.filter((k) => k !== p.key))}
-                    />
+            {selectedEmployee.permissions && selectedEmployee.permissions.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs text-[var(--f-text-3)] uppercase font-semibold">
+                  Permissions
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedEmployee.permissions.map((perm) => (
+                    <Tag key={perm} color="var(--f-tint-color)">
+                      {perm}
+                    </Tag>
                   ))}
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
-      {permGroups.length === 0 && (
-        <p className="text-xs text-[var(--sn-text-muted)]">Role defaults will be applied. No permissions selected.</p>
-      )}
+            )}
 
-      <Button onClick={onSubmit} className="w-full">{submitLabel}</Button>
-      <p className="text-xs text-[var(--sn-text-muted)] text-center">The employee will set their own Smart Route payout preferences in their Azaman app.</p>
-    </div>
-  );
-}
-
-function TeamGrid({ employees, onEdit, onAction, loading }) {
-  if (loading) return <div className="grid grid-cols-3 gap-4">{Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-40" />)}</div>;
-  if (!employees?.length) return <Empty icon={Users} title="No employees yet" description="Add your first team member by their AZM-ID" />;
-
-  return (
-    <div className="grid grid-cols-3 gap-4">
-      {employees.map(emp => (
-        <Card key={emp.id} hover>
-          <div className="flex items-start gap-3 mb-4">
-            <Avatar name={emp.user?.fullName || emp.user?.username} size="lg" online={emp.status === 'ACTIVE'} />
-            <div className="flex-1 min-w-0">
-              <p className="font-bold text-[var(--sn-text)] truncate">{emp.user?.fullName || emp.user?.username || 'Employee'}</p>
-              <p className="text-xs text-[var(--sn-text-muted)] truncate">{emp.title || emp.role}</p>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge color={STATUS_COLORS[emp.status]}>{emp.status}</Badge>
-                <Badge color="var(--sn-text-muted)">{emp.role}</Badge>
-              </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="secondary" onClick={() => setIsSelectedOpen(false)}>
+                Close
+              </Button>
+              {canUpdate && (
+                <Button onClick={() => openEditModal(selectedEmployee)}>
+                  <Edit2 className="w-4 h-4" /> Edit Profile
+                </Button>
+              )}
             </div>
-            <DropdownMenu
-              trigger={<button className="p-1.5 rounded-lg hover:bg-[var(--sn-card-hover)] text-[var(--sn-text-muted)]"><MoreVertical className="w-4 h-4" /></button>}
-              items={[
-                { label: 'Edit', icon: Edit2, onClick: () => onEdit(emp) },
-                emp.status === 'ACTIVE' ? { label: 'Suspend', icon: Ban, danger: true, onClick: () => onAction(emp, 'suspend') } : { label: 'Reinstate', icon: CheckCircle2, onClick: () => onAction(emp, 'reinstate') },
-                { divider: true },
-                { label: 'Terminate', icon: Trash2, danger: true, onClick: () => onAction(emp, 'terminate') },
-              ]}
+          </div>
+        )}
+      </Dialog>
+
+      {/* Add Modal */}
+      <Dialog
+        open={isAddOpen}
+        onClose={() => setIsAddOpen(false)}
+        title="Add New Employee"
+      >
+        <div className="space-y-4">
+          <Input
+            label="AZM Username (e.g. username)"
+            placeholder="Search by username..."
+            value={addForm.azmId}
+            onChange={(e) => setAddForm({ ...addForm, azmId: e.target.value })}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <Select
+              label="Role"
+              value={addForm.role}
+              onChange={(e) => setAddForm({ ...addForm, role: e.target.value })}
+              options={ROLES}
+            />
+            <Input
+              label="Job Title"
+              placeholder="e.g. Front Desk Manager"
+              value={addForm.title}
+              onChange={(e) => setAddForm({ ...addForm, title: e.target.value })}
             />
           </div>
-          <div className="space-y-2 text-xs">
-            <div className="flex justify-between">
-              <span className="text-[var(--sn-text-muted)]">Salary</span>
-              <span className="text-[var(--sn-text)] font-semibold">{emp.salaryAmount ? `${emp.salaryAmount} USDC/mo` : emp.hourlyRate ? `${emp.hourlyRate} USDC/hr` : '—'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[var(--sn-text-muted)]">Rating</span>
-              <span className="text-[var(--sn-amber)] font-semibold">{emp.rating?.toFixed(1) || '—'} ★</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-[var(--sn-text-muted)]">Shifts this month</span>
-              <span className="text-[var(--sn-text)] font-semibold">{emp.totalShifts || 0}</span>
-            </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Department"
+              placeholder="e.g. Operations"
+              value={addForm.department}
+              onChange={(e) => setAddForm({ ...addForm, department: e.target.value })}
+            />
+            <Select
+              label="Payroll Type"
+              value={addForm.payrollType}
+              onChange={(e) => setAddForm({ ...addForm, payrollType: e.target.value })}
+              options={PAYROLL_TYPES}
+            />
           </div>
-        </Card>
-      ))}
-    </div>
-  );
-}
+          {addForm.payrollType === 'SALARY' ? (
+            <Input
+              label="Monthly Salary (USDC)"
+              type="number"
+              placeholder="e.g. 3000"
+              value={addForm.salaryAmount}
+              onChange={(e) => setAddForm({ ...addForm, salaryAmount: e.target.value })}
+            />
+          ) : (
+            <Input
+              label="Hourly Rate (USDC)"
+              type="number"
+              placeholder="e.g. 15"
+              value={addForm.hourlyRate}
+              onChange={(e) => setAddForm({ ...addForm, hourlyRate: e.target.value })}
+            />
+          )}
 
-function ScheduleTab({ shifts, loading }) {
-  if (loading) return <Skeleton className="h-64" />;
-  if (!shifts?.length) return <Empty icon={Calendar} title="No shifts scheduled" description="Create shifts to manage your team's schedule" />;
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const byDay = days.map(day => shifts.filter(s => new Date(s.startTime).toLocaleDateString('en', { weekday: 'short' }) === day));
-
-  return (
-    <div className="grid grid-cols-7 gap-3">
-      {byDay.map((dayShifts, i) => (
-        <div key={i} className="space-y-2">
-          <p className="text-xs font-bold text-[var(--sn-text-muted)] uppercase text-center pb-2 border-b border-[var(--sn-border)]">{days[i]}</p>
-          {dayShifts.map(shift => (
-            <Card key={shift.id} className="p-3">
-              <div className="flex items-center gap-2 mb-1.5">
-                <Avatar name={shift.employee?.user?.fullName || shift.employee?.user?.username} size="xs" />
-                <span className="text-xs font-semibold text-[var(--sn-text)] truncate">{shift.employee?.user?.fullName || shift.employee?.user?.username}</span>
-              </div>
-              <p className="text-xs text-[var(--sn-text-muted)]">{new Date(shift.startTime).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' })} — {new Date(shift.endTime).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' })}</p>
-              {shift.clockInTime && <Badge color="var(--sn-purple)" className="mt-1.5 text-[10px]">Clocked in</Badge>}
-            </Card>
-          ))}
+          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--f-line)]">
+            <Button variant="secondary" onClick={() => setIsAddOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddEmployee}>Create Employee</Button>
+          </div>
         </div>
-      ))}
-    </div>
-  );
-}
+      </Dialog>
 
-function SwapTab({ swaps, onApprove, onReject, loading }) {
-  if (loading) return <Skeleton className="h-40" />;
-  if (!swaps?.length) return <Empty icon={CheckCircle2} title="No swap requests" description="Shift swap requests from employees will appear here" />;
-  return (
-    <div className="space-y-3">
-      {swaps.map(swap => (
-        <Card key={swap.id} className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Avatar name={swap.requestingEmployee?.user?.username || 'Staff'} size="sm" />
-            <div>
-              <p className="text-sm font-semibold text-[var(--sn-text)]">
-                {swap.requestingEmployee?.user?.username} wants to swap
-                {swap.claimingEmployee?.user?.username ? ` with ${swap.claimingEmployee.user.username}` : ' (open to claim)'}
-              </p>
-              <p className="text-xs text-[var(--sn-text-muted)]">
-                {new Date(swap.requestingShift?.startTime || swap.createdAt).toLocaleDateString('en', { weekday: 'long', month: 'short', day: 'numeric' })}
-              </p>
-            </div>
+      {/* Edit Modal */}
+      <Dialog
+        open={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        title="Edit Employee Profile"
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <Select
+              label="Role"
+              value={editForm.role}
+              onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+              options={ROLES}
+            />
+            <Input
+              label="Job Title"
+              placeholder="e.g. Front Desk Manager"
+              value={editForm.title}
+              onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+            />
           </div>
-          <div className="flex gap-2">
-            <Button size="sm" variant="secondary" onClick={() => onReject(swap.id)}>Reject</Button>
-            <Button size="sm" onClick={() => onApprove(swap.id)}>Approve</Button>
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Department"
+              placeholder="e.g. Operations"
+              value={editForm.department}
+              onChange={(e) => setEditForm({ ...editForm, department: e.target.value })}
+            />
+            <Select
+              label="Payroll Type"
+              value={editForm.payrollType}
+              onChange={(e) => setEditForm({ ...editForm, payrollType: e.target.value })}
+              options={PAYROLL_TYPES}
+            />
           </div>
-        </Card>
-      ))}
-    </div>
-  );
-}
+          {editForm.payrollType === 'SALARY' ? (
+            <Input
+              label="Monthly Salary (USDC)"
+              type="number"
+              placeholder="e.g. 3000"
+              value={editForm.salaryAmount}
+              onChange={(e) => setEditForm({ ...editForm, salaryAmount: e.target.value })}
+            />
+          ) : (
+            <Input
+              label="Hourly Rate (USDC)"
+              type="number"
+              placeholder="e.g. 15"
+              value={editForm.hourlyRate}
+              onChange={(e) => setEditForm({ ...editForm, hourlyRate: e.target.value })}
+            />
+          )}
 
-function TimeOffTab({ requests, onApprove, onReject, loading }) {
-  if (loading) return <Skeleton className="h-40" />;
-  if (!requests?.length) return <Empty icon={Clock} title="No time-off requests" />;
-  return (
-    <div className="space-y-3">
-      {requests.map(req => (
-        <Card key={req.id} className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Avatar name={req.employee?.user?.fullName || req.employee?.user?.username} size="sm" />
-            <div>
-              <p className="text-sm font-semibold text-[var(--sn-text)]">{req.employee?.user?.fullName || req.employee?.user?.username}</p>
-              <p className="text-xs text-[var(--sn-text-muted)]">{req.type} • {new Date(req.startDate).toLocaleDateString('en')} — {new Date(req.endDate).toLocaleDateString('en')}</p>
-              {req.reason && <p className="text-xs text-[var(--sn-text-muted)] mt-0.5">"{req.reason}"</p>}
-            </div>
+          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--f-line)]">
+            <Button variant="secondary" onClick={() => setIsEditOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleEditEmployee}>Save Changes</Button>
           </div>
-          <div className="flex gap-2">
-            <Button size="sm" variant="secondary" onClick={() => onReject(req.id)}>Reject</Button>
-            <Button size="sm" onClick={() => onApprove(req.id)}>Approve</Button>
-          </div>
-        </Card>
-      ))}
-    </div>
-  );
-}
-
-function PayrollTab({ onRunPayroll, loading }) {
-  // payrollService expects period 'YYYY-MM' (PayrollRecord is unique per
-  // employee+period). Default to the current month.
-  const now = new Date();
-  const [period, setPeriod] = useState(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
-  return (
-    <Card>
-      <div className="text-center py-6">
-        <div className="w-16 h-16 rounded-2xl bg-[var(--sn-purple-subtle)] border border-[var(--sn-purple-border)] flex items-center justify-center mx-auto mb-4">
-          <DollarSign className="w-8 h-8 text-[var(--sn-purple)]" />
         </div>
-        <h3 className="text-lg font-bold text-[var(--sn-text)] mb-1">Run Payroll</h3>
-        <p className="text-sm text-[var(--sn-text-muted)] max-w-md mx-auto mb-6">Azaman will execute Smart Routes for all active employees, paying each worker to their preferred destination (MoMo, wallet, or savings) automatically.</p>
-        <Input label="Payroll Period (YYYY-MM)" value={period} onChange={(e) => setPeriod(e.target.value)} className="max-w-xs mx-auto mb-4" />
-        <Button size="lg" onClick={() => onRunPayroll({ period })} loading={loading}>Execute Payroll</Button>
-      </div>
-    </Card>
+      </Dialog>
+
+      {/* Permissions Modal */}
+      <Dialog
+        open={isPermsOpen}
+        onClose={() => setIsPermsOpen(false)}
+        title="Update Employee Permissions"
+      >
+        <div className="space-y-4">
+          <p className="text-xs text-[var(--f-text-3)] mb-4">
+            Grant or restrict explicit permissions for {selectedEmployee?.user?.fullName || selectedEmployee?.user?.username}.
+          </p>
+
+          <div className="space-y-3">
+            {availablePermissions.map((perm) => {
+              const isChecked = permissionsForm.includes(perm.value);
+              return (
+                <div
+                  key={perm.value}
+                  className="flex items-center justify-between p-3 rounded-xl bg-[var(--f-surface)] border border-[var(--f-line)]"
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--f-text)]">
+                      {perm.label}
+                    </p>
+                    <p className="text-xs text-[var(--f-text-3)]">
+                      {perm.value}
+                    </p>
+                  </div>
+                  <Switch
+                    checked={isChecked}
+                    onChange={() => togglePermission(perm.value)}
+                  />
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-[var(--f-line)]">
+            <Button variant="secondary" onClick={() => setIsPermsOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdatePermissions}>Save Permissions</Button>
+          </div>
+        </div>
+      </Dialog>
+    </div>
   );
 }

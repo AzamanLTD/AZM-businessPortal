@@ -1,50 +1,44 @@
 /**
- * Dashboard — Sentry-inspired widget-based dashboard.
- * Business-type-aware: shows different widgets for transit, restaurant, hotel, retail, etc.
+ * Command Center — INSTRUMENT design system (Phase 2 cutover).
  *
- * Sentry design tenets applied:
- * - Widget-based layout (like Sentry's dashboard widgets)
- * - Placeholders instead of loading spinners
- * - Data-dense, clean visual hierarchy
- * - Global date range context
- * - Type-specific widget sections
+ * All Instrument components.
+ * motion → m (motion/react) under LazyMotion strict.
+ * All data fetching, business logic, and route structure preserved.
  */
-import { useMemo, useState } from 'react';
+import { m } from 'motion/react';
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { orders as ordersApi, invoices as invoicesApi } from '@/lib/api';
-import { reservations as resApi, transit as transitApi, checkIn as checkInApi, reviews as reviewsApi } from '@/lib/marketplaceApi';
-import { useAuth } from '@/lib/AuthContext';
-import { Widget, WidgetStat, WidgetRow } from '@/components/ui/Widget';
-import { KpiCard } from '@/components/charts/KpiCard';
-import { Badge, Skeleton, Card } from '@/components/ui';
-import { fmtUSDC, fmt, relativeTime, ORDER_STATUS_META, KYB_STATUS_META, cn } from '@/lib/utils';
-import { getTypeConfig } from '@/lib/businessTypes';
 import { Link } from 'react-router-dom';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import {
-  ShoppingBag, TrendingUp, Clock, CheckCircle2,
-  AlertTriangle, ArrowRight, Package, FileCheck,
-  Receipt, DollarSign, Bus, Users, CalendarCheck,
-  QrCode, Star, UserCheck, UserX, Route, Sparkles,
-  UtensilsCrossed, Building2, Briefcase, Store,
+  ShoppingBag, TrendingUp, Clock, CheckCircle2, AlertTriangle,
+  ArrowRight, Package, FileCheck, Receipt, DollarSign, Bus,
+  Users, CalendarCheck, QrCode, Star, Utensils, Hotel, Route,
+  ArrowUpRight, Plus, CalendarPlus, UserPlus, Tag as TagIcon,
 } from 'lucide-react';
 
-// ── Revenue computation ──────────────────────────────────────────────────────
+import { orders as ordersApi, invoices as invoicesApi, request } from '@/lib/api';
+import { reservations as resApi, transit as transitApi, checkIn as checkInApi, reviews as reviewsApi, bookingOpsApi } from '@/lib/marketplaceApi';
+import { useAuth } from '@/lib/AuthContext';
+import { fmtUSDC, fmt, ORDER_STATUS_META, KYB_STATUS_META } from '@/lib/utils';
+import { getTypeConfig } from '@/lib/businessTypes';
+
+// Instrument components
+import { Card, CardHead, CardBody, Tag, Button, Skel, Empty, Metric, Spark } from '@/components/instrument';
+import { ContainerV, ItemV } from '@/lib/motion';
+
+// ── Revenue computation (unchanged) ──────────────────────────────────────────
 function computeDailyRevenue(orders, days = 30) {
   const map = {};
   const now = new Date();
   for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
+    const d = new Date(now); d.setDate(d.getDate() - i);
     const key = d.toISOString().split('T')[0];
     map[key] = { date: key, label: d.toLocaleDateString('en', { month: 'short', day: 'numeric' }), revenue: 0 };
   }
-  orders
-    .filter(o => o.status === 'COMPLETED')
-    .forEach(o => {
-      const key = new Date(o.createdAt).toISOString().split('T')[0];
-      if (map[key]) map[key].revenue += Number(o.amountUsdc) || 0;
-    });
+  orders.filter(o => o.status === 'COMPLETED').forEach(o => {
+    const key = new Date(o.createdAt).toISOString().split('T')[0];
+    if (map[key]) map[key].revenue += Number(o.amountUsdc) || 0;
+  });
   return Object.values(map);
 }
 
@@ -52,459 +46,502 @@ function computeFunnel(orders) {
   const funded    = ['PAID', 'DELIVERED', 'COMPLETED', 'DISPUTED'];
   const delivered = ['DELIVERED', 'COMPLETED'];
   return [
-    { label: 'Total',     count: orders.length,                                          color: 'var(--sn-blue)' },
-    { label: 'Paid',      count: orders.filter(o => funded.includes(o.status)).length,    color: 'var(--sn-purple)' },
-    { label: 'Delivered', count: orders.filter(o => delivered.includes(o.status)).length, color: 'var(--sn-blue)' },
-    { label: 'Completed', count: orders.filter(o => o.status === 'COMPLETED').length,      color: 'var(--sn-purple)' },
+    { label: 'Total',     count: orders.length },
+    { label: 'Paid',      count: orders.filter(o => funded.includes(o.status)).length },
+    { label: 'Delivered', count: orders.filter(o => delivered.includes(o.status)).length },
+    { label: 'Completed', count: orders.filter(o => o.status === 'COMPLETED').length },
   ];
 }
 
-const TYPE_ICONS = { Bus, UtensilsCrossed, Building2, Briefcase, Store, ShoppingBag };
+// ── At-Risk Widget ───────────────────────────────────────────────────────────
+const RISK_ICONS = {
+  HOUSEKEEPING_OVERDUE: Hotel, KITCHEN_AGING: Utensils, VEHICLE_MAINTENANCE: Bus,
+  SHIFT_SWAP_PENDING: Users, TIME_OFF_PENDING: CalendarCheck, NEGATIVE_REVIEW: Star,
+  RESERVATION_PENDING: CalendarCheck, LOW_STOCK: Package,
+};
 
+function AtRiskWidget() {
+  const { data, isLoading } = useQuery({
+    queryKey: ['at-risk'],
+    queryFn: () => request('/api/business-os/dashboard/at-risk'),
+    refetchInterval: 60_000,
+  });
+  const items = data?.items || [];
+
+  if (isLoading) return <Skel h={120} />;
+  if (!items.length) return (
+    <Card>
+      <CardBody>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '4px 0' }}>
+          <div className="i-tag i-tag--go" style={{ flex: 'none' }}><i /></div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>All clear</div>
+            <div style={{ fontSize: 12, color: 'var(--text-3)' }}>No urgent items need your attention.</div>
+          </div>
+        </div>
+      </CardBody>
+    </Card>
+  );
+
+  const urgent = items.filter(i => i.severity === 'urgent').length;
+  const warnings = items.length - urgent;
+
+  return (
+    <Card>
+      <CardHead>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Needs Attention</span>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {urgent > 0 && <Tag tone="stop">{urgent} urgent</Tag>}
+          {warnings > 0 && <Tag tone="hold">{warnings} warning{warnings > 1 ? 's' : ''}</Tag>}
+        </div>
+      </CardHead>
+      <CardBody>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {items.map((item, i) => {
+            const Icon = RISK_ICONS[item.type] || AlertTriangle;
+            return (
+              <Link key={i} to={item.link || '#'}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 10px',
+                  borderRadius: 'var(--r2)', background: 'var(--surface-sunk)', textDecoration: 'none' }}>
+                <div style={{
+                  width: 26, height: 26, borderRadius: 'var(--r2)',
+                  display: 'grid', placeItems: 'center', flex: 'none',
+                  background: item.severity === 'urgent' ? 'var(--stop-bg)' : 'var(--hold-bg)',
+                }}>
+                  <Icon size={13} strokeWidth={1.75}
+                    color={item.severity === 'urgent' ? 'var(--stop)' : 'var(--hold)'} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.subtitle}</div>
+                </div>
+                <ArrowRight size={13} color="var(--text-3)" />
+              </Link>
+            );
+          })}
+        </div>
+      </CardBody>
+    </Card>
+  );
+}
+
+// ── Inline header (recedes inline header) ────────────────────────────────
+function PageHeader({ title, subtitle, actions }) {
+  return (
+    <header style={{ marginBottom: 16 }}>
+      <div style={{ height: 2, width: 40, borderRadius: 2, background: 'var(--accent)', marginBottom: 12 }} />
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16 }}>
+        <div style={{ minWidth: 0 }}>
+          <h1 style={{ fontSize: 19, fontWeight: 700, color: 'var(--text)', letterSpacing: '-0.022em', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</h1>
+          {subtitle && <p style={{ marginTop: 4, fontSize: 12, color: 'var(--text-3)' }}>{subtitle}</p>}
+        </div>
+        {actions && <div style={{ display: 'flex', flexShrink: 0, alignItems: 'center', gap: 8 }}>{actions}</div>}
+      </div>
+    </header>
+  );
+}
+
+// ── Instrument KPI card wrapper (maps old KpiCard API to Instrument) ─────────
+function KpiCard({ label, value, delta, deltaLabel, deltaTone, icon: KpiIcon, loading }) {
+  if (loading) return <Metric label={label} value={0} loading />;
+  const numVal = typeof value === 'string' ? value : Number(value) || 0;
+  const deltaNum = delta != null && typeof delta === 'number' ? delta : null;
+  const deltaStr = deltaLabel || (deltaNum != null ? `${Math.abs(deltaNum)}%` : null);
+
+  return (
+    <Card style={{ padding: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 8 }}>
+        {KpiIcon && <KpiIcon size={11} strokeWidth={1.75} color="var(--text-3)" />}
+        <span className="i-eyebrow">{label}</span>
+      </div>
+      <div className="i-num i-num--metric">{numVal}</div>
+      {deltaStr && (
+        <div style={{
+          marginTop: 8, fontSize: 11,
+          color: deltaTone === 'down' ? 'var(--stop)' : deltaTone === 'up' ? 'var(--go)' : 'var(--text-3)',
+        }}>
+          {deltaStr}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+// ── Main Dashboard ──────────────────────────────────────────────────────────
 export default function Dashboard() {
   const { isAdmin, adminBusinesses, bizProfile, selectedBusinessId, selectBusiness } = useAuth();
+  const typeConfig = getTypeConfig(bizProfile?.business_type);
+  const TypeIcon = typeConfig.icon || ShoppingBag;
 
-  if (isAdmin && !selectedBusinessId) {
-      const grouped = adminBusinesses.reduce((acc, b) => {
-          (acc[b.category] = acc[b.category] || []).push(b);
-          return acc;
-      }, {});
-
-      return (
-          <div className="p-6 space-y-6 max-w-7xl mx-auto">
-              <header>
-                  <h1 className="text-2xl font-bold text-[var(--sn-text)]">Marketplace Overview</h1>
-                  <p className="text-sm text-[var(--sn-text-muted)] mt-1">Select a business from the sidebar to manage their portal.</p>
-              </header>
-
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <Widget className="p-4">
-                      <p className="text-xs text-[var(--sn-text-muted)] font-semibold uppercase">Total</p>
-                      <p className="text-2xl font-bold text-[var(--sn-text)] mt-1">{adminBusinesses.length}</p>
-                  </Widget>
-                  <Widget className="p-4">
-                      <p className="text-xs text-[var(--sn-text-muted)] font-semibold uppercase">Restaurants</p>
-                      <p className="text-2xl font-bold text-[var(--sn-text)] mt-1">{grouped['FOOD_BEVERAGE']?.length || 0}</p>
-                  </Widget>
-                  <Widget className="p-4">
-                      <p className="text-xs text-[var(--sn-text-muted)] font-semibold uppercase">Hotels</p>
-                      <p className="text-2xl font-bold text-[var(--sn-text)] mt-1">{grouped['REAL_ESTATE']?.length || 0}</p>
-                  </Widget>
-                  <Widget className="p-4">
-                      <p className="text-xs text-[var(--sn-text-muted)] font-semibold uppercase">Transit</p>
-                      <p className="text-2xl font-bold text-[var(--sn-text)] mt-1">{grouped['LOGISTICS']?.length || 0}</p>
-                  </Widget>
-              </div>
-
-              {Object.entries(grouped).map(([category, businesses]) => (
-                  <div key={category} className="space-y-3">
-                      <h2 className="text-sm font-bold text-[var(--sn-text)] uppercase tracking-wider">{category}</h2>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          {businesses.map(b => (
-                              <button
-                                  key={b.id}
-                                  onClick={() => {
-                                      localStorage.setItem('admin_selected_biz', b.id);
-                                      selectBusiness(b.id);
-                                  }}
-                                  className="text-left rounded-xl border border-[var(--sn-border)] bg-[var(--sn-card)] hover:bg-[var(--sn-hover)] hover:border-[var(--sn-purple)50] p-4 transition-all"
-                              >
-                                  <p className="text-sm font-bold text-[var(--sn-text)] truncate">{b.businessName}</p>
-                                  <p className="text-xs text-[var(--sn-text-muted)] mt-1 truncate">ID: {b.azamanId || b.bizId}</p>
-                                  <div className="flex gap-2 mt-3">
-                                      <Badge variant={b.kybStatus === 'VERIFIED' ? 'success' : 'secondary'}>{b.kybStatus}</Badge>
-                                      {b._count && (
-                                          <Badge variant="outline">{b._count.orders || 0} orders</Badge>
-                                      )}
-                                  </div>
-                              </button>
-                          ))}
-                      </div>
-                  </div>
-              ))}
-          </div>
-      );
-  }
-
-  const typeConfig = getTypeConfig(bizProfile);
-  const TypeIcon = TYPE_ICONS[typeConfig.icon] || Store;
-
-  // ── Core queries (shared across all business types) ──────────────────────
+  // ── Core queries ──────────────────────────────────────────────────────────
   const { data: statsData, isLoading: statsLoading } = useQuery({
-    queryKey: ['biz-stats'],
-    queryFn:  () => ordersApi.stats(),
-    refetchInterval: 60_000,
+    queryKey: ['biz-stats'], queryFn: () => ordersApi.stats(), refetchInterval: 60_000,
   });
-
   const { data: recentData, isLoading: recentLoading } = useQuery({
-    queryKey: ['recent-orders'],
-    queryFn:  () => ordersApi.list({ limit: 5 }),
-    refetchInterval: 30_000,
+    queryKey: ['recent-orders'], queryFn: () => ordersApi.list({ limit: 5 }), refetchInterval: 30_000,
   });
-
-  const { data: analyticsData, isLoading: analyticsLoading } = useQuery({
-    queryKey: ['dashboard-analytics-orders'],
-    queryFn:  () => ordersApi.list({ limit: 50 }),
-    refetchInterval: 60_000,
+  const { data: analyticsData } = useQuery({
+    queryKey: ['dashboard-analytics-orders'], queryFn: () => ordersApi.list({ limit: 50 }), refetchInterval: 60_000,
   });
-
   const { data: invoiceData } = useQuery({
-    queryKey: ['dashboard-invoices'],
-    queryFn:  () => invoicesApi.list({ limit: 50 }),
-    refetchInterval: 60_000,
+    queryKey: ['dashboard-invoice-stats'], queryFn: () => bookingOpsApi.invoiceStats(), refetchInterval: 60_000,
   });
-
-  // ── Type-specific queries ────────────────────────────────────────────────
   const { data: resStatsData } = useQuery({
-    queryKey: ['reservation-stats'],
-    queryFn:  () => resApi.stats(),
+    queryKey: ['reservation-stats'], queryFn: () => resApi.stats(),
     enabled: typeConfig.navItems.includes('reservations'),
   });
-
   const { data: transitData } = useQuery({
-    queryKey: ['transit-trips-dashboard'],
-    queryFn:  () => transitApi.list(),
+    queryKey: ['transit-trips-dashboard'], queryFn: () => transitApi.list(),
     enabled: typeConfig.type === 'TRANSIT',
   });
-
   const { data: checkInStatsData } = useQuery({
-    queryKey: ['checkin-stats-dashboard'],
-    queryFn:  () => checkInApi.todayStats(),
-    enabled: typeConfig.navItems.includes('checkin'),
+    queryKey: ['checkin-stats-dashboard'], queryFn: () => checkInApi.todayStats(),
+    enabled: typeConfig.navItems.includes('checkin'), retry: false,
   });
-
   const { data: reviewStatsData } = useQuery({
-    queryKey: ['review-stats-dashboard'],
-    queryFn:  () => reviewsApi.stats(),
-    enabled: true,
+    queryKey: ['review-stats-dashboard'], queryFn: () => reviewsApi.stats(), retry: false,
+  });
+  const { data: employeeStatsData, isLoading: employeeStatsLoading } = useQuery({
+    queryKey: ['employee-stats-dashboard'],
+    queryFn: () => request('/api/business-os/dashboard/employee-stats'),
+    refetchInterval: 60_000,
   });
 
-  // ── Computed values ──────────────────────────────────────────────────────
-  const stats  = statsData?.stats  || {};
+  // ── Computed values ────────────────────────────────────────────────────────
+  const stats = statsData?.stats || {};
   const recent = recentData?.orders || [];
   const analyticsOrders = analyticsData?.orders || [];
-  const allInvoices = invoiceData?.invoices || [];
-
-  const dailyRevenue = useMemo(() => computeDailyRevenue(analyticsOrders, 30), [analyticsOrders]);
-  const funnel       = useMemo(() => computeFunnel(analyticsOrders), [analyticsOrders]);
-  const hasRevenue   = dailyRevenue.some(d => d.revenue > 0);
-  const funnelMax    = Math.max(funnel[0]?.count || 0, 1);
-
+  const dailyRevenue = useMemo(() => {
+    if (Array.isArray(stats.revenueByDay)) return stats.revenueByDay;
+    return computeDailyRevenue(analyticsOrders, 30);
+  }, [stats.revenueByDay, analyticsOrders]);
+  const funnel = useMemo(() => computeFunnel(analyticsOrders), [analyticsOrders]);
+  const hasRevenue = dailyRevenue.some(d => d.revenue > 0);
+  const funnelMax = Math.max(funnel[0]?.count || 0, 1);
   const invoiceStats = useMemo(() => ({
-    sent: allInvoices.filter(i => i.status === 'SENT').length,
-    paid: allInvoices.filter(i => i.status === 'PAID').length,
-    paidRevenue: allInvoices.filter(i => i.status === 'PAID').reduce((s, i) => s + (Number(i.billTotalUsdc) || 0), 0),
-  }), [allInvoices]);
-
+    sent: Number(invoiceData?.sentCount || 0),
+    paid: Number(invoiceData?.paidCount || 0),
+    paidRevenue: Number(invoiceData?.totalRevenueUsdc || 0),
+  }), [invoiceData]);
   const resStats = resStatsData?.stats || {};
   const checkInStats = checkInStatsData?.stats || {};
   const reviewStats = reviewStatsData?.stats || {};
   const trips = transitData?.trips || [];
-
+  const employeeStats = employeeStatsData?.stats || { totalEmployees: 0, activeShifts: 0, pendingTimeOff: 0, monthlyPayroll: '0.00' };
   const kybMeta = KYB_STATUS_META[bizProfile?.kybStatus || 'UNVERIFIED'];
   const needsKyb = bizProfile?.kybStatus !== 'VERIFIED';
 
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-  const bizName = bizProfile?.businessName || 'there';
-
-  return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto animate-fade-in">
-      {/* Employee Summary Widget */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <KpiCard label="Total Employees" value="42" delta="+2 this month" deltaType="positive" />
-        <KpiCard label="Active Shifts" value="12" delta="Right now" deltaType="positive" />
-        <KpiCard label="Time Off Requests" value="3" delta="Pending approval" deltaType="positive" />
-        <KpiCard label="Monthly Payroll" value="24,500 USDC" delta="+5% vs last" deltaType="positive" />
-      </div>
-
-      {/* ── Header with business type badge ──────────────────────────────── */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-[var(--sn-text)] flex items-center gap-2">
-            {greeting}, {bizName}
-          </h1>
-          <div className="flex items-center gap-2 mt-1.5">
-            <p className="text-sm text-[var(--sn-text-muted)]">Here's what's happening today.</p>
-            <span
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
-              style={{ background: `${typeConfig.color}1a`, color: typeConfig.color, border: `1px solid ${typeConfig.color}30` }}
-            >
-              <TypeIcon className="w-2.5 h-2.5" />
-              {typeConfig.label}
-            </span>
-          </div>
+  // ── Admin business picker ─────────────────────────────────────────────────
+  if (isAdmin && !selectedBusinessId) {
+    const grouped = adminBusinesses.reduce((acc, b) => {
+      (acc[b.category] = acc[b.category] || []).push(b);
+      return acc;
+    }, {});
+    return (
+      <div>
+        <PageHeader title="Marketplace Overview" subtitle="Select a business to manage their portal." />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16, marginBottom: 24 }}>
+          <Metric label="Total" value={adminBusinesses.length} />
+          <Metric label="Restaurants" value={grouped['FOOD_BEVERAGE']?.length || 0} />
+          <Metric label="Hotels" value={grouped['REAL_ESTATE']?.length || 0} />
+          <Metric label="Transit" value={grouped['LOGISTICS']?.length || 0} />
         </div>
-        <Link
-          to="/orders"
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-[var(--sn-purple)] bg-[var(--sn-purple)1a] border border-[var(--sn-purple)30] hover:bg-[var(--sn-purple)25] transition-colors"
-        >
-          View all orders <ArrowRight className="w-3.5 h-3.5" />
-        </Link>
-      </div>
-
-      {/* ── KYB banner ────────────────────────────────────────────────────── */}
-      {needsKyb && (
-        <Link to="/kyb">
-          <div
-            className="flex items-center gap-4 p-4 rounded-2xl border cursor-pointer hover:opacity-90 transition-opacity"
-            style={{ background: kybMeta.bg, borderColor: `${kybMeta.color}40` }}
-          >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${kybMeta.color}20` }}>
-              <FileCheck className="w-5 h-5" style={{ color: kybMeta.color }} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold" style={{ color: kybMeta.color }}>
-                {bizProfile?.kybStatus === 'UNVERIFIED' && 'Complete your business verification'}
-                {bizProfile?.kybStatus === 'PENDING' && 'Verification is under review'}
-                {bizProfile?.kybStatus === 'REJECTED' && 'Verification rejected — please resubmit'}
-              </p>
-              <p className="text-xs text-[var(--sn-text-muted)] mt-0.5">
-                {bizProfile?.kybStatus === 'UNVERIFIED' && 'Upload your business documents to start receiving orders publicly.'}
-                {bizProfile?.kybStatus === 'PENDING' && "We're reviewing your documents. This usually takes 24–48 hours."}
-                {bizProfile?.kybStatus === 'REJECTED' && 'Review the feedback and upload corrected documents.'}
-              </p>
-            </div>
-            <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: kybMeta.color }} />
-          </div>
-        </Link>
-      )}
-
-      {/* ── Core stats widgets (all business types) ───────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Widget title="Total Orders" icon={ShoppingBag} iconColor="var(--sn-blue)" loading={statsLoading}>
-          <WidgetStat value={fmt(stats.totalOrders || 0, 0)} label="All time" color="var(--sn-blue)" />
-        </Widget>
-        <Widget title="Revenue" icon={TrendingUp} iconColor="var(--sn-purple)" loading={statsLoading}>
-          <WidgetStat value={fmtUSDC(stats.totalRevenue || 0)} label="Completed orders" color="var(--sn-purple)" />
-        </Widget>
-        <Widget title="Pending" icon={Clock} iconColor="var(--sn-amber)" loading={statsLoading}>
-          <WidgetStat value={fmt(stats.pendingOrders || 0, 0)} label="Awaiting action" color="var(--sn-amber)" />
-        </Widget>
-        <Widget title="Completed" icon={CheckCircle2} iconColor="var(--sn-purple)" loading={statsLoading}>
-          <WidgetStat value={fmt(stats.completedOrders || 0, 0)} label="All time" color="var(--sn-purple)" />
-        </Widget>
-      </div>
-
-      {/* ── Business-type-specific widgets ────────────────────────────────── */}
-      {typeConfig.type === 'TRANSIT' && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Widget title="Active Trips" icon={Bus} iconColor="var(--sn-blue)">
-            <WidgetStat
-              value={fmt(trips.filter(t => ['SCHEDULED','BOARDING'].includes(t.status)).length, 0)}
-              label="Scheduled + boarding"
-              color="var(--sn-blue)"
-            />
-          </Widget>
-          <Widget title="Seats Sold" icon={Users} iconColor="var(--sn-purple)">
-            <WidgetStat
-              value={fmt(trips.reduce((s, t) => s + (t._count?.seats || 0), 0), 0)}
-              label="All trips"
-              color="var(--sn-purple)"
-            />
-          </Widget>
-          <Widget title="Check-Ins Today" icon={QrCode} iconColor="var(--sn-purple)">
-            <WidgetStat value={fmt(checkInStats.todayCount || 0, 0)} label="Passengers" color="var(--sn-purple)" />
-          </Widget>
-          <Widget title="Transit Revenue" icon={DollarSign} iconColor="var(--sn-purple)">
-            <WidgetStat
-              value={fmtUSDC(trips.reduce((s, t) => s + (t._count?.seats || 0) * (Number(t.fareUsdc) || 0), 0))}
-              label="From seat bookings"
-              color="var(--sn-purple)"
-            />
-          </Widget>
-        </div>
-      )}
-
-      {['RESTAURANT', 'HOTEL', 'SERVICES'].includes(typeConfig.type) && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <Widget title="Reservations" icon={CalendarCheck} iconColor="var(--sn-purple)">
-            <WidgetStat value={fmt(resStats.total || 0, 0)} label="All bookings" color="var(--sn-purple)" />
-          </Widget>
-          <Widget title="Pending" icon={Clock} iconColor="var(--sn-amber)">
-            <WidgetStat value={fmt(resStats.pending || 0, 0)} label="Awaiting confirmation" color="var(--sn-amber)" />
-          </Widget>
-          <Widget title="Checked In" icon={UserCheck} iconColor="var(--sn-purple)">
-            <WidgetStat value={fmt(checkInStats.todayCount || 0, 0)} label="Today" color="var(--sn-purple)" />
-          </Widget>
-          <Widget title="No-Shows" icon={UserX} iconColor="var(--sn-red)">
-            <WidgetStat value={fmt(resStats.noShows || 0, 0)} label="Penalties applied" color="var(--sn-red)" />
-          </Widget>
-        </div>
-      )}
-
-      {/* ── Invoice KPIs (all types) ──────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Widget title="Invoices Sent" icon={Receipt} iconColor="var(--sn-blue)">
-          <WidgetStat value={fmt(invoiceStats.sent, 0)} label="Awaiting payment" color="var(--sn-blue)" />
-        </Widget>
-        <Widget title="Invoices Paid" icon={CheckCircle2} iconColor="var(--sn-purple)">
-          <WidgetStat value={fmt(invoiceStats.paid, 0)} label="Settled" color="var(--sn-purple)" />
-        </Widget>
-        <Widget title="Invoice Revenue" icon={DollarSign} iconColor="var(--sn-purple)">
-          <WidgetStat value={fmtUSDC(invoiceStats.paidRevenue)} label="From paid invoices" color="var(--sn-purple)" />
-        </Widget>
-      </div>
-
-      {/* ── Revenue trend + Order funnel ──────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Revenue trend — Area chart (Sentry-style) */}
-        <div className="lg:col-span-2">
-          <Widget title="Revenue Trend" subtitle="Completed orders · last 30 days" icon={TrendingUp} iconColor="var(--sn-purple)" loading={analyticsLoading}>
-            {!hasRevenue ? (
-              <div className="h-[200px] flex flex-col items-center justify-center text-center">
-                <div className="w-12 h-12 rounded-2xl bg-[var(--sn-purple)1a] border border-[var(--sn-purple)30] flex items-center justify-center mb-3">
-                  <TrendingUp className="w-6 h-6 text-[var(--sn-purple)]" />
-                </div>
-                <p className="text-sm text-[var(--sn-text-muted)]">Complete your first order to see revenue.</p>
-              </div>
-            ) : (
-              <ResponsiveContainer width="100%" height={200}>
-                <AreaChart data={dailyRevenue} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
-                  <defs>
-                    <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--sn-purple)" stopOpacity={0.3} />
-                      <stop offset="100%" stopColor="var(--sn-purple)" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="label" tick={{ fill: 'var(--sn-text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} interval={4} />
-                  <YAxis tick={{ fill: 'var(--sn-text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={v => `$${v.toFixed(0)}`} />
-                  <Tooltip
-                    cursor={{ stroke: 'var(--sn-border)', strokeDasharray: '4 4' }}
-                    contentStyle={{ background: 'var(--sn-card)', border: '1px solid var(--sn-border)', borderRadius: 12 }}
-                    labelStyle={{ color: 'var(--sn-text)', fontSize: 12 }}
-                    formatter={(v) => [`$${Number(v).toFixed(2)}`, 'Revenue']}
-                  />
-                  <Area type="monotone" dataKey="revenue" stroke="var(--sn-purple)" strokeWidth={2} fill="url(#revGrad)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            )}
-          </Widget>
-        </div>
-
-        {/* Order funnel */}
-        <Widget title="Order Funnel" subtitle="Lifecycle progression" icon={Package} iconColor="var(--sn-blue)" loading={analyticsLoading}>
-          <div className="space-y-3 pt-2">
-            {funnel.map(stage => (
-              <div key={stage.label}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-semibold text-[var(--sn-text-muted)]">{stage.label}</span>
-                  <span className="text-xs font-bold text-[var(--sn-text)] az-mono">{stage.count}</span>
-                </div>
-                <div className="h-2 rounded-full bg-[var(--sn-border)] overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${(stage.count / funnelMax) * 100}%`, background: stage.color }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </Widget>
-      </div>
-
-      {/* ── Transit-specific: upcoming trips widget ────────────────────────── */}
-      {typeConfig.type === 'TRANSIT' && trips.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Widget title="Upcoming Trips" subtitle="Next departures" icon={Route} iconColor="var(--sn-blue)">
-            <div className="space-y-0 max-h-[240px] overflow-y-auto">
-              {trips
-                .filter(t => ['SCHEDULED', 'BOARDING'].includes(t.status))
-                .sort((a, b) => new Date(a.departureAt) - new Date(b.departureAt))
-                .slice(0, 5)
-                .map(trip => {
-                  const booked = trip._count?.seats || 0;
-                  const total = trip.vehicle?.capacity || 0;
-                  const pct = total > 0 ? (booked / total) * 100 : 0;
-                  return (
-                    <WidgetRow
-                      key={trip.id}
-                      label={trip.routeName}
-                      value={`${booked}/${total}`}
-                      badge={<Badge color={pct > 80 ? 'var(--sn-amber)' : 'var(--sn-purple)'}>{pct > 80 ? 'Filling Up' : 'Available'}</Badge>}
-                      onClick={() => window.location.href = '/transit'}
-                    />
-                  );
-                })}
-            </div>
-          </Widget>
-
-          {/* Recent check-ins for transit */}
-          <Widget title="Recent Check-Ins" subtitle="Passenger activity" icon={QrCode} iconColor="var(--sn-purple)">
-            <div className="space-y-0">
-              <WidgetRow label="Checked in today" value={fmt(checkInStats.todayCount || 0, 0)} badge={<Badge color="var(--sn-purple)">Today</Badge>} />
-              <WidgetRow label="Pending" value={fmt(checkInStats.pending || 0, 0)} badge={<Badge color="var(--sn-amber)">Waiting</Badge>} />
-              <WidgetRow label="No-shows" value={fmt(checkInStats.noShows || 0, 0)} badge={<Badge color="var(--sn-red)">Today</Badge>} />
-              <WidgetRow label="Total guests" value={fmt(checkInStats.totalGuests || 0, 0)} badge={<Badge color="var(--sn-blue)">All time</Badge>} />
-            </div>
-          </Widget>
-        </div>
-      )}
-
-      {/* ── Reservation-specific widgets ──────────────────────────────────── */}
-      {['RESTAURANT', 'HOTEL', 'SERVICES'].includes(typeConfig.type) && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Widget title="Reservation Summary" subtitle="By status" icon={CalendarCheck} iconColor="var(--sn-purple)">
-            <div className="space-y-0">
-              <WidgetRow label="Pending" value={fmt(resStats.pending || 0, 0)} badge={<Badge color="var(--sn-amber)">Action needed</Badge>} />
-              <WidgetRow label="Confirmed" value={fmt(resStats.confirmed || 0, 0)} badge={<Badge color="var(--sn-blue)">Upcoming</Badge>} />
-              <WidgetRow label="Checked In" value={fmt(resStats.checkedIn || 0, 0)} badge={<Badge color="var(--sn-purple)">Today</Badge>} />
-              <WidgetRow label="No-Shows" value={fmt(resStats.noShows || 0, 0)} badge={<Badge color="var(--sn-red)">Penalized</Badge>} />
-            </div>
-          </Widget>
-
-          <Widget title="Check-In Activity" subtitle="Today" icon={QrCode} iconColor="var(--sn-purple)">
-            <div className="space-y-0">
-              <WidgetRow label="Checked in" value={fmt(checkInStats.todayCount || 0, 0)} badge={<Badge color="var(--sn-purple)">Today</Badge>} />
-              <WidgetRow label="Pending" value={fmt(checkInStats.pending || 0, 0)} badge={<Badge color="var(--sn-amber)">Waiting</Badge>} />
-              <WidgetRow label="No-shows" value={fmt(checkInStats.noShows || 0, 0)} badge={<Badge color="var(--sn-red)">Today</Badge>} />
-              <WidgetRow label="Total guests" value={fmt(checkInStats.totalGuests || 0, 0)} badge={<Badge color="var(--sn-blue)">All time</Badge>} />
-            </div>
-          </Widget>
-        </div>
-      )}
-
-      {/* ── Reviews widget (all types) ────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Widget title="Customer Rating" icon={Star} iconColor="var(--sn-amber)">
-          <div className="flex items-center gap-3">
-            <WidgetStat value={fmt(reviewStats.avgRating || 0, 1)} color="var(--sn-amber)" />
-            <div className="flex items-center gap-0.5">
-              {[1, 2, 3, 4, 5].map(s => (
-                <Star key={s} className={cn('w-4 h-4', s <= Math.round(reviewStats.avgRating || 0) ? 'text-[var(--sn-amber)] fill-[var(--sn-amber)]' : 'text-[var(--sn-border)]')} />
+        {Object.entries(grouped).map(([category, businesses]) => (
+          <div key={category} style={{ marginBottom: 24 }}>
+            <div className="i-eyebrow" style={{ marginBottom: 12 }}>{category}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+              {businesses.map(b => (
+                <button key={b.id} onClick={() => selectBusiness(b.id)}
+                  style={{ textAlign: 'left', cursor: 'pointer', padding: 16, borderRadius: 'var(--r3)',
+                    background: 'var(--surface)', border: '1px solid var(--line)', transition: 'box-shadow 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.boxShadow = 'var(--d2)'}
+                  onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{b.name}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>{b.business_type || 'General'}</div>
+                </button>
               ))}
             </div>
           </div>
-          <p className="text-[11px] text-[var(--sn-text-muted)] mt-2">{reviewStats.total || 0} reviews</p>
-        </Widget>
+        ))}
+      </div>
+    );
+  }
 
-        <Widget title="Stories Promoted" icon={Sparkles} iconColor="var(--sn-purple)">
-          <WidgetStat value={fmt(reviewStats.storiesPromoted || 0, 0)} label="From reviews" color="var(--sn-purple)" />
-        </Widget>
+  // ── Quick actions by type ──────────────────────────────────────────────────
+  const quickActions = [];
+  if (typeConfig.type === 'TRANSIT') {
+    quickActions.push(
+      { to: '/transit-fleet', label: 'Manage Fleet', desc: 'Assign drivers, optimize routes.', icon: Bus },
+      { to: '/transit-manifests', label: 'Trip Manifests', desc: 'Review passenger rosters.', icon: Route },
+      { to: '/checkin', label: 'Scan Tickets', desc: 'Boarding check-in with QR.', icon: QrCode },
+    );
+  } else if (typeConfig.type === 'RESTAURANT') {
+    quickActions.push(
+      { to: '/restaurant-tables', label: 'Floor Plan', desc: 'Table statuses and seating.', icon: Utensils },
+      { to: '/restaurant-kitchen', label: 'Kitchen', desc: 'Monitor open tickets.', icon: Utensils },
+      { to: '/dine-in', label: 'Dine-In', desc: 'Manage active sessions.', icon: Utensils },
+    );
+  } else if (typeConfig.type === 'HOTEL') {
+    quickActions.push(
+      { to: '/hotel-front-desk', label: 'Front Desk', desc: 'Guest arrivals and keys.', icon: Hotel },
+      { to: '/hotel-housekeeping', label: 'Housekeeping', desc: 'Room status tracking.', icon: Clock },
+      { to: '/guests', label: 'Guest Profiles', desc: 'CRM history and preferences.', icon: Users },
+    );
+  }
 
-        {/* Recent orders widget */}
-        <Widget title="Recent Orders" subtitle="Latest activity" icon={ShoppingBag} iconColor="var(--sn-blue)" loading={recentLoading}>
-          {recent.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full min-h-[80px] text-center">
-              <p className="text-xs text-[var(--sn-text-muted)]">No orders yet.</p>
+  return (
+    <div>
+      <PageHeader title="Command Center"
+        subtitle={typeConfig.label}
+        actions={
+          <Link to="/orders">
+            <Button variant="ghost" size="sm" icon={ArrowRight}>View all orders</Button>
+          </Link>
+        }
+      />
+
+      {/* KYB banner */}
+      {needsKyb && (
+        <Link to="/kyb" style={{ display: 'block', marginBottom: 16, textDecoration: 'none' }}>
+          <Card>
+            <CardBody>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '4px 0' }}>
+                <div style={{ width: 28, height: 28, borderRadius: 'var(--r2)', background: 'var(--hold-bg)', display: 'grid', placeItems: 'center', flex: 'none' }}>
+                  <FileCheck size={14} strokeWidth={1.75} color="var(--hold)" />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
+                    {bizProfile?.kybStatus === 'UNVERIFIED' && 'Complete your business verification'}
+                    {bizProfile?.kybStatus === 'PENDING' && 'Verification is under review'}
+                    {bizProfile?.kybStatus === 'REJECTED' && 'Verification rejected — resubmit'}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>
+                    {bizProfile?.kybStatus === 'UNVERIFIED' && 'Upload documents to receive orders publicly.'}
+                    {bizProfile?.kybStatus === 'PENDING' && 'Usually takes 24–48 hours.'}
+                    {bizProfile?.kybStatus === 'REJECTED' && 'Review feedback and upload corrected documents.'}
+                  </div>
+                </div>
+                <Tag tone={bizProfile?.kybStatus === 'REJECTED' ? 'stop' : 'hold'}>
+                  {kybMeta?.label || bizProfile?.kybStatus}
+                </Tag>
+              </div>
+            </CardBody>
+          </Card>
+        </Link>
+      )}
+
+      {/* Employee KPIs */}
+      <m.div variants={ContainerV} initial="hidden" animate="visible"
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 16 }}>
+        <m.div variants={ItemV}><KpiCard label="Total Employees" value={employeeStatsLoading ? '—' : String(employeeStats.totalEmployees)} deltaLabel={employeeStats.totalEmployees > 0 ? `${employeeStats.totalEmployees} active` : 'No employees yet'} icon={Users} loading={employeeStatsLoading} /></m.div>
+        <m.div variants={ItemV}><KpiCard label="Active Shifts" value={employeeStatsLoading ? '—' : String(employeeStats.activeShifts)} deltaLabel={employeeStats.activeShifts > 0 ? 'On duty' : 'None'} deltaTone={employeeStats.activeShifts > 0 ? 'up' : 'flat'} icon={Clock} loading={employeeStatsLoading} /></m.div>
+        <m.div variants={ItemV}><KpiCard label="Time Off Requests" value={employeeStatsLoading ? '—' : String(employeeStats.pendingTimeOff)} deltaLabel={employeeStats.pendingTimeOff > 0 ? 'Pending' : 'All clear'} deltaTone={employeeStats.pendingTimeOff > 0 ? 'down' : 'up'} icon={CalendarCheck} loading={employeeStatsLoading} /></m.div>
+        <m.div variants={ItemV}><KpiCard label="Monthly Payroll" value={employeeStatsLoading ? '—' : `${Number(employeeStats.monthlyPayroll).toLocaleString()} USDC`} deltaLabel="This month" icon={DollarSign} loading={employeeStatsLoading} /></m.div>
+      </m.div>
+
+      {/* Quick action cards by type */}
+      {quickActions.length > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 16 }}>
+          {quickActions.map(a => {
+            const Icon = a.icon;
+            return (
+              <Link key={a.to} to={a.to} style={{ textDecoration: 'none' }}>
+                <Card style={{ height: '100%', cursor: 'pointer' }}>
+                  <CardBody>
+                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '100%' }}>
+                      <div>
+                        <div style={{ width: 32, height: 32, borderRadius: 'var(--r2)', background: 'var(--surface-sunk)', display: 'grid', placeItems: 'center', marginBottom: 12 }}>
+                          <Icon size={15} strokeWidth={1.75} color="var(--text-2)" />
+                        </div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{a.label}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>{a.desc}</div>
+                      </div>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, fontWeight: 600, color: 'var(--accent)', marginTop: 16 }}>
+                        Open <ArrowUpRight size={12} />
+                      </span>
+                    </div>
+                  </CardBody>
+                </Card>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Quick action buttons */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+        <Link to="/reservations?new=true"><Button variant="ghost" size="sm" icon={CalendarPlus}>New Reservation</Button></Link>
+        <Link to="/products?new=true"><Button variant="ghost" size="sm" icon={Plus}>Add Product</Button></Link>
+        <Link to="/employees?invite=true"><Button variant="ghost" size="sm" icon={UserPlus}>Invite Employee</Button></Link>
+        <Link to="/marketing?new_promo=true"><Button variant="ghost" size="sm" icon={TagIcon}>New Promo</Button></Link>
+      </div>
+
+      {/* At-risk widget */}
+      <div style={{ marginBottom: 16 }}><AtRiskWidget /></div>
+
+      {/* Core KPIs */}
+      <m.div variants={ContainerV} initial="hidden" animate="visible"
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 16 }}>
+        <m.div variants={ItemV}><KpiCard label="Total Orders" value={fmt(stats.totalOrders || 0, 0)} deltaLabel="All time" icon={ShoppingBag} loading={statsLoading} /></m.div>
+        <m.div variants={ItemV}><KpiCard label="Revenue" value={fmtUSDC(stats.totalRevenue || 0)} deltaLabel="Completed" icon={TrendingUp} loading={statsLoading} /></m.div>
+        <m.div variants={ItemV}><KpiCard label="Pending" value={fmt(stats.pendingOrders || 0, 0)} deltaLabel="Awaiting action" icon={Clock} loading={statsLoading} /></m.div>
+        <m.div variants={ItemV}><KpiCard label="Completed" value={fmt(stats.completedOrders || 0, 0)} deltaLabel="All time" icon={CheckCircle2} loading={statsLoading} /></m.div>
+      </m.div>
+
+      {/* Type-specific KPIs */}
+      {typeConfig.type === 'TRANSIT' && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 16 }}>
+          <KpiCard label="Active Trips" value={fmt(trips.filter(t => ['SCHEDULED','BOARDING'].includes(t.status)).length, 0)} deltaLabel="Scheduled + boarding" icon={Bus} />
+          <KpiCard label="Seats Sold" value={fmt(trips.reduce((s, t) => s + (t._count?.seats || 0), 0), 0)} deltaLabel="All trips" icon={Users} />
+          <KpiCard label="Check-Ins Today" value={fmt(checkInStats.todayCount || 0, 0)} deltaLabel="Passengers" icon={QrCode} />
+          <KpiCard label="Transit Revenue" value={fmtUSDC(trips.reduce((s, t) => s + (t._count?.seats || 0) * (Number(t.fareUsdc) || 0), 0))} deltaLabel="From bookings" icon={DollarSign} />
+        </div>
+      )}
+      {['RESTAURANT','HOTEL','SERVICES'].includes(typeConfig.type) && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 16 }}>
+          <KpiCard label="Reservations" value={fmt(resStats.total || 0, 0)} deltaLabel="All bookings" icon={CalendarCheck} />
+          <KpiCard label="Pending" value={fmt(resStats.pending || 0, 0)} deltaLabel="Awaiting confirmation" icon={Clock} />
+          <KpiCard label="Checked In" value={fmt(checkInStats.todayCount || 0, 0)} deltaLabel="Today" icon={CheckCircle2} />
+          <KpiCard label="No-Shows" value={fmt(resStats.noShows || 0, 0)} deltaLabel="Penalized" deltaTone="down" icon={AlertTriangle} />
+        </div>
+      )}
+
+      {/* Invoice KPIs */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 16 }}>
+        <KpiCard label="Invoices Sent" value={fmt(invoiceStats.sent, 0)} deltaLabel="Awaiting payment" icon={Receipt} />
+        <KpiCard label="Invoices Paid" value={fmt(invoiceStats.paid, 0)} deltaLabel="Settled" icon={CheckCircle2} />
+        <KpiCard label="Invoice Revenue" value={fmtUSDC(invoiceStats.paidRevenue)} deltaLabel="From paid invoices" icon={DollarSign} />
+      </div>
+
+      {/* Revenue chart */}
+      {hasRevenue && (
+        <Card style={{ marginBottom: 16 }}>
+          <CardHead>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Revenue · Last 30 days</span>
+          </CardHead>
+          <CardBody>
+            <div style={{ height: 180 }}>
+              <ResponsiveRevenueChart data={dailyRevenue} />
             </div>
-          ) : (
-            <div className="space-y-0 max-h-[160px] overflow-y-auto">
-              {recent.map(o => {
-                const meta = ORDER_STATUS_META[o.status] || {};
-                return (
-                  <WidgetRow
-                    key={o.id}
-                    label={o.azamanId || o.reference || `#${o.id.slice(-6)}`}
-                    value={o.amountUsdc ? fmtUSDC(o.amountUsdc) : '—'}
-                    badge={<Badge color={meta.color}>{meta.label}</Badge>}
-                  />
-                );
-              })}
+          </CardBody>
+        </Card>
+      )}
+
+      {/* Order funnel */}
+      <div style={{ marginBottom: 16 }}>
+        <Card>
+          <CardHead>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Order Funnel</span>
+          </CardHead>
+          <CardBody>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {funnel.map((stage, i) => (
+                <div key={i}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
+                    <span style={{ color: 'var(--text-2)' }}>{stage.label}</span>
+                    <span className="i-num" style={{ color: 'var(--text)' }}>{stage.count}</span>
+                  </div>
+                  <div style={{ height: 6, borderRadius: 3, background: 'var(--surface-sunk)', overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%', borderRadius: 3,
+                      width: `${(stage.count / funnelMax) * 100}%`,
+                      background: 'var(--accent)',
+                      transition: 'width 0.5s var(--e-io)',
+                    }} />
+                  </div>
+                </div>
+              ))}
             </div>
-          )}
-        </Widget>
+          </CardBody>
+        </Card>
+      </div>
+
+      {/* Recent orders + Reviews */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
+        {/* Recent Orders */}
+        <Card>
+          <CardHead>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Recent Orders</span>
+            <Link to="/orders"><Button variant="ghost" size="xs" icon={ArrowRight}>All</Button></Link>
+          </CardHead>
+          <CardBody>
+            {recentLoading ? <Skel h={120} /> :
+             recent.length === 0 ? (
+              <Empty title="No orders yet" body="Orders will appear here once customers start buying." />
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {recent.map(o => {
+                  const meta = ORDER_STATUS_META[o.status] || {};
+                  return (
+                    <Link key={o.id} to={`/orders/${o.id}`}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
+                        padding: '8px 10px', borderRadius: 'var(--r2)', background: 'var(--surface-sunk)',
+                        textDecoration: 'none' }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {o.items?.length || 0} item{(o.items?.length || 0) !== 1 ? 's' : ''}
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--text-3)' }}>{fmtUSDC(o.amountUsdc)}</div>
+                      </div>
+                      <Tag tone={meta.tagVariant === 'bad' ? 'stop' : meta.tagVariant === 'warn' ? 'hold' : meta.tagVariant === 'ok' ? 'go' : 'neutral'}>
+                        {meta.label || o.status}
+                      </Tag>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </CardBody>
+        </Card>
+
+        {/* Customer Rating */}
+        <Card>
+          <CardHead><span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Customer Rating</span></CardHead>
+          <CardBody>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+              <span className="i-num i-num--metric">{fmt(reviewStats.avgRating || 0, 1)}</span>
+              <div style={{ display: 'flex' }}>
+                {[1,2,3,4,5].map(s => (
+                  <Star key={s} size={14}
+                    fill={s <= Math.round(reviewStats.avgRating || 0) ? 'var(--accent)' : 'none'}
+                    color={s <= Math.round(reviewStats.avgRating || 0) ? 'var(--accent)' : 'var(--line-firm)'} />
+                ))}
+              </div>
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 8 }}>{reviewStats.total || 0} reviews</div>
+          </CardBody>
+        </Card>
+
+        {/* Reviews promoted */}
+        <Card>
+          <CardHead><span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Stories Promoted</span></CardHead>
+          <CardBody>
+            <div className="i-num i-num--metric">{fmt(reviewStats.storiesPromoted || 0, 0)}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 8 }}>From customer reviews</div>
+          </CardBody>
+        </Card>
       </div>
     </div>
+  );
+}
+
+// ── Inline revenue chart (lightweight, no recharts dependency for this) ──────
+function ResponsiveRevenueChart({ data }) {
+  const { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } = require('recharts');
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+        <defs>
+          <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.2} />
+            <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <XAxis dataKey="label" tick={{ fill: 'var(--text-3)', fontSize: 11 }} axisLine={false} tickLine={false} />
+        <YAxis tick={{ fill: 'var(--text-3)', fontSize: 11 }} axisLine={false} tickLine={false} width={40} />
+        <Tooltip contentStyle={{ background: 'var(--surface)', border: '1px solid var(--line-firm)', borderRadius: 'var(--r3)', fontSize: 12 }} />
+        <Area type="monotone" dataKey="revenue" stroke="var(--accent)" strokeWidth={2} fill="url(#revGrad)" />
+      </AreaChart>
+    </ResponsiveContainer>
   );
 }

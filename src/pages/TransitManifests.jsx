@@ -3,21 +3,21 @@
  */
 import { useState, useEffect } from 'react';
 import { transitOpsApi, cargoApi } from '@/lib/marketplaceApi';
-import { Card, Button, Badge, Empty, Avatar, Sheet, Select } from '@/components/ui';
-import { Progress } from '@/components/ui/Progress';
-import { useToast } from '@/components/ui/Toast';
+import { Card, Button, Tag, Empty, Avatar, Sheet, Select } from '@/components/instrument';
+import { Progress } from '@/components/instrument';
 import {
   Ticket, Users, DollarSign, QrCode, MapPin, Package, AlertTriangle,
   CheckCircle2, Clock, Plus, Truck, Scale, Phone, ArrowRight, RefreshCw,
 } from 'lucide-react';
+import { toast } from '@/lib/toast';
 
 const CARGO_STATUS_META = {
-  PENDING:     { label: 'Pending',     color: 'var(--sn-amber)',  dot: 'bg-amber-400' },
-  LOADED:      { label: 'Loaded',      color: 'var(--sn-blue)',   dot: 'bg-blue-400' },
-  IN_TRANSIT:  { label: 'In Transit',  color: 'var(--sn-purple)', dot: 'bg-purple-400' },
-  DELIVERED:   { label: 'Delivered',   color: 'var(--sn-purple)', dot: 'bg-purple-400' },
-  RETURNED:    { label: 'Returned',    color: 'var(--sn-red)',    dot: 'bg-red-400' },
-  LOST:        { label: 'Lost',        color: 'var(--sn-red)',    dot: 'bg-red-400' },
+  PENDING:     { label: 'Pending',     color: 'var(--hold)',  dot: 'bg-amber-400' },
+  LOADED:      { label: 'Loaded',      color: 'var(--info)',   dot: 'bg-blue-400' },
+  IN_TRANSIT:  { label: 'In Transit',  color: 'var(--accent)', dot: 'bg-purple-400' },
+  DELIVERED:   { label: 'Delivered',   color: 'var(--accent)', dot: 'bg-purple-400' },
+  RETURNED:    { label: 'Returned',    color: 'var(--stop)',    dot: 'bg-red-400' },
+  LOST:        { label: 'Lost',        color: 'var(--stop)',    dot: 'bg-red-400' },
 };
 
 const CARGO_STATUS_FLOW = ['PENDING', 'LOADED', 'IN_TRANSIT', 'DELIVERED'];
@@ -42,13 +42,12 @@ function useDepartureCountdown(departureAt) {
 }
 
 export default function TransitManifests() {
-  const { toast } = useToast();
-  const [trips, setTrips] = useState([]);
+    const [trips, setTrips] = useState([]);
   const [selectedTrip, setSelectedTrip] = useState(null);
   const [manifest, setManifest] = useState(null);
   const [cargo, setCargo] = useState([]);
   const [activeTab, setActiveTab] = useState('passengers');
-  const [showCargoModal, setShowCargoModal] = useState(false);
+  const [showCargoDialog, setShowCargoModal] = useState(false);
   const [showIrops, setShowIrops] = useState(false);
   const [vehicles, setVehicles] = useState([]);
   const [iropsVehicle, setIropsVehicle] = useState('');
@@ -62,7 +61,7 @@ export default function TransitManifests() {
     try {
       const res = await transitOpsApi.routes();
       setTrips(res.data?.trips || []);
-    } catch { toast.error('Failed to load trips'); }
+    } catch { toast.stop('Failed to load trips'); }
   };
 
   const loadManifest = async (tripId) => {
@@ -74,7 +73,7 @@ export default function TransitManifests() {
       ]);
       setManifest(manifestRes.data);
       setCargo(cargoRes.data?.parcels || []);
-    } catch { toast.error('Failed to load manifest'); }
+    } catch { toast.stop('Failed to load manifest'); }
   };
 
   const loadVehicles = async () => {
@@ -88,16 +87,16 @@ export default function TransitManifests() {
 
   const handleAddCargo = async () => {
     if (!selectedTrip || !cargoForm.senderName || !cargoForm.receiverName || !cargoForm.description) {
-      toast.error('Fill required fields');
+      toast.stop('Fill required fields');
       return;
     }
     try {
       await cargoApi.create({ ...cargoForm, transitTripId: selectedTrip });
-      toast.success('Cargo parcel added');
+      toast.go('Cargo parcel added');
       setShowCargoModal(false);
       setCargoForm({ senderName: '', senderPhone: '', receiverName: '', receiverPhone: '', receiverAddress: '', description: '', weightKg: '', priceUsdc: '', fragile: false, notes: '' });
       loadManifest(selectedTrip);
-    } catch { toast.error('Failed to add cargo'); }
+    } catch { toast.stop('Failed to add cargo'); }
   };
 
   const advanceCargoStatus = async (parcelId, currentStatus) => {
@@ -106,23 +105,23 @@ export default function TransitManifests() {
     const next = CARGO_STATUS_FLOW[idx + 1];
     try {
       await cargoApi.updateStatus(parcelId, next);
-      toast.success(`Parcel → ${CARGO_STATUS_META[next].label}`);
+      toast.go(`Parcel → ${CARGO_STATUS_META[next].label}`);
       loadManifest(selectedTrip);
-    } catch { toast.error('Failed to update status'); }
+    } catch { toast.stop('Failed to update status'); }
   };
 
   const handleIropsReassign = async () => {
-    if (!iropsVehicle) { toast.error('Select a replacement vehicle'); return; }
+    if (!iropsVehicle) { toast.stop('Select a replacement vehicle'); return; }
     setIropsLoading(true);
     try {
       const res = await cargoApi.reassign({ sourceTripId: selectedTrip, targetVehicleId: iropsVehicle });
-      toast.success(res.data?.message || 'Reassignment complete');
+      toast.go(res.data?.message || 'Reassignment complete');
       setShowIrops(false);
       setIropsVehicle('');
       loadTrips();
       setSelectedTrip(null);
       setManifest(null);
-    } catch { toast.error('Reassignment failed'); }
+    } catch { toast.stop('Reassignment failed'); }
     setIropsLoading(false);
   };
 
@@ -135,14 +134,14 @@ export default function TransitManifests() {
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-bold text-[var(--sn-text)]">Live Manifests</h1>
-          <p className="text-sm text-[var(--sn-text-muted)] mt-0.5">Passenger boarding, cargo tracking, and emergency reassignment</p>
+          <h1 className="text-xl font-bold text-[var(--text)]">Live Manifests</h1>
+          <p className="text-sm text-[var(--text-3)] mt-0.5">Passenger boarding, cargo tracking, and emergency reassignment</p>
         </div>
         {selectedTrip && (
           <button
             onClick={() => { setShowIrops(true); loadVehicles(); }}
-            className="btn-sentry flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold"
-            style={{ background: 'var(--sn-red-subtle)', color: 'var(--sn-red)', border: '1px solid var(--sn-red)' }}
+            className="bg-tint text-ink font-bold hover:bg-tint/90 flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold"
+            style={{ background: 'var(--f-bad-bg)', color: 'var(--stop)', border: '1px solid var(--stop)' }}
           >
             <AlertTriangle className="w-4 h-4" />
             Emergency
@@ -153,17 +152,17 @@ export default function TransitManifests() {
       {/* Trip selector */}
       <div className="flex gap-3 flex-wrap">
         {trips.length === 0 && (
-          <p className="text-sm text-[var(--sn-text-muted)]">No trips scheduled. Create trips in Transit Trips first.</p>
+          <p className="text-sm text-[var(--text-3)]">No trips scheduled. Create trips in Transit Trips first.</p>
         )}
         {trips.map(trip => (
           <button
             key={trip.id}
             onClick={() => loadManifest(trip.id)}
-            className={`px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all ${selectedTrip === trip.id ? 'bg-[var(--sn-purple-subtle)] text-[var(--sn-purple)] border-[var(--sn-purple-border)]' : 'text-[var(--sn-text-muted)] border-[var(--sn-border)] hover:bg-[var(--sn-card-hover)]'}`}
+            className={`px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all ${selectedTrip === trip.id ? 'bg-[var(--surface-sunk)] text-[var(--accent)] border-[var(--accent)]' : 'text-[var(--text-3)] border-[var(--line)]:bg-[var(--surface-sunk)]'}`}
           >
             <MapPin className="w-3.5 h-3.5 inline mr-1.5" />
             {trip.origin} → {trip.destination}
-            <span className="ml-2 text-xs text-[var(--sn-text-muted)]">
+            <span className="ml-2 text-xs text-[var(--text-3)]">
               {new Date(trip.departureAt || trip.departureTime).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' })}
             </span>
           </button>
@@ -176,24 +175,24 @@ export default function TransitManifests() {
         <>
           {/* Countdown */}
           {countdown && countdown !== 'Departed' && (
-            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl" style={{ background: 'var(--sn-purple-subtle)', border: '1px solid var(--sn-purple-border)' }}>
-              <Clock className="w-4 h-4 text-[var(--sn-purple)]" />
-              <span className="text-sm font-semibold text-[var(--sn-purple)]">Departs in {countdown}</span>
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl" style={{ background: 'var(--surface-sunk)', border: '1px solid var(--accent)' }}>
+              <Clock className="w-4 h-4 text-[var(--accent)]" />
+              <span className="text-sm font-semibold text-[var(--accent)]">Departs in {countdown}</span>
             </div>
           )}
 
           {/* Tabs */}
-          <div className="flex gap-2 border-b border-[var(--sn-border)]">
+          <div className="flex gap-2 border-b border-[var(--line)]">
             <button
               onClick={() => setActiveTab('passengers')}
-              className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'passengers' ? 'border-[var(--sn-purple)] text-[var(--sn-purple)]' : 'border-transparent text-[var(--sn-text-muted)] hover:text-[var(--sn-text)]'}`}
+              className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'passengers' ? 'border-[var(--accent)] text-[var(--accent)]' : 'border-transparent text-[var(--text-3)]:text-[var(--text)]'}`}
             >
               <Users className="w-4 h-4 inline mr-1.5" />
               Passengers
             </button>
             <button
               onClick={() => setActiveTab('cargo')}
-              className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'cargo' ? 'border-[var(--sn-purple)] text-[var(--sn-purple)]' : 'border-transparent text-[var(--sn-text-muted)] hover:text-[var(--sn-text)]'}`}
+              className={`px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors ${activeTab === 'cargo' ? 'border-[var(--accent)] text-[var(--accent)]' : 'border-transparent text-[var(--text-3)]:text-[var(--text)]'}`}
             >
               <Package className="w-4 h-4 inline mr-1.5" />
               Cargo ({cargo.length})
@@ -204,38 +203,38 @@ export default function TransitManifests() {
           {activeTab === 'passengers' && (
             <div className="grid grid-cols-3 gap-4">
               <Card>
-                <div className="flex items-center gap-2 mb-2"><Users className="w-4 h-4 text-[var(--sn-blue)]" /><span className="text-xs text-[var(--sn-text-muted)] uppercase">Passengers</span></div>
-                <p className="text-3xl font-bold text-[var(--sn-text)]">{manifest.boardedCount}/{manifest.totalBooked}</p>
-                <p className="text-xs text-[var(--sn-text-muted)] mt-1">{manifest.totalBooked - manifest.boardedCount} not yet boarded</p>
+                <div className="flex items-center gap-2 mb-2"><Users className="w-4 h-4 text-[var(--info)]" /><span className="text-xs text-[var(--text-3)] uppercase">Passengers</span></div>
+                <p className="text-3xl font-bold text-[var(--text)]">{manifest.boardedCount}/{manifest.totalBooked}</p>
+                <p className="text-xs text-[var(--text-3)] mt-1">{manifest.totalBooked - manifest.boardedCount} not yet boarded</p>
               </Card>
               <Card>
-                <div className="flex items-center gap-2 mb-2"><DollarSign className="w-4 h-4 text-[var(--sn-purple)]" /><span className="text-xs text-[var(--sn-text-muted)] uppercase">Revenue (Escrow)</span></div>
-                <p className="text-3xl font-bold text-[var(--sn-text)]">{manifest.totalRevenueUsdc?.toFixed(2)}</p>
-                <p className="text-xs text-[var(--sn-text-muted)] mt-1">USDC held in Smart Escrow</p>
+                <div className="flex items-center gap-2 mb-2"><DollarSign className="w-4 h-4 text-[var(--accent)]" /><span className="text-xs text-[var(--text-3)] uppercase">Revenue (Escrow)</span></div>
+                <p className="text-3xl font-bold text-[var(--text)]">{manifest.totalRevenueUsdc?.toFixed(2)}</p>
+                <p className="text-xs text-[var(--text-3)] mt-1">USDC held in Smart Escrow</p>
               </Card>
               <Card>
-                <div className="flex items-center gap-2 mb-2"><QrCode className="w-4 h-4 text-[var(--sn-purple)]" /><span className="text-xs text-[var(--sn-text-muted)] uppercase">Boarding</span></div>
-                <p className="text-3xl font-bold text-[var(--sn-text)]">{manifest.boardingProgress}%</p>
+                <div className="flex items-center gap-2 mb-2"><QrCode className="w-4 h-4 text-[var(--accent)]" /><span className="text-xs text-[var(--text-3)] uppercase">Boarding</span></div>
+                <p className="text-3xl font-bold text-[var(--text)]">{manifest.boardingProgress}%</p>
                 <div className="mt-2"><Progress value={manifest.boardingProgress || 0} /></div>
               </Card>
 
               <Card className="col-span-3">
-                <h3 className="text-sm font-bold text-[var(--sn-text)] mb-4">Passenger Manifest</h3>
+                <h3 className="text-sm font-bold text-[var(--text)] mb-4">Passenger Manifest</h3>
                 <div className="space-y-1">
                   {manifest.passengers?.map(p => (
-                    <div key={p.id} className="flex items-center gap-3 py-2 border-b border-[var(--sn-border)] last:border-0">
+                    <div key={p.id} className="flex items-center gap-3 py-2 border-b border-[var(--line)] last:border-0">
                       <Avatar name={p.user?.fullName || p.name} size="sm" />
                       <div className="flex-1">
-                        <p className="text-sm font-semibold text-[var(--sn-text)]">{p.user?.fullName || p.name}</p>
-                        <p className="text-xs text-[var(--sn-text-muted)]">Seat {p.seatNumber} - {p.ticketRef}</p>
+                        <p className="text-sm font-semibold text-[var(--text)]">{p.user?.fullName || p.name}</p>
+                        <p className="text-xs text-[var(--text-3)]">Seat {p.seatNumber} - {p.ticketRef}</p>
                       </div>
-                      <Badge color={p.boarded ? 'var(--sn-purple)' : 'var(--sn-text-muted)'}>
+                      <Tag color={p.boarded ? 'var(--accent)' : 'var(--text-3)'}>
                         {p.boarded ? <><CheckCircle2 className="w-3 h-3 inline mr-1" />Boarded</> : 'Waiting'}
-                      </Badge>
+                      </Tag>
                     </div>
                   ))}
                   {(!manifest.passengers || manifest.passengers.length === 0) && (
-                    <p className="text-sm text-[var(--sn-text-muted)] py-4 text-center">No passengers booked yet</p>
+                    <p className="text-sm text-[var(--text-3)] py-4 text-center">No passengers booked yet</p>
                   )}
                 </div>
               </Card>
@@ -247,21 +246,21 @@ export default function TransitManifests() {
             <div className="space-y-4">
               <div className="grid grid-cols-3 gap-4">
                 <Card>
-                  <div className="flex items-center gap-2 mb-2"><Package className="w-4 h-4 text-[var(--sn-amber)]" /><span className="text-xs text-[var(--sn-text-muted)] uppercase">Parcels</span></div>
-                  <p className="text-3xl font-bold text-[var(--sn-text)]">{cargo.length}</p>
+                  <div className="flex items-center gap-2 mb-2"><Package className="w-4 h-4 text-[var(--hold)]" /><span className="text-xs text-[var(--text-3)] uppercase">Parcels</span></div>
+                  <p className="text-3xl font-bold text-[var(--text)]">{cargo.length}</p>
                 </Card>
                 <Card>
-                  <div className="flex items-center gap-2 mb-2"><Scale className="w-4 h-4 text-[var(--sn-blue)]" /><span className="text-xs text-[var(--sn-text-muted)] uppercase">Total Weight</span></div>
-                  <p className="text-3xl font-bold text-[var(--sn-text)]">{totalWeight.toFixed(1)}<span className="text-sm font-normal text-[var(--sn-text-muted)] ml-1">kg</span></p>
+                  <div className="flex items-center gap-2 mb-2"><Scale className="w-4 h-4 text-[var(--info)]" /><span className="text-xs text-[var(--text-3)] uppercase">Total Weight</span></div>
+                  <p className="text-3xl font-bold text-[var(--text)]">{totalWeight.toFixed(1)}<span className="text-sm font-normal text-[var(--text-3)] ml-1">kg</span></p>
                 </Card>
                 <Card>
-                  <div className="flex items-center gap-2 mb-2"><DollarSign className="w-4 h-4 text-[var(--sn-purple)]" /><span className="text-xs text-[var(--sn-text-muted)] uppercase">Cargo Revenue</span></div>
-                  <p className="text-3xl font-bold text-[var(--sn-text)]">{cargoRevenue.toFixed(2)}</p>
+                  <div className="flex items-center gap-2 mb-2"><DollarSign className="w-4 h-4 text-[var(--accent)]" /><span className="text-xs text-[var(--text-3)] uppercase">Cargo Revenue</span></div>
+                  <p className="text-3xl font-bold text-[var(--text)]">{cargoRevenue.toFixed(2)}</p>
                 </Card>
               </div>
 
               <div className="flex justify-end">
-                <Button onClick={() => setShowCargoModal(true)} className="btn-sentry flex items-center gap-2">
+                <Button onClick={() => setShowCargoModal(true)} className="bg-tint text-ink font-bold hover:bg-tint/90 flex items-center gap-2">
                   <Plus className="w-4 h-4" />
                   Add Cargo Parcel
                 </Button>
@@ -276,24 +275,24 @@ export default function TransitManifests() {
                       const meta = CARGO_STATUS_META[parcel.status] || CARGO_STATUS_META.PENDING;
                       const canAdvance = CARGO_STATUS_FLOW.includes(parcel.status) && CARGO_STATUS_FLOW.indexOf(parcel.status) < CARGO_STATUS_FLOW.length - 1;
                       return (
-                        <div key={parcel.id} className="flex items-center gap-3 py-3 border-b border-[var(--sn-border)] last:border-0">
+                        <div key={parcel.id} className="flex items-center gap-3 py-3 border-b border-[var(--line)] last:border-0">
                           <div className={`w-2 h-2 rounded-full ${meta.dot}`} />
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <p className="text-sm font-semibold text-[var(--sn-text)]">{parcel.description}</p>
-                              {parcel.fragile && <Badge color="var(--sn-red)">Fragile</Badge>}
+                              <p className="text-sm font-semibold text-[var(--text)]">{parcel.description}</p>
+                              {parcel.fragile && <Tag tone="neutral">Fragile</Tag>}
                             </div>
-                            <p className="text-xs text-[var(--sn-text-muted)] mt-0.5">
+                            <p className="text-xs text-[var(--text-3)] mt-0.5">
                               {parcel.weightKg}kg - {parcel.receiverName}
                               {parcel.receiverPhone && <><Phone className="w-3 h-3 inline mx-1" />{parcel.receiverPhone}</>}
-                              {parcel.priceUsdc > 0 && <span className="ml-2 font-medium text-[var(--sn-purple)]">${parcel.priceUsdc.toFixed(2)}</span>}
+                              {parcel.priceUsdc > 0 && <span className="ml-2 font-medium text-[var(--accent)]">${parcel.priceUsdc.toFixed(2)}</span>}
                             </p>
                           </div>
-                          <Badge color={meta.color}>{meta.label}</Badge>
+                          <Tag color={meta.color}>{meta.label}</Tag>
                           {canAdvance && (
                             <button
                               onClick={() => advanceCargoStatus(parcel.id, parcel.status)}
-                              className="p-1.5 rounded-lg hover:bg-[var(--sn-card-hover)] text-[var(--sn-purple)]"
+                              className="p-1.5 rounded-lg:bg-[var(--surface-sunk)] text-[var(--accent)]"
                               title="Advance status"
                             >
                               <ArrowRight className="w-4 h-4" />
@@ -315,42 +314,42 @@ export default function TransitManifests() {
         <Sheet open={showCargoModal} onClose={() => setShowCargoModal(false)} title="Add Cargo Parcel">
           <div className="space-y-3 px-1">
             <div>
-              <label className="text-xs font-semibold text-[var(--sn-text-muted)] uppercase">Sender Name *</label>
-              <input className="w-full mt-1 px-3 py-2 rounded-lg bg-[var(--sn-surface)] border border-[var(--sn-border)] text-sm text-[var(--sn-text)]" value={cargoForm.senderName} onChange={e => setCargoForm({ ...cargoForm, senderName: e.target.value })} />
+              <label className="text-xs font-semibold text-[var(--text-3)] uppercase">Sender Name *</label>
+              <input className="w-full mt-1 px-3 py-2 rounded-lg bg-[var(--surface)] border border-[var(--line)] text-sm text-[var(--text)]" value={cargoForm.senderName} onChange={e => setCargoForm({ ...cargoForm, senderName: e.target.value })} />
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--sn-text-muted)] uppercase">Sender Phone</label>
-              <input className="w-full mt-1 px-3 py-2 rounded-lg bg-[var(--sn-surface)] border border-[var(--sn-border)] text-sm text-[var(--sn-text)]" value={cargoForm.senderPhone} onChange={e => setCargoForm({ ...cargoForm, senderPhone: e.target.value })} />
+              <label className="text-xs font-semibold text-[var(--text-3)] uppercase">Sender Phone</label>
+              <input className="w-full mt-1 px-3 py-2 rounded-lg bg-[var(--surface)] border border-[var(--line)] text-sm text-[var(--text)]" value={cargoForm.senderPhone} onChange={e => setCargoForm({ ...cargoForm, senderPhone: e.target.value })} />
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--sn-text-muted)] uppercase">Receiver Name *</label>
-              <input className="w-full mt-1 px-3 py-2 rounded-lg bg-[var(--sn-surface)] border border-[var(--sn-border)] text-sm text-[var(--sn-text)]" value={cargoForm.receiverName} onChange={e => setCargoForm({ ...cargoForm, receiverName: e.target.value })} />
+              <label className="text-xs font-semibold text-[var(--text-3)] uppercase">Receiver Name *</label>
+              <input className="w-full mt-1 px-3 py-2 rounded-lg bg-[var(--surface)] border border-[var(--line)] text-sm text-[var(--text)]" value={cargoForm.receiverName} onChange={e => setCargoForm({ ...cargoForm, receiverName: e.target.value })} />
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--sn-text-muted)] uppercase">Receiver Phone</label>
-              <input className="w-full mt-1 px-3 py-2 rounded-lg bg-[var(--sn-surface)] border border-[var(--sn-border)] text-sm text-[var(--sn-text)]" value={cargoForm.receiverPhone} onChange={e => setCargoForm({ ...cargoForm, receiverPhone: e.target.value })} />
+              <label className="text-xs font-semibold text-[var(--text-3)] uppercase">Receiver Phone</label>
+              <input className="w-full mt-1 px-3 py-2 rounded-lg bg-[var(--surface)] border border-[var(--line)] text-sm text-[var(--text)]" value={cargoForm.receiverPhone} onChange={e => setCargoForm({ ...cargoForm, receiverPhone: e.target.value })} />
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--sn-text-muted)] uppercase">Description *</label>
-              <input className="w-full mt-1 px-3 py-2 rounded-lg bg-[var(--sn-surface)] border border-[var(--sn-border)] text-sm text-[var(--sn-text)]" placeholder="e.g. Document envelope" value={cargoForm.description} onChange={e => setCargoForm({ ...cargoForm, description: e.target.value })} />
+              <label className="text-xs font-semibold text-[var(--text-3)] uppercase">Description *</label>
+              <input className="w-full mt-1 px-3 py-2 rounded-lg bg-[var(--surface)] border border-[var(--line)] text-sm text-[var(--text)]" placeholder="e.g. Document envelope" value={cargoForm.description} onChange={e => setCargoForm({ ...cargoForm, description: e.target.value })} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-semibold text-[var(--sn-text-muted)] uppercase">Weight (kg)</label>
-                <input type="number" step="0.1" className="w-full mt-1 px-3 py-2 rounded-lg bg-[var(--sn-surface)] border border-[var(--sn-border)] text-sm text-[var(--sn-text)]" value={cargoForm.weightKg} onChange={e => setCargoForm({ ...cargoForm, weightKg: e.target.value })} />
+                <label className="text-xs font-semibold text-[var(--text-3)] uppercase">Weight (kg)</label>
+                <input type="number" step="0.1" className="w-full mt-1 px-3 py-2 rounded-lg bg-[var(--surface)] border border-[var(--line)] text-sm text-[var(--text)]" value={cargoForm.weightKg} onChange={e => setCargoForm({ ...cargoForm, weightKg: e.target.value })} />
               </div>
               <div>
-                <label className="text-xs font-semibold text-[var(--sn-text-muted)] uppercase">Price (USDC)</label>
-                <input type="number" step="0.01" className="w-full mt-1 px-3 py-2 rounded-lg bg-[var(--sn-surface)] border border-[var(--sn-border)] text-sm text-[var(--sn-text)]" value={cargoForm.priceUsdc} onChange={e => setCargoForm({ ...cargoForm, priceUsdc: e.target.value })} />
+                <label className="text-xs font-semibold text-[var(--text-3)] uppercase">Price (USDC)</label>
+                <input type="number" step="0.01" className="w-full mt-1 px-3 py-2 rounded-lg bg-[var(--surface)] border border-[var(--line)] text-sm text-[var(--text)]" value={cargoForm.priceUsdc} onChange={e => setCargoForm({ ...cargoForm, priceUsdc: e.target.value })} />
               </div>
             </div>
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={cargoForm.fragile} onChange={e => setCargoForm({ ...cargoForm, fragile: e.target.checked })} className="rounded" />
-              <span className="text-sm text-[var(--sn-text)]">Fragile</span>
+              <span className="text-sm text-[var(--text)]">Fragile</span>
             </label>
             <div className="flex gap-2 pt-2">
               <Button variant="ghost" onClick={() => setShowCargoModal(false)} className="flex-1">Cancel</Button>
-              <Button onClick={handleAddCargo} className="btn-sentry flex-1">Add Parcel</Button>
+              <Button onClick={handleAddCargo} className="bg-tint text-ink font-bold hover:bg-tint/90 flex-1">Add Parcel</Button>
             </div>
           </div>
         </Sheet>
@@ -360,15 +359,15 @@ export default function TransitManifests() {
       {showIrops && (
         <Sheet open={showIrops} onClose={() => setShowIrops(false)} title="Emergency Reassignment">
           <div className="space-y-4 px-1">
-            <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'var(--sn-red-subtle)', border: '1px solid var(--sn-red)' }}>
-              <AlertTriangle className="w-5 h-5 text-[var(--sn-red)]" />
+            <div className="flex items-center gap-3 p-3 rounded-xl" style={{ background: 'var(--f-bad-bg)', border: '1px solid var(--stop)' }}>
+              <AlertTriangle className="w-5 h-5 text-[var(--stop)]" />
               <div>
-                <p className="text-sm font-bold text-[var(--sn-red)]">Vehicle Breakdown</p>
-                <p className="text-xs text-[var(--sn-text-muted)]">All passengers and cargo will be transferred to a replacement vehicle.</p>
+                <p className="text-sm font-bold text-[var(--stop)]">Vehicle Breakdown</p>
+                <p className="text-xs text-[var(--text-3)]">All passengers and cargo will be transferred to a replacement vehicle.</p>
               </div>
             </div>
             <div>
-              <label className="text-xs font-semibold text-[var(--sn-text-muted)] uppercase">Replacement Vehicle</label>
+              <label className="text-xs font-semibold text-[var(--text-3)] uppercase">Replacement Vehicle</label>
               <Select className="w-full mt-1" value={iropsVehicle} onChange={e => setIropsVehicle(e.target.value)}>
                 <option value="">Select a vehicle...</option>
                 {vehicles.filter(v => v.isActive).map(v => (
@@ -381,8 +380,8 @@ export default function TransitManifests() {
               <Button
                 onClick={handleIropsReassign}
                 disabled={iropsLoading || !iropsVehicle}
-                className="btn-sentry flex-1"
-                style={{ background: 'var(--sn-red)', color: 'white' }}
+                className="bg-tint text-ink font-bold hover:bg-tint/90 flex-1"
+                style={{ background: 'var(--stop)', color: 'white' }}
               >
                 {iropsLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Truck className="w-4 h-4" />}
                 {iropsLoading ? 'Reassigning...' : 'Reassign Now'}

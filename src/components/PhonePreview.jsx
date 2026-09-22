@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { motion, useDragControls } from 'framer-motion';
+import { m, useDragControls } from 'motion/react';
 import { X, Battery, Wifi, Signal, Star, MapPin, Clock, ChevronRight, Search, Bus, UtensilsCrossed, BedDouble, ShoppingBag, Smartphone, Minus, Move } from 'lucide-react';
 import { getTypeConfig } from '@/lib/businessTypes';
 
@@ -48,7 +48,7 @@ export function PhonePreview({ business, onClose }) {
   return (
     <div ref={constraintsRef} className="fixed inset-0 z-[100] pointer-events-none">
       {minimized ? (
-        <motion.button
+        <m.button
           drag
           dragControls={dragControls}
           dragMomentum={false}
@@ -58,13 +58,13 @@ export function PhonePreview({ business, onClose }) {
           exit={{ opacity: 0, scale: 0.6 }}
           onClick={() => setMinimized(false)}
           className="pointer-events-auto absolute bottom-8 right-8 w-14 h-14 rounded-full flex items-center justify-center cursor-grab active:cursor-grabbing shadow-sn-tooltip"
-          style={{ background: 'var(--sn-purple)', touchAction: 'none' }}
+          style={{ background: 'var(--f-tint-color)', touchAction: 'none' }}
           title="Show live preview"
         >
-          <Smartphone className="w-6 h-6 text-white" />
-        </motion.button>
+          <Smartphone className="w-6 h-6 text-[var(--f-text)]" />
+        </m.button>
       ) : (
-        <motion.div
+        <m.div
           drag
           dragListener={false}
           dragControls={dragControls}
@@ -79,23 +79,23 @@ export function PhonePreview({ business, onClose }) {
           {/* Drag handle / title bar */}
           <div
             onPointerDown={(e) => dragControls.start(e)}
-            className="w-full mb-2 flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--sn-elevated)] border border-[var(--sn-border-bright)] shadow-sn-tooltip cursor-grab active:cursor-grabbing select-none"
+            className="w-full mb-2 flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--f-surface)] border border-[var(--f-line-strong)] shadow-sn-tooltip cursor-grab active:cursor-grabbing select-none"
             style={{ touchAction: 'none' }}
           >
-            <Move className="w-3 h-3 text-[var(--sn-text-muted)] flex-shrink-0" />
-            <p className="text-[11px] font-medium text-[var(--sn-text-secondary)] truncate flex-1">
-              Live Preview: <span className="font-bold text-[var(--sn-text)]">{business.businessName}</span>
+            <Move className="w-3 h-3 text-[var(--f-text-3)] flex-shrink-0" />
+            <p className="text-[11px] font-medium text-[var(--f-text-3)] truncate flex-1">
+              Live Preview: <span className="font-bold text-[var(--f-text)]">{business.businessName}</span>
             </p>
             <button
               onClick={() => setMinimized(true)}
-              className="w-5 h-5 rounded-full flex items-center justify-center text-[var(--sn-text-muted)] hover:text-white hover:bg-[var(--sn-hover)] flex-shrink-0"
+              className="w-5 h-5 rounded-full flex items-center justify-center text-[var(--f-text-3)] hover:text-[var(--f-text)] hover:bg-[var(--f-surface-sunken)] flex-shrink-0"
               aria-label="Minimize preview"
             >
               <Minus className="w-3 h-3" />
             </button>
             <button
               onClick={onClose}
-              className="w-5 h-5 rounded-full flex items-center justify-center text-[var(--sn-text-muted)] hover:text-white hover:bg-[var(--sn-hover)] flex-shrink-0"
+              className="w-5 h-5 rounded-full flex items-center justify-center text-[var(--f-text-3)] hover:text-[var(--f-text)] hover:bg-[var(--f-surface-sunken)] flex-shrink-0"
               aria-label="Close preview"
             >
               <X className="w-3 h-3" />
@@ -158,7 +158,7 @@ export function PhonePreview({ business, onClose }) {
               <div className="absolute top-3 left-1/2 -translate-x-1/2 w-[120px] h-[35px] bg-black rounded-full z-50 flex items-center justify-end px-2.5">
                 {/* Camera lens */}
                 <div className="w-[11px] h-[11px] rounded-full bg-[#0a0a0a] border border-white/5 flex items-center justify-center">
-                  <div className="w-[4px] h-[4px] rounded-full bg-blue-500/20 blur-[1px]" />
+                  <div className="w-[4px] h-[4px] rounded-full bg-[var(--f-info)] blur-[1px]" />
                 </div>
               </div>
 
@@ -180,7 +180,7 @@ export function PhonePreview({ business, onClose }) {
             />
           </div>
         </div>
-      </motion.div>
+      </m.div>
       )}
     </div>
   );
@@ -197,7 +197,7 @@ function ScreenForType({ typeConfig, business }) {
 
 function HeaderBlock({ typeConfig, business, subtitle }) {
   return (
-    <div className="w-full px-4 pt-3 pb-4 bg-white border-b border-black/5">
+    <div className="w-full px-4 pt-3 pb-4 bg-[var(--f-surface)] border-b border-black/5">
       <div className="flex items-center gap-3">
         <div
           className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm"
@@ -211,7 +211,7 @@ function HeaderBlock({ typeConfig, business, subtitle }) {
         </div>
       </div>
       <div className="flex items-center gap-1 mt-2 text-[12px] text-gray-500">
-        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+        <Star className="w-3.5 h-3.5 fill-amber-400 text-[var(--f-warn)]" />
         <span className="font-semibold text-gray-700">4.8</span>
         <span>· 210 reviews</span>
       </div>
@@ -225,7 +225,7 @@ function RestaurantScreen({ typeConfig, business }) {
       <HeaderBlock typeConfig={typeConfig} business={business} subtitle="Restaurant · Open now" />
       <div className="px-4 py-3 flex gap-2">
         {['Reserve a table', 'Order dine-in', 'Menu'].map((label, i) => (
-          <div key={label} className={`flex-1 rounded-xl py-2.5 text-center text-[12px] font-semibold ${i === 0 ? 'text-white' : 'bg-white border border-black/5 text-gray-700'}`}
+          <div key={label} className={`flex-1 rounded-xl py-2.5 text-center text-[12px] font-semibold ${i === 0 ? 'text-[var(--f-text)]' : 'bg-[var(--f-surface)] border border-black/5 text-gray-700'}`}
                style={i === 0 ? { backgroundColor: typeConfig.color } : {}}>
             {label}
           </div>
@@ -235,7 +235,7 @@ function RestaurantScreen({ typeConfig, business }) {
         <p className="text-[13px] font-bold text-gray-800 mb-2">Popular dishes</p>
         <div className="grid grid-cols-2 gap-3">
           {['Jollof Special', 'Grilled Tilapia', 'Waakye Bowl', 'Banku & Okro'].map((dish) => (
-            <div key={dish} className="bg-white rounded-2xl border border-black/5 shadow-sm overflow-hidden">
+            <div key={dish} className="bg-[var(--f-surface)] rounded-2xl border border-black/5 shadow-sm overflow-hidden">
               <div className="h-24 bg-gradient-to-br from-gray-100 to-gray-200" />
               <div className="p-2.5">
                 <p className="text-[12px] font-semibold text-gray-800 truncate">{dish}</p>
@@ -255,7 +255,7 @@ function HotelScreen({ typeConfig, business }) {
       <HeaderBlock typeConfig={typeConfig} business={business} subtitle="Hotel · 4 room types" />
       <div className="px-4 mt-3 space-y-3">
         {['Deluxe Room', 'Executive Suite', 'Standard Twin'].map((room, i) => (
-          <div key={room} className="bg-white rounded-2xl border border-black/5 shadow-sm flex overflow-hidden">
+          <div key={room} className="bg-[var(--f-surface)] rounded-2xl border border-black/5 shadow-sm flex overflow-hidden">
             <div className="w-28 h-24 bg-gradient-to-br from-gray-100 to-gray-200 flex-shrink-0" />
             <div className="p-3 flex-1 min-w-0">
               <p className="text-[13px] font-semibold text-gray-800 truncate">{room}</p>
@@ -282,7 +282,7 @@ function TransitScreen({ typeConfig, business }) {
           { from: 'Accra', to: 'Takoradi', time: '11:00 AM' },
           { from: 'Accra', to: 'Cape Coast', time: '2:15 PM' },
         ].map((trip) => (
-          <div key={trip.time} className="bg-white rounded-2xl border border-black/5 shadow-sm p-3 flex items-center gap-3">
+          <div key={trip.time} className="bg-[var(--f-surface)] rounded-2xl border border-black/5 shadow-sm p-3 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
                  style={{ backgroundColor: `${typeConfig.color}18`, color: typeConfig.color }}>
               <Bus className="w-5 h-5" />
@@ -306,7 +306,7 @@ function RetailScreen({ typeConfig, business }) {
     <div className="pb-8">
       <HeaderBlock typeConfig={typeConfig} business={business} subtitle="Store · Ships same day" />
       <div className="px-4 py-3">
-        <div className="bg-white rounded-xl border border-black/5 flex items-center gap-2 px-3 py-2.5">
+        <div className="bg-[var(--f-surface)] rounded-xl border border-black/5 flex items-center gap-2 px-3 py-2.5">
           <Search className="w-4 h-4 text-gray-400" />
           <span className="text-[13px] text-gray-400">Search products</span>
         </div>
@@ -314,7 +314,7 @@ function RetailScreen({ typeConfig, business }) {
       <div className="px-4">
         <div className="grid grid-cols-2 gap-3">
           {['Product A', 'Product B', 'Product C', 'Product D'].map((p) => (
-            <div key={p} className="bg-white rounded-2xl border border-black/5 shadow-sm overflow-hidden">
+            <div key={p} className="bg-[var(--f-surface)] rounded-2xl border border-black/5 shadow-sm overflow-hidden">
               <div className="h-28 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                 <ShoppingBag className="w-7 h-7 text-gray-300" />
               </div>

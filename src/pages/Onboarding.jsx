@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { business as businessApi } from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
-import { Button, Input, Textarea, Select } from '@/components/ui';
+import { Button, Input, Textarea, Select } from '@/components/instrument';
 import { Store, ArrowRight, AlertCircle } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 const CATEGORIES = [
   { value: '',                   label: 'Select your business type...' },
@@ -42,7 +42,7 @@ export default function Onboarding() {
   const createMutation = useMutation({
     mutationFn: (data) => businessApi.register(data),
     onSuccess: () => {
-      toast.success('Business profile created!');
+      toast.go('Business profile created!');
       refreshProfile();
     },
     onError: (e) => setError(e.message),
@@ -66,17 +66,17 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--az-black)' }}>
-      <div className="w-full max-w-md animate-fade-in">
+    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--f-ink-900)' }}>
+      <div className="w-full max-w-md ">
 
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-[var(--sn-purple-subtle)] border border-[var(--sn-purple)] flex items-center justify-center az-glow-emerald">
-            <Store className="w-5 h-5 text-[var(--sn-purple)]" />
+          <div className="w-10 h-10 rounded-xl bg-[var(--surface-sunk)] border border-[var(--accent)] flex items-center justify-center az-glow-emerald">
+            <Store className="w-5 h-5 text-[var(--accent)]" />
           </div>
           <div>
-            <p className="text-base font-bold text-[var(--sn-text)]">AZAMAN</p>
-            <p className="text-xs text-[var(--sn-purple)]">Business Portal</p>
+            <p className="text-base font-bold text-[var(--text)]">AZAMAN</p>
+            <p className="text-xs text-[var(--accent)]">Business Portal</p>
           </div>
         </div>
 
@@ -87,24 +87,24 @@ export default function Onboarding() {
               <div
                 className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all"
                 style={s <= step
-                  ? { background: 'var(--sn-purple-subtle)', border: '1.5px solid #00d97e', color: 'var(--sn-purple)' }
-                  : { background: 'transparent', border: '1.5px solid #2a2a3e', color: 'var(--sn-text-muted)' }
+                  ? { background: 'var(--surface-sunk)', border: '1.5px solid #00d97e', color: 'var(--accent)' }
+                  : { background: 'transparent', border: '1.5px solid #2a2a3e', color: 'var(--text-3)' }
                 }
               >
                 {s}
               </div>
-              {s < 2 && <div className="w-12 h-0.5 rounded-full" style={{ background: step > s ? 'var(--sn-purple)' : 'var(--sn-border)' }} />}
+              {s < 2 && <div className="w-12 h-0.5 rounded-full" style={{ background: step > s ? 'var(--accent)' : 'var(--line)' }} />}
             </div>
           ))}
-          <span className="ml-2 text-xs text-[var(--sn-text-muted)]">Step {step} of 2</span>
+          <span className="ml-2 text-xs text-[var(--text-3)]">Step {step} of 2</span>
         </div>
 
         {/* Step 1 — Core info */}
         {step === 1 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-xl font-bold text-[var(--sn-text)]">Set up your business</h2>
-              <p className="text-sm text-[var(--sn-text-muted)] mt-1">Tell us the basics about your business.</p>
+              <h2 className="text-xl font-bold text-[var(--text)]">Set up your business</h2>
+              <p className="text-sm text-[var(--text-3)] mt-1">Tell us the basics about your business.</p>
             </div>
             <Input
               label="Business Name"
@@ -133,8 +133,8 @@ export default function Onboarding() {
         {step === 2 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-xl font-bold text-[var(--sn-text)]">Contact information</h2>
-              <p className="text-sm text-[var(--sn-text-muted)] mt-1">Help customers reach you. All fields are optional.</p>
+              <h2 className="text-xl font-bold text-[var(--text)]">Contact information</h2>
+              <p className="text-sm text-[var(--text-3)] mt-1">Help customers reach you. All fields are optional.</p>
             </div>
             <Input label="Phone Number"  placeholder="+233 20 000 0000"    value={form.phoneNumber}   onChange={set('phoneNumber')} />
             <Input label="Contact Email" placeholder="contact@yourbiz.com" value={form.contactEmail}  onChange={set('contactEmail')} type="email" />
@@ -145,9 +145,9 @@ export default function Onboarding() {
 
         {/* Error */}
         {error && (
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--sn-red)] border border-[var(--sn-red)] mt-4">
-            <AlertCircle className="w-4 h-4 text-[var(--sn-red)] flex-shrink-0" />
-            <p className="text-xs text-[var(--sn-red)]">{error}</p>
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--stop)] border border-[var(--stop)] mt-4">
+            <AlertCircle className="w-4 h-4 text-[var(--stop)] flex-shrink-0" />
+            <p className="text-xs text-[var(--stop)]">{error}</p>
           </div>
         )}
 
@@ -163,7 +163,7 @@ export default function Onboarding() {
               Continue <ArrowRight className="w-4 h-4" />
             </Button>
           ) : (
-            <Button onClick={handleSubmit} loading={createMutation.isPending} className="flex-1">
+            <Button onClick={handleSubmit} className="flex-1">
               Create My Business
             </Button>
           )}

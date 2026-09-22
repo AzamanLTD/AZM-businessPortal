@@ -13,7 +13,7 @@ export const BUSINESS_TYPES = {
     icon: 'Bus',
     color: '#4f8ef7',
     category: 'LOGISTICS',
-    navItems: ['transit', 'reservations', 'manifests', 'seatMap', 'fleet', 'drivers', 'guests', 'finance'],
+    navItems: ['transit', 'reservations', 'manifests', 'seatMap', 'fleet', 'drivers', 'retailInventory', 'guests', 'finance'],
     description: 'Manage trips, seat maps, bookings, and passenger check-ins',
   },
   RESTAURANT: {
@@ -21,7 +21,7 @@ export const BUSINESS_TYPES = {
     icon: 'UtensilsCrossed',
     color: '#f59e0b',
     category: 'FOOD_BEVERAGE',
-    navItems: ['reservations', 'dineIn', 'kitchen', 'tables', 'inventory', 'employees', 'guests', 'marketing', 'finance'],
+    navItems: ['reservations', 'dineIn', 'kitchen', 'tables', 'inventory', 'retailInventory', 'employees', 'guests', 'marketing', 'finance'],
     description: 'Manage reservations, table availability, dine-in tabs, and guest check-ins',
   },
   HOTEL: {
@@ -61,10 +61,16 @@ export const BUSINESS_TYPES = {
 /** Map a business category to a business type */
 export function getBusinessType(category) {
   const map = {
+    // Direct matches (backend returns these directly from Flutter registration)
+    'HOTEL': 'HOTEL',
+    'RESTAURANT': 'RESTAURANT',
+    'TRANSIT': 'TRANSIT',
+    'RETAIL': 'RETAIL',
+    // Legacy category names
     'LOGISTICS': 'TRANSIT',
     'FOOD_BEVERAGE': 'RESTAURANT',
     'REAL_ESTATE': 'HOTEL',
-    'RETAIL': 'RETAIL',
+    'HOSPITALITY': 'HOTEL',
     'FREELANCE_SERVICES': 'SERVICES',
     'TECHNOLOGY': 'GENERAL',
     'EDUCATION': 'SERVICES',
@@ -73,12 +79,15 @@ export function getBusinessType(category) {
     'FINANCIAL_SERVICES': 'GENERAL',
     'OTHER': 'GENERAL',
   };
-  return map[category] || 'GENERAL';
+  return map[category?.toUpperCase()] || 'GENERAL';
 }
 
-/** Get the type config for a business profile */
-export function getTypeConfig(bizProfile) {
-  const type = getBusinessType(bizProfile?.category);
+/** Resolve configuration from a full business profile or a type/category string. */
+export function getTypeConfig(bizProfileOrType) {
+  const categoryOrType = typeof bizProfileOrType === 'string'
+    ? bizProfileOrType
+    : bizProfileOrType?.category;
+  const type = getBusinessType(categoryOrType);
   return { type, ...BUSINESS_TYPES[type] };
 }
 
@@ -100,6 +109,7 @@ export const MARKETPLACE_NAV = {
   showcase: { label: 'Showcase', icon: 'showcase', to: '/showcase' },
   seatMap: { label: 'Seat Map Editor', icon: 'seatMap', to: '/transit' },
   inventory: { label: 'Inventory', icon: 'Package', to: '/restaurant-inventory' },
+  retailInventory: { label: 'Retail Inventory', icon: 'ShoppingCart', to: '/retail-inventory' },
   guests: { label: 'Guests', icon: 'guests', to: '/guests' },
   
   // Hotel Ops
@@ -116,3 +126,71 @@ export const MARKETPLACE_NAV = {
   drivers: { label: 'Drivers', icon: 'SteeringWheel', to: '/transit-drivers' },
   manifests: { label: 'Manifests', icon: 'FileSpreadsheet', to: '/transit-manifests' },
 };
+
+
+// ── Business-type-specific widget defaults ─────────────────────────────────
+// When a tile is added, these defaults customize the widget for the business type.
+// Falls back to the widget's own defaultProps if no override exists.
+export const WIDGET_DEFAULTS_BY_TYPE = {
+  RESTAURANT: {
+    product_grid:   { title: 'Featured Menu Items', columns: 2, maxItems: 6, showPrice: true },
+    showcase_gallery: { title: 'Food Gallery' },
+    action_buttons: { showOrder: true, showBook: true, showFollow: true, showShare: true },
+    hero_header:    { height: 'standard', overlayOpacity: 0.35 },
+    review_carousel: { title: 'Diner Reviews' },
+    promo_banner:   { ctaText: 'Order Now' },
+    location_map:   { title: 'Find Our Restaurant' },
+  },
+  HOTEL: {
+    product_grid:   { title: 'Featured Rooms', columns: 2, maxItems: 4, showPrice: true },
+    showcase_gallery: { title: 'Our Property' },
+    action_buttons: { showOrder: false, showBook: true, showFollow: true, showShare: true },
+    hero_header:    { height: 'tall', overlayOpacity: 0.3 },
+    review_carousel: { title: 'Guest Reviews' },
+    promo_banner:   { ctaText: 'Book Now' },
+    location_map:   { title: 'Find Us' },
+    contact_card:   { showPhone: true, showWhatsApp: true, showEmail: true, showWebsite: true },
+  },
+  TRANSIT: {
+    product_grid:   { title: 'Popular Routes', columns: 2, maxItems: 6, showPrice: true },
+    showcase_gallery: { title: 'Our Fleet' },
+    action_buttons: { showOrder: false, showBook: true, showFollow: true, showShare: true },
+    hero_header:    { height: 'standard', overlayOpacity: 0.3 },
+    review_carousel: { title: 'Passenger Reviews' },
+    promo_banner:   { ctaText: 'Book Trip' },
+    location_map:   { title: 'Terminals & Stops' },
+    quick_info_bar: { showHours: true, showRating: true, showCategory: false, customInfo: 'On-time departures' },
+  },
+  RETAIL: {
+    product_grid:   { title: 'Featured Products', columns: 2, maxItems: 6, showPrice: true },
+    showcase_gallery: { title: 'Product Showcase' },
+    action_buttons: { showOrder: true, showBook: false, showFollow: true, showShare: true },
+    hero_header:    { height: 'standard', overlayOpacity: 0.3 },
+    review_carousel: { title: 'Customer Reviews' },
+    promo_banner:   { ctaText: 'Shop Now' },
+    location_map:   { title: 'Visit Our Store' },
+  },
+  SERVICES: {
+    product_grid:   { title: 'Our Services', columns: 2, maxItems: 6, showPrice: true },
+    showcase_gallery: { title: 'Our Work' },
+    action_buttons: { showOrder: false, showBook: true, showFollow: true, showShare: true },
+    hero_header:    { height: 'standard', overlayOpacity: 0.3 },
+    review_carousel: { title: 'Client Reviews' },
+    promo_banner:   { ctaText: 'Book Now' },
+    location_map:   { title: 'Our Location' },
+  },
+  GENERAL: {
+    product_grid:   { title: 'Featured Products', columns: 2, maxItems: 6, showPrice: true },
+    showcase_gallery: { title: 'Gallery' },
+    action_buttons: { showOrder: true, showBook: false, showFollow: true, showShare: true },
+    review_carousel: { title: 'Reviews' },
+    promo_banner:   { ctaText: 'Learn More' },
+    location_map:   { title: 'Find Us' },
+  },
+};
+
+/** Get business-type-specific default props for a widget */
+export function getWidgetDefaults(widgetType, businessType = 'GENERAL') {
+  const typeDefaults = WIDGET_DEFAULTS_BY_TYPE[businessType] || WIDGET_DEFAULTS_BY_TYPE.GENERAL;
+  return typeDefaults[widgetType] || {};
+}
