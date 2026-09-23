@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { inventoryApi } from '../lib/marketplaceApi';
 import { products as productsApi } from '../lib/api';
@@ -74,6 +74,9 @@ export default function RestaurantInventory() {
   const [editingItem, setEditingItem] = useState(null);
   const [restockItem, setRestockItem] = useState(null);
   const [restockQty, setRestockQty] = useState('');
+  // Keep a failed or timed-out submission's identity so retrying it cannot
+  // purchase the same stock twice. Session storage survives a page reload.
+  const pendingRestock = useRef(null);
   const [linkForm, setLinkForm] = useState({ inventoryItemId: '', quantityRequired: '' });
 
   // Form states for Create/Edit
@@ -144,7 +147,7 @@ export default function RestaurantInventory() {
   });
 
   const restockMutation = useMutation({
-    mutationFn: ({ id, qty }) => inventoryApi.restock(id, parseFloat(qty)),
+    mutationFn: ({ id, qty, clientRequestId }) => inventoryApi.restock(id, parseFloat(qty), clientRequestId),
     onSuccess: (data, variables) => {
       const updatedItem = inventoryData?.find(i => i.id === variables.id);
       const name = updatedItem?.name || 'Item';
@@ -153,6 +156,11 @@ export default function RestaurantInventory() {
         description: `Current Stock updated. Log summary: Restock of ${variables.qty} completed.`,
       });
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      // Remove only this operation's pending key. Another intentional restock
+      // of identical quantity after success receives a new UUID.
+      const storageKey = `azm-restock-pending:${variables.id}:${Number(variables.qty)}`;
+      try { window.sessionStorage.removeItem(storageKey); } catch { /* private browsing */ }
+      pendingRestock.current = null;
       setRestockItem(null);
       setRestockQty('');
     },
@@ -262,7 +270,15 @@ export default function RestaurantInventory() {
       toast.stop('Please enter a valid quantity');
       return;
     }
-    restockMutation.mutate({ id: restockItem.id, qty: restockQty });
+    const storageKey = `azm-restock-pending:${restockItem.id}:${Number(restockQty)}`;
+    let key = pendingRestock.current?.storageKey === storageKey && pendingRestock.current.key;
+    if (!key) {
+      try { key = window.sessionStorage.getItem(storageKey); } catch { /* private browsing */ }
+    }
+    if (!key) key = window.crypto.randomUUID();
+    pendingRestock.current = { storageKey, key };
+    try { window.sessionStorage.setItem(storageKey, key); } catch { /* private browsing */ }
+    restockMutation.mutate({ id: restockItem.id, qty: restockQty, clientRequestId: key });
   };
 
   const handleLinkSubmit = (productId) => {
