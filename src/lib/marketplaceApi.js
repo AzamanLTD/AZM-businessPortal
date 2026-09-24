@@ -483,7 +483,10 @@ export const inventoryApi = {
   list: () => request('/api/business-os/restaurant/inventory'),
   create: (data) => request('/api/business-os/restaurant/inventory', { method: 'POST', body: JSON.stringify(data) }),
   update: (id, data) => request(`/api/business-os/restaurant/inventory/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
-  restock: (id, quantity) => request(`/api/business-os/restaurant/inventory/${id}/restock`, { method: 'POST', body: JSON.stringify({ quantity }) }),
+  // quantity MUST be the exact decimal string typed by the operator (restock
+  // fingerprint v2 digests the string itself); idempotencyKey binds retries
+  // of the SAME purchase — never reuse it for a different one.
+  restock: (id, quantity, idempotencyKey) => request(`/api/business-os/restaurant/inventory/${id}/restock`, { method: 'POST', body: JSON.stringify({ quantity, idempotencyKey }) }),
   recipes: () => request('/api/business-os/restaurant/recipes'),
   linkIngredient: (productId, data) => request(`/api/business-os/restaurant/recipes/${productId}/link`, { method: 'POST', body: JSON.stringify(data) }),
   unlinkIngredient: (productId, itemId) => request(`/api/business-os/restaurant/recipes/${productId}/link/${itemId}`, { method: 'DELETE' }),

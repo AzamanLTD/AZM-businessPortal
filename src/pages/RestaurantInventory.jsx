@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { inventoryApi } from '../lib/marketplaceApi';
 import { products as productsApi } from '../lib/api';
@@ -74,6 +74,9 @@ export default function RestaurantInventory() {
   const [editingItem, setEditingItem] = useState(null);
   const [restockItem, setRestockItem] = useState(null);
   const [restockQty, setRestockQty] = useState('');
+  // One idempotency key per logical restock: minted when the modal opens,
+  // reused across retries of the same purchase, replaced when the intent ends.
+  const restockIdempotencyKey = useRef(crypto.randomUUID());
   const [linkForm, setLinkForm] = useState({ inventoryItemId: '', quantityRequired: '' });
 
   // Form states for Create/Edit
@@ -143,8 +146,11 @@ export default function RestaurantInventory() {
     },
   });
 
+  // §r40 restock contract: the backend fingerprints the EXACT decimal string
+  // (fingerprint v2). Send the raw input string — parseFloat would destroy
+  // it ("1.10"→"1.1") and float artifacts could collide distinct purchases.
   const restockMutation = useMutation({
-    mutationFn: ({ id, qty }) => inventoryApi.restock(id, parseFloat(qty)),
+    mutationFn: ({ id, qty, idempotencyKey }) => inventoryApi.restock(id, qty, idempotencyKey),
     onSuccess: (data, variables) => {
       const updatedItem = inventoryData?.find(i => i.id === variables.id);
       const name = updatedItem?.name || 'Item';
@@ -155,6 +161,7 @@ export default function RestaurantInventory() {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
       setRestockItem(null);
       setRestockQty('');
+      restockIdempotencyKey.current = crypto.randomUUID();
     },
     onError: (err) => {
       toast.stop(err.message || 'Failed to restock item');
@@ -258,11 +265,14 @@ export default function RestaurantInventory() {
 
   const handleRestockSubmit = (e) => {
     e.preventDefault();
-    if (!restockQty || parseFloat(restockQty) <= 0) {
-      toast.stop('Please enter a valid quantity');
+    // Same pattern as the backend's DECIMAL_STRING guard (strictString):
+    // plain decimal notation only — no exponent, no sign, no whitespace.
+    const qty = (restockQty || '').trim();
+    if (!/^\d+(?:\.\d+)?$/.test(qty)) {
+      toast.stop('Please enter a valid quantity (plain decimal, e.g. 12.5)');
       return;
     }
-    restockMutation.mutate({ id: restockItem.id, qty: restockQty });
+    restockMutation.mutate({ id: restockItem.id, qty, idempotencyKey: restockIdempotencyKey.current });
   };
 
   const handleLinkSubmit = (productId) => {
@@ -983,7 +993,7 @@ export default function RestaurantInventory() {
       </Dialog>
 
       {/* Restock Modal */}
-      <Dialog open={!!restockItem} onClose={() => setRestockItem(null)} title="Quick Restock">
+      <Dialog open={!!restockItem} onClose={() => { setRestockItem(null); restockIdempotencyKey.current = crypto.randomUUID(); }} title="Quick Restock">
         {restockItem && (
           <form onSubmit={handleRestockSubmit} className="space-y-4">
             <div className="p-3 bg-[var(--f-ink-900)] rounded-xl border border-[var(--line)]">
@@ -1009,7 +1019,7 @@ export default function RestaurantInventory() {
               placeholder="e.g. 25"
             />
             <div className="flex justify-end gap-2 pt-2 border-t border-[var(--line)]">
-              <Button variant="secondary" type="button" onClick={() => setRestockItem(null)}>
+              <Button variant="secondary" type="button" onClick={() => { setRestockItem(null); restockIdempotencyKey.current = crypto.randomUUID(); }}>
                 Cancel
               </Button>
               <Button variant="primary" type="submit">
