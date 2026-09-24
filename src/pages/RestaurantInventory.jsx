@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { inventoryApi } from '../lib/marketplaceApi';
 import { products as productsApi } from '../lib/api';
@@ -37,6 +37,7 @@ import {
   X
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
+import { getOrCreateRestockIntentKey, clearRestockIntent } from '@/lib/restockIntent';
 
 // Custom Stocks level bar
 function StockBar({ current, minimum }) {
@@ -74,9 +75,6 @@ export default function RestaurantInventory() {
   const [editingItem, setEditingItem] = useState(null);
   const [restockItem, setRestockItem] = useState(null);
   const [restockQty, setRestockQty] = useState('');
-  // One idempotency key per logical restock: minted when the modal opens,
-  // reused across retries of the same purchase, replaced when the intent ends.
-  const restockIdempotencyKey = useRef(crypto.randomUUID());
   const [linkForm, setLinkForm] = useState({ inventoryItemId: '', quantityRequired: '' });
 
   // Form states for Create/Edit
@@ -159,11 +157,17 @@ export default function RestaurantInventory() {
         description: `Current Stock updated. Log summary: Restock of ${variables.qty} completed.`,
       });
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      // §r40.2: the operation is RESOLVED — clear exactly this pending
+      // intent so a later intentional restock of the same item/quantity
+      // mints a fresh key. Other pending intents are untouched.
+      clearRestockIntent(variables.id, variables.qty);
       setRestockItem(null);
       setRestockQty('');
-      restockIdempotencyKey.current = crypto.randomUUID();
     },
     onError: (err) => {
+      // FAILED/timeout: the pending intent is deliberately KEPT — a retry
+      // of the same item+quantity reuses the original idempotency key and
+      // converges to the original backend operation (exactly-once).
       toast.stop(err.message || 'Failed to restock item');
     },
   });
@@ -272,7 +276,16 @@ export default function RestaurantInventory() {
       toast.stop('Please enter a valid quantity (plain decimal, e.g. 12.5)');
       return;
     }
-    restockMutation.mutate({ id: restockItem.id, qty, idempotencyKey: restockIdempotencyKey.current });
+    // §r40.2: the idempotency key is durable across reloads — an
+    // unresolved restock of the same item+quantity (success unconfirmed,
+    // timeout, interrupted response, page reload) reuses the ORIGINAL key
+    // so the backend replays it exactly once instead of double-restocking.
+    const idempotencyKey = getOrCreateRestockIntentKey(restockItem.id, qty);
+    if (!idempotencyKey) {
+      toast.stop('Please enter a valid quantity (plain decimal, e.g. 12.5)');
+      return;
+    }
+    restockMutation.mutate({ id: restockItem.id, qty, idempotencyKey });
   };
 
   const handleLinkSubmit = (productId) => {
@@ -993,7 +1006,7 @@ export default function RestaurantInventory() {
       </Dialog>
 
       {/* Restock Modal */}
-      <Dialog open={!!restockItem} onClose={() => { setRestockItem(null); restockIdempotencyKey.current = crypto.randomUUID(); }} title="Quick Restock">
+      <Dialog open={!!restockItem} onClose={() => { if (restockItem && restockQty) clearRestockIntent(restockItem.id, restockQty); setRestockItem(null); }} title="Quick Restock">
         {restockItem && (
           <form onSubmit={handleRestockSubmit} className="space-y-4">
             <div className="p-3 bg-[var(--f-ink-900)] rounded-xl border border-[var(--line)]">
@@ -1019,7 +1032,7 @@ export default function RestaurantInventory() {
               placeholder="e.g. 25"
             />
             <div className="flex justify-end gap-2 pt-2 border-t border-[var(--line)]">
-              <Button variant="secondary" type="button" onClick={() => { setRestockItem(null); restockIdempotencyKey.current = crypto.randomUUID(); }}>
+              <Button variant="secondary" type="button" onClick={() => { clearRestockIntent(restockItem.id, restockQty); setRestockItem(null); }}>
                 Cancel
               </Button>
               <Button variant="primary" type="submit">
