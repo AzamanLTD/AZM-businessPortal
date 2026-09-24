@@ -487,6 +487,15 @@ export const inventoryApi = {
   // fingerprint v2 digests the string itself); idempotencyKey binds retries
   // of the SAME purchase — never reuse it for a different one.
   restock: (id, quantity, idempotencyKey) => request(`/api/business-os/restaurant/inventory/${id}/restock`, { method: 'POST', body: JSON.stringify({ quantity, idempotencyKey }) }),
+  // §r40.4 — SERVER-OWNED RESTOCK INTENTS (final-audit P1 redesign): the
+  // server mints and owns the durable operation identity; the intent id IS
+  // the idempotency key sent with the restock. quantity is the EXACT
+  // decimal string typed by the operator (stored and resent verbatim —
+  // restock fingerprint v2 digests the string itself).
+  createRestockIntent: (itemId, quantity) => request('/api/business-os/restaurant/inventory/restock-intents', { method: 'POST', body: JSON.stringify({ itemId, quantity }) }),
+  unresolvedRestockIntents: () => request('/api/business-os/restaurant/inventory/restock-intents'),
+  ackRestockIntent: (intentId) => request(`/api/business-os/restaurant/inventory/restock-intents/${intentId}/ack`, { method: 'POST' }),
+  cancelRestockIntent: (intentId) => request(`/api/business-os/restaurant/inventory/restock-intents/${intentId}/cancel`, { method: 'POST' }),
   recipes: () => request('/api/business-os/restaurant/recipes'),
   linkIngredient: (productId, data) => request(`/api/business-os/restaurant/recipes/${productId}/link`, { method: 'POST', body: JSON.stringify(data) }),
   unlinkIngredient: (productId, itemId) => request(`/api/business-os/restaurant/recipes/${productId}/link/${itemId}`, { method: 'DELETE' }),
