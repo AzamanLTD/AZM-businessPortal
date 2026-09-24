@@ -276,10 +276,11 @@ export default function RestaurantInventory() {
       toast.stop('Please enter a valid quantity (plain decimal, e.g. 12.5)');
       return;
     }
-    // §r40.2: the idempotency key is durable across reloads — an
-    // unresolved restock of the same item+quantity (success unconfirmed,
-    // timeout, interrupted response, page reload) reuses the ORIGINAL key
-    // so the backend replays it exactly once instead of double-restocking.
+    // §r40.3: the idempotency key is durable across reloads AND browser
+    // termination (localStorage, 24h TTL) — an unresolved restock of the
+    // same item+quantity (success unconfirmed, timeout, interrupted
+    // response, page reload, tab close) reuses the ORIGINAL key so the
+    // backend replays it exactly once instead of double-restocking.
     const idempotencyKey = getOrCreateRestockIntentKey(restockItem.id, qty);
     if (!idempotencyKey) {
       toast.stop('Please enter a valid quantity (plain decimal, e.g. 12.5)');

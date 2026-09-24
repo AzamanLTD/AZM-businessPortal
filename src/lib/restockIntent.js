@@ -1,22 +1,36 @@
 // src/lib/restockIntent.js
 // =============================================================================
-// §r40.2 (audit finding 2) — durable retry identity for restock operations.
+// §r40.2 (audit finding 2, r40.3 lifecycle fix) — durable retry identity for
+// restock operations.
 //
 // The backend fingerprints each restock by (inventoryItem, exact decimal
 // quantity string, idempotencyKey) and replays it exactly once per key. The
 // portal must therefore keep the SAME idempotency key for the SAME logical
-// restock until the operation is RESOLVED — including across a page reload:
+// restock until the operation is RESOLVED — including across a page reload
+// AND across browser/tab termination:
 //
-//   request sent -> network dies mid-response -> browser reloads -> operator
-//   retries the same purchase -> the retry MUST carry the ORIGINAL key, or
-//   the backend executes the restock a SECOND time.
+//   request committed → response lost → browser closed → operator returns
+//   later → retry MUST carry the ORIGINAL key, or the backend executes the
+//   restock a SECOND time.
 //
-// A React useRef/useState key dies with the component (and with the page).
-// This module stores pending intents in sessionStorage — which survives
-// reloads within the browsing session — keyed by (item, canonical quantity):
-//
-//   getOrCreateRestockIntentKey(itemId, qty) — get-or-create the durable key
-//   clearRestockIntent(itemId, qty)          — resolve/cancel ONE intent
+// EXPLICIT LIFECYCLE DECISION (r40.3, per audit):
+//   • The pending-intent store is localStorage, NOT sessionStorage. An
+//     unresolved intent SURVIVES page reload, tab close and full browser
+//     termination. (sessionStorage only covered the reload case.)
+//   • An unresolved intent EXPIRES after PENDING_INTENT_TTL_MS (24h). The
+//     committed-but-unconfirmed ambiguity window is short (the backend
+//     commits in seconds); beyond 24h the operator has observed stock state
+//     and a same-quantity restock is a genuinely NEW purchase, which must
+//     get a FRESH key rather than silently replay the old operation.
+//   • CROSS-TAB BEHAVIOR IS DELIBERATE: identity is keyed by (item, canonical
+//     quantity) in shared storage, so two tabs (or a reopened window)
+//     retrying the same logical purchase converge to the SAME key and thus
+//     ONE backend operation — exactly-once, the same semantics as an
+//     in-tab retry. Two tabs intentionally making DIFFERENT purchases use
+//     different quantities and never collide.
+//   • If localStorage is unavailable (denied privacy mode), keys degrade to
+//     an in-memory Map: the flow keeps working within the tab, reload
+//     durability is lost, and nothing crashes.
 //
 // Quantity canonicalization is pure STRING manipulation: "1", "1.0" and
 // "1.00" are the same logical quantity, so they must resolve to the same
@@ -24,6 +38,9 @@
 // exact-decimal rule the backend already enforces (fingerprint v2), and the
 // browser must not disagree about identity.
 // =============================================================================
+
+// 24 hours — see lifecycle decision above.
+const PENDING_INTENT_TTL_MS = 24 * 60 * 60 * 1000;
 
 // Plain decimal only — the same grammar the backend's DECIMAL_STRING guard
 // accepts. No sign, no exponent, no whitespace, no thousands separators.
@@ -43,16 +60,16 @@ export function canonicalQuantity(raw) {
     return s;
 }
 
-const STORAGE_PREFIX = 'azm:restock-intent:';
+const STORAGE_PREFIX = 'azm:restock-intent:v1:';
 const intentStorageKey = (itemId, canonicalQty) => `${STORAGE_PREFIX}${itemId}:${canonicalQty}`;
 
-// sessionStorage throws in some privacy modes — degrade to in-memory keys so
-// the flow keeps working (loses reload durability, never crashes the page).
+// localStorage throws in some privacy modes — degrade to in-memory keys so
+// the flow keeps working (loses cross-restart durability, never crashes).
 const memoryFallback = new Map();
 
 function storageGet(key) {
     try {
-        const raw = globalThis.sessionStorage?.getItem(key);
+        const raw = globalThis.localStorage?.getItem(key);
         return raw ? JSON.parse(raw) : null;
     } catch {
         return memoryFallback.get(key) || null;
@@ -61,7 +78,7 @@ function storageGet(key) {
 
 function storageSet(key, value) {
     try {
-        globalThis.sessionStorage?.setItem(key, JSON.stringify(value));
+        globalThis.localStorage?.setItem(key, JSON.stringify(value));
     } catch {
         memoryFallback.set(key, value);
     }
@@ -69,7 +86,7 @@ function storageSet(key, value) {
 
 function storageRemove(key) {
     try {
-        globalThis.sessionStorage?.removeItem(key);
+        globalThis.localStorage?.removeItem(key);
     } catch {
         /* ignore */
     }
@@ -88,15 +105,25 @@ function mintUuid() {
 
 // Get-or-create the durable idempotency key for the logical restock
 // (itemId, canonical quantity). The same unresolved intent returns the SAME
-// UUID across reloads until it is cleared by success or explicit cancel.
+// UUID across reloads, tab closes and browser restarts until it is cleared
+// by success/explicit cancel or expires via TTL.
 export function getOrCreateRestockIntentKey(itemId, qty) {
     const canonical = canonicalQuantity(qty);
     if (!canonical) return null; // caller must re-validate and surface an error
     const key = intentStorageKey(itemId, canonical);
     const existing = storageGet(key);
-    if (existing && existing.uuid) return existing.uuid;
+    if (existing && existing.uuid) {
+        // TTL: an expired unresolved intent is treated as resolved — the
+        // ambiguity window has closed, and this request is a genuinely new
+        // purchase that must not silently replay the old operation.
+        const age = Date.now() - Date.parse(existing.createdAt || 0);
+        if (Number.isFinite(age) && age >= 0 && age < PENDING_INTENT_TTL_MS) {
+            return existing.uuid;
+        }
+        // fall through: expired record is replaced with a fresh identity
+    }
     const uuid = mintUuid();
-    storageSet(key, { uuid, qty: canonical, createdAt: new Date().toISOString() });
+    storageSet(key, { v: 1, uuid, qty: canonical, createdAt: new Date().toISOString() });
     return uuid;
 }
 
@@ -108,8 +135,8 @@ export function clearRestockIntent(itemId, qty) {
     storageRemove(intentStorageKey(itemId, canonical));
 }
 
-// Introspection helper for the UI: is there an unresolved intent for this
-// item/quantity? (Not used by the mutation path — useful for tests/debug.)
+// Introspection helper for the UI/tests: the stored record for this
+// item/quantity, or null. Exposes createdAt so tests can age the record.
 export function peekRestockIntent(itemId, qty) {
     const canonical = canonicalQuantity(qty);
     if (!canonical) return null;

@@ -1,17 +1,17 @@
 // =============================================================================
-// §r40.2 (audit finding 2) — durable restock retry identity.
-// Targeted proofs that the restock idempotency key survives reloads and
-// resolution boundaries EXACTLY:
-//   • success clears ONLY the resolved intent
-//   • failure / timeout keep the identity (retry converges to the same op)
-//   • a simulated reload keeps the identity
-//   • same item + same canonical quantity reuses the identity
-//   • a changed quantity is a different logical intent
-//   • a new restock after success gets a FRESH identity
-//   • high-magnitude exact values stay distinct (no float coercion)
-//   • 1 / 1.0 / 1.00 canonicalize deterministically
-//   • cancelling one intent never touches another
-// These are NEW tests on top of the existing 198-test suite.
+// §r40.3 (final audit, finding 3) — restock retry identity lifecycle proofs.
+// The pending-intent store is localStorage + 24h TTL. Required semantics, all
+// proven here against the real storage API:
+//   • the unresolved intent survives reload, TAB CLOSE and BROWSER
+//     TERMINATION (fresh module instance, storage intact)
+//   • the same logical purchase keeps the same idempotency key until resolved
+//   • success clears ONLY its own pending intent
+//   • an explicitly cancelled intent is cleared (and only its own record)
+//   • a genuinely new purchase gets a fresh key
+//   • cross-tab behavior is deliberate: two tabs converge on one identity
+//   • an intent expires after the TTL (fresh key, no silent replay)
+//   • exact decimal canonicalization remains string-only (no float coercion)
+//   • storage-denied privacy mode degrades safely
 // =============================================================================
 import { describe, expect, test, beforeEach, vi } from 'vitest';
 import {
@@ -21,9 +21,19 @@ import {
   peekRestockIntent,
 } from '@/lib/restockIntent';
 
-const store = () => globalThis.sessionStorage;
+const store = () => globalThis.localStorage;
 
-describe('restock durable intent identity (r40.2)', () => {
+// Test-only surgery: age a pending intent record past the TTL boundary.
+const ageIntent = (itemId, qty, ageMs) => {
+  const canonical = canonicalQuantity(qty);
+  const rec = peekRestockIntent(itemId, canonical);
+  store().setItem(
+    `azm:restock-intent:v1:${itemId}:${canonical}`,
+    JSON.stringify({ ...rec, createdAt: new Date(Date.now() - ageMs).toISOString() }),
+  );
+};
+
+describe('restock durable intent identity (r40.3)', () => {
   beforeEach(() => {
     store().clear();
   });
@@ -71,19 +81,6 @@ describe('restock durable intent identity (r40.2)', () => {
       expect(k3).toBe(k1);
     });
 
-    test('a SUCCESSFUL request clears ONLY its own pending identity', () => {
-      const k1 = getOrCreateRestockIntentKey('item-1', '5');
-      getOrCreateRestockIntentKey('item-1', '3'); // a second pending intent
-      getOrCreateRestockIntentKey('item-2', '5'); // same qty, other item
-
-      clearRestockIntent('item-1', '5.00'); // resolved via canonical-equal qty
-
-      expect(peekRestockIntent('item-1', '5')).toBeNull();
-      // the OTHER intents are untouched
-      expect(peekRestockIntent('item-1', '3')).not.toBeNull();
-      expect(peekRestockIntent('item-2', '5')).not.toBeNull();
-    });
-
     test('a FAILED request KEEPS its identity — a retry converges to the same key', () => {
       const k1 = getOrCreateRestockIntentKey('item-1', '7');
       // failure path: the mutation never calls clearRestockIntent
@@ -98,31 +95,48 @@ describe('restock durable intent identity (r40.2)', () => {
       expect(k2).toBe(k1);
     });
 
-    test('a SIMULATED RELOAD keeps the identity — a fresh module load recovers the same pending key from sessionStorage', async () => {
+    test('a PAGE RELOAD keeps the identity — a fresh module load recovers the same pending key', async () => {
       const k1 = getOrCreateRestockIntentKey('item-1', '12.5');
-      // Simulate a browser reload: the JS context is torn down and re-created;
-      // sessionStorage (browser-durable) is what survives.
       vi.resetModules();
       const fresh = await import('@/lib/restockIntent');
-      const k2 = fresh.getOrCreateRestockIntentKey('item-1', '12.5');
+      expect(fresh.getOrCreateRestockIntentKey('item-1', '12.5')).toBe(k1);
+    });
+
+    test('TAB CLOSE / BROWSER TERMINATION keeps the identity — storage survives the JS context dying', async () => {
+      const k1 = getOrCreateRestockIntentKey('item-1', '30');
+      // Simulate closing the browser: the module context is torn down
+      // completely (fresh import) and only localStorage survives.
+      vi.resetModules();
+      const fresh = await import('@/lib/restockIntent');
+      const k2 = fresh.getOrCreateRestockIntentKey('item-1', '30.0');
       expect(k2).toBe(k1);
+      // ...and the record is still inspectable for the UI / diagnostics
+      expect(fresh.peekRestockIntent('item-1', '30').uuid).toBe(k1);
     });
 
-    test('a CHANGED quantity creates a distinct logical intent', () => {
-      const k1 = getOrCreateRestockIntentKey('item-1', '5');
-      const k2 = getOrCreateRestockIntentKey('item-1', '6');
-      expect(k2).not.toBe(k1);
-      // both are pending independently
-      expect(peekRestockIntent('item-1', '5')).not.toBeNull();
-      expect(peekRestockIntent('item-1', '6')).not.toBeNull();
+    test('CROSS-TAB is deliberate: two independent module instances (two tabs) converge on ONE identity', async () => {
+      // tab A mints the intent
+      const kA = getOrCreateRestockIntentKey('item-7', '4.25');
+      // tab B is a SEPARATE module instance sharing the same persistent store
+      vi.resetModules();
+      const tabB = await import('@/lib/restockIntent');
+      const kB = tabB.getOrCreateRestockIntentKey('item-7', '4.25');
+      // both tabs retrying the same logical purchase converge to ONE backend
+      // operation — the same exactly-once semantics as an in-tab retry
+      expect(kB).toBe(kA);
     });
 
-    test('the SAME quantity after a SUCCESSFUL completion gets a FRESH identity', () => {
+    test('a SUCCESSFUL request clears ONLY its own pending identity', () => {
       const k1 = getOrCreateRestockIntentKey('item-1', '5');
-      clearRestockIntent('item-1', '5'); // resolved
-      const k2 = getOrCreateRestockIntentKey('item-1', '5'); // new intentional restock
-      expect(k2).not.toBe(k1);
-      expect(peekRestockIntent('item-1', '5')?.uuid).toBe(k2);
+      getOrCreateRestockIntentKey('item-1', '3'); // a second pending intent
+      getOrCreateRestockIntentKey('item-2', '5'); // same qty, other item
+
+      clearRestockIntent('item-1', '5.00'); // resolved via canonical-equal qty
+
+      expect(peekRestockIntent('item-1', '5')).toBeNull();
+      // the OTHER intents are untouched
+      expect(peekRestockIntent('item-1', '3')).not.toBeNull();
+      expect(peekRestockIntent('item-2', '5')).not.toBeNull();
     });
 
     test('a CANCELLED intent clears its own record and does not affect another intent', () => {
@@ -136,11 +150,49 @@ describe('restock durable intent identity (r40.2)', () => {
       expect(kA2).not.toBe(kA);
     });
 
+    test('the SAME quantity after a SUCCESSFUL completion gets a FRESH identity', () => {
+      const k1 = getOrCreateRestockIntentKey('item-1', '5');
+      clearRestockIntent('item-1', '5'); // resolved
+      const k2 = getOrCreateRestockIntentKey('item-1', '5'); // new intentional restock
+      expect(k2).not.toBe(k1);
+      expect(peekRestockIntent('item-1', '5')?.uuid).toBe(k2);
+    });
+
+    test('a CHANGED quantity creates a distinct logical intent', () => {
+      const k1 = getOrCreateRestockIntentKey('item-1', '5');
+      const k2 = getOrCreateRestockIntentKey('item-1', '6');
+      expect(k2).not.toBe(k1);
+      expect(peekRestockIntent('item-1', '5')).not.toBeNull();
+      expect(peekRestockIntent('item-1', '6')).not.toBeNull();
+    });
+
+    test('TTL: an unresolved intent EXPIRES after 24h — the retry is a genuinely new purchase', () => {
+      const k1 = getOrCreateRestockIntentKey('item-1', '5');
+      // age the record past the TTL boundary
+      ageIntent('item-1', '5', 24 * 60 * 60 * 1000 + 1000);
+      const k2 = getOrCreateRestockIntentKey('item-1', '5');
+      expect(k2).not.toBe(k1); // fresh identity — no silent replay of a stale op
+    });
+
+    test('TTL: an intent aged just UNDER 24h still reuses its identity (retry converges)', () => {
+      const k1 = getOrCreateRestockIntentKey('item-1', '5');
+      ageIntent('item-1', '5', 23 * 60 * 60 * 1000);
+      const k2 = getOrCreateRestockIntentKey('item-1', '5');
+      expect(k2).toBe(k1);
+    });
+
+    test('TTL expiry does not touch other pending intents', () => {
+      getOrCreateRestockIntentKey('item-1', '5');
+      const kOther = getOrCreateRestockIntentKey('item-1', '6');
+      ageIntent('item-1', '5', 24 * 60 * 60 * 1000 + 1000);
+      getOrCreateRestockIntentKey('item-1', '5'); // expires + remints
+      expect(peekRestockIntent('item-1', '6').uuid).toBe(kOther);
+    });
+
     test('high-magnitude distinct quantities hold distinct durable identities', () => {
       const kA = getOrCreateRestockIntentKey('item-1', '99999999999999999999.01');
       const kB = getOrCreateRestockIntentKey('item-1', '99999999999999999999.02');
       expect(kA).not.toBe(kB);
-      // and each is stable across a "retry"
       expect(getOrCreateRestockIntentKey('item-1', '99999999999999999999.01')).toBe(kA);
       expect(getOrCreateRestockIntentKey('item-1', '99999999999999999999.02')).toBe(kB);
     });
@@ -149,24 +201,23 @@ describe('restock durable intent identity (r40.2)', () => {
       expect(getOrCreateRestockIntentKey('item-1', 'abc')).toBeNull();
       expect(getOrCreateRestockIntentKey('item-1', '1e3')).toBeNull();
       expect(getOrCreateRestockIntentKey('item-1', '')).toBeNull();
-      // and nothing was persisted for the invalid attempts
       expect(store().length).toBe(0);
     });
 
-    test('sessionStorage degradation never crashes: keys still work (in-memory)', () => {
-      const real = globalThis.sessionStorage;
+    test('localStorage degradation never crashes: keys still work within the tab (in-memory)', () => {
+      const real = globalThis.localStorage;
       // a privacy mode that throws on every access
-      Object.defineProperty(globalThis, 'sessionStorage', {
+      Object.defineProperty(globalThis, 'localStorage', {
         configurable: true,
         get() { throw new DOMException('denied', 'SecurityError'); },
       });
       try {
         const k1 = getOrCreateRestockIntentKey('item-1', '5');
         expect(k1).toBeTruthy();
-        expect(getOrCreateRestockIntentKey('item-1', '5.0')).toBe(k1); // retry still converges
+        expect(getOrCreateRestockIntentKey('item-1', '5.0')).toBe(k1); // retry converges
         clearRestockIntent('item-1', '5');
       } finally {
-        Object.defineProperty(globalThis, 'sessionStorage', { configurable: true, value: real });
+        Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: real });
       }
     });
   });
