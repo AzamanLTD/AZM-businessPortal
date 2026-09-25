@@ -166,6 +166,53 @@ describe('r40.4 — server-owned restock intent lifecycle (portal hook)', () => 
         second.unmount();
     });
 
+    it('8. §r40.5 two rapid submits share ONE pending registration — exactly one intent (P1)', async () => {
+        // final-audit P1: intentFor is async; two clicks before the first
+        // registration resolves must NOT mint two server intents.
+        const api = makeApi();
+        let release;
+        const gate = new Promise((res) => { release = res; });
+        // hold the first (and only) registration in flight
+        api.createRestockIntent.mockImplementationOnce(() => gate.then(() => ({ intent: { id: 'srv-intent-1', status: 'PENDING' } })));
+        const { result, unmount } = await mount(api);
+        let ids;
+        await act(async () => {
+            const a = result.current.intentFor('item-1', '5');
+            const b = result.current.intentFor('item-1', '5');
+            release();
+            ids = await Promise.all([a, b]);
+        });
+        expect(api.createRestockIntent).toHaveBeenCalledTimes(1); // ONE registration
+        expect(ids[0]).toBe(ids[1]); // both callers receive the SAME id
+        expect(ids[0]).toBe('srv-intent-1');
+        expect(result.current.current.intentId).toBe('srv-intent-1');
+        // a THIRD submit after resolution? current is set — reuses the same
+        // operation identity (the dialog operation is still unresolved)
+        const c = await act(() => result.current.intentFor('item-1', '5'));
+        expect(c).toBe('srv-intent-1');
+        expect(api.createRestockIntent).toHaveBeenCalledTimes(1);
+        unmount();
+    });
+
+    it('9. §r40.5 the lock is per-(item, qty): a DIFFERENT concurrent operation still registers its own intent', async () => {
+        const api = makeApi();
+        const gates = [];
+        api.createRestockIntent.mockImplementation(() => new Promise((res) => gates.push(res)));
+        const { result, unmount } = await mount(api);
+        let ids;
+        await act(async () => {
+            const a = result.current.intentFor('item-1', '5');
+            const b = result.current.intentFor('item-2', '9'); // genuinely separate operation
+            gates[0]({ intent: { id: 'srv-intent-a' } });
+            gates[1]({ intent: { id: 'srv-intent-b' } });
+            ids = await Promise.all([a, b]);
+        });
+        expect(api.createRestockIntent).toHaveBeenCalledTimes(2); // never globally deduped
+        expect(ids[0]).toBe('srv-intent-a');
+        expect(ids[1]).toBe('srv-intent-b');
+        unmount();
+    });
+
     it('7. the hook NEVER touches browser storage and has NO client TTL — the identity is server-owned', async () => {
         const fs = await import('fs');
         const path = await import('path');

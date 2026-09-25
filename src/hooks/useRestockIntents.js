@@ -41,6 +41,16 @@ export function useRestockIntents(inventoryApi) {
     const [current, setCurrent] = useState(null);
     const currentRef = useRef(null);
     const _setCurrent = (v) => { currentRef.current = v; setCurrent(v); };
+    // §r40.5 — IN-FLIGHT REGISTRATION LOCK (final-audit P1). intentFor is
+    // async; two rapid submits of the SAME dialog operation could both reach
+    // createRestockIntent before either response set currentRef, minting two
+    // separate server intents (and potentially two restocks) for one click
+    // pair. Duplicate registrations for the SAME (item, exact qty) dialog
+    // operation now share ONE pending promise. The lock is deliberately
+    // per-(item, qty): genuinely separate operations (a different item,
+    // quantity, tab, or a later submit after resolution) still register
+    // their own intents — never a global dedupe.
+    const registeringRef = useRef(null);
 
     const refresh = useCallback(async () => {
         try {
@@ -66,10 +76,27 @@ export function useRestockIntents(inventoryApi) {
         if (cur && cur.intentId && cur.itemId === itemId && cur.qty === qty) {
             return cur.intentId;
         }
-        const res = await inventoryApi.createRestockIntent(itemId, qty);
-        const intentId = res.intent.id;
-        _setCurrent({ intentId, itemId, qty });
-        return intentId;
+        // duplicate submit of the same in-flight registration: share the
+        // SAME pending server registration (exactly one intent minted)
+        const inflight = registeringRef.current;
+        if (inflight && inflight.itemId === itemId && inflight.qty === qty) {
+            return inflight.promise;
+        }
+        const promise = inventoryApi.createRestockIntent(itemId, qty)
+            .then((res) => {
+                const intentId = res.intent.id;
+                _setCurrent({ intentId, itemId, qty });
+                return intentId;
+            })
+            .finally(() => {
+                // failed registrations clear the lock so the operator can
+                // retry (a new intent is then minted — the old one never
+                // existed server-side or is harmless if it did; recovery
+                // still surfaces it).
+                if (registeringRef.current?.promise === promise) registeringRef.current = null;
+            });
+        registeringRef.current = { itemId, qty, promise };
+        return promise;
     }, [inventoryApi]);
 
     // The operation's outcome was OBSERVED (restock succeeded or replayed):

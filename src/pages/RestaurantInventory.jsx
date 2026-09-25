@@ -289,8 +289,14 @@ export default function RestaurantInventory() {
     setRestockItem(null);
   };
 
+  // §r40.5 — VISIBLE SUBMIT LOCK (final-audit P1): the Complete Restock
+  // action is disabled while THIS dialog's registration/restock is in
+  // flight, so a rapid double-click can never mint two server intents.
+  const [restockSubmitting, setRestockSubmitting] = useState(false);
   const handleRestockSubmit = (e) => {
     e.preventDefault();
+    if (restockSubmitting || restockMutation.isPending) return; // re-entry guard
+    setRestockSubmitting(true);
     // Same pattern as the backend's DECIMAL_STRING guard (strictString):
     // plain decimal notation only — no exponent, no sign, no whitespace.
     const qty = (restockQty || '').trim();
@@ -305,7 +311,8 @@ export default function RestaurantInventory() {
     // item and quantity are two separate operations, never conflated.
     intentFor(restockItem.id, qty)
       .then((intentId) => restockMutation.mutate({ id: restockItem.id, qty, idempotencyKey: intentId }))
-      .catch((err) => toast.stop(err?.message || 'Could not register the restock — nothing was sent'));
+      .catch((err) => toast.stop(err?.message || 'Could not register the restock — nothing was sent'))
+      .finally(() => setRestockSubmitting(false));
   };
 
   const handleLinkSubmit = (productId) => {
@@ -1130,8 +1137,8 @@ export default function RestaurantInventory() {
               <Button variant="secondary" type="button" onClick={() => { closeRestockDialog(); }}>
                 Cancel
               </Button>
-              <Button variant="primary" type="submit">
-                Complete Restock
+              <Button variant="primary" type="submit" disabled={restockSubmitting || restockMutation.isPending}>
+                {restockSubmitting || restockMutation.isPending ? 'Restocking…' : 'Complete Restock'}
               </Button>
             </div>
           </form>
