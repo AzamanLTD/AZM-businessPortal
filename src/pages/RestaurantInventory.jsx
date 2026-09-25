@@ -37,6 +37,7 @@ import {
   X
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
+import { useRestockIntents } from '@/hooks/useRestockIntents';
 
 // Custom Stocks level bar
 function StockBar({ current, minimum }) {
@@ -143,8 +144,19 @@ export default function RestaurantInventory() {
     },
   });
 
+  // §r40 restock contract: the backend fingerprints the EXACT decimal string
+  // (fingerprint v2). Send the raw input string — parseFloat would destroy
+  // it ("1.10"→"1.1") and float artifacts could collide distinct purchases.
+  // §r40.4 — SERVER-OWNED INTENT LIFECYCLE: the server registers and owns
+  // every restock operation's durable identity (the intent id IS the
+  // idempotency key). The client only reuses the same server intent while
+  // the dialog's operation is unresolved and drives the recovery banner
+  // from the server-owned unresolved list — after any browser or storage
+  // loss, the exact prior operation is recoverable, never re-minted.
+  const { unresolved: unresolvedIntents, current: currentIntent, intentFor, acknowledge, abandon, retry: retryIntent } = useRestockIntents(inventoryApi);
+
   const restockMutation = useMutation({
-    mutationFn: ({ id, qty }) => inventoryApi.restock(id, parseFloat(qty)),
+    mutationFn: ({ id, qty, idempotencyKey }) => inventoryApi.restock(id, qty, idempotencyKey),
     onSuccess: (data, variables) => {
       const updatedItem = inventoryData?.find(i => i.id === variables.id);
       const name = updatedItem?.name || 'Item';
@@ -153,10 +165,20 @@ export default function RestaurantInventory() {
         description: `Current Stock updated. Log summary: Restock of ${variables.qty} completed.`,
       });
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      // §r40.4: the outcome is OBSERVED — acknowledge exactly THIS intent
+      // (by id, never by item/quantity, so a late success can never
+      // resolve a newer operation it does not own). The server clears it
+      // from the recovery list; other unresolved intents are untouched.
+      if (variables.idempotencyKey) acknowledge(variables.idempotencyKey).catch(() => {});
       setRestockItem(null);
       setRestockQty('');
     },
     onError: (err) => {
+      // FAILED/timeout: the server intent deliberately STAYS UNRESOLVED —
+      // a retry of the same dialog operation reuses the SAME server intent
+      // id and the backend replays the original operation (exactly-once).
+      // The recovery banner keeps it resolvable across reloads, tab close
+      // and full browser termination.
       toast.stop(err.message || 'Failed to restock item');
     },
   });
@@ -256,13 +278,41 @@ export default function RestaurantInventory() {
     });
   };
 
+  // Closing the dialog abandons the (still unresolved) dialog operation:
+  // the SERVER decides safely — if the request actually committed, the
+  // cancel is refused and the recovery banner surfaces the completed
+  // restock; the client never guesses.
+  const closeRestockDialog = () => {
+    if (currentIntent) {
+      abandon(currentIntent.intentId).catch(() => {});
+    }
+    setRestockItem(null);
+  };
+
+  // §r40.5 — VISIBLE SUBMIT LOCK (final-audit P1): the Complete Restock
+  // action is disabled while THIS dialog's registration/restock is in
+  // flight, so a rapid double-click can never mint two server intents.
+  const [restockSubmitting, setRestockSubmitting] = useState(false);
   const handleRestockSubmit = (e) => {
     e.preventDefault();
-    if (!restockQty || parseFloat(restockQty) <= 0) {
-      toast.stop('Please enter a valid quantity');
+    if (restockSubmitting || restockMutation.isPending) return; // re-entry guard
+    setRestockSubmitting(true);
+    // Same pattern as the backend's DECIMAL_STRING guard (strictString):
+    // plain decimal notation only — no exponent, no sign, no whitespace.
+    const qty = (restockQty || '').trim();
+    if (!/^\d+(?:\.\d+)?$/.test(qty)) {
+      toast.stop('Please enter a valid quantity (plain decimal, e.g. 12.5)');
       return;
     }
-    restockMutation.mutate({ id: restockItem.id, qty: restockQty });
+    // §r40.4: register the operation on the SERVER (or reuse the same
+    // server intent while this dialog operation is unresolved) — the server
+    // is the durable authority for the retry identity. A NEW submit after
+    // resolution registers a NEW intent: two distinct restocks of the same
+    // item and quantity are two separate operations, never conflated.
+    intentFor(restockItem.id, qty)
+      .then((intentId) => restockMutation.mutate({ id: restockItem.id, qty, idempotencyKey: intentId }))
+      .catch((err) => toast.stop(err?.message || 'Could not register the restock — nothing was sent'))
+      .finally(() => setRestockSubmitting(false));
   };
 
   const handleLinkSubmit = (productId) => {
@@ -291,6 +341,43 @@ export default function RestaurantInventory() {
 
   // Calculate items and metrics
   const itemsList = inventoryData || [];
+
+  // §r40.4 — RECOVERY BANNER: the server-owned list of unresolved restock
+  // intents (loaded on mount by the hook, refreshed after every outcome).
+  // This is what makes an interrupted restock recoverable across page
+  // reloads, tab close and full browser termination — the identity lives in
+  // PostgreSQL, not in this browser.
+  const itemNameFor = (itemId) => itemsList.find(i => i.id === itemId)?.name || 'an item';
+
+  const handleAckIntent = (intent) => {
+    acknowledge(intent.id).then(() => {
+      toast.go('Restock outcome saved');
+    }).catch((err) => {
+      toast.stop(err?.message || 'Could not save the restock outcome');
+    });
+  };
+
+  const handleDiscardIntent = (intent) => {
+    abandon(intent.id).then(() => {
+      toast.go('Unsent restock discarded');
+    }).catch((err) => {
+      // The server refuses to cancel an intent that actually executed —
+      // truth wins: refresh and let the banner surface the real outcome.
+      toast.stop(err?.message || 'This restock already went through — check the banner');
+    });
+  };
+
+  const handleRetryIntent = (intent) => {
+    toast.go('Retrying restock — sending the original request');
+    retryIntent(intent).then(() => {
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      toast.go(`Restock of ${intent.quantity} ${itemNameFor(intent.itemId)} completed`, {
+        description: 'The original request was replayed by the backend — no duplicate was created.',
+      });
+    }).catch((err) => {
+      toast.stop(err?.message || 'Retry failed — the restock stays recoverable');
+    });
+  };
   const lowStockItems = itemsList.filter(item => {
     const cur = parseFloat(item.currentStock) || 0;
     const min = parseFloat(item.minimumStock) || 0;
@@ -319,6 +406,44 @@ export default function RestaurantInventory() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto px-4 md:px-6 py-6 text-[var(--text)]">
+      {/* §r40.4 — RECOVERY BANNER: server-owned unresolved restock intents.
+          EXECUTED entries committed unseen (the browser lost the response);
+          PENDING entries were never confirmed sent. Nothing expires: each
+          stays here until the operator acknowledges or resolves it. */}
+      {unresolvedIntents.length > 0 && (
+        <Card className="border border-[var(--hold)]/40 bg-[var(--f-card)] p-4 space-y-2">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-[var(--hold)]" />
+            <span className="text-sm font-bold text-[var(--text)]">
+              Restock recovery ({unresolvedIntents.length})
+            </span>
+            <span className="text-xs text-[var(--text-3)]">
+              — restocks that were interrupted or finished off-screen. They stay recoverable until resolved.
+            </span>
+          </div>
+          {unresolvedIntents.map(intent => (
+            <div key={intent.id} className="flex flex-wrap items-center gap-2 justify-between rounded-lg border border-[var(--line)] px-3 py-2">
+              <span className="text-sm text-[var(--text)]">
+                {intent.status === 'EXECUTED' ? (
+                  <>Restock of <b>{intent.quantity}</b> of {itemNameFor(intent.itemId)} <b>completed</b>{intent.executionResult?.stockAfter !== undefined ? ` — stock now ${intent.executionResult.stockAfter}` : ''} (finished while this page was away)</>
+                ) : (
+                  <>Unconfirmed restock of <b>{intent.quantity}</b> of {itemNameFor(intent.itemId)}</>
+                )}
+              </span>
+              <span className="flex items-center gap-2">
+                {intent.status === 'EXECUTED' ? (
+                  <Button size="sm" onClick={() => handleAckIntent(intent)}><Check className="w-3.5 h-3.5 mr-1" />Got it</Button>
+                ) : (
+                  <>
+                    <Button size="sm" onClick={() => handleRetryIntent(intent)}><RefreshCw className="w-3.5 h-3.5 mr-1" />Retry</Button>
+                    <Button size="sm" variant="secondary" onClick={() => handleDiscardIntent(intent)}><X className="w-3.5 h-3.5 mr-1" />Discard</Button>
+                  </>
+                )}
+              </span>
+            </div>
+          ))}
+        </Card>
+      )}
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -983,7 +1108,7 @@ export default function RestaurantInventory() {
       </Dialog>
 
       {/* Restock Modal */}
-      <Dialog open={!!restockItem} onClose={() => setRestockItem(null)} title="Quick Restock">
+      <Dialog open={!!restockItem} onClose={() => { closeRestockDialog(); }} title="Quick Restock">
         {restockItem && (
           <form onSubmit={handleRestockSubmit} className="space-y-4">
             <div className="p-3 bg-[var(--f-ink-900)] rounded-xl border border-[var(--line)]">
@@ -1009,11 +1134,11 @@ export default function RestaurantInventory() {
               placeholder="e.g. 25"
             />
             <div className="flex justify-end gap-2 pt-2 border-t border-[var(--line)]">
-              <Button variant="secondary" type="button" onClick={() => setRestockItem(null)}>
+              <Button variant="secondary" type="button" onClick={() => { closeRestockDialog(); }}>
                 Cancel
               </Button>
-              <Button variant="primary" type="submit">
-                Complete Restock
+              <Button variant="primary" type="submit" disabled={restockSubmitting || restockMutation.isPending}>
+                {restockSubmitting || restockMutation.isPending ? 'Restocking…' : 'Complete Restock'}
               </Button>
             </div>
           </form>
