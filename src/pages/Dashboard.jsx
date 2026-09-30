@@ -331,7 +331,7 @@ export default function Dashboard() {
       )}
 
       {/* Employee KPIs */}
-      <m.div variants={ContainerV} initial="hidden" animate="visible"
+      <m.div data-tour="dashboard-kpis" variants={ContainerV} initial="hidden" animate="visible"
         style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 16 }}>
         <m.div variants={ItemV}><KpiCard label="Total Employees" value={employeeStatsLoading ? '—' : String(employeeStats.totalEmployees)} deltaLabel={employeeStats.totalEmployees > 0 ? `${employeeStats.totalEmployees} active` : 'No employees yet'} icon={Users} loading={employeeStatsLoading} /></m.div>
         <m.div variants={ItemV}><KpiCard label="Active Shifts" value={employeeStatsLoading ? '—' : String(employeeStats.activeShifts)} deltaLabel={employeeStats.activeShifts > 0 ? 'On duty' : 'None'} deltaTone={employeeStats.activeShifts > 0 ? 'up' : 'flat'} icon={Clock} loading={employeeStatsLoading} /></m.div>
@@ -380,7 +380,7 @@ export default function Dashboard() {
       <div style={{ marginBottom: 16 }}><AtRiskWidget /></div>
 
       {/* Core KPIs */}
-      <m.div variants={ContainerV} initial="hidden" animate="visible"
+      <m.div data-tour="dashboard-kpis" variants={ContainerV} initial="hidden" animate="visible"
         style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 16 }}>
         <m.div variants={ItemV}><KpiCard label="Total Orders" value={fmt(stats.totalOrders || 0, 0)} deltaLabel="All time" icon={ShoppingBag} loading={statsLoading} /></m.div>
         <m.div variants={ItemV}><KpiCard label="Revenue" value={fmtUSDC(stats.totalRevenue || 0)} deltaLabel="Completed" icon={TrendingUp} loading={statsLoading} /></m.div>
@@ -415,7 +415,7 @@ export default function Dashboard() {
 
       {/* Revenue chart */}
       {hasRevenue && (
-        <Card style={{ marginBottom: 16 }}>
+        <Card data-tour="dashboard-revenue" style={{ marginBottom: 16 }}>
           <CardHead>
             <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Revenue · Last 30 days</span>
           </CardHead>

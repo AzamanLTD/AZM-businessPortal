@@ -113,7 +113,7 @@ export function Shell({ children, navProps, brandName = 'Azaman', brandShort = '
       {/* PANE 1 — Global icon rail */}
       <aside ref={railRef} className="i-rail-icons">
         <div className="i-rail-icons__logo" aria-hidden>{brandShort}</div>
-        <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2, width: '100%', alignItems: 'center' }}>
+        <nav data-tour="rail-nav" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2, width: '100%', alignItems: 'center' }}>
           {nav.map(domain => {
             const Icon = domain.icon;
             const isActive = displayDomain?.id === domain.id;
@@ -474,7 +474,7 @@ function TopbarDual({ onMenuClick, brandName, domainLabel, bizProfile, user, onL
         <button className="i-rail-icons__btn" onClick={toggle} aria-label="Toggle theme" style={{ color: 'var(--text-2)' }}>
           {theme === 'dark' ? <Sun style={{ width: 16, height: 16 }} /> : <Moon style={{ width: 16, height: 16 }} />}
         </button>
-        <NavLink to="/notifications" className="i-rail-icons__btn" aria-label="Notifications" style={{ color: 'var(--text-2)', position: 'relative' }}>
+        <NavLink to="/notifications" data-tour="notification-bell" className="i-rail-icons__btn" aria-label="Notifications" style={{ color: 'var(--text-2)', position: 'relative' }}>
           <Bell style={{ width: 16, height: 16 }} />
           {notifCount != null && notifCount > 0 && (
             <span style={{ position: 'absolute', top: 6, right: 6, width: 6, height: 6, borderRadius: '50%', background: 'var(--hold)' }} />

@@ -189,7 +189,8 @@ export default function Orders() {
             <p style={{ marginTop: 4, fontSize: 12, color: 'var(--text-3)' }}>Manage orders, escrows, and fulfillment.</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Button variant="ghost" size="sm" icon={RefreshCw} onClick={() => refetch()}>Refresh</Button>
+            <div data-tour="orders-header" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Button variant="ghost" size="sm" icon={RefreshCw} onClick={() => refetch()}>Refresh</Button>
             {/* Inline segmented control */}
             <div style={{ display: 'flex', borderRadius: 'var(--r2)', border: '1px solid var(--line)', overflow: 'hidden' }}>
               <button onClick={() => setViewMode('kanban')}
@@ -206,6 +207,7 @@ export default function Orders() {
                   border: 0, fontSize: 12, fontWeight: 500, transition: 'all 0.12s' }}>
                 <List size={13} /> Table
               </button>
+            </div>
             </div>
           </div>
         </div>
@@ -281,7 +283,7 @@ export default function Orders() {
         </Card>
       ) : (
         /* Kanban view */
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, alignItems: 'flex-start' }}>
+        <div data-tour="orders-kanban" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, alignItems: 'flex-start' }}>
           {KANBAN_COLUMNS.map(col => {
             const colOrders = filteredOrders.filter(o => o.status === col);
             const meta = ORDER_STATUS_META[col] || { label: col };

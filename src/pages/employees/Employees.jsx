@@ -439,7 +439,7 @@ export default function Employees() {
 
       {/* Employee Grid */}
       {loading ? (
-        <div data-tour="employees-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skel key={i} className="h-48" />
           ))}
@@ -450,7 +450,7 @@ export default function Employees() {
           description="Try adjusting your filters or search query."
         />
       ) : (
-        <div style={{ height: 'calc(100vh - 380px)', minHeight: '400px' }} className="rounded-2xl">
+        <div data-tour="employees-grid" style={{ height: 'calc(100vh - 380px)', minHeight: '400px' }} className="rounded-2xl">
         <VirtualizedGrid
           items={filteredEmployees}
           columnCount={3}

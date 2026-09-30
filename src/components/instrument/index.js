@@ -31,6 +31,7 @@ export { StatCard } from './StatCard';
 export { Tooltip } from './Tooltip';
 export { DropdownMenu, DropdownMenuItem } from './DropdownMenu';
 export { VirtualizedGrid } from './VirtualizedGrid';
+export { ProductTour, shouldShowTour, markTourComplete } from './ProductTour';
 export { Shell } from './Shell';
 export { TooltipProvider } from './TooltipProvider';
 export { ProfileMenu } from './ProfileMenu';

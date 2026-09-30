@@ -1,6 +1,6 @@
-import { Outlet, useNavigate } from 'react-router-dom';
-import { useMemo } from 'react';
-import { Shell, CommandPalette, TooltipProvider, ProfileMenu } from '@/components/instrument';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Shell, CommandPalette, TooltipProvider, ProfileMenu, ProductTour, shouldShowTour } from '@/components/instrument';
 import { CommandProvider } from '@/lib/command';
 import { ThemeProvider } from '@/lib/theme';
 import { useAuth } from '@/lib/AuthContext';
@@ -13,6 +13,25 @@ export function Layout() {
   const { hasPermission } = usePermission();
   const { data: notifData } = useBizNotifications();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // ── Guided product tour ──────────────────────────────────────────
+  // One auto-run tour per surface, keyed off the current route. The
+  // start is delayed so the page (and its data-tour anchors) render
+  // first; ProductTour then keeps only the steps whose anchors exist.
+  const tourName = location.pathname === '/'
+    ? 'dashboard'
+    : location.pathname.startsWith('/orders')
+      ? 'orders'
+      : location.pathname.startsWith('/employees')
+        ? 'employees'
+        : null;
+  const [tourRun, setTourRun] = useState(false);
+  useEffect(() => {
+    if (!tourName || !shouldShowTour(tourName)) return undefined;
+    const t = setTimeout(() => setTourRun(true), 1200);
+    return () => { clearTimeout(t); setTourRun(false); };
+  }, [tourName]);
 
   const navProps = useMemo(() => ({
     businessType: getBusinessType(bizProfile?.category || bizProfile?.businessType || bizProfile?.business_type || 'GENERAL'),
@@ -51,6 +70,11 @@ export function Layout() {
             <Outlet />
           </Shell>
           <CommandPalette navProps={navProps} />
+          <ProductTour
+            tourName={tourName}
+            run={tourRun}
+            onClose={() => setTourRun(false)}
+          />
         </TooltipProvider>
       </CommandProvider>
     </ThemeProvider>
