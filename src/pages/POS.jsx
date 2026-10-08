@@ -9,6 +9,10 @@ import { products as productsApi } from '@/lib/api';
 import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
 import { request } from '@/lib/apiCore';
+import { bookingOpsApi } from '@/lib/marketplaceApi';
+import {
+  checkoutIntentFingerprint, resolveIntentKey, estimateTax, taxRowLabel, receiptAmounts, isUnknownOutcome,
+} from '@/lib/posCheckout';
 import { cn } from '@/lib/utils';
 import { toast } from '@/lib/toast';
 import { Card, Button, Tag, Dialog, Empty, Skel, Input } from '@/components/instrument';
@@ -53,15 +57,32 @@ function ReceiptModal({ order, bizName, onClose }) {
               <span className="font-semibold tabular-nums">{fmt(item.price * item.qty)}</span>
             </div>
           ))}
-          <div className="border-t border-gray-200 my-2 pt-2 flex justify-between font-bold text-base">
-            <span>Total</span><span className="tabular-nums" style={{ color: 'var(--f-tint-color)' }}>{fmt(order.total)}</span>
+          <div className="border-t border-gray-200 my-2 pt-2 space-y-2">
+            {order.amounts?.subtotal != null && (
+              <div className="flex justify-between text-sm text-[var(--text-3)]">
+                <span>Subtotal</span><span className="tabular-nums">{fmt(order.amounts.subtotal)}</span>
+              </div>
+            )}
+            {order.amounts?.tax != null && (
+              <div className="flex justify-between text-sm text-[var(--text-3)]">
+                <span>Tax</span><span className="tabular-nums">{fmt(order.amounts.tax)}</span>
+              </div>
+            )}
+            <div className="flex justify-between font-bold text-base">
+              <span>Total</span><span className="tabular-nums" style={{ color: 'var(--f-tint-color)' }}>{fmt(order.amounts?.total ?? 0)}</span>
+            </div>
           </div>
           <div className="flex justify-between text-sm text-[var(--text-3)]">
             <span>Payment</span><span className="font-medium capitalize">{order.paymentMethod || 'cash'}</span>
           </div>
-          {order.cashGiven > 0 && order.cashGiven >= order.total && (
+          {!order.amounts?.authoritative && (
+            <div className="flex justify-between text-xs text-[var(--text-3)] pt-1">
+              <span>Offline sale</span><span>Totals are a local estimate, confirmed when the order syncs</span>
+            </div>
+          )}
+          {order.cashGiven > 0 && order.amounts?.change != null && (
             <div className="flex justify-between text-sm font-semibold text-green-600">
-              <span>Change</span><span className="tabular-nums">{fmt(order.cashGiven - order.total)}</span>
+              <span>Change</span><span className="tabular-nums">{fmt(order.amounts.change)}</span>
             </div>
           )}
           {order.offline && (
@@ -190,18 +211,59 @@ export default function POS() {
   const updateQty = (id, delta) => setCart(prev => prev.map(i => i.id === id ? { ...i, qty: Math.max(0, i.qty + delta) } : i).filter(i => i.qty > 0));
   const clearCart = () => setCart([]);
 
+  // Tax is SERVER authority: the backend computes it from the business's
+  // DEFAULT tax preset at order time. The old hardcoded 2.5% lied whenever
+  // the business's preset differed (including 0%). The pre-charge figure is
+  // an ESTIMATE from the same configured preset; the receipt shows the
+  // server-computed truth from the order response.
+  const { data: taxPresets } = useQuery({
+    queryKey: ['tax-presets'],
+    queryFn: () => bookingOpsApi.taxPresets(),
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+    throwOnError: false,
+  });
+  const defaultTaxPreset = taxPresets?.presets?.find(p => p.isDefault) || null;
   const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-  const tax = subtotal * 0.025;
-  const total = subtotal + tax;
+  const taxEstimate = estimateTax(subtotal, defaultTaxPreset);
+  const taxRow = taxRowLabel(defaultTaxPreset);
+  const total = subtotal + (taxEstimate ?? 0);
+
+  // One durable idempotency identity per checkout INTENT (backend contract:
+  // POST /pos/order dedupes on key + payload fingerprint and replays the
+  // original order). MINTING a new key per attempt made a retry after a lost
+  // response create a SECOND order and a second charge. The key is bound to
+  // the cart fingerprint: it survives retries, changes only when the cart
+  // changes, and is cleared on definitive success.
+  const checkoutIntentRef = useRef(null);
 
   const placeOrderMutation = useMutation({
     mutationFn: async ({ method, cashGiven, azmAmount }) => {
+      // The intent fingerprint covers EVERY client-controlled economic input
+      // the backend folds into its POS idempotency fingerprint (business,
+      // items, payment method, money fields, source). Same cart + changed
+      // payment method or amount = NEW intent = NEW key — the backend would
+      // refuse the old key as a fingerprint conflict, so it must never be
+      // reused for changed economics. The exact same intent retries with the
+      // SAME key, replaying the original order safely.
+      const checkout = {
+        cart,
+        paymentMethod: method,
+        cashGiven: method !== 'AZM' ? cashGiven : undefined,
+        azmAmount: method !== 'CASH' ? azmAmount : undefined,
+        source: 'POS',
+        businessProfileId: bizProfile?.id,
+      };
+      const reusableKey = resolveIntentKey(checkoutIntentRef.current, checkout);
+      if (!reusableKey) {
+        checkoutIntentRef.current = { key: crypto.randomUUID(), fingerprint: checkoutIntentFingerprint(checkout) };
+      }
       const payload = {
         items: cart.map(i => ({ productId: i.id, qty: i.qty })),
         paymentMethod: method,
         cashGiven: method !== 'AZM' ? cashGiven : undefined,
         azmAmount: method !== 'CASH' ? azmAmount : undefined,
-        idempotencyKey: crypto.randomUUID(), source: 'POS',
+        idempotencyKey: checkoutIntentRef.current.key, source: 'POS',
       };
       if (!online) {
         enqueue({ type: 'CREATE_ORDER', payload });
@@ -211,12 +273,31 @@ export default function POS() {
       return request('/api/business-os/pos/order', { method: 'POST', body: JSON.stringify(payload) });
     },
     onSuccess: (data, vars) => {
-      setCompletedOrder({ items: cart, total, paymentMethod: vars.method, cashGiven: vars.cashGiven, offline: data?.offline || false });
+      // The intent is settled (order created or safely enqueued offline with
+      // its key). The next checkout mints a fresh identity.
+      checkoutIntentRef.current = null;
+      const amounts = receiptAmounts(data?.offline ? null : data, {
+        subtotal, tax: taxEstimate ?? 0, total, cashGiven: vars.cashGiven,
+      });
+      setCompletedOrder({ items: cart, amounts, paymentMethod: vars.method, cashGiven: vars.cashGiven, offline: data?.offline || false });
       clearCart(); setShowPayment(false);
       qc.invalidateQueries({ queryKey: ['orders'] });
       if (!data?.offline) toast.go('Order placed!');
     },
-    onError: (err) => toast.stop('Order failed: ' + err.message),
+    onError: (err) => {
+      // A definitive server answer means the order did NOT go through. No
+      // HTTP answer (network drop, timeout) means the outcome is UNKNOWN —
+      // the order may exist. Telling the operator it "failed" invites a
+      // double charge; the intent key is kept so a re-charge of the same
+      // cart replays the original order instead of duplicating it.
+      if (isUnknownOutcome(err)) {
+        toast.stop('Connection lost — this order may have gone through', {
+          description: 'Check Orders before charging the customer again. Retrying the same cart reuses the same checkout ID, so the backend blocks a duplicate charge.',
+        });
+      } else {
+        toast.stop('Order failed: ' + err.message);
+      }
+    },
   });
 
   useEffect(() => {
@@ -402,7 +483,7 @@ export default function POS() {
                 <span>Subtotal</span><span className="tabular-nums">{fmt(subtotal)}</span>
               </div>
               <div className="flex justify-between" style={{ color: 'var(--f-text-2)' }}>
-                <span>Tax (2.5%)</span><span className="tabular-nums">{fmt(tax)}</span>
+                <span>{taxRow}</span><span className="tabular-nums">{taxEstimate == null ? 'at checkout' : fmt(taxEstimate)}</span>
               </div>
               <div className="flex justify-between font-bold text-base pt-1 border-t mt-1" style={{ borderColor: 'var(--f-line)', color: 'var(--f-text)' }}>
                 <span>Total</span><span className="tabular-nums" style={{ color: 'var(--f-tint-color)' }}>{fmt(total)}</span>

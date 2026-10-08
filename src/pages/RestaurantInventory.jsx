@@ -38,6 +38,7 @@ import {
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
 import { useRestockIntents } from '@/hooks/useRestockIntents';
+import { describeDeductOutcome } from '@/lib/mutationOutcome';
 
 // Custom Stocks level bar
 function StockBar({ current, minimum }) {
@@ -210,9 +211,10 @@ export default function RestaurantInventory() {
   const deductMutation = useMutation({
     mutationFn: (orderId) => inventoryApi.deductForOrder(orderId),
     onSuccess: (res) => {
-      toast.go(`Inventory deducted for order successfully!`, {
-        description: 'Auto-deduction completed. Checked all recipe requirements against real-time stock levels.',
-      });
+      // Backend contract: replay:true means the order was ALREADY deducted
+      // and no stock changed now — the route is exactly-once per order.
+      const outcome = describeDeductOutcome(res);
+      toast.go(outcome.message, { description: outcome.description });
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
     },
     onError: (err) => {

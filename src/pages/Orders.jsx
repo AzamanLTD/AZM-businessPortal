@@ -6,6 +6,7 @@
  */
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { describeBulkStatusOutcome } from '@/lib/mutationOutcome';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { orders as ordersApi } from '@/lib/api';
 import { bookingOpsApi } from '@/lib/marketplaceApi';
@@ -80,8 +81,11 @@ export default function Orders() {
 
   const bulkStatusMutation = useMutation({
     mutationFn: ({ ids, status }) => bookingOpsApi.bulkOrderStatus(ids, status),
-    onSuccess: (_, variables) => {
-      toast.go(`Updated ${variables.ids.length} orders to ${variables.status}`);
+    onSuccess: (data, variables) => {
+      // Backend contract: { updated, skipped } — report what the server
+      // actually transitioned, never the requested count.
+      const outcome = describeBulkStatusOutcome(data, variables.ids.length);
+      toast.go(outcome.message, outcome.description ? { description: outcome.description } : undefined);
       qc.invalidateQueries(['orders']);
       qc.invalidateQueries(['orders-stats']);
       setSelectedIds([]);
