@@ -40,6 +40,27 @@ export const products = {
 
 export const orders = {
   list:         (params = {}) => { const qs = new URLSearchParams(params).toString(); return request(`/api/business/orders${qs ? `?${qs}` : ''}`); },
+  // The backend clamps `limit` to 50 and pages by `nextCursor`; a single
+  // oversized `limit` silently truncates the order surface. `listAll` walks
+  // the cursor until the page set is exhausted (bounded by maxPages so a
+  // runaway cursor can never loop) and reports honest truncation.
+  listAll: async (params = {}, { maxPages = 10, limit = 50 } = {}) => {
+    const out = [];
+    let cursor = null;
+    let total = null;
+    for (let page = 0; page < maxPages; page++) {
+      const qs = new URLSearchParams({ ...params, limit: String(limit), ...(cursor ? { cursor } : {}) }).toString();
+      const result = await request(`/api/business/orders?${qs}`);
+      if (!result || !Array.isArray(result.orders)) {
+        throw new Error('Unexpected /api/business/orders response shape — expected { orders }.');
+      }
+      out.push(...result.orders);
+      if (typeof result.total === 'number') total = result.total;
+      if (!result.hasMore || !result.nextCursor) return { orders: out, total, truncated: false };
+      cursor = result.nextCursor;
+    }
+    return { orders: out, total, truncated: true };
+  },
   stats:        ()      => request('/api/business/orders/stats'),
   get:          (id)    => request(`/api/business/orders/${id}`),
   markDelivered:(id, deliveryNotes) => request(`/api/business/orders/${id}/delivered`, { method: 'PATCH', body: JSON.stringify({ deliveryNotes }) }),
