@@ -11,6 +11,7 @@ import { orders as ordersApi } from '@/lib/api';
 import { bookingOpsApi } from '@/lib/marketplaceApi';
 import { fmtUSDC, relativeTime, formatDateTime, ORDER_STATUS_META } from '@/lib/utils';
 import {
+  Info,
   ShoppingBag, Search, ChevronRight, Truck, X, Grid, List,
   CheckSquare, Square, RefreshCw, DollarSign, AlertCircle, Clock,
 } from 'lucide-react';
@@ -59,9 +60,13 @@ export default function Orders() {
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
   const statusFilter = searchParams.get('status') || '';
 
+  // Backend contract: /api/business/orders clamps `limit` to 50 and pages by
+  // `nextCursor`. listAll walks the cursor so the Kanban/table/bulk surfaces
+  // never silently drop older orders (a fixed limit: 200 was being clamped to
+  // the first 50 server-side).
   const { data: ordersData, isLoading, isError, refetch } = useQuery({
     queryKey: ['orders', statusFilter],
-    queryFn: () => ordersApi.list({ ...(statusFilter ? { status: statusFilter } : {}), limit: 200 }),
+    queryFn: () => ordersApi.listAll(statusFilter ? { status: statusFilter } : {}),
     refetchInterval: 30_000,
   });
 
@@ -252,6 +257,22 @@ export default function Orders() {
           {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
         </select>
       </div>
+
+      {/* Honest truncation notice — listAll is page-bounded; if the backend
+          still has more orders behind the bound, say so instead of silently
+          presenting a partial order surface as complete. */}
+      {ordersData?.truncated && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12,
+          padding: '10px 14px', borderRadius: 'var(--r2)',
+          border: '1px solid var(--accent)/30', background: 'var(--accent)/5',
+          color: 'var(--text-2)', font: '500 var(--t-sm)/1.4 var(--font)',
+        }}>
+          <Info className="w-4 h-4" style={{ color: 'var(--accent)', flexShrink: 0 }} />
+          Showing the most recent {ordersList.length} orders. Apply a status filter or use a
+          narrower date range to reach older orders.
+        </div>
+      )}
 
       {/* Content area */}
       {isLoading ? (

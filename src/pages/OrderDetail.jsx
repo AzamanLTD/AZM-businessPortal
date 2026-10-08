@@ -63,7 +63,7 @@ export default function OrderDetail() {
   const navigate = useNavigate();
   const qc = useQueryClient();
 
-  const [refundDialog, setRefundModal] = useState(false);
+  const [refundModal, setRefundModal] = useState(false);
   const [refundReason, setRefundReason] = useState('');
   const [deliveryNotes, setDeliveryNotes] = useState('');
   const [isEditingNotes, setIsEditingNotes] = useState(false);
@@ -81,11 +81,17 @@ export default function OrderDetail() {
     }
   }, [order?.deliveryNotes]);
 
-  // Mark as delivered mutation
+  // Mark as delivered mutation. CONTRACT: the backend's only endpoint that
+  // writes deliveryNotes is PATCH /orders/:id/delivered, which ALSO performs
+  // the PAID -> DELIVERED state transition (and fires the customer
+  // notification, webhook, and escrow-release flow). There is no
+  // notes-only update, so "saving notes" and "marking delivered" are the
+  // SAME operation — the UI must never offer them as two different actions.
   const markDeliveredMutation = useMutation({
     mutationFn: (notes) => ordersApi.markDelivered(id, notes),
     onSuccess: () => {
-      toast.go('Order marked as delivered successfully');
+      toast.go('Delivery notes saved and order marked as delivered');
+      setIsEditingNotes(false);
       qc.invalidateQueries(['order', id]);
       qc.invalidateQueries(['orders']);
     },
@@ -106,19 +112,6 @@ export default function OrderDetail() {
     },
     onError: (err) => {
       toast.stop(err.message || 'Failed to initiate refund');
-    }
-  });
-
-  // Save Delivery Notes mutation (custom save button handler)
-  const saveNotesMutation = useMutation({
-    mutationFn: (notes) => ordersApi.markDelivered(id, notes), // markDelivered updates deliveryNotes
-    onSuccess: () => {
-      toast.go('Delivery notes saved successfully');
-      qc.invalidateQueries(['order', id]);
-      setIsEditingNotes(false);
-    },
-    onError: (err) => {
-      toast.stop(err.message || 'Failed to save delivery notes');
     }
   });
 
@@ -304,13 +297,14 @@ export default function OrderDetail() {
                 Delivery & Fulfillment Details
               </h2>
               {currentStatus === 'PAID' && (
-                <Button 
+                <Button
                   size="sm"
                   variant="primary"
+                  disabled={markDeliveredMutation.isPending}
                   onClick={() => markDeliveredMutation.mutate(deliveryNotes)}
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  Mark as Delivered
+                  {markDeliveredMutation.isPending ? 'Marking Delivered…' : 'Mark as Delivered'}
                 </Button>
               )}
             </div>
@@ -319,26 +313,34 @@ export default function OrderDetail() {
               <div className="flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-semibold text-[var(--text-3)] uppercase tracking-wider">Fulfillment Dispatch Notes</label>
-                  {!isEditingNotes ? (
-                    <button 
-                      onClick={() => setIsEditingNotes(true)} 
+                  {currentStatus !== 'PAID' ? (
+                    // Backend contract: deliveryNotes are only writable through
+                    // the PAID -> DELIVERED transition. Post-delivery the notes
+                    // are a read-only record — never offer a fake edit path.
+                    <span className="text-[11px] text-[var(--text-3)]">
+                      Notes are recorded when the order is marked delivered
+                    </span>
+                  ) : !isEditingNotes ? (
+                    <button
+                      onClick={() => setIsEditingNotes(true)}
                       className="text-xs text-[var(--accent)]:underline flex items-center gap-1"
                     >
                       <Edit3 className="w-3 h-3" /> Edit
                     </button>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <button 
-                        onClick={() => setIsEditingNotes(false)} 
+                      <button
+                        onClick={() => setIsEditingNotes(false)}
                         className="text-xs text-[var(--text-3)]:underline"
                       >
                         Cancel
                       </button>
-                      <button 
-                        onClick={() => saveNotesMutation.mutate(deliveryNotes)} 
-                        className="text-xs text-[var(--accent)]:underline font-bold"
+                      <button
+                        onClick={() => markDeliveredMutation.mutate(deliveryNotes)}
+                        disabled={markDeliveredMutation.isPending}
+                        className="text-xs text-[var(--accent)]:underline font-bold disabled:opacity-50"
                       >
-                        Save
+                        Save & Mark Delivered
                       </button>
                     </div>
                   )}
@@ -347,7 +349,7 @@ export default function OrderDetail() {
                   value={deliveryNotes}
                   onChange={(e) => setDeliveryNotes(e.target.value)}
                   placeholder="Enter courier, tracking link, dispatch timestamps, etc."
-                  disabled={!isEditingNotes && currentStatus !== 'PAID'}
+                  disabled={currentStatus !== 'PAID' || !isEditingNotes}
                   className={!isEditingNotes ? "bg-opacity-50 border-dashed" : ""}
                 />
               </div>
@@ -480,10 +482,10 @@ export default function OrderDetail() {
 
           <div className="flex items-center justify-end gap-3 pt-2">
             <Button variant="secondary" size="sm" onClick={() => setRefundModal(false)}>Cancel</Button>
-            <Button 
-              variant="danger" 
+            <Button
+              variant="danger"
               size="sm"
-              disabled={!refundReason.trim()}
+              disabled={refundMutation.isPending || !refundReason.trim()}
               onClick={() => refundMutation.mutate(refundReason)}
             >
               Confirm & Return {fmtUSDC(escrowAmount)}
