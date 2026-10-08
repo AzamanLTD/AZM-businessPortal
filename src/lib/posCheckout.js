@@ -28,15 +28,42 @@ export function cartFingerprint(cart) {
 }
 
 /**
- * The idempotency key for the CURRENT checkout intent, if the intent is still
- * the same cart. Returns null when there is no reusable intent (first charge,
- * or the cart changed since the last attempt) — the caller must then mint a
- * fresh key. Keeping one key per intent is what makes a retry after a lost
- * response replay the original order instead of creating a second one.
+ * Deterministic identity of a checkout's ECONOMIC intent. It covers every
+ * client-controlled input the backend folds into its POS idempotency
+ * fingerprint (business, items, payment method, money fields, source): the
+ * same cart with a changed payment method or amount is a NEW intent and must
+ * mint a NEW key, not reuse one the backend would refuse as a fingerprint
+ * conflict. Values are canonically stringified as given — no floating-point
+ * normalization, no invented defaults.
  */
-export function resolveIntentKey(intent, cart) {
+export function checkoutIntentFingerprint(checkout) {
+  const { cart, paymentMethod, cashGiven, azmAmount, source, businessProfileId } = checkout || {};
+  const items = (cart || [])
+    .slice()
+    .sort((a, b) => String(a.id).localeCompare(String(b.id)))
+    .map(i => `${i.id}:${i.qty}`)
+    .join('|');
+  return [
+    `biz:${businessProfileId == null ? '' : businessProfileId}`,
+    `items:${items}`,
+    `pm:${String(paymentMethod ?? '').toUpperCase()}`,
+    `cash:${cashGiven == null ? '' : cashGiven}`,
+    `azm:${azmAmount == null ? '' : azmAmount}`,
+    `src:${source == null ? '' : source}`,
+  ].join('::');
+}
+
+/**
+ * The idempotency key for the CURRENT checkout intent, if the intent is still
+ * economically the same. Returns null when there is no reusable intent (first
+ * charge, or any economic input changed since the last attempt) — the caller
+ * must then mint a fresh key. Keeping one key per economic intent is what
+ * makes a retry after a lost response replay the original order instead of
+ * creating a second one.
+ */
+export function resolveIntentKey(intent, checkout) {
   if (!intent || !intent.key || !intent.fingerprint) return null;
-  return intent.fingerprint === cartFingerprint(cart) ? intent.key : null;
+  return intent.fingerprint === checkoutIntentFingerprint(checkout) ? intent.key : null;
 }
 
 /**

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   cartFingerprint,
+  checkoutIntentFingerprint,
   resolveIntentKey,
   estimateTax,
   taxRowLabel,
@@ -27,24 +28,93 @@ describe('cartFingerprint', () => {
   });
 });
 
-describe('resolveIntentKey — one idempotency key per checkout intent', () => {
-  const cart = [{ id: 'p1', qty: 2 }, { id: 'p2', qty: 1 }];
+describe('checkoutIntentFingerprint — one identity per economic intent', () => {
+  // The backend POS fingerprint covers business, items, payment method,
+  // money fields and source. The client intent fingerprint must cover every
+  // client-controlled input that feeds it, or a legitimately changed
+  // checkout would reuse a key the backend rejects as a fingerprint conflict.
+  const base = {
+    cart: [{ id: 'p1', qty: 2 }, { id: 'p2', qty: 1 }],
+    paymentMethod: 'CASH',
+    cashGiven: 50,
+    azmAmount: undefined,
+    source: 'POS',
+    businessProfileId: 'biz1',
+  };
+  const clone = (o) => ({ ...o, cart: o.cart.map(c => ({ ...c })) });
+
+  it('1. exact same cart + payment method + money → same fingerprint', () => {
+    expect(checkoutIntentFingerprint(base)).toBe(checkoutIntentFingerprint(clone(base)));
+  });
+
+  it('2. cashGiven change → NEW intent', () => {
+    expect(checkoutIntentFingerprint({ ...clone(base), cashGiven: 60 }))
+      .not.toBe(checkoutIntentFingerprint(base));
+  });
+
+  it('3. CASH → AZM payment-method change → NEW intent', () => {
+    expect(checkoutIntentFingerprint({ ...clone(base), paymentMethod: 'AZM', cashGiven: undefined, azmAmount: 10.5 }))
+      .not.toBe(checkoutIntentFingerprint(base));
+  });
+
+  it('4. AZM amount change → NEW intent (split payments)', () => {
+    const a = { ...clone(base), paymentMethod: 'SPLIT', cashGiven: 5, azmAmount: 10 };
+    const b = { ...clone(base), paymentMethod: 'SPLIT', cashGiven: 5, azmAmount: 12 };
+    expect(checkoutIntentFingerprint(a)).not.toBe(checkoutIntentFingerprint(b));
+  });
+
+  it('5. item/qty change → NEW intent', () => {
+    expect(checkoutIntentFingerprint({ ...clone(base), cart: [{ id: 'p1', qty: 3 }, { id: 'p2', qty: 1 }] }))
+      .not.toBe(checkoutIntentFingerprint(base));
+  });
+
+  it('6. item-order permutation does not change identity', () => {
+    expect(checkoutIntentFingerprint({ ...clone(base), cart: [{ id: 'p2', qty: 1 }, { id: 'p1', qty: 2 }] }))
+      .toBe(checkoutIntentFingerprint(base));
+  });
+
+  it('normalizes undefined/null money fields deterministically, without inventing values', () => {
+    expect(checkoutIntentFingerprint({ ...clone(base), cashGiven: undefined }))
+      .toBe(checkoutIntentFingerprint({ ...clone(base), cashGiven: null }));
+    expect(checkoutIntentFingerprint({ ...clone(base), azmAmount: undefined }))
+      .toBe(checkoutIntentFingerprint({ ...clone(base), azmAmount: null }));
+  });
+
+  it('business identity is part of the intent — a different business is a different intent', () => {
+    expect(checkoutIntentFingerprint({ ...clone(base), businessProfileId: 'biz2' }))
+      .not.toBe(checkoutIntentFingerprint(base));
+  });
+});
+
+describe('resolveIntentKey — reuse across retries, remint on economic change', () => {
+  const base = {
+    cart: [{ id: 'p1', qty: 2 }, { id: 'p2', qty: 1 }],
+    paymentMethod: 'CASH',
+    cashGiven: 50,
+    azmAmount: undefined,
+    source: 'POS',
+    businessProfileId: 'biz1',
+  };
+  const clone = (o) => ({ ...o, cart: o.cart.map(c => ({ ...c })) });
+
+  it('7. lost-response retry of the EXACT same economic intent reuses the key', () => {
+    const intent = { key: 'intent-1', fingerprint: checkoutIntentFingerprint(base) };
+    expect(resolveIntentKey(intent, clone(base))).toBe('intent-1');
+  });
+
+  it('refuses the key after any economic input changes — a new intent mints a new key', () => {
+    const intent = { key: 'intent-1', fingerprint: checkoutIntentFingerprint(base) };
+    expect(resolveIntentKey(intent, { ...clone(base), cashGiven: 60 })).toBeNull();
+    expect(resolveIntentKey(intent, { ...clone(base), paymentMethod: 'AZM', cashGiven: undefined, azmAmount: 50 })).toBeNull();
+    expect(resolveIntentKey(intent, { ...clone(base), azmAmount: 7 })).toBeNull();
+    expect(resolveIntentKey(intent, { ...clone(base), cart: [{ id: 'p1', qty: 3 }, { id: 'p2', qty: 1 }] })).toBeNull();
+    expect(resolveIntentKey(intent, { ...clone(base), businessProfileId: 'biz2' })).toBeNull();
+  });
 
   it('returns null for a missing or malformed intent (caller mints a fresh key)', () => {
-    expect(resolveIntentKey(null, cart)).toBeNull();
-    expect(resolveIntentKey({}, cart)).toBeNull();
-    expect(resolveIntentKey({ key: 'k', fingerprint: 'stale' }, cart)).toBeNull();
-  });
-
-  it('reuses the SAME key while the cart is unchanged — a lost-response retry replays the original order', () => {
-    const intent = { key: 'intent-1', fingerprint: cartFingerprint(cart) };
-    expect(resolveIntentKey(intent, cart)).toBe('intent-1');
-  });
-
-  it('refuses the key once the cart changes — a different cart is a different order intent', () => {
-    const intent = { key: 'intent-1', fingerprint: cartFingerprint(cart) };
-    const edited = [...cart, { id: 'p3', qty: 1 }];
-    expect(resolveIntentKey(intent, edited)).toBeNull();
+    expect(resolveIntentKey(null, clone(base))).toBeNull();
+    expect(resolveIntentKey({}, clone(base))).toBeNull();
+    expect(resolveIntentKey({ key: 'k' }, clone(base))).toBeNull();
   });
 });
 

@@ -11,7 +11,7 @@ import { usePermission } from '@/hooks/usePermission';
 import { request } from '@/lib/apiCore';
 import { bookingOpsApi } from '@/lib/marketplaceApi';
 import {
-  cartFingerprint, resolveIntentKey, estimateTax, taxRowLabel, receiptAmounts, isUnknownOutcome,
+  checkoutIntentFingerprint, resolveIntentKey, estimateTax, taxRowLabel, receiptAmounts, isUnknownOutcome,
 } from '@/lib/posCheckout';
 import { cn } from '@/lib/utils';
 import { toast } from '@/lib/toast';
@@ -239,11 +239,24 @@ export default function POS() {
 
   const placeOrderMutation = useMutation({
     mutationFn: async ({ method, cashGiven, azmAmount }) => {
-      const fingerprint = cartFingerprint(cart);
-      // Reuse the intent's key across retries (same cart); mint only when
-      // the cart changed or the previous intent was definitively settled.
-      if (!checkoutIntentRef.current || resolveIntentKey(checkoutIntentRef.current, cart) === null) {
-        checkoutIntentRef.current = { key: crypto.randomUUID(), fingerprint };
+      // The intent fingerprint covers EVERY client-controlled economic input
+      // the backend folds into its POS idempotency fingerprint (business,
+      // items, payment method, money fields, source). Same cart + changed
+      // payment method or amount = NEW intent = NEW key — the backend would
+      // refuse the old key as a fingerprint conflict, so it must never be
+      // reused for changed economics. The exact same intent retries with the
+      // SAME key, replaying the original order safely.
+      const checkout = {
+        cart,
+        paymentMethod: method,
+        cashGiven: method !== 'AZM' ? cashGiven : undefined,
+        azmAmount: method !== 'CASH' ? azmAmount : undefined,
+        source: 'POS',
+        businessProfileId: bizProfile?.id,
+      };
+      const reusableKey = resolveIntentKey(checkoutIntentRef.current, checkout);
+      if (!reusableKey) {
+        checkoutIntentRef.current = { key: crypto.randomUUID(), fingerprint: checkoutIntentFingerprint(checkout) };
       }
       const payload = {
         items: cart.map(i => ({ productId: i.id, qty: i.qty })),
