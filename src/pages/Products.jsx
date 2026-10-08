@@ -102,9 +102,12 @@ export default function Products() {
   const qc = useQueryClient();
   
   // Permissions gating
-  const { hasPermission } = usePermission();
-  const canManageProducts = hasPermission('products.manage');
-  const canManageInventory = hasPermission('inventory.manage');
+  const { hasPermission, isOwner } = usePermission();
+  // /api/business/products is owner-only on the backend (no permission
+  // key — the controller resolves the business by ownership). Mirror that
+  // exact contract instead of an invented permission key.
+  const canManageProducts = isOwner;
+  const canManageInventory = isOwner;
 
   // Filter States
   const [selectedLocationId, setSelectedLocationId] = useState('');

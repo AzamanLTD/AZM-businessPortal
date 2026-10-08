@@ -167,8 +167,8 @@ export default function RestaurantKitchen() {
   const [activeTab, setActiveTab] = useState('active'); // active, served, all
   const [searchTerm, setSearchTerm] = useState('');
 
-  const canView = hasPermission('kitchen.view') || hasPermission('*');
-  const canManage = hasPermission('kitchen.manage') || hasPermission('*');
+  const canView = hasPermission('restaurant.kitchen.view');
+  const canManage = hasPermission('restaurant.kitchen.manage');
 
   // Query: Kitchen Orders
   const { data: ordersResponse, isLoading, isError, error, refetch, isFetching } = useQuery({

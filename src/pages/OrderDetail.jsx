@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from '@/lib/toast';
+import { usePermission } from '@/hooks/usePermission';
 
 const STEPS = ['AWAITING_PAYMENT', 'PAID', 'DELIVERED', 'COMPLETED'];
 
@@ -63,6 +64,7 @@ export default function OrderDetail() {
   const navigate = useNavigate();
   const qc = useQueryClient();
 
+  const { hasPermission } = usePermission();
   const [refundModal, setRefundModal] = useState(false);
   const [refundReason, setRefundReason] = useState('');
   const [deliveryNotes, setDeliveryNotes] = useState('');
@@ -399,7 +401,7 @@ export default function OrderDetail() {
               </div>
 
               {/* Action: Initiate Refund */}
-              {['PAID', 'DELIVERED', 'HELD', 'DISPUTED'].includes(currentStatus) && (
+              {['PAID', 'DELIVERED', 'HELD', 'DISPUTED'].includes(currentStatus) && hasPermission('orders.refund') && (
                 <Button 
                   variant="danger" 
                   className="w-full justify-center bg-transparent text-[var(--stop)] border-[var(--stop)]:bg-[var(--stop)]/10"

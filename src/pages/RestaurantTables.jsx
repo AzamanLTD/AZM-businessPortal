@@ -25,8 +25,8 @@ export default function RestaurantTables() {
   const { hasPermission } = usePermission();
   const { bizProfile } = useAuth();
 
-  const canManage = hasPermission('tables.manage') || hasPermission('*');
-  const canView = hasPermission('tables.view') || hasPermission('*');
+  const canManage = hasPermission('restaurant.tables.manage');
+  const canView = canManage;
 
   // Active Location selection
   const [selectedLocId, setSelectedLocId] = useState('');

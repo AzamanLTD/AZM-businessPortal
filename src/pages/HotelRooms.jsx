@@ -63,7 +63,7 @@ const ROOM_TYPES = [
 
 export default function HotelRooms() {
     const { hasPermission } = usePermission();
-  const canManage = hasPermission('inventory.manage');
+  const canManage = hasPermission('hotel.rooms.manage');
 
   // Page level tabs: 'inventory' or 'rates'
   const [activeTab, setActiveTab] = useState('inventory');

@@ -64,8 +64,8 @@ const CATEGORIES = ['All', 'Proteins', 'Vegetables', 'Dry Goods', 'Beverages', '
 export default function RestaurantInventory() {
   const queryClient = useQueryClient();
   const { hasPermission } = usePermission();
-  const canManage = hasPermission('inventory.manage');
-  const canView = hasPermission('inventory.view') || canManage;
+  const canManage = hasPermission('restaurant.inventory.manage');
+  const canView = hasPermission('restaurant.inventory.view') || canManage;
 
   const [activeTab, setActiveTab] = useState('stock');
   const [filterCat, setFilterCat] = useState('All');

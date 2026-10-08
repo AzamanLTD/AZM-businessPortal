@@ -184,7 +184,9 @@ export default function POS() {
   const [completedOrder, setCompletedOrder] = useState(null);
   const [outboxCount, setOutboxCount] = useState(readOutbox().length);
   const [syncing, setSyncing] = useState(false);
-  const canRing = hasPermission('orders.create') || hasPermission('dinein.manage');
+  // Backend POS charge routes (pos/order, pos/cash-sale, pos/cash-close-tab)
+  // all require orders.manage — the canonical key the server enforces.
+  const canRing = hasPermission('orders.manage');
   const refreshOutbox = useCallback(() => setOutboxCount(readOutbox().length), []);
 
   const { data: productsData = [], isLoading: loadingProducts } = useQuery({

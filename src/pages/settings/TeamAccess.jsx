@@ -26,9 +26,13 @@ const ROLE_INFO = {
 
 export default function TeamAccess() {
   const { bizProfile, user } = useAuth();
-  const { hasPermission } = usePermission();
+  const { hasPermission, status: permStatus } = usePermission();
   const qc = useQueryClient();
-  const canManage = hasPermission('team.manage');
+  const canView = hasPermission('employees.view');
+  const canInvite = hasPermission('employees.create');
+  const canUpdate = hasPermission('employees.update');
+  const canTerminate = hasPermission('employees.terminate');
+  const canSetPerms = hasPermission('employees.permissions');
 
   const [showInvite, setShowInvite] = useState(false);
   const [inviteForm, setInviteForm] = useState({ email: '', role: 'EMPLOYEE', permissions: [] });
@@ -96,13 +100,16 @@ export default function TeamAccess() {
   const owners = employees.filter(e => e.role === 'OWNER' || e.role === 'ADMIN' || e.role === 'GENERAL_MANAGER');
   const staff = employees.filter(e => !owners.includes(e));
 
-  if (!canManage) {
+  // Unknown permission state (fetch failed) is not a refusal: render the
+  // page and let the server refuse each mutation it must.
+  if (permStatus === 'resolved' && !canView) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <Lock className="w-10 h-10 text-[var(--f-text-3)] opacity-40 mb-3" />
         <h3 className="font-semibold text-[var(--f-text)]">No Access</h3>
         <p className="text-sm text-[var(--f-text-3)] mt-1">
-          You don't have permission to manage team access.
+          Your account does not have the employees.view permission the server
+          requires for the team list.
         </p>
       </div>
     );
@@ -118,9 +125,11 @@ export default function TeamAccess() {
             Manage who can access your business portal and what they can do.
           </p>
         </div>
+        {canInvite && (
         <Button onClick={() => setShowInvite(true)}>
           <UserPlus className="w-4 h-4" /> Add Member
         </Button>
+        )}
       </div>
 
       {isLoading ? (
@@ -146,7 +155,9 @@ export default function TeamAccess() {
                 <TeamMemberRow
                   key={emp.id}
                   emp={emp}
-                  canManage={canManage}
+                  canUpdate={canUpdate}
+                  canTerminate={canTerminate}
+                  canSetPerms={canSetPerms}
                   onUpdateRole={(role) => updateMut.mutate({ id: emp.id, data: { role } })}
                   onRemove={() => { if (confirm(`Remove ${emp.fullName || emp.email}?`)) removeMut.mutate(emp.id); }}
                   expandedPerms={expandedPerms}
@@ -166,7 +177,9 @@ export default function TeamAccess() {
                 <TeamMemberRow
                   key={emp.id}
                   emp={emp}
-                  canManage={canManage}
+                  canUpdate={canUpdate}
+                  canTerminate={canTerminate}
+                  canSetPerms={canSetPerms}
                   onUpdateRole={(role) => updateMut.mutate({ id: emp.id, data: { role } })}
                   onRemove={() => { if (confirm(`Remove ${emp.fullName || emp.email}?`)) removeMut.mutate(emp.id); }}
                   expandedPerms={expandedPerms}
@@ -250,7 +263,7 @@ export default function TeamAccess() {
 }
 
 // ── Team Member Row ────────────────────────────────────────────────────────
-function TeamMemberRow({ emp, canManage, onUpdateRole, onRemove, expandedPerms, setExpandedPerms, templates, onSetPerms }) {
+function TeamMemberRow({ emp, canUpdate, canTerminate, canSetPerms, onUpdateRole, onRemove, expandedPerms, setExpandedPerms, templates, onSetPerms }) {
   const roleInfo = ROLE_INFO[emp.role] || ROLE_INFO.EMPLOYEE;
   const RoleIcon = roleInfo.icon;
   const expanded = !!expandedPerms[emp.id];
@@ -282,8 +295,9 @@ function TeamMemberRow({ emp, canManage, onUpdateRole, onRemove, expandedPerms, 
               {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
           )}
-          {canManage && emp.role !== 'OWNER' && (
+          {(canUpdate || canTerminate) && emp.role !== 'OWNER' && (
             <>
+              {canUpdate && (
               <select
                 className="bg-[var(--f-ink-900)] border border-[var(--f-line)] rounded-lg px-2 py-1 text-xs text-[var(--f-text)] outline-none focus:border-[var(--f-tint-color)] cursor-pointer"
                 value={emp.role}
@@ -293,12 +307,15 @@ function TeamMemberRow({ emp, canManage, onUpdateRole, onRemove, expandedPerms, 
                   <option key={key} value={key} style={{ background: 'var(--f-surface)' }}>{tpl.label}</option>
                 ))}
               </select>
+              )}
+              {canTerminate && (
               <button
                 onClick={onRemove}
                 className="p-1.5 rounded-lg hover:bg-[var(--f-bad)]/10 text-[var(--f-text-3)] hover:text-[var(--f-bad)] transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
+              )}
             </>
           )}
         </div>

@@ -17,6 +17,7 @@ import {
   CheckSquare, Square, RefreshCw, DollarSign, AlertCircle, Clock,
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
+import { usePermission } from '@/hooks/usePermission';
 
 import { Card, Tag, Button, Skel, Empty, DataTable, BulkBar } from '@/components/instrument';
 
@@ -58,6 +59,9 @@ export default function Orders() {
   const [viewMode, setViewMode] = useState('kanban');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
+  const { hasPermission } = usePermission();
+  // POST /api/business-os/orders/bulk-status requires orders.manage.
+  const canBulkUpdate = hasPermission('orders.manage');
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
   const statusFilter = searchParams.get('status') || '';
 
@@ -382,7 +386,9 @@ export default function Orders() {
         </div>
       )}
 
-      {/* Bulk action bar */}
+      {/* Bulk action bar — bulk status transitions require orders.manage on
+          the backend (POST /api/business-os/orders/bulk-status). */}
+      {canBulkUpdate && (
       <BulkBar
         count={selectedIds.length}
         onClear={() => setSelectedIds([])}
@@ -397,6 +403,7 @@ export default function Orders() {
           </>
         }
       />
+      )}
     </div>
   );
 }

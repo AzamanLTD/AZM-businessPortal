@@ -56,6 +56,8 @@ export async function logoutBusinessSession() {
   } finally { clearAccessToken(); }
 }
 
+import { invalidatePermissionCache } from './permissionCache';
+
 export async function request(path, options = {}) {
   const isLoginCall = path.startsWith('/api/auth/login');
   const isSessionCall = path.startsWith('/api/auth/business-session');
@@ -111,6 +113,11 @@ export async function request(path, options = {}) {
     // generic failures.
     err.statusCode = res.status;
     if (data.code) err.code = data.code;
+    // A 403 from the permission authority proves the cached permission view
+    // is stale (revoked role/permission, suspended employment). Invalidate
+    // the client cache so usePermission refetches the real server set —
+    // server-refusal-driven convergence, not speculative client policy.
+    if (res.status === 403) invalidatePermissionCache();
     if (res.status === 402) {
       err.violations = data.violations; err.tier = data.tier; err.stakedBalance = data.stakedBalance;
     }
