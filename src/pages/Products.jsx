@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { describeBulkPriceOutcome } from '@/lib/mutationOutcome';
 import { products as productsApi, request, locations as locationsApi } from '@/lib/api';
 import { restaurantOpsApi, inventoryApi } from '@/lib/marketplaceApi';
 import { usePermission } from '@/hooks/usePermission';
@@ -291,6 +292,7 @@ export default function Products() {
 
     const multiplier = 1 + delta / 100;
     let successCount = 0;
+    let failCount = 0;
 
     for (const item of itemsToAdjust) {
       try {
@@ -298,11 +300,14 @@ export default function Products() {
         await productsApi.update(item.id, { priceUsdc: newPrice });
         successCount++;
       } catch (err) {
+        failCount++;
         console.error(`Failed to adjust price for ${item.name}`, err);
       }
     }
 
-    toast.go(`Successfully adjusted prices for ${successCount} items!`);
+    // Failures are part of the outcome the operator must see.
+    const outcome = describeBulkPriceOutcome(successCount, failCount);
+    toast[outcome.tone](outcome.message, outcome.description ? { description: outcome.description } : undefined);
     qc.invalidateQueries(['products']);
     setBulkModal(null);
     setBulkPricePercent('');

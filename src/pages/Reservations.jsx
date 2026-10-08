@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from '@/lib/toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { describeNoShowOutcome } from '@/lib/mutationOutcome';
 import { locations } from '@/lib/api';
 import { reservations, bookingOpsApi } from '@/lib/marketplaceApi';
 import { 
@@ -171,8 +172,11 @@ export default function Reservations() {
 
   const noShowMutation = useMutation({
     mutationFn: (id) => reservations.markNoShow(id),
-    onSuccess: () => {
-      toast.go('Marked as No-Show. Penalties applied.');
+    onSuccess: (data) => {
+      // The backend decides whether a penalty applies (only configured ones,
+      // and only against a claimable escrow). Report what it recorded.
+      const outcome = describeNoShowOutcome(data);
+      toast.go(outcome.message, { description: outcome.description });
       setNoShowReservation(null);
       qc.invalidateQueries(['reservations']);
       qc.invalidateQueries(['reservation-stats']);
