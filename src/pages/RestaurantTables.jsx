@@ -3,13 +3,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { restaurantOpsApi as restaurantApi, marketplaceApi } from '@/lib/marketplaceApi';
 import { locations as locApi, products as productsApi } from '@/lib/api';
 import { usePermission } from '@/hooks/usePermission';
-import { useAuth } from '@/lib/AuthContext';
 import { Card, Button, Tag, Skel, Empty, Avatar, Input, Select, Dialog } from '@/components/instrument';
 import { toast } from '@/lib/toast';
 import {
   Grid3x3, Clock, Users, Plus, Trash2, Edit2, Play, HelpCircle,
   Move, Check, RotateCcw, AlertCircle, ShoppingBag, X, DollarSign, Calendar
 } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
+import OwnerOnlyRefusal from '@/components/OwnerOnlyRefusal';
 
 const TABLE_STATUS = {
   OPEN: { label: 'Open', color: 'var(--go)' },
@@ -23,10 +24,10 @@ const TABLE_STATUS = {
 export default function RestaurantTables() {
   const qc = useQueryClient();
   const { hasPermission } = usePermission();
-  const { bizProfile } = useAuth();
+  const { bizProfile, isAdminView } = useAuth();
 
-  const canManage = hasPermission('tables.manage') || hasPermission('*');
-  const canView = hasPermission('tables.view') || hasPermission('*');
+  const canManage = hasPermission('restaurant.tables.manage');
+  const canView = canManage;
 
   // Active Location selection
   const [selectedLocId, setSelectedLocId] = useState('');
@@ -35,6 +36,7 @@ export default function RestaurantTables() {
   const { data: locsData, isLoading: loadingLocs } = useQuery({
     queryKey: ['biz-locations-tables-page'],
     queryFn: () => locApi.list(),
+    enabled: !isAdminView, // locations + tables are owner-only — refused in admin view
   });
   const locationsList = (locsData?.locations || []).filter(l => l.isActive);
 
@@ -49,7 +51,7 @@ export default function RestaurantTables() {
   const { data: tablesData, isLoading: loadingTables, refetch: refetchTables } = useQuery({
     queryKey: ['restaurant-tables', selectedLocId],
     queryFn: () => restaurantApi.getTables({ locationId: selectedLocId }),
-    enabled: !!selectedLocId,
+    enabled: !!selectedLocId && !isAdminView, // owner-only on the server
   });
   const tables = tablesData?.tables || [];
 
@@ -57,7 +59,7 @@ export default function RestaurantTables() {
   const { data: productsData } = useQuery({
     queryKey: ['dine-in-products'],
     queryFn: () => productsApi.list({ limit: 100 }),
-    enabled: !!selectedLocId,
+    enabled: !!selectedLocId && !isAdminView, // product catalog is owner-only
   });
   const products = productsData?.products || [];
 
@@ -65,7 +67,7 @@ export default function RestaurantTables() {
   const { data: reservationsData } = useQuery({
     queryKey: ['reservations-for-tables'],
     queryFn: () => marketplaceApi.getGuests().catch(() => ({})), // safe fallback or list reservations
-    enabled: !!selectedLocId,
+    enabled: !!selectedLocId && !isAdminView, // reservation surfaces are owner-only
   });
 
   // Table Status Update Mutation
@@ -491,6 +493,8 @@ export default function RestaurantTables() {
                   <span className="text-xs text-[var(--text-3)]">Loading Floor Plan...</span>
                 </div>
               </div>
+            ) : isAdminView ? (
+              <OwnerOnlyRefusal label="Locations and tables" testId="tables-owner-only" />
             ) : tables.length === 0 ? (
               <Empty
                 icon={Grid3x3}

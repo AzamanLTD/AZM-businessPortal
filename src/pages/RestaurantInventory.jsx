@@ -26,6 +26,7 @@ import {
   Edit2,
   ChevronRight,
   TrendingUp,
+  TrendingDown,
   DollarSign,
   Layers,
   ArrowRight,
@@ -37,8 +38,10 @@ import {
   X
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
+import { useAuth } from '@/lib/AuthContext';
 import { useRestockIntents } from '@/hooks/useRestockIntents';
 import { describeDeductOutcome } from '@/lib/mutationOutcome';
+import OwnerOnlyRefusal from '@/components/OwnerOnlyRefusal';
 
 // Custom Stocks level bar
 function StockBar({ current, minimum }) {
@@ -64,8 +67,8 @@ const CATEGORIES = ['All', 'Proteins', 'Vegetables', 'Dry Goods', 'Beverages', '
 export default function RestaurantInventory() {
   const queryClient = useQueryClient();
   const { hasPermission } = usePermission();
-  const canManage = hasPermission('inventory.manage');
-  const canView = hasPermission('inventory.view') || canManage;
+  const canManage = hasPermission('restaurant.inventory.manage');
+  const canView = hasPermission('restaurant.inventory.view') || canManage;
 
   const [activeTab, setActiveTab] = useState('stock');
   const [filterCat, setFilterCat] = useState('All');
@@ -110,13 +113,14 @@ export default function RestaurantInventory() {
   });
 
   // Fetch full products list (to link to recipes)
+  const { isAdminView } = useAuth();
   const { data: productsData } = useQuery({
     queryKey: ['products'],
     queryFn: async () => {
       const res = await productsApi.list({ limit: 100 });
       return res?.products || res?.data || [];
     },
-    enabled: canView && activeTab === 'recipes',
+    enabled: canView && activeTab === 'recipes' && !isAdminView, // product catalog is owner-only — refused in admin view
   });
 
   // Mutations
@@ -739,6 +743,7 @@ export default function RestaurantInventory() {
           {/* Left / Middle side: Product List */}
           <div className="lg:col-span-2 space-y-4">
             <h3 className="text-base font-bold text-[var(--text)]">Restaurant Products Catalog</h3>
+            {isAdminView && <OwnerOnlyRefusal label="The product catalog (needed to link recipes to products)" testId="restaurant-inventory-owner-only" />}
             {recipesLoading ? (
               <div className="space-y-3">
                 <Skel className="h-16 w-full" />

@@ -7,9 +7,11 @@ import { useAuth } from '@/lib/AuthContext';
 import { getBusinessType } from '@/lib/businessTypes';
 import { usePermission } from '@/hooks/usePermission';
 import { useBizNotifications } from '@/hooks/useBizNotifications';
+import AdminContractGate from '@/components/AdminContractGate';
+import AdminContextBanner from '@/components/AdminContextBanner';
 
 export function Layout() {
-  const { bizProfile, isOwner, user, logout, isAdmin } = useAuth();
+  const { bizProfile, isOwner, user, logout, isAdmin, isAdminView } = useAuth();
   const { hasPermission } = usePermission();
   const { data: notifData } = useBizNotifications();
   const navigate = useNavigate();
@@ -38,6 +40,7 @@ export function Layout() {
     hasPermission,
     isOwner,
     isAdmin,
+    isAdminView,
     bizProfile,
     counts: {
       notifications: notifData?.count ?? notifData?.unreadCount,
@@ -52,7 +55,7 @@ export function Layout() {
       timeOffPending: notifData?.timeOffPending,
       kybAction: notifData?.kybAction,
     },
-  }), [bizProfile, hasPermission, isOwner, isAdmin, notifData]);
+  }), [bizProfile, hasPermission, isOwner, isAdmin, isAdminView, notifData]);
 
   return (
     <ThemeProvider>
@@ -67,7 +70,10 @@ export function Layout() {
             onNavigateSettings={() => navigate('/settings')}
             ProfileMenu={ProfileMenu}
           >
-            <Outlet />
+            <AdminContractGate>
+              <AdminContextBanner />
+              <Outlet />
+            </AdminContractGate>
           </Shell>
           <CommandPalette navProps={navProps} />
           <ProductTour

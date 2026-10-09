@@ -26,29 +26,42 @@ const ROLE_INFO = {
 
 export default function TeamAccess() {
   const { bizProfile, user } = useAuth();
-  const { hasPermission } = usePermission();
+  const { hasPermission, status: permStatus } = usePermission();
   const qc = useQueryClient();
-  const canManage = hasPermission('team.manage');
+  const canView = hasPermission('employees.view');
+  const canInvite = hasPermission('employees.create');
+  const canUpdate = hasPermission('employees.update');
+  const canTerminate = hasPermission('employees.terminate');
+  const canSetPerms = hasPermission('employees.permissions');
 
   const [showInvite, setShowInvite] = useState(false);
   const [inviteForm, setInviteForm] = useState({ email: '', role: 'EMPLOYEE', permissions: [] });
   const [expandedPerms, setExpandedPerms] = useState({}); // per-employee
 
-  // Fetch employees
+  // Fetch employees. The backend resolves the actor's business context itself
+  // (ownership first, then their active employment — see requirePermission's
+  // resolveBusinessContext), so an authorized employee WITHOUT a
+  // BusinessProfile of their own can still load the team surface. The
+  // profile-only gate below was unsupported by the contract; the server
+  // still refuses the request without employees.view.
   const { data: empData, isLoading } = useQuery({
     queryKey: ['business-employees'],
     queryFn: () => businessOSEmployees.list(),
-    enabled: !!bizProfile,
+    enabled: !!user?.id,
   });
   const employees = empData?.employees || [];
 
-  // Fetch permission templates for the role selector
+  // Fetch permission templates for the role selector and the permission
+  // editor (same enablement rule as the employee list).
   const { data: templateData } = useQuery({
     queryKey: ['permission-templates'],
     queryFn: businessOS.getPermissionTemplates,
-    enabled: !!bizProfile,
+    enabled: !!user?.id,
   });
   const templates = templateData?.templates || {};
+  // Backend-authoritative catalog + per-role defaults for the editor.
+  const permCatalog = templateData?.permissionKeys || {};
+  const employeeTemplates = templateData?.employeeTemplates || {};
 
   // Invite mutation (creates an employee record linked to a user by email)
   const inviteMut = useMutation({
@@ -82,7 +95,9 @@ export default function TeamAccess() {
     onError: (e) => toast.stop('Failed: ' + e.message),
   });
 
-  // Update permissions mutation
+  // Update permissions mutation. The row's editor awaits mutateAsync so no
+  // optimistic success is ever claimed: the editor closes only after the
+  // server confirms, and keeps its state open + honest on refusal.
   const setPermsMut = useMutation({
     mutationFn: ({ id, permissions }) => businessOSEmployees.setPermissions(id, permissions),
     onSuccess: () => {
@@ -96,13 +111,16 @@ export default function TeamAccess() {
   const owners = employees.filter(e => e.role === 'OWNER' || e.role === 'ADMIN' || e.role === 'GENERAL_MANAGER');
   const staff = employees.filter(e => !owners.includes(e));
 
-  if (!canManage) {
+  // Unknown permission state (fetch failed) is not a refusal: render the
+  // page and let the server refuse each mutation it must.
+  if (permStatus === 'resolved' && !canView) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <Lock className="w-10 h-10 text-[var(--f-text-3)] opacity-40 mb-3" />
         <h3 className="font-semibold text-[var(--f-text)]">No Access</h3>
         <p className="text-sm text-[var(--f-text-3)] mt-1">
-          You don't have permission to manage team access.
+          Your account does not have the employees.view permission the server
+          requires for the team list.
         </p>
       </div>
     );
@@ -118,9 +136,11 @@ export default function TeamAccess() {
             Manage who can access your business portal and what they can do.
           </p>
         </div>
+        {canInvite && (
         <Button onClick={() => setShowInvite(true)}>
           <UserPlus className="w-4 h-4" /> Add Member
         </Button>
+        )}
       </div>
 
       {isLoading ? (
@@ -146,13 +166,18 @@ export default function TeamAccess() {
                 <TeamMemberRow
                   key={emp.id}
                   emp={emp}
-                  canManage={canManage}
+                  canUpdate={canUpdate}
+                  canTerminate={canTerminate}
+                  canSetPerms={canSetPerms}
                   onUpdateRole={(role) => updateMut.mutate({ id: emp.id, data: { role } })}
                   onRemove={() => { if (confirm(`Remove ${emp.fullName || emp.email}?`)) removeMut.mutate(emp.id); }}
                   expandedPerms={expandedPerms}
                   setExpandedPerms={setExpandedPerms}
                   templates={templates}
-                  onSetPerms={(perms) => setPermsMut.mutate({ id: emp.id, permissions: perms })}
+                  permCatalog={permCatalog}
+                  employeeTemplates={employeeTemplates}
+                  permsPendingId={setPermsMut.isPending ? setPermsMut.variables?.id : null}
+                  onSetPerms={(perms) => setPermsMut.mutateAsync({ id: emp.id, permissions: perms })}
                 />
               ))}
             </div>
@@ -166,13 +191,18 @@ export default function TeamAccess() {
                 <TeamMemberRow
                   key={emp.id}
                   emp={emp}
-                  canManage={canManage}
+                  canUpdate={canUpdate}
+                  canTerminate={canTerminate}
+                  canSetPerms={canSetPerms}
                   onUpdateRole={(role) => updateMut.mutate({ id: emp.id, data: { role } })}
                   onRemove={() => { if (confirm(`Remove ${emp.fullName || emp.email}?`)) removeMut.mutate(emp.id); }}
                   expandedPerms={expandedPerms}
                   setExpandedPerms={setExpandedPerms}
                   templates={templates}
-                  onSetPerms={(perms) => setPermsMut.mutate({ id: emp.id, permissions: perms })}
+                  permCatalog={permCatalog}
+                  employeeTemplates={employeeTemplates}
+                  permsPendingId={setPermsMut.isPending ? setPermsMut.variables?.id : null}
+                  onSetPerms={(perms) => setPermsMut.mutateAsync({ id: emp.id, permissions: perms })}
                 />
               ))}
             </div>
@@ -250,13 +280,43 @@ export default function TeamAccess() {
 }
 
 // ── Team Member Row ────────────────────────────────────────────────────────
-function TeamMemberRow({ emp, canManage, onUpdateRole, onRemove, expandedPerms, setExpandedPerms, templates, onSetPerms }) {
+function TeamMemberRow({ emp, canUpdate, canTerminate, canSetPerms, onUpdateRole, onRemove, expandedPerms, setExpandedPerms, templates, permCatalog, employeeTemplates, permsPendingId, onSetPerms }) {
+  // Permission editing state (Finding 3): a server-confirmed flow controlled
+  // by employees.permissions. Nothing is claimed saved until the server says
+  // so; refusals keep the editor open with the error shown.
+  const [editingPerms, setEditingPerms] = useState(false);
+  const [draft, setDraft] = useState([]);
+  const [saveError, setSaveError] = useState(null);
   const roleInfo = ROLE_INFO[emp.role] || ROLE_INFO.EMPLOYEE;
   const RoleIcon = roleInfo.icon;
   const expanded = !!expandedPerms[emp.id];
   const perms = emp.permissions || [];
 
   const toggleExpanded = () => setExpandedPerms(s => ({ ...s, [emp.id]: !s[emp.id] }));
+
+  const savingThis = permsPendingId === emp.id;
+  const startEdit = () => {
+    setDraft(perms.includes('*') ? ['*'] : [...perms]);
+    setSaveError(null);
+    setEditingPerms(true);
+  };
+  const cancelEdit = () => { setEditingPerms(false); setSaveError(null); };
+  const toggleDraftKey = (key) => setDraft(prev =>
+    prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+  );
+  const applyEmployeeTemplate = (tplPerms) => { setDraft(Array.isArray(tplPerms) ? [...tplPerms] : []); setSaveError(null); };
+
+  // Only the server's verdict closes the editor. A refusal keeps the draft
+  // and shows the server's message — the row never claims success early.
+  const savePerms = async () => {
+    setSaveError(null);
+    try {
+      await onSetPerms(draft);
+      setEditingPerms(false);
+    } catch (e) {
+      setSaveError(e?.message || 'The server refused this change.');
+    }
+  };
 
   return (
     <Card className="p-4">
@@ -282,8 +342,19 @@ function TeamMemberRow({ emp, canManage, onUpdateRole, onRemove, expandedPerms, 
               {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
           )}
-          {canManage && emp.role !== 'OWNER' && (
+          {canSetPerms && emp.role !== 'OWNER' && !editingPerms && (
+            <button
+              onClick={startEdit}
+              className="p-1.5 rounded-lg hover:bg-[var(--f-line)] text-[var(--f-text-3)] hover:text-[var(--f-text)] transition-colors"
+              aria-label={`Edit permissions for ${emp.fullName || emp.email}`}
+              title="Edit permissions (requires employees.permissions)"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+          )}
+          {(canUpdate || canTerminate) && emp.role !== 'OWNER' && (
             <>
+              {canUpdate && (
               <select
                 className="bg-[var(--f-ink-900)] border border-[var(--f-line)] rounded-lg px-2 py-1 text-xs text-[var(--f-text)] outline-none focus:border-[var(--f-tint-color)] cursor-pointer"
                 value={emp.role}
@@ -293,19 +364,22 @@ function TeamMemberRow({ emp, canManage, onUpdateRole, onRemove, expandedPerms, 
                   <option key={key} value={key} style={{ background: 'var(--f-surface)' }}>{tpl.label}</option>
                 ))}
               </select>
+              )}
+              {canTerminate && (
               <button
                 onClick={onRemove}
                 className="p-1.5 rounded-lg hover:bg-[var(--f-bad)]/10 text-[var(--f-text-3)] hover:text-[var(--f-bad)] transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
+              )}
             </>
           )}
         </div>
       </div>
 
       {/* Expanded permissions */}
-      {expanded && (
+      {expanded && !editingPerms && (
         <div className="mt-3 pt-3 border-t border-[var(--f-line)] space-y-2">
           <p className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wide">
             Permissions ({perms.includes('*') ? 'Full Access' : `${perms.length} keys`})
@@ -319,6 +393,83 @@ function TeamMemberRow({ emp, canManage, onUpdateRole, onRemove, expandedPerms, 
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Permission editor — gated by employees.permissions; the server
+          enforces the delegation ceiling on every save. */}
+      {editingPerms && (
+        <div className="mt-3 pt-3 border-t border-[var(--f-line)] space-y-3" data-testid={`perms-editor-${emp.id}`}>
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wide">
+              Edit permissions — {emp.fullName || emp.email}
+            </p>
+            <span className="text-xs text-[var(--f-text-3)]">
+              {draft.includes('*') ? 'Full access' : `${draft.length} keys`}
+            </span>
+          </div>
+
+          {/* Quick-apply backend role templates */}
+          {Object.keys(employeeTemplates).length > 0 && (
+            <div className="flex flex-wrap gap-1.5 items-center">
+              <span className="text-xs text-[var(--f-text-3)]">Template:</span>
+              {Object.entries(employeeTemplates).map(([role, tplPerms]) => (
+                <button
+                  key={role}
+                  onClick={() => applyEmployeeTemplate(tplPerms)}
+                  disabled={savingThis}
+                  className="text-xs px-2 py-1 rounded-lg border border-[var(--f-line)] text-[var(--f-text)] hover:bg-[var(--f-line)] disabled:opacity-50 transition-colors"
+                >
+                  {role}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Full-access switch + canonical key catalog */}
+          <div className="flex items-center gap-2">
+            <Switch checked={draft.includes('*')} onChange={v => setDraft(v ? ['*'] : [])} disabled={savingThis} />
+            <span className="text-xs text-[var(--f-text-3)]">Full access (all keys)</span>
+          </div>
+          {!draft.includes('*') && (
+            <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+              {Object.entries(permCatalog).map(([group, keys]) => (
+                <div key={group}>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--f-text-3)] mb-1">{group}</p>
+                  <div className="grid grid-cols-2 gap-1">
+                    {keys.map(k => (
+                      <label key={k.key} className="flex items-center gap-1.5 text-xs text-[var(--f-text)] cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={draft.includes(k.key)}
+                          onChange={() => toggleDraftKey(k.key)}
+                          disabled={savingThis}
+                          className="accent-[var(--f-tint-color)]"
+                        />
+                        <span className="truncate" title={k.key}>{k.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {saveError && (
+            <p className="text-xs text-[var(--f-bad)]" data-testid={`perms-error-${emp.id}`}>
+              {saveError}
+            </p>
+          )}
+
+          <div className="flex items-center gap-2">
+            <Button onClick={savePerms} disabled={savingThis}>
+              {savingThis ? 'Saving…' : 'Save permissions'}
+            </Button>
+            <button onClick={cancelEdit} disabled={savingThis}
+              className="text-xs text-[var(--f-text-3)] hover:text-[var(--f-text)] disabled:opacity-50">
+              Cancel
+            </button>
+          </div>
         </div>
       )}
     </Card>

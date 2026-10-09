@@ -39,6 +39,7 @@ import {
   User, MapPin, Star, AlertCircle, Loader2, ChevronDown, ChevronUp, Check, Repeat, RefreshCw, CalendarClock
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
+import OwnerOnlyRefusal from '@/components/OwnerOnlyRefusal';
 
 // ── Invoice status display config ───────────────────────────────────────────
 const INVOICE_STATUS_META = {
@@ -54,7 +55,7 @@ const initials = (name) => (name || '?').trim().charAt(0).toUpperCase();
 // ════════════════════════════════════════════════════════════════════════════
 export default function Invoices() {
   const qc = useQueryClient();
-  const { bizProfile } = useAuth();
+  const { bizProfile, isAdminView } = useAuth();
     const [tab, setTab] = useState('ALL');
   const [search, setSearch] = useState('');
   const [showCreate, setShowCreate] = useState(false);
@@ -68,6 +69,7 @@ export default function Invoices() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['biz-invoices'],
     queryFn: () => invoicesApi.list({ limit: 100 }),
+    enabled: !isAdminView, // legacy invoice feed is owner-only — refused in admin view
   });
   const all = data?.invoices || [];
 
@@ -319,6 +321,8 @@ export default function Invoices() {
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => <Skel key={i} className="h-16" />)}
           </div>
+        ) : isAdminView ? (
+          <OwnerOnlyRefusal label="The invoice feed" testId="invoices-owner-only" />
         ) : error ? (
           <div className="p-8 text-center text-[var(--stop)] flex flex-col items-center gap-2">
             <AlertCircle className="w-8 h-8" />

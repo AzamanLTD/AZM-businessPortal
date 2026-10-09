@@ -18,6 +18,7 @@ import {
 } from '@/components/instrument';
 import { KpiCard, DonutChartCard, AreaChartCard, BarChartCard } from '@/components/charts';
 import { toast } from '@/lib/toast';
+import OwnerOnlyRefusal from '@/components/OwnerOnlyRefusal';
 
 const TABS = [
   { key: 'dashboard',   label: 'Dashboard',      icon: TrendingUp },
@@ -979,6 +980,7 @@ const PAYOUT_TYPES = [
 ];
 
 function PayoutTab({ canManage }) {
+  const { isAdminView } = useAuth();
     const [destinations, setDestinations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -986,6 +988,10 @@ function PayoutTab({ canManage }) {
   const [form, setForm] = useState({ nickname: '', destinationType: 'BANK', destinationAddress: '', isExternalCrypto: false });
 
   const loadDestinations = useCallback(async () => {
+    // Payout destinations resolve from the business owner's identity — a scoped
+    // admin is refused (403). Never fire it in admin view; show a refusal, not
+    // a fake empty destination list.
+    if (isAdminView) { setLoading(false); return; }
     try {
       setLoading(true);
       const data = await request('/api/payout-destinations');
@@ -1109,6 +1115,8 @@ function PayoutTab({ canManage }) {
         <Card className="p-8 text-center">
           <Skel className="h-16 w-full" />
         </Card>
+      ) : isAdminView ? (
+        <OwnerOnlyRefusal label="Payout destinations" testId="payouts-owner-only" />
       ) : destinations.length === 0 ? (
         <Empty
           icon={Building2}

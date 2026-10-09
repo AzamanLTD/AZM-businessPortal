@@ -732,6 +732,8 @@ body {
 .i-nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: var(--r3); font: 500 13px/1 var(--font); color: var(--chrome-text); text-decoration: none; position: relative; transition: background .1s ease, color .1s ease; }
 .i-nav-item:hover { background: color-mix(in oklch, var(--chrome-text) 8%, transparent); color: var(--chrome-text-hi); }
 .i-nav-item.is-active { background: color-mix(in oklch, var(--accent) 14%, transparent); color: var(--chrome-text-hi); font-weight: 580; }
+.i-nav-item.is-disabled { opacity: 0.42; pointer-events: auto; cursor: not-allowed; }
+.i-nav-item.is-disabled:hover { background: transparent; color: var(--chrome-text); }
 .i-nav-item.is-active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 2px; height: 16px; background: var(--accent); border-radius: 0 2px 2px 0; }
 .i-nav-item__badge { margin-left: auto; background: var(--accent); color: var(--accent-text); font: 600 10px/1 var(--font-mono); padding: 2px 6px; border-radius: 4px; min-width: 18px; text-align: center; }
 .i-nav-group-label { padding: 10px 10px 4px; font: 600 9px/1 var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--chrome-text-3); }

@@ -40,6 +40,8 @@ import {
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
 import { uploadImageToCloudinary, isCloudinaryConfigured, validateImageFile } from '@/lib/cloudinary';
+import { useAuth } from '@/lib/AuthContext';
+import OwnerOnlyRefusal from '@/components/OwnerOnlyRefusal';
 
 // Pre-defined food tags for quick chips
 const DIETARY_TAGS = [
@@ -102,32 +104,41 @@ export default function Products() {
   const qc = useQueryClient();
   
   // Permissions gating
-  const { hasPermission } = usePermission();
-  const canManageProducts = hasPermission('products.manage');
-  const canManageInventory = hasPermission('inventory.manage');
+  const { hasPermission, isOwner } = usePermission();
+  // /api/business/products is owner-only on the backend (no permission
+  // key — the controller resolves the business by ownership). Mirror that
+  // exact contract instead of an invented permission key.
+  const canManageProducts = isOwner;
+  const canManageInventory = isOwner;
 
   // Filter States
   const [selectedLocationId, setSelectedLocationId] = useState('');
   const [selectedSectionId, setSelectedSectionId] = useState('');
 
   // Modals & Forms State
-  const [productDialog, setProductModal] = useState(null); // null | 'create' | product_obj
+  const [productModal, setProductModal] = useState(null); // null | 'create' | product_obj
   const [productForm, setProductForm] = useState(BLANK_PRODUCT);
   
-  const [sectionDialog, setSectionModal] = useState(null); // null | 'create' | section_obj
+  const [sectionModal, setSectionModal] = useState(null); // null | 'create' | section_obj
   const [sectionForm, setSectionForm] = useState(BLANK_SECTION);
   
-  const [bulkDialog, setBulkModal] = useState(null); // null | 'price'
+  const [bulkModal, setBulkModal] = useState(null); // null | 'price'
   const [bulkPricePercent, setBulkPricePercent] = useState('');
   const [bulkTargetSectionId, setBulkTargetSectionId] = useState('');
 
   const [formError, setFormError] = useState('');
   const [uploading, setUploading] = useState(false);
 
+  // Declared BEFORE the guarded queries below — the admin-view query guards
+  // read it at mount. (Previously declared after, crashing the page with a
+  // temporal-dead-zone ReferenceError for every user.)
+  const { isAdminView } = useAuth();
+
   // Core API Queries
   const { data: locationsData } = useQuery({
     queryKey: ['locations'],
     queryFn: () => locationsApi.list(),
+    enabled: !isAdminView, // locations are owner-only — refused in admin view
   });
   const locationsList = locationsData?.locations || [];
 
@@ -141,6 +152,7 @@ export default function Products() {
   const { data: sectionsData, isLoading: isSectionsLoading } = useQuery({
     queryKey: ['catalog-sections', selectedLocationId],
     queryFn: () => request(`/api/business/catalog/sections${selectedLocationId ? `?locationId=${selectedLocationId}` : ''}`),
+    enabled: !isAdminView, // product catalog is owner-only — refused in admin view
   });
   const sectionsList = sectionsData || [];
 
@@ -152,6 +164,7 @@ export default function Products() {
       if (selectedSectionId) params.category = selectedSectionId; // We can query by section or local filters
       return productsApi.list(params);
     },
+    enabled: !isAdminView, // product catalog is owner-only — refused in admin view
   });
   const productsList = productsData?.products || [];
 
@@ -775,6 +788,8 @@ export default function Products() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[1, 2, 4].map(i => <Skel key={i} className="h-44" />)}
             </div>
+          ) : isAdminView ? (
+            <OwnerOnlyRefusal label="The product catalog" testId="products-owner-only" />
           ) : productsList.length === 0 ? (
             <Empty
               icon={Package}

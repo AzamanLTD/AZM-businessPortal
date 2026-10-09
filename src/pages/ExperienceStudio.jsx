@@ -5,6 +5,8 @@ import { hotelOpsApi, transit } from '@/lib/marketplaceApi';
 import { storefrontApi } from '@/services/storefrontApi';
 import ExperienceLivePreview from '@/components/ExperienceLivePreview';
 import { experiencePolicyForCategory } from '@/lib/experiencePolicy';
+import { useAuth } from '@/lib/AuthContext';
+import OwnerOnlyRefusal from '@/components/OwnerOnlyRefusal';
 
 const PRESET_META = {
   DINING_JOURNEY: { title: 'Dining journey', description: 'Customers browse like a menu, open dishes into a focused order view, and add choices into a living tray.' },
@@ -36,8 +38,13 @@ export default function ExperienceStudio() {
   const [draft, setDraft] = useState(null);
   const [message, setMessage] = useState('');
 
+  // Declared BEFORE the queries — both guards read it at mount.
+  const { isAdminView } = useAuth();
+
   const experienceQuery = useQuery({
     queryKey: ['experience-studio', 'experience'],
+    // The experience contract is owner-only data; never fetched in admin view.
+    enabled: !isAdminView,
     queryFn: () => storefrontApi.getExperience(),
   });
 
@@ -50,7 +57,9 @@ export default function ExperienceStudio() {
 
   const previewQuery = useQuery({
     queryKey: ['experience-studio', 'preview', category],
-    enabled: Boolean(category),
+    // The preview pulls the product catalog / legacy trip list, both owner-only
+    // on the server. Never fire it in admin view.
+    enabled: Boolean(category) && !isAdminView,
     queryFn: async () => {
       if (category === 'FOOD_BEVERAGE' || category === 'RESTAURANT' || category === 'RETAIL' || category === 'SERVICE' || category === 'OTHER') {
         const response = await products.list();
@@ -109,6 +118,11 @@ export default function ExperienceStudio() {
 
   const loadError = experienceQuery.error?.message || saveMutation.error?.message || '';
   if (!draft) {
+    // Admin view: the experience contract is owner-only data. Refuse honestly
+    // instead of rendering an indefinite loading / unavailable shell.
+    if (isAdminView) {
+      return <div className="p-6"><OwnerOnlyRefusal label="The experience configuration and live content preview (product catalog and trip list)" testId="experience-owner-only" /></div>;
+    }
     const loading = experienceQuery.isPending || experienceQuery.isFetching;
     return <div className="p-6"><div className="rounded-2xl border p-6" style={{ borderColor: 'var(--line)', background: 'var(--surface)' }}><p className="text-sm" style={{ color: loadError ? 'var(--danger)' : 'var(--text-3)' }}>{loadError || (loading ? 'Loading Experience Studio…' : 'Experience configuration is unavailable.')}</p></div></div>;
   }
@@ -133,6 +147,7 @@ export default function ExperienceStudio() {
       </div>
       <div className="space-y-6">
         <ExperienceLivePreview blueprint={draft} category={category} products={preview.products} rooms={preview.rooms} trips={preview.trips} />
+        {isAdminView && <OwnerOnlyRefusal label="The live content preview (product catalog and trip list)" testId="experience-owner-only" />}
         {previewQuery.isFetching && <p className="text-xs" style={{ color: 'var(--text-3)' }}>Refreshing the live preview from your current business content…</p>}
         {previewQuery.error?.message && <div className="rounded-xl border px-4 py-3 text-xs" style={{ borderColor: 'var(--line)', color: 'var(--text-3)', background: 'var(--surface)' }}>Your live content could not be refreshed: {previewQuery.error.message}</div>}
         <div className="rounded-2xl border p-5" style={{ borderColor: 'var(--line)', background: 'var(--surface)' }}><p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--accent)' }}>Experience guardrails</p><p className="mt-2 text-sm leading-6" style={{ color: 'var(--text-2)' }}>AZM keeps the experience category-native. Your settings tune pacing, detail and context while the preview stays grounded in your actual storefront records.</p></div>

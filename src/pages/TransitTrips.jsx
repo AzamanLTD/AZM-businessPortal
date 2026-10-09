@@ -11,6 +11,8 @@ import {
   Bus, Plus, Pencil, Trash2, Clock, MapPin, Users, DollarSign,
   Calendar, Route, Eye, Grid3x3, AlertCircle, CheckCircle2, XCircle, ChevronDown, ChevronUp, RefreshCw
 } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
+import OwnerOnlyRefusal from '@/components/OwnerOnlyRefusal';
 
 const TRIP_STATUS = {
   SCHEDULED: { label: 'Scheduled', color: 'var(--info)' },
@@ -70,10 +72,13 @@ export default function TransitTrips() {
     daysAhead: '7'
   });
 
-  // Fetch trips
+  const { isAdminView } = useAuth();
+
+  // Fetch trips (legacy transit feed — owner-only on the server)
   const { data: tripsData, isLoading } = useQuery({
     queryKey: ['transit-trips'],
     queryFn: () => transitApi.list(),
+    enabled: !isAdminView, // refused in admin view, never a fake empty trip list
   });
   const trips = tripsData?.trips || [];
 
@@ -455,17 +460,24 @@ export default function TransitTrips() {
         </Card>
       )}
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Summary cards — trip KPIs derive from the owner-only feed; in admin
+          view there is nothing honest to show, so refuse instead of zeroing. */}
+      {isAdminView ? (
+        <OwnerOnlyRefusal label="Trip KPIs and the legacy trip feed" testId="transit-kpis-owner-only" />
+      ) : (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatusCard icon={Bus} label="Total Trips" value={isLoading ? '…' : fmt(totalTrips, 0)} status="info" />
         <StatusCard icon={Clock} label="Active (Scheduled + Delayed)" value={isLoading ? '…' : fmt(activeTrips, 0)} status={activeTrips > 0 ? 'warning' : 'neutral'} />
         <StatusCard icon={Users} label="Assigned Seats" value={isLoading ? '…' : fmt(totalBookings, 0)} status="active" />
         <StatusCard icon={DollarSign} label="Est. Revenue" value={isLoading ? '…' : fmtUSDC(totalRevenue)} status="success" />
-      </div>
+        </div>
+      )}
 
       {/* Main Table */}
       {isLoading ? (
         <Skel className="h-96" />
+      ) : isAdminView ? (
+        <OwnerOnlyRefusal label="The legacy trip feed" testId="transit-trips-owner-only" />
       ) : trips.length === 0 ? (
         <Empty icon={Bus} title="No trips scheduled" description="Use Route Templates or create custom schedules to get started." />
       ) : (

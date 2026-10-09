@@ -17,8 +17,11 @@ import {
   CheckSquare, Square, RefreshCw, DollarSign, AlertCircle, Clock,
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
+import { usePermission } from '@/hooks/usePermission';
 
 import { Card, Tag, Button, Skel, Empty, DataTable, BulkBar } from '@/components/instrument';
+import OwnerOnlyRefusal from '@/components/OwnerOnlyRefusal';
+import { useAuth } from '@/lib/AuthContext';
 
 const STATUSES = [
   { value: '', label: 'All Statuses' },
@@ -58,6 +61,9 @@ export default function Orders() {
   const [viewMode, setViewMode] = useState('kanban');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
+  const { hasPermission } = usePermission();
+  // POST /api/business-os/orders/bulk-status requires orders.manage.
+  const canBulkUpdate = hasPermission('orders.manage');
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
   const statusFilter = searchParams.get('status') || '';
 
@@ -65,16 +71,21 @@ export default function Orders() {
   // `nextCursor`. listAll walks the cursor so the Kanban/table/bulk surfaces
   // never silently drop older orders (a fixed limit: 200 was being clamped to
   // the first 50 server-side).
+  const { isAdminView } = useAuth();
+  // Admin view: the legacy order feed is owner-only on the server. Never
+  // fire it — the page surfaces an honest refusal instead of a fake empty.
   const { data: ordersData, isLoading, isError, refetch } = useQuery({
     queryKey: ['orders', statusFilter],
     queryFn: () => ordersApi.listAll(statusFilter ? { status: statusFilter } : {}),
     refetchInterval: 30_000,
+    enabled: !isAdminView,
   });
 
   const { data: statsData, isLoading: isLoadingStats } = useQuery({
     queryKey: ['orders-stats'],
     queryFn: () => ordersApi.stats(),
     refetchInterval: 30_000,
+    enabled: !isAdminView,
   });
 
   const ordersList = ordersData?.orders || [];
@@ -222,14 +233,19 @@ export default function Orders() {
         </div>
       </header>
 
-      {/* KPI row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 12, marginBottom: 16 }}>
-        <Kpi label="Total Orders" value={String(stats.totalCount)} icon={ShoppingBag} />
-        <Kpi label="Pending Payment" value={String(stats.awaitingPayment)} icon={Clock} />
-        <Kpi label="In Transit" value={String(stats.inTransit)} icon={Truck} />
-        <Kpi label="Completed" value={String(stats.completed)} icon={CheckSquare} />
-        <Kpi label="Revenue" value={fmtUSDC(stats.totalRevenue)} icon={DollarSign} />
-      </div>
+      {/* KPI row — in admin view the order feed is owner-only on the server, so
+          there are no honest KPIs to show; a refusal replaces fabricated zeros. */}
+      {isAdminView ? (
+        <div style={{ marginBottom: 16 }}><OwnerOnlyRefusal label="Order KPIs and the order feed" testId="orders-owner-only-kpis" /></div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 12, marginBottom: 16 }}>
+          <Kpi label="Total Orders" value={String(stats.totalCount)} icon={ShoppingBag} />
+          <Kpi label="Pending Payment" value={String(stats.awaitingPayment)} icon={Clock} />
+          <Kpi label="In Transit" value={String(stats.inTransit)} icon={Truck} />
+          <Kpi label="Completed" value={String(stats.completed)} icon={CheckSquare} />
+          <Kpi label="Revenue" value={fmtUSDC(stats.totalRevenue)} icon={DollarSign} />
+        </div>
+      )}
 
       {/* Filter bar */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 16, alignItems: 'center' }}>
@@ -285,6 +301,8 @@ export default function Orders() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
           {Array.from({ length: 5 }).map((_, i) => <Skel key={i} h={300} />)}
         </div>
+      ) : isAdminView ? (
+        <OwnerOnlyRefusal label="The order feed" />
       ) : isError ? (
         <Empty title="Connection error" body="We couldn't fetch orders. Check your connection and retry."
           action={<Button onClick={() => refetch()}>Retry</Button>} />
@@ -382,7 +400,9 @@ export default function Orders() {
         </div>
       )}
 
-      {/* Bulk action bar */}
+      {/* Bulk action bar — bulk status transitions require orders.manage on
+          the backend (POST /api/business-os/orders/bulk-status). */}
+      {canBulkUpdate && (
       <BulkBar
         count={selectedIds.length}
         onClear={() => setSelectedIds([])}
@@ -397,6 +417,7 @@ export default function Orders() {
           </>
         }
       />
+      )}
     </div>
   );
 }

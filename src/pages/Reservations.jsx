@@ -41,6 +41,8 @@ import {
   ShieldAlert,
   ArrowRight
 } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
+import OwnerOnlyRefusal from '@/components/OwnerOnlyRefusal';
 
 const RESERVATION_STATUS = {
   PENDING: { label: 'Pending', color: 'var(--hold)' },
@@ -80,10 +82,13 @@ export default function Reservations() {
   // Overbooking mode state
   const [overbookingAllowed, setOverbookingAllowed] = useState(false);
 
+  const { isAdminView } = useAuth();
+
   // Fetch Locations
   const { data: locationsData } = useQuery({
     queryKey: ['locations'],
     queryFn: () => locations.list(),
+    enabled: !isAdminView, // owner-only on the server — refused in admin view
   });
   const locationList = locationsData?.locations || [];
 
@@ -116,6 +121,7 @@ export default function Reservations() {
       endDate: dateRange.end || undefined,
       search: searchQuery || undefined,
     }),
+      enabled: !isAdminView, // owner-only on the server — refused in admin view
   });
   const reservationList = resData?.reservations || [];
 
@@ -478,6 +484,8 @@ export default function Reservations() {
                 Retry Query
               </Button>
             </Card>
+          ) : isAdminView ? (
+            <OwnerOnlyRefusal label="The reservations feed" testId="reservations-owner-only" />
           ) : filteredReservations.length === 0 ? (
             <Card className="p-0">
               <Empty
@@ -1076,6 +1084,33 @@ export default function Reservations() {
           </div>
         )}
       </Dialog>
+    </div>
+  );
+}
+
+// ── Local KPI widgets ─────────────────────────────────────────────────────────
+// Small stat cards for the reservations console. Defined locally (with the
+// title/icon/iconColor + KpiCardStat children API the stats bar uses) so the
+// page never references undefined symbols — the previous code rendered
+// <KpiCard>/<KpiCardStat> without defining or importing them, which crashed
+// the whole page at runtime.
+function KpiCard({ title, icon: Icon, iconColor, children }) {
+  return (
+    <Card className="p-4">
+      <div className="flex items-center gap-2 mb-2">
+        {Icon && <Icon className="w-4 h-4" style={{ color: iconColor }} />}
+        <span className="text-xs font-bold text-[var(--text-3)] uppercase tracking-wide">{title}</span>
+      </div>
+      <div className="space-y-1">{children}</div>
+    </Card>
+  );
+}
+
+function KpiCardStat({ value, label, color }) {
+  return (
+    <div>
+      <span className="text-2xl font-bold text-[var(--text)]" style={color ? { color } : undefined}>{value}</span>
+      {label && <p className="text-xs text-[var(--text-3)]">{label}</p>}
     </div>
   );
 }

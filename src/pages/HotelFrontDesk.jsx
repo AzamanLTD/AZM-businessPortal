@@ -27,6 +27,7 @@ import {
   Info
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
+import { useAuth } from '@/lib/AuthContext';
 
 export default function HotelFrontDesk() {
     const { hasPermission } = usePermission();
@@ -99,10 +100,24 @@ export default function HotelFrontDesk() {
     loadData();
   }, [loadData]);
 
+  const { isAdminView } = useAuth();
+
+  // Check In / Check Out hit the legacy reservation endpoints, which resolve
+  // from the owner's identity — refused for a scoped admin (403). The catch
+  // already surfaces the server refusal as a toast; never claim success.
+  const legacyMutationRefused = () => {
+    if (isAdminView) {
+      toast.stop('Legacy reservation mutations are owner-only; the server refused this action in admin view.');
+      return true;
+    }
+    return false;
+  };
+
   // Check In Handler
   const handleCheckIn = async (reservationId) => {
     try {
       setActionPending(true);
+      if (legacyMutationRefused()) return;
       await resApi.checkIn(reservationId);
       toast.go('Guest checked in successfully!');
       loadData();
@@ -128,6 +143,7 @@ export default function HotelFrontDesk() {
   const handleCheckOut = async () => {
     try {
       setActionPending(true);
+      if (legacyMutationRefused()) return;
       await resApi.checkOut(checkoutConfirmData.reservationId);
       toast.go('Guest checked out successfully! Room status set to DIRTY.');
       setCheckoutConfirmOpen(false);
@@ -683,10 +699,15 @@ export default function HotelFrontDesk() {
 
       {/* Page Navigation Tabs */}
       <Tabs
-        tabs={tabConfig}
-        defaultIndex={activeTab}
-        onChange={setActiveTab}
+        value={activeTab}
+        onValueChange={setActiveTab}
+        options={tabConfig.map((t, i) => ({ label: t.label, value: i }))}
       />
+      {/* The instrument Tabs renders only the tab bar — the active tab's
+          content is rendered here. */}
+      <div className="mt-6">
+        {tabConfig[activeTab]?.content}
+      </div>
 
       {/* MODAL 1: Walk-In Booking Form */}
       <Dialog

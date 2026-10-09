@@ -128,23 +128,74 @@ function ChartTooltip({ active, payload, label }) {
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
 const item      = { hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 280, damping: 24 } } };
 
+// Honest unavailable state for panels that depend on the owner-only order
+// feed. An employee with analytics.view never fetches that feed (the backend
+// refuses it with 403), so these panels state what they need instead of
+// rendering charts from empty data.
+function EmployeeUnavailable({ testId, note }) {
+  return (
+    <div data-testid={testId} className="flex flex-col items-center justify-center py-12 text-center">
+      <AlertTriangle className="w-6 h-6 text-[var(--text-3)] mb-2" />
+      <p className="text-sm text-[var(--text-2)]">Owner order feed required</p>
+      <p className="text-xs text-[var(--text-3)] mt-1 max-w-md">{note}</p>
+    </div>
+  );
+}
+
 export default function Analytics() {
-  const { bizProfile } = useAuth();
+  const { bizProfile, user } = useAuth();
   const [forecastView, setForecastView] = useState('orders');
 
-  const { data: predictiveData, isLoading: predictiveLoading } = useQuery({
+  // Data-contract split. The /analytics route gate admits any account holding
+  // analytics.view, but the backend serves TWO different data surfaces:
+  //   • owner (owned business profile) — the legacy /api/business/orders feed
+  //     plus the businessOS analytics endpoints;
+  //   • employee (active employment, no owned profile) — ONLY the businessOS
+  //     analytics endpoints: requirePermission('analytics.view') with
+  //     employment-aware resolveBusinessContext. The legacy orders feed's
+  //     controller requires ownership and refuses employees with 403, so an
+  //     employee must never call it, and any refusal must surface as an error
+  //     — never as an empty successful dataset.
+  const isEmployee = !!user && !bizProfile;
+
+  // Server-computed insights — authorized for BOTH owners and employees with
+  // analytics.view (the server is the sole authority; nothing is enforced
+  // client-side). Runs for any signed-in user; refusals surface as errors.
+  const { data: predictiveData, isLoading: predictiveLoading, isError: predictiveError } = useQuery({
     queryKey: ['analytics-predictive'],
     queryFn: () => analyticsApi.predictive(),
+    enabled: !!user,
+  });
+
+  // Orders feed — OWNER ONLY. The backend clamps `limit` to 50 and pages by
+  // `nextCursor`, so a single oversized `limit` silently truncated every
+  // metric on this page to the 50 most recent orders (the PR #110 defect
+  // class). `listAll` walks the cursor (bounded) and reports honest
+  // truncation; the PR #113 fix is preserved verbatim below. Employees never
+  // issue this request — enabled only when an owned business profile exists.
+  const { data: ordersData, isLoading: ordersLoading } = useQuery({
+    queryKey: ['analytics-orders'],
+    queryFn: () => ordersApi.listAll(),
     enabled: !!bizProfile,
   });
 
-  const { data: ordersData, isLoading: ordersLoading } = useQuery({
-    queryKey: ['analytics-orders'],
-    queryFn: () => ordersApi.list({ limit: 200 }),
-    enabled: !!bizProfile,
+  // Employee KPI surface — /api/business-os/analytics/customer is the
+  // backend-authorized aggregate for analytics.view over a 30-day window
+  // (same permission, same employment-aware resolution as predictive).
+  // Employee KPIs come from these server-computed totals; a refusal is an
+  // error state, never zero-valued KPIs presented as real data.
+  const { data: customerAgg, isLoading: customerLoading, isError: customerError } = useQuery({
+    queryKey: ['analytics-customer-30d'],
+    queryFn: () => analyticsApi.customer30d(),
+    enabled: isEmployee,
   });
 
   const allOrders = useMemo(() => Array.isArray(ordersData) ? ordersData : (ordersData?.orders || []), [ordersData]);
+  // Honest partial-coverage state: when the page-bound walk stops early, the
+  // metrics below are computed from the most recent N orders only — say so
+  // instead of presenting them as the complete order surface.
+  const ordersTruncated = !!ordersData?.truncated;
+  const ordersTotal = typeof ordersData?.total === 'number' ? ordersData.total : null;
 
   const forecast  = predictiveData?.forecast || [];
   const dowProfile = useMemo(() => buildDayOfWeekProfile(allOrders), [allOrders]);
@@ -165,8 +216,14 @@ export default function Analytics() {
     return Object.values(map);
   }, [allOrders]);
 
-  const totalRevenue30 = revenueData.reduce((s, d) => s + d.revenue, 0);
-  const totalOrders30  = revenueData.reduce((s, d) => s + d.orders, 0);
+  // KPI source follows the data contract: owners compute from the walked
+  // order feed; employees read the server's 30-day aggregate. null means the
+  // aggregate was refused or has not resolved — rendered as an explicit
+  // unavailable value, never as a zero.
+  const agg = customerAgg?.data || null;
+  const kpiLoading = isEmployee ? customerLoading : ordersLoading;
+  const totalRevenue30 = isEmployee ? (agg ? agg.avgOrderValue * agg.totalOrders : null) : revenueData.reduce((s, d) => s + d.revenue, 0);
+  const totalOrders30  = isEmployee ? (agg ? agg.totalOrders : null) : revenueData.reduce((s, d) => s + d.orders, 0);
   const prev15 = revenueData.slice(0, 15).reduce((s, d) => s + d.revenue, 0);
   const curr15 = revenueData.slice(15).reduce((s, d) => s + d.revenue, 0);
   const revDelta = prev15 > 0 ? ((curr15 - prev15) / prev15) * 100 : 0;
@@ -189,12 +246,59 @@ export default function Analytics() {
           </div>
         </m.div>
 
+        {/* Truncation notice — metrics are partial, never silently so */}
+        {ordersTruncated && (
+          <m.div variants={item}
+            className="flex items-center gap-2 text-xs text-[var(--text-2)] bg-[var(--surface-sunk)] border border-[var(--accent)]/30 rounded-lg px-3 py-2"
+            data-testid="orders-truncated-notice"
+          >
+            <Info className="w-4 h-4 shrink-0 text-[var(--accent)]" />
+            <span>
+              Metrics are computed from the most recent {fmt(allOrders.length, 0)} orders
+              {ordersTotal != null && <> of about {fmt(ordersTotal, 0)} on file</>} — older
+              orders are outside this analytics window.
+            </span>
+          </m.div>
+        )}
+
+        {/* Employee data-contract notice — the owner-only order feed is never
+            called for employee accounts; order-history panels state that they
+            are unavailable instead of rendering from empty data. */}
+        {isEmployee && (
+          <m.div variants={item}
+            className="flex items-center gap-2 text-xs text-[var(--text-2)] bg-[var(--surface-sunk)] border border-[var(--accent)]/30 rounded-lg px-3 py-2"
+            data-testid="employee-analytics-notice"
+          >
+            <Info className="w-4 h-4 shrink-0 text-[var(--accent)]" />
+            <span>
+              Employee analytics view — showing server-computed insights (forecast, churn risk, order totals).
+              Order-history charts require the owner's order feed, which employee accounts cannot access.
+            </span>
+          </m.div>
+        )}
+
+        {/* Honest refusal state — a server refusal (e.g. 403 after
+            analytics.view is revoked) is surfaced explicitly, never as an
+            empty successful dataset. */}
+        {(predictiveError || (isEmployee && customerError)) && (
+          <m.div variants={item}
+            className="flex items-center gap-2 text-xs text-[var(--text-2)] bg-[var(--surface-sunk)] border border-[var(--stop)]/40 rounded-lg px-3 py-2"
+            data-testid="analytics-refusal-notice"
+          >
+            <AlertTriangle className="w-4 h-4 shrink-0 text-[var(--stop)]" />
+            <span>
+              The server refused the analytics request for this account — insights are unavailable.
+              No empty or partial data is shown in place of the refusal.
+            </span>
+          </m.div>
+        )}
+
         {/* KPI row */}
         <m.div variants={item} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {ordersLoading ? [1,2,3,4].map(i => <Card key={i} className="p-5"><Sk className="h-4 w-20 mb-2" /><Sk className="h-8 w-28" /></Card>) : [
-            { label: '30-day Revenue', value: fmtUSDC(totalRevenue30), delta: revDelta, icon: TrendingUp },
-            { label: '30-day Orders',  value: fmt(totalOrders30, 0),    delta: null, icon: ShoppingBag },
-            { label: 'Avg Order/Day',  value: fmt(totalOrders30 / 30, 1), delta: null, icon: BarChart2 },
+          {kpiLoading ? [1,2,3,4].map(i => <Card key={i} className="p-5"><Sk className="h-4 w-20 mb-2" /><Sk className="h-8 w-28" /></Card>) : [
+            { label: '30-day Revenue', value: totalRevenue30 == null ? '—' : fmtUSDC(totalRevenue30), delta: isEmployee ? null : revDelta, icon: TrendingUp },
+            { label: '30-day Orders',  value: totalOrders30 == null ? '—' : fmt(totalOrders30, 0),    delta: null, icon: ShoppingBag },
+            { label: 'Avg Order/Day',  value: totalOrders30 == null ? '—' : fmt(totalOrders30 / 30, 1), delta: null, icon: BarChart2 },
             { label: 'Churn Risks',    value: fmt(churnList.length, 0), delta: null, icon: Users, alert: churnList.length > 0 },
           ].map(({ label, value, delta, icon: Icon, alert }) => (
             <Card key={label} className="p-5">
@@ -223,7 +327,12 @@ export default function Analytics() {
                 <p className="text-xs text-[var(--text-3)] mt-0.5">Completed orders only</p>
               </div>
             </div>
-            {ordersLoading ? <Sk className="h-48 w-full" /> : (
+            {isEmployee ? (
+              <EmployeeUnavailable
+                testId="employee-unavailable-revenue"
+                note="Revenue trend is computed from the owner's completed-order history, which employee accounts cannot access."
+              />
+            ) : ordersLoading ? <Sk className="h-48 w-full" /> : (
               <ResponsiveContainer width="100%" height={200}>
                 <AreaChart data={revenueData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                   <defs>
@@ -257,6 +366,11 @@ export default function Analytics() {
                 Based on last 4 weeks
               </div>
             </div>
+            {predictiveError ? (
+              <div data-testid="forecast-refused" className="flex items-center justify-center py-10 text-center">
+                <p className="text-xs text-[var(--text-3)]">Forecast unavailable — the server refused the analytics request for this account.</p>
+              </div>
+            ) : (
             <div className="mt-4 space-y-2">
               {forecast.map((f, i) => (
                 <div key={i} className="flex items-center gap-3">
@@ -274,6 +388,7 @@ export default function Analytics() {
                 </div>
               ))}
             </div>
+            )}
           </Card>
 
           {/* Day of week profile */}
@@ -284,7 +399,12 @@ export default function Analytics() {
                 <p className="text-xs text-[var(--text-3)] mt-0.5">Average orders by day of week</p>
               </div>
             </div>
-            {ordersLoading ? <Sk className="h-36 w-full" /> : (
+            {isEmployee ? (
+              <EmployeeUnavailable
+                testId="employee-unavailable-dow"
+                note="The busiest-days profile is computed from the owner's order history, which employee accounts cannot access."
+              />
+            ) : ordersLoading ? <Sk className="h-36 w-full" /> : (
               <ResponsiveContainer width="100%" height={150}>
                 <BarChart data={dowProfile} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                   <CartesianGrid stroke="var(--line)" strokeOpacity={0.4} vertical={false} strokeDasharray="3 3" />
@@ -311,7 +431,11 @@ export default function Analytics() {
                 Based on order history
               </div>
             </div>
-            {ordersLoading ? (
+            {predictiveError ? (
+              <div data-testid="churn-refused" className="flex items-center justify-center py-10 text-center">
+                <p className="text-xs text-[var(--text-3)]">Churn insights unavailable — the server refused the analytics request for this account.</p>
+              </div>
+            ) : (ordersLoading || predictiveLoading) ? (
               <div className="space-y-2">{[1,2,3].map(i => <Sk key={i} className="h-10 w-full" />)}</div>
             ) : churnList.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-center">
@@ -359,6 +483,12 @@ export default function Analytics() {
               </div>
             </div>
             {(() => {
+              if (isEmployee) {
+                return <EmployeeUnavailable
+                  testId="employee-unavailable-comparisons"
+                  note="Week-over-week and month-over-month comparisons are computed from the owner's order history, which employee accounts cannot access."
+                />;
+              }
               const now = new Date();
               const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay()); weekStart.setHours(0,0,0,0);
               const lastWeekStart = new Date(weekStart); lastWeekStart.setDate(lastWeekStart.getDate() - 7);
@@ -445,6 +575,12 @@ export default function Analytics() {
               </div>
             </div>
             {(() => {
+              if (isEmployee) {
+                return <EmployeeUnavailable
+                  testId="employee-unavailable-products"
+                  note="Product rankings are computed from the owner's completed-order history, which employee accounts cannot access."
+                />;
+              }
               const counts = {};
               const revenue = {};
               allOrders.filter(o => o.status === 'COMPLETED').forEach(o => {
