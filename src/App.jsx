@@ -109,6 +109,7 @@ const StorefrontEditor = lazy(() => import('@/pages/StorefrontEditor'));
 const StorefrontAnalytics = lazy(() => import('@/pages/StorefrontAnalytics'));
 const ExperienceStudio = lazy(() => import('@/pages/ExperienceStudio'));
 const POS = lazy(() => import('@/pages/POS'));
+const AdminMarketplace = lazy(() => import('@/pages/AdminMarketplace'));
 
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/lib/query-client';
@@ -120,7 +121,7 @@ import { AppBackground } from '@/components/AppBackground';
 import { TypeGuardedRoute } from './components/TypeGuardedRoute';
 
 export function AppRoutes() {
-  const { authed, loading, bizProfile, isAdmin } = useAuth();
+  const { authed, loading, bizProfile, isAdmin, selectedBusinessId, switching } = useAuth();
 
   if (loading) {
     return (
@@ -156,10 +157,49 @@ export function AppRoutes() {
     );
   }
 
+  // ── Controlled admin business-context transition ──────────────────────────
+  // While a switch is in progress NO business page is mounted: pages unmount
+  // first, then the query cache is cancelled and cleared, and only after the
+  // target profile loads does the new context commit and pages remount. This
+  // makes it structurally impossible for business A's in-flight results to be
+  // presented under business B.
+  if (isAdmin && switching) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-2 rounded-full animate-spin"
+               style={{ borderColor: 'var(--line)', borderTopColor: 'var(--accent)' }} />
+          <p className="text-sm" style={{ color: 'var(--text-3)' }} data-testid="admin-switching-screen">
+            {switching.waitingForMutations
+              ? `Waiting for in-progress business operations before switching to ${switching.targetName}…`
+              : `Switching business context to ${switching.targetName}…`}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Admin without a selected business: the marketplace overview IS the
+  // landing surface (fresh login never auto-selects; logout and dead saved
+  // selections land here honestly). The sidebar selector stays available.
+  if (isAdmin && !selectedBusinessId) {
+    return (
+      <Suspense fallback={<div className="flex items-center justify-center h-screen" style={{ background: 'var(--bg)' }}><div className="animate-pulse text-sm" style={{ color: 'var(--text-3)' }}>Loading…</div></div>}>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path="/admin-marketplace" element={<AdminMarketplace />} />
+          <Route path="*"                   element={<Navigate to="/admin-marketplace" replace />} />
+        </Route>
+      </Routes>
+      </Suspense>
+    );
+  }
+
   return (
     <Suspense fallback={<div className="flex items-center justify-center h-screen" style={{ background: 'var(--bg)' }}><div className="animate-pulse text-sm" style={{ color: 'var(--text-3)' }}>Loading…</div></div>}>
     <Routes>
       <Route element={<Layout />}>
+        <Route path="/admin-marketplace" element={<AdminMarketplace />} />
         <Route path="/" element={<GatedRoute route="/" gate={gateFor("/")}>{<Dashboard />}</GatedRoute>} />
         <Route path="/orders" element={<GatedRoute route="/orders" gate={gateFor("/orders")}>{<Orders />}</GatedRoute>} />
         <Route path="/orders/:id" element={<GatedRoute route="/orders/:id" gate={gateFor("/orders/:id")}>{<OrderDetail />}</GatedRoute>} />

@@ -11,6 +11,7 @@ const {
   mockJoinUserRoom,
   mockDisconnectSocket,
   mockEnsureRealtimeQueryBridge,
+  mockQueryClient,
 } = vi.hoisted(() => ({
   mockAuth: { login: vi.fn(), restore: vi.fn(), logout: vi.fn() },
   mockBusiness: { me: vi.fn() },
@@ -20,6 +21,12 @@ const {
   mockJoinUserRoom: vi.fn(),
   mockDisconnectSocket: vi.fn(),
   mockEnsureRealtimeQueryBridge: vi.fn(),
+  mockQueryClient: {
+    cancelQueries: vi.fn().mockResolvedValue(undefined),
+    removeQueries: vi.fn(),
+    isMutating: vi.fn().mockReturnValue(0),
+    getMutationCache: vi.fn().mockReturnValue({ subscribe: vi.fn().mockReturnValue(vi.fn()) }),
+  },
 }));
 
 vi.mock('@/lib/api', () => ({
@@ -40,6 +47,7 @@ vi.mock('@/lib/socket', () => ({
 
 vi.mock('@/lib/query-client', () => ({
   ensureRealtimeQueryBridge: mockEnsureRealtimeQueryBridge,
+  queryClient: mockQueryClient,
 }));
 
 function Probe() {
@@ -52,6 +60,10 @@ function Probe() {
       <output data-testid="username">{auth.user?.username || ''}</output>
       <output data-testid="business-name">{auth.bizProfile?.name || ''}</output>
       <output data-testid="selected-business">{auth.selectedBusinessId || ''}</output>
+      <output data-testid="switching">{auth.switching ? auth.switching.targetId : ''}</output>
+      <output data-testid="switch-error">{auth.switchError?.targetName || ''}</output>
+      <button onClick={() => void auth.selectBusiness('biz-A', { targetName: 'Biz A' })}>Select A</button>
+      <button onClick={() => void auth.selectBusiness('biz-B', { targetName: 'Biz B' })}>Select B</button>
       <button onClick={() => void auth.login('owner@example.com', 'secret')}>Login</button>
       <button onClick={() => void auth.logout()}>Logout</button>
     </div>
@@ -135,9 +147,14 @@ describe('AuthProvider runtime behavior', () => {
     expect(mockBusiness.me).not.toHaveBeenCalled();
     expect(mockRequest).toHaveBeenCalledWith('/api/admin/marketplace-businesses');
     expect(mockRequest).toHaveBeenCalledWith('/api/admin/marketplace-businesses/biz-42');
+    // Controlled transition: the query cache was cancelled and cleared
+    // BEFORE the new context committed.
+    expect(mockQueryClient.cancelQueries).toHaveBeenCalled();
+    expect(mockQueryClient.removeQueries).toHaveBeenCalled();
+    expect(localStorage.getItem('admin_selected_biz')).toBe('biz-42');
   });
 
-  it('logs an admin in, stores the first available business selection, and does not lose auth state', async () => {
+  it('logs an admin in WITHOUT auto-selecting a business — the marketplace overview is the landing surface', async () => {
     mockAuth.restore.mockRejectedValue(new Error('no existing session'));
     mockAuth.login.mockResolvedValue({
       accessToken: 'login-token',
@@ -153,18 +170,26 @@ describe('AuthProvider runtime behavior', () => {
       return Promise.reject(new Error(`Unexpected request: ${path}`));
     });
 
+    // A stale selection from a previous session must NOT leak into the new one.
+    localStorage.setItem('admin_selected_biz', 'stale-biz-from-previous-session');
+
     renderProvider();
     await waitFor(() => expect(screen.getByTestId('loading')).toHaveTextContent('false'));
 
     fireEvent.click(screen.getByRole('button', { name: 'Login' }));
 
-    await waitFor(() => expect(screen.getByTestId('business-name')).toHaveTextContent('Demo Business'));
+    await waitFor(() => expect(screen.getByTestId('is-admin')).toHaveTextContent('true'));
 
     expect(screen.getByTestId('authed')).toHaveTextContent('true');
-    expect(screen.getByTestId('is-admin')).toHaveTextContent('true');
     expect(screen.getByTestId('username')).toHaveTextContent('operator');
-    expect(screen.getByTestId('selected-business')).toHaveTextContent('biz-99');
-    expect(localStorage.getItem('admin_selected_biz')).toBe('biz-99');
+    // NO implicit first-business selection: the admin chooses explicitly.
+    expect(screen.getByTestId('selected-business')).toHaveTextContent('');
+    expect(screen.getByTestId('business-name')).toHaveTextContent('');
+    expect(localStorage.getItem('admin_selected_biz')).toBeNull();
+    expect(mockRequest).toHaveBeenCalledWith('/api/admin/marketplace-businesses');
+    // No business profile was fetched — none is in context yet.
+    expect(mockRequest).not.toHaveBeenCalledWith('/api/admin/marketplace-businesses/biz-99');
+    expect(mockBusiness.me).not.toHaveBeenCalled();
     expect(mockAuth.login).toHaveBeenCalledWith('owner@example.com', 'secret');
   });
 

@@ -7,6 +7,7 @@ import {
   LogOut, Smartphone,
 } from 'lucide-react';
 import { resolveNav, DOMAINS } from '@/lib/nav';
+import { adminContractFor } from '@/lib/adminContract';
 import { useTheme } from '@/lib/theme';
 import { useCommandPalette } from '@/lib/command';
 import { useSequence } from '@/lib/keys';
@@ -66,6 +67,14 @@ export function Shell({ children, navProps, brandName = 'Azaman', brandShort = '
   const navigate = useNavigate();
   const railRef = useRef(null);
   const nav = useMemo(() => resolveNav(navProps), [navProps]);
+  // Admin view contract awareness: routes whose data surfaces are owner-only
+  // (or mock-only) stay VISIBLE but are disabled with an explanation — never
+  // hidden, so the portal does not silently pretend they don't exist.
+  const navItemDisabledInAdminView = useCallback((to) => {
+    if (!navProps.isAdminView) return false;
+    const contract = adminContractFor(to);
+    return contract.level === 'owner-only' || contract.level === 'mock-only';
+  }, [navProps.isAdminView]);
   const qc = useQueryClient();
 
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
@@ -230,12 +239,15 @@ export function Shell({ children, navProps, brandName = 'Azaman', brandShort = '
                   <div className="i-nav-group-label">{group.label}</div>
                   {group.items.map(item => {
                     const Icon = item.icon;
+                    const adminDisabled = navItemDisabledInAdminView(item.to);
                     return (
                       <NavLink
                         key={item.to}
                         to={item.to}
                         end={item.to === '/'}
-                        className={cn('i-nav-item', isItemActive(item.to) && 'is-active')}
+                        onClick={adminDisabled ? (e) => e.preventDefault() : undefined}
+                        className={cn('i-nav-item', isItemActive(item.to) && 'is-active', adminDisabled && 'is-disabled')}
+                        title={adminDisabled ? 'Not available in admin view — the server only authorizes the business owner for this surface.' : undefined}
                         onMouseEnter={() => handleNavHover(item.to)}
                       >
                         <Icon style={{ width: 15, height: 15, flexShrink: 0 }} />
@@ -274,7 +286,7 @@ export function Shell({ children, navProps, brandName = 'Azaman', brandShort = '
               transition={{ type: 'spring', stiffness: 400, damping: 35 }}
               style={{ position: 'fixed', top: 0, left: 0, bottom: 0, zIndex: 1000, width: 'min(280px, 82vw)', background: 'var(--chrome)', boxShadow: 'var(--d3)' }}
             >
-              <MobileNav nav={nav} brandName={brandName} brandShort={brandShort} onNavigate={() => setMobileOpen(false)} />
+              <MobileNav nav={nav} brandName={brandName} brandShort={brandShort} onNavigate={() => setMobileOpen(false)} isAdminView={navProps.isAdminView} />
             </m.aside>
           </>
         )}
@@ -302,7 +314,7 @@ export function Shell({ children, navProps, brandName = 'Azaman', brandShort = '
 }
 
 function BusinessSelectorInline() {
-  const { adminBusinesses, selectedBusinessId, selectBusiness, bizProfile } = useAuth();
+  const { adminBusinesses, selectedBusinessId, selectBusiness, bizProfile, switching, switchError, clearSwitchError } = useAuth();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -315,14 +327,16 @@ function BusinessSelectorInline() {
 
   const selectedBiz = (adminBusinesses || []).find(b => b.id === selectedBusinessId);
 
+  // All transitions go through the controlled selectBusiness() in AuthContext:
+  // no component ever writes admin_selected_biz directly — persistence,
+  // the selected id and the loaded profile commit together, after the
+  // target business is confirmed loadable.
   const handleSelect = (bizId) => {
-    localStorage.setItem('admin_selected_biz', bizId);
     selectBusiness(bizId);
     setOpen(false);
   };
 
   const handleClear = () => {
-    localStorage.removeItem('admin_selected_biz');
     selectBusiness(null);
     setOpen(false);
   };
@@ -333,10 +347,12 @@ function BusinessSelectorInline() {
       <button
         onClick={() => setOpen(!open)}
         className="btn-3d"
+        disabled={!!switching}
+        title={switching ? 'Switching business context…' : 'Select a business'}
         style={{ width: '100%', justifyContent: 'space-between', fontSize: 12, padding: '7px 10px' }}
       >
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {selectedBiz ? selectedBiz.businessName : '— Select —'}
+          {switching ? `Switching to ${switching.targetName}…` : (selectedBiz ? selectedBiz.businessName : '— Select —')}
         </span>
         <ChevronRight style={{ width: 12, height: 12, transform: open ? 'rotate(90deg)' : 'none', transition: 'transform .12s' }} />
       </button>
@@ -389,16 +405,31 @@ function BusinessSelectorInline() {
           </div>
         </>
       )}
-      {selectedBusinessId && bizProfile && (
+      {selectedBusinessId && bizProfile && !switching && (
         <p style={{ fontSize: 11, color: 'var(--chrome-text-3)', marginTop: 6 }}>
           Type: {bizProfile.category || 'General'} · KYB: {bizProfile.kybStatus || 'UNVERIFIED'}
         </p>
+      )}
+      {switching && (
+        <p data-testid="selector-switching" style={{ fontSize: 11, color: 'var(--chrome-text-3)', marginTop: 6 }}>
+          {switching.waitingForMutations ? 'Waiting for in-progress operations…' : 'Loading business context…'}
+        </p>
+      )}
+      {switchError && !switching && (
+        <button
+          data-testid="selector-switch-error"
+          onClick={clearSwitchError}
+          title="Dismiss"
+          style={{ width: '100%', marginTop: 6, padding: '5px 8px', fontSize: 11, border: '1px solid color-mix(in oklch, var(--stop) 40%, transparent)', borderRadius: 'var(--r2)', background: 'transparent', color: 'var(--stop)', textAlign: 'left', cursor: 'pointer' }}
+        >
+          Could not switch to {switchError.targetName} — still viewing {selectedBiz?.businessName || 'the current business'}.
+        </button>
       )}
     </div>
   );
 }
 
-function MobileNav({ nav, brandName, brandShort, onNavigate }) {
+function MobileNav({ nav, brandName, brandShort, onNavigate, isAdminView }) {
   return (
     <>
       <div style={{ padding: '10px 14px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -413,10 +444,13 @@ function MobileNav({ nav, brandName, brandShort, onNavigate }) {
               <div key={group.label}>
                 {group.items.map(item => {
                   const Icon = item.icon;
+                  const adminDisabled = isAdminView && ['owner-only', 'mock-only'].includes(adminContractFor(item.to)?.level);
                   return (
                     <NavLink key={item.to} to={item.to}
-                      className={({isActive}) => cn('i-nav-item', isActive && 'is-active')}
+                      className={({isActive}) => cn('i-nav-item', isActive && 'is-active', adminDisabled && 'is-disabled')}
                       end={item.to === '/'}
+                      onClick={adminDisabled ? (e) => e.preventDefault() : undefined}
+                      title={adminDisabled ? 'Not available in admin view — the server only authorizes the business owner for this surface.' : undefined}
                     >
                       <Icon style={{ width: 15, height: 15, flexShrink: 0 }} />
                       <span>{item.label}</span>

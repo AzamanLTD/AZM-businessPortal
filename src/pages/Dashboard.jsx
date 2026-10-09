@@ -126,6 +126,20 @@ function AtRiskWidget() {
 }
 
 // ── Inline header (recedes inline header) ────────────────────────────────
+// Honest owner-only state: in admin view these feeds are refused by the
+// server (they resolve from the business owner's identity). Showing zeros or
+// "No orders yet" would be fake empty success — say what actually happened.
+function OwnerOnlyNotice({ label }) {
+  return (
+    <div data-testid={`admin-owner-only-${(label || 'feed').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+      style={{ padding: '10px 14px', borderRadius: 'var(--r3)', border: '1px solid color-mix(in oklch, var(--hold) 35%, transparent)', background: 'color-mix(in oklch, var(--hold) 6%, transparent)', fontSize: 12, color: 'var(--text-2)' }}>
+      <strong style={{ color: 'var(--text)' }}>{label}:</strong> owner-only data feed. The server
+      resolves it from the business owner's identity and refuses it in admin view — this is a
+      refusal, not an empty business.
+    </div>
+  );
+}
+
 function PageHeader({ title, subtitle, actions }) {
   return (
     <header style={{ marginBottom: 16 }}>
@@ -169,37 +183,44 @@ function KpiCard({ label, value, delta, deltaLabel, deltaTone, icon: KpiIcon, lo
 
 // ── Main Dashboard ──────────────────────────────────────────────────────────
 export default function Dashboard() {
-  const { isAdmin, adminBusinesses, bizProfile, selectedBusinessId, selectBusiness } = useAuth();
+  const { isAdminView, bizProfile } = useAuth();
   const typeConfig = getTypeConfig(bizProfile?.business_type);
   const TypeIcon = typeConfig.icon || ShoppingBag;
 
   // ── Core queries ──────────────────────────────────────────────────────────
   const { data: statsData, isLoading: statsLoading } = useQuery({
     queryKey: ['biz-stats'], queryFn: () => ordersApi.stats(), refetchInterval: 60_000,
+    // Admin view: the legacy order feed is owner-only on the server. Never
+    // fire it — an owner-only widget shows an honest refusal instead.
+    enabled: !isAdminView,
   });
   const { data: recentData, isLoading: recentLoading } = useQuery({
     queryKey: ['recent-orders'], queryFn: () => ordersApi.list({ limit: 5 }), refetchInterval: 30_000,
+    enabled: !isAdminView,
   });
   const { data: analyticsData } = useQuery({
     queryKey: ['dashboard-analytics-orders'], queryFn: () => ordersApi.list({ limit: 50 }), refetchInterval: 60_000,
+    enabled: !isAdminView,
   });
   const { data: invoiceData } = useQuery({
     queryKey: ['dashboard-invoice-stats'], queryFn: () => bookingOpsApi.invoiceStats(), refetchInterval: 60_000,
+    enabled: !isAdminView,
   });
   const { data: resStatsData } = useQuery({
     queryKey: ['reservation-stats'], queryFn: () => resApi.stats(),
-    enabled: typeConfig.navItems.includes('reservations'),
+    enabled: !isAdminView && typeConfig.navItems.includes('reservations'),
   });
   const { data: transitData } = useQuery({
     queryKey: ['transit-trips-dashboard'], queryFn: () => transitApi.list(),
-    enabled: typeConfig.type === 'TRANSIT',
+    enabled: !isAdminView && typeConfig.type === 'TRANSIT',
   });
   const { data: checkInStatsData } = useQuery({
     queryKey: ['checkin-stats-dashboard'], queryFn: () => checkInApi.todayStats(),
-    enabled: typeConfig.navItems.includes('checkin'), retry: false,
+    enabled: !isAdminView && typeConfig.navItems.includes('checkin'), retry: false,
   });
   const { data: reviewStatsData } = useQuery({
     queryKey: ['review-stats-dashboard'], queryFn: () => reviewsApi.stats(), retry: false,
+    enabled: !isAdminView,
   });
   const { data: employeeStatsData, isLoading: employeeStatsLoading } = useQuery({
     queryKey: ['employee-stats-dashboard'],
@@ -230,42 +251,6 @@ export default function Dashboard() {
   const employeeStats = employeeStatsData?.stats || { totalEmployees: 0, activeShifts: 0, pendingTimeOff: 0, monthlyPayroll: '0.00' };
   const kybMeta = KYB_STATUS_META[bizProfile?.kybStatus || 'UNVERIFIED'];
   const needsKyb = bizProfile?.kybStatus !== 'VERIFIED';
-
-  // ── Admin business picker ─────────────────────────────────────────────────
-  if (isAdmin && !selectedBusinessId) {
-    const grouped = adminBusinesses.reduce((acc, b) => {
-      (acc[b.category] = acc[b.category] || []).push(b);
-      return acc;
-    }, {});
-    return (
-      <div>
-        <PageHeader title="Marketplace Overview" subtitle="Select a business to manage their portal." />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16, marginBottom: 24 }}>
-          <Metric label="Total" value={adminBusinesses.length} />
-          <Metric label="Restaurants" value={grouped['FOOD_BEVERAGE']?.length || 0} />
-          <Metric label="Hotels" value={grouped['REAL_ESTATE']?.length || 0} />
-          <Metric label="Transit" value={grouped['LOGISTICS']?.length || 0} />
-        </div>
-        {Object.entries(grouped).map(([category, businesses]) => (
-          <div key={category} style={{ marginBottom: 24 }}>
-            <div className="i-eyebrow" style={{ marginBottom: 12 }}>{category}</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
-              {businesses.map(b => (
-                <button key={b.id} onClick={() => selectBusiness(b.id)}
-                  style={{ textAlign: 'left', cursor: 'pointer', padding: 16, borderRadius: 'var(--r3)',
-                    background: 'var(--surface)', border: '1px solid var(--line)', transition: 'box-shadow 0.2s' }}
-                  onMouseEnter={e => e.currentTarget.style.boxShadow = 'var(--d2)'}
-                  onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{b.name}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>{b.business_type || 'General'}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
 
   // ── Quick actions by type ──────────────────────────────────────────────────
   const quickActions = [];
@@ -300,8 +285,8 @@ export default function Dashboard() {
         }
       />
 
-      {/* KYB banner */}
-      {needsKyb && (
+      {/* KYB banner (owner call-to-action; KYB is owner-only) */}
+      {needsKyb && !isAdminView && (
         <Link to="/kyb" style={{ display: 'block', marginBottom: 16, textDecoration: 'none' }}>
           <Card>
             <CardBody>
@@ -380,6 +365,7 @@ export default function Dashboard() {
       <div style={{ marginBottom: 16 }}><AtRiskWidget /></div>
 
       {/* Core KPIs */}
+      {isAdminView ? <div style={{ marginBottom: 16 }}><OwnerOnlyNotice label="Order KPIs" /></div> : (
       <m.div data-tour="dashboard-kpis" variants={ContainerV} initial="hidden" animate="visible"
         style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 16 }}>
         <m.div variants={ItemV}><KpiCard label="Total Orders" value={fmt(stats.totalOrders || 0, 0)} deltaLabel="All time" icon={ShoppingBag} loading={statsLoading} /></m.div>
@@ -387,9 +373,11 @@ export default function Dashboard() {
         <m.div variants={ItemV}><KpiCard label="Pending" value={fmt(stats.pendingOrders || 0, 0)} deltaLabel="Awaiting action" icon={Clock} loading={statsLoading} /></m.div>
         <m.div variants={ItemV}><KpiCard label="Completed" value={fmt(stats.completedOrders || 0, 0)} deltaLabel="All time" icon={CheckCircle2} loading={statsLoading} /></m.div>
       </m.div>
+      )}
 
       {/* Type-specific KPIs */}
-      {typeConfig.type === 'TRANSIT' && (
+      {typeConfig.type === 'TRANSIT' && isAdminView && (<div style={{ marginBottom: 16 }}><OwnerOnlyNotice label="Trip and check-in KPIs" /></div>)}
+      {typeConfig.type === 'TRANSIT' && !isAdminView && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 16 }}>
           <KpiCard label="Active Trips" value={fmt(trips.filter(t => ['SCHEDULED','BOARDING'].includes(t.status)).length, 0)} deltaLabel="Scheduled + boarding" icon={Bus} />
           <KpiCard label="Seats Sold" value={fmt(trips.reduce((s, t) => s + (t._count?.seats || 0), 0), 0)} deltaLabel="All trips" icon={Users} />
@@ -397,7 +385,8 @@ export default function Dashboard() {
           <KpiCard label="Transit Revenue" value={fmtUSDC(trips.reduce((s, t) => s + (t._count?.seats || 0) * (Number(t.fareUsdc) || 0), 0))} deltaLabel="From bookings" icon={DollarSign} />
         </div>
       )}
-      {['RESTAURANT','HOTEL','SERVICES'].includes(typeConfig.type) && (
+      {['RESTAURANT','HOTEL','SERVICES'].includes(typeConfig.type) && isAdminView && (<div style={{ marginBottom: 16 }}><OwnerOnlyNotice label="Reservation and check-in KPIs" /></div>)}
+      {['RESTAURANT','HOTEL','SERVICES'].includes(typeConfig.type) && !isAdminView && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 12, marginBottom: 16 }}>
           <KpiCard label="Reservations" value={fmt(resStats.total || 0, 0)} deltaLabel="All bookings" icon={CalendarCheck} />
           <KpiCard label="Pending" value={fmt(resStats.pending || 0, 0)} deltaLabel="Awaiting confirmation" icon={Clock} />
@@ -407,11 +396,13 @@ export default function Dashboard() {
       )}
 
       {/* Invoice KPIs */}
+      {isAdminView ? <div style={{ marginBottom: 16 }}><OwnerOnlyNotice label="Invoice KPIs" /></div> : (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 16 }}>
         <KpiCard label="Invoices Sent" value={fmt(invoiceStats.sent, 0)} deltaLabel="Awaiting payment" icon={Receipt} />
         <KpiCard label="Invoices Paid" value={fmt(invoiceStats.paid, 0)} deltaLabel="Settled" icon={CheckCircle2} />
         <KpiCard label="Invoice Revenue" value={fmtUSDC(invoiceStats.paidRevenue)} deltaLabel="From paid invoices" icon={DollarSign} />
       </div>
+      )}
 
       {/* Revenue chart */}
       {hasRevenue && (
@@ -428,6 +419,7 @@ export default function Dashboard() {
       )}
 
       {/* Order funnel */}
+      {isAdminView ? <div style={{ marginBottom: 16 }}><OwnerOnlyNotice label="Order funnel" /></div> : (
       <div style={{ marginBottom: 16 }}>
         <Card>
           <CardHead>
@@ -455,6 +447,7 @@ export default function Dashboard() {
           </CardBody>
         </Card>
       </div>
+      )}
 
       {/* Recent orders + Reviews */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
@@ -465,7 +458,8 @@ export default function Dashboard() {
             <Link to="/orders"><Button variant="ghost" size="xs" icon={ArrowRight}>All</Button></Link>
           </CardHead>
           <CardBody>
-            {recentLoading ? <Skel h={120} /> :
+            {isAdminView ? <OwnerOnlyNotice label="Recent orders" /> :
+             recentLoading ? <Skel h={120} /> :
              recent.length === 0 ? (
               <Empty title="No orders yet" body="Orders will appear here once customers start buying." />
             ) : (
@@ -498,6 +492,7 @@ export default function Dashboard() {
         <Card>
           <CardHead><span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Customer Rating</span></CardHead>
           <CardBody>
+            {isAdminView ? <OwnerOnlyNotice label="Review stats" /> : (<>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
               <span className="i-num i-num--metric">{fmt(reviewStats.avgRating || 0, 1)}</span>
               <div style={{ display: 'flex' }}>
@@ -509,6 +504,7 @@ export default function Dashboard() {
               </div>
             </div>
             <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 8 }}>{reviewStats.total || 0} reviews</div>
+            </>)}
           </CardBody>
         </Card>
 
@@ -516,8 +512,10 @@ export default function Dashboard() {
         <Card>
           <CardHead><span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Stories Promoted</span></CardHead>
           <CardBody>
+            {isAdminView ? <OwnerOnlyNotice label="Story stats" /> : (<>
             <div className="i-num i-num--metric">{fmt(reviewStats.storiesPromoted || 0, 0)}</div>
             <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 8 }}>From customer reviews</div>
+            </>)}
           </CardBody>
         </Card>
       </div>
