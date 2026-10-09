@@ -41,6 +41,11 @@ export const ROUTE_GATES = [
   { path: '/reviews',            ownerOnly: true },
   { path: '/analytics',          permission: 'analytics.view' },
   { path: '/storefront',          ownerOnly: true },
+  // Settings surfaces: messaging-config mutations require settings.manage
+  // (businessOSRoutes); the developer screen is mock-only until the backend
+  // security fix lands, so it mirrors the same settings contract as UX.
+  { path: '/settings/messaging',  permission: 'settings.manage' },
+  { path: '/settings/developer',  permission: 'settings.manage' },
 ];
 
 export function gateFor(path) {

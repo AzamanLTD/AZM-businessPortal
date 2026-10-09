@@ -120,6 +120,34 @@ describe('route gates mirror the backend permission catalog', () => {
     expect(gateFor('/messages')).toBeNull();
   });
 
+  it('gates the settings messaging and developer surfaces on settings.manage', () => {
+    // Backend contract: every messaging-config mutation requires
+    // settings.manage; the developer surface mirrors the same key as UX
+    // until the backend security fix lands (its API only enforces auth).
+    for (const p of ['/settings/messaging', '/settings/developer']) {
+      const gate = gateFor(p);
+      expect(gate, `${p} must have a route gate`).not.toBeNull();
+      expect(gate.permission, `${p} must gate on settings.manage`).toBe('settings.manage');
+      expect(gate.ownerOnly, `${p} is permission-gated, not owner-only`).toBeUndefined();
+    }
+  });
+
+  it('direct URL access and nav visibility agree for the settings surfaces', () => {
+    const navPaths = [];
+    const walk = n => { if (n && Array.isArray(n.items)) n.items.forEach(i => { if (i.to) navPaths.push(i); }); };
+    DOMAINS.forEach(d => (d.groups || []).forEach(g => walk(g)));
+    for (const p of ['/settings/messaging', '/settings/developer']) {
+      const item = navPaths.find(i => i.to === p);
+      expect(item, `${p} must be in the nav`).toBeDefined();
+      const gate = gateFor(p);
+      // Consistency: the nav hides exactly what the route gate refuses.
+      expect(item.perm, `${p} nav perm must equal route gate`).toBe(gate.permission);
+      expect(item.ownerOnly).toBeUndefined();
+    }
+    // Both surfaces resolve for /settings/:id-style nested access the same way.
+    expect(gateFor('/settings/messaging/history').permission).toBe('settings.manage');
+  });
+
   it('never gates on the pre-fix invented keys', () => {
     const invented = ['orders.create', 'inventory.manage', 'inventory.view',
       'kitchen.view', 'kitchen.manage', 'tables.manage', 'tables.view',
