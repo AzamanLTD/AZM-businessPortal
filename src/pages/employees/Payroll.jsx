@@ -28,6 +28,14 @@ import {
   Calendar
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
+import {
+  normalizeAmountInput,
+  exceedsCapHint,
+  resolveWithdrawIntentKey,
+  withdrawIntentFingerprint,
+  describeWithdrawResult,
+  isUnknownOutcome,
+} from '@/lib/ewaWithdraw';
 
 export default function Payroll() {
   const { hasPermission } = usePermission();
@@ -65,6 +73,12 @@ export default function Payroll() {
   const [employeeEwaHistory, setEmployeeEwaHistory] = useState([]);
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [processingWithdrawal, setProcessingWithdrawal] = useState(false);
+  // One idempotency identity per withdrawal INTENT (backend contract:
+  // POST /api/business-os/ewa/withdraw dedupes on idempotencyKey and
+  // replays the committed withdrawal for a safe retry). Kept across
+  // attempts until the intent is settled, abandoned, or economically
+  // changed — so a retry after a timeout can never mint a second payout.
+  const [withdrawIntent, setWithdrawIntent] = useState(null);
 
   // Modal control states
   const [isBreakdownOpen, setIsBreakdownOpen] = useState(false);
@@ -228,30 +242,52 @@ export default function Payroll() {
     }
   };
 
-  // Submit EWA withdrawal request
+  // Submit EWA withdrawal request.
+  // Financial-action integrity (backend /api/business-os/ewa/withdraw):
+  //  - the amount travels as the operator's EXACT decimal string, never a
+  //    JS float, so no monetary value is rounded or normalized on the wire;
+  //  - the request carries an intent-scoped idempotencyKey: a retry of the
+  //    same intent reuses it (the backend replays the committed withdrawal
+  //    and moves no money), while any economic change mints a new key;
+  //  - success is reported from the SERVER's computed truth (gross, fee,
+  //    net, replayed) — never from the typed amount or optimistic state;
+  //  - a definitive server refusal surfaces the server's own message; an
+  //    UNKNOWN outcome (no HTTP answer) is never called a failure, and the
+  //    intent key is kept so the retry cannot double-pay.
   const handleWithdrawEwaSubmit = async (e) => {
     e.preventDefault();
     if (!canProcess) {
       toast.stop('You do not have permission to process withdrawals');
       return;
     }
-    const amountNum = parseFloat(withdrawAmount);
-    if (isNaN(amountNum) || amountNum <= 0) {
-      toast.stop('Please enter a valid amount');
+    const amount = normalizeAmountInput(withdrawAmount);
+    if (!amount || Number(amount) <= 0) {
+      toast.stop('Enter an exact amount in USDC (plain decimal, up to 8 places), e.g. 25.50');
       return;
     }
-    const maxVal = employeeEwaEligibility?.maxWithdrawal || 0;
-    if (amountNum > maxVal) {
-      toast.stop(`Amount exceeds maximum withdrawal limit of $${maxVal.toFixed(2)}`);
+    if (exceedsCapHint(amount, employeeEwaEligibility?.maxWithdrawal)) {
+      toast.stop(`Amount exceeds the maximum withdrawal limit of ${employeeEwaEligibility.maxWithdrawal} USDC`);
       return;
+    }
+
+    const intentInput = { employeeId: selectedEmployee.id, amount };
+    let key = resolveWithdrawIntentKey(withdrawIntent, intentInput);
+    if (!key) {
+      key = (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : `ewa_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      setWithdrawIntent({ key, fingerprint: withdrawIntentFingerprint(intentInput) });
     }
 
     setProcessingWithdrawal(true);
     try {
-      await ewaApi.withdraw({ employeeId: selectedEmployee.id, amount: amountNum });
-      toast.go(`Successfully processed withdrawal of $${amountNum.toFixed(2)}`);
-      
-      // Refresh modal values and background data
+      const res = await ewaApi.withdraw({ ...intentInput, idempotencyKey: key });
+      // The server committed (or replayed) the withdrawal: the intent is
+      // settled. A genuinely new withdrawal mints a fresh identity.
+      setWithdrawIntent(null);
+      toast.go(describeWithdrawResult(res));
+
+      // Refresh modal values and background data from the server
       const [eligRes, histRes] = await Promise.all([
         ewaApi.eligibility(selectedEmployee.id),
         ewaApi.history(selectedEmployee.id)
@@ -261,8 +297,16 @@ export default function Payroll() {
       setWithdrawAmount('');
       fetchEwaData();
     } catch (err) {
-      console.error(err);
-      toast.stop('Failed to complete EWA withdrawal');
+      if (isUnknownOutcome(err)) {
+        toast.stop('Connection lost — this withdrawal may have gone through', {
+          description: 'Check the EWA history before trying again. Retrying the same amount reuses the same request ID, so the backend blocks a duplicate payout.',
+        });
+      } else {
+        // A definitive server refusal — surface the server's own typed
+        // message (cap exceeded, idempotency conflict, eligibility, 403 …)
+        // instead of a generic blanket failure.
+        toast.stop(err.message || 'Withdrawal refused by the server');
+      }
     } finally {
       setProcessingWithdrawal(false);
     }
@@ -796,6 +840,9 @@ export default function Payroll() {
           setSelectedEmployee(null);
           setEmployeeEwaEligibility(null);
           setEmployeeEwaHistory([]);
+          // The operator abandoned the withdrawal — its intent identity
+          // must not leak into the next attempt.
+          setWithdrawIntent(null);
         }}
         title="Earned Wage Access (EWA) Portal"
       >
@@ -938,6 +985,7 @@ export default function Payroll() {
                   setSelectedEmployee(null);
                   setEmployeeEwaEligibility(null);
                   setEmployeeEwaHistory([]);
+                  setWithdrawIntent(null);
                 }}
               >
                 Close
