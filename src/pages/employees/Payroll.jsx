@@ -186,11 +186,25 @@ export default function Payroll() {
     setDisbursingId(payrollId);
     try {
       await payrollApi.disburse({ payrollId });
-      toast.go('Disbursement triggered successfully');
+      // Success is only claimed on the server's 2xx: the backend settles the
+      // payroll and its transaction result is the authoritative answer.
+      toast.go('Payroll disbursed per the server');
       fetchPayrollData();
     } catch (err) {
-      console.error(err);
-      toast.stop('Disbursement failed');
+      if (isUnknownOutcome(err)) {
+        // No HTTP answer — the outcome is unknown, and calling it a failure
+        // invites a blind retry. The backend's atomic claim ("already
+        // disbursed or not pending") makes a retry safe, but the operator
+        // should still verify status first.
+        toast.stop('Connection lost — this payroll may have been disbursed', {
+          description: 'Check the payroll status before retrying. The server refuses to settle an already-disbursed payroll twice.',
+        });
+      } else {
+        // Definitive server refusal — surface the server's own message
+        // (already disbursed, external-preference unsupported, snapshot
+        // stale, 403 …) instead of a blanket "Disbursement failed".
+        toast.stop(err.message || 'Disbursement refused by the server');
+      }
     } finally {
       setDisbursingId(null);
     }
@@ -204,18 +218,42 @@ export default function Payroll() {
     }
     const readyRecords = payrollRecords.filter(r => r.status === 'READY');
     if (readyRecords.length === 0) {
-      toast.warning('No payroll records are ready for disbursement');
+      // toast.warning never existed on the toast API — this path was a
+      // latent TypeError. Honest stop-tone message instead.
+      toast.stop('No payroll records are ready for disbursement');
       return;
     }
 
     setDisbursingAll(true);
     try {
-      await Promise.all(readyRecords.map(r => payrollApi.disburse({ payrollId: r.id })));
-      toast.go('Successfully disbursed all ready payroll payments');
+      // Promise.all ABORTED at the first rejection and the blanket catch
+      // lied twice: committed disbursements were reported as failures, and
+      // the server's typed refusals were erased. allSettled reports the
+      // exact settled/refused/unknown split from the server's answers.
+      const settled = await Promise.allSettled(
+        readyRecords.map(r => payrollApi.disburse({ payrollId: r.id }))
+      );
+      const ok = settled.filter(x => x.status === 'fulfilled').length;
+      const rejected = settled.filter(x => x.status === 'rejected');
+      const definitive = rejected.filter(x => !isUnknownOutcome(x.reason));
+      const unknown = rejected.length - definitive.length;
+
+      if (rejected.length === 0) {
+        toast.go(`All ${ok} ready payroll payments disbursed per the server`);
+      } else if (unknown === 0) {
+        const first = definitive[0]?.reason?.message || 'refused by the server';
+        toast.stop(`${ok} of ${readyRecords.length} payroll payments disbursed — ${definitive.length} refused`, {
+          description: `Server: ${first}`,
+        });
+      } else {
+        toast.stop(`${ok} of ${readyRecords.length} payroll payments confirmed — ${unknown} with unknown outcome`, {
+          description: 'Some requests got no server answer and may have gone through. Check payroll statuses before retrying; the server refuses to settle an already-disbursed payroll twice.',
+        });
+      }
       fetchPayrollData();
     } catch (err) {
-      console.error(err);
-      toast.stop('Failed to disburse some or all payments');
+      // allSettled never rejects — defensive only.
+      toast.stop(err.message || 'Failed to disburse payroll payments');
     } finally {
       setDisbursingAll(false);
     }
