@@ -21,6 +21,7 @@ vi.mock('@/lib/api', () => ({
 }));
 
 import ExperienceStudio from '@/pages/ExperienceStudio';
+import { AuthContext } from '@/lib/AuthContext';
 
 const blueprint = {
   preset: 'DINING_JOURNEY',
@@ -50,7 +51,9 @@ const renderStudio = () => {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
   return render(
     <QueryClientProvider client={queryClient}>
-      <ExperienceStudio />
+      <AuthContext.Provider value={{ isAdminView: false, bizProfile: { id: 'biz-1' } }}>
+        <ExperienceStudio />
+      </AuthContext.Provider>
     </QueryClientProvider>,
   );
 };

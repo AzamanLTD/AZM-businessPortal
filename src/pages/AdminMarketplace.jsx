@@ -10,7 +10,7 @@
 // failed loads honestly instead of falling back to stale data.
 // =============================================================================
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { getTypeConfig, BUSINESS_TYPES } from '@/lib/businessTypes';
@@ -64,11 +64,30 @@ export default function AdminMarketplace() {
     return byCat;
   }, [adminBusinesses]);
 
+  // The business the operator asked to ENTER (selection → dashboard entry).
+  // Kept across the whole controlled transition — including a switch that is
+  // deferred while business mutations settle — so the dashboard entry is a
+  // direct consequence of the switch SUCCEEDING, never of it merely starting.
+  const [enterTarget, setEnterTarget] = useState(null);
+
   const handleSelect = (b) => {
     if (switching) return; // a controlled transition is already in progress
     clearSwitchError();
+    setEnterTarget(b.id);
     selectBusiness(b.id, { targetName: b.businessName });
   };
+
+  // Enter the selected business's dashboard ONLY when its context has fully
+  // committed (selected id set AND no transition running). A failed switch
+  // never lands here: the old context stays active, the error card explains
+  // what happened, and the operator is never navigated into a partial or
+  // failed context.
+  useEffect(() => {
+    if (enterTarget && selectedBusinessId === enterTarget && !switching) {
+      setEnterTarget(null);
+      navigate('/');
+    }
+  }, [enterTarget, selectedBusinessId, switching, navigate]);
 
   return (
     <div data-testid="admin-marketplace">
@@ -118,6 +137,11 @@ export default function AdminMarketplace() {
                   ? `Waiting for in-progress business operations to finish before switching to ${switching.targetName}…`
                   : `Switching to ${switching.targetName}…`}
               </div>
+              {switching.waitingForMutations && (
+                <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 2 }}>
+                  {switching.targetName}'s dashboard will open automatically once the switch completes.
+                </div>
+              )}
             </div>
           </Card>
         </div>
@@ -199,7 +223,7 @@ export default function AdminMarketplace() {
                         </span>
                       </div>
 
-                      <div style={{ marginTop: 12 }}>
+                      <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
                         <Button
                           size="sm"
                           variant={isSelected ? 'secondary' : 'primary'}
@@ -209,6 +233,16 @@ export default function AdminMarketplace() {
                         >
                           {isSelected ? 'Currently viewing' : `Select ${b.businessName}`}
                         </Button>
+                        {isSelected && !switching && (
+                          <Button
+                            size="sm"
+                            variant="primary"
+                            onClick={() => navigate('/')}
+                            data-testid={`open-dashboard-${b.id}`}
+                          >
+                            Open Dashboard
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </Card>

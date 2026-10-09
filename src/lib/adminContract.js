@@ -36,6 +36,8 @@
 
 export const ADMIN_ROUTE_CONTRACT = {
   // ── Fully supported (Business OS / dine-in / direct messages / storefront) ──
+  '/admin-marketplace': { level: 'supported' }, // the admin landing surface itself
+  '/seat-map': { level: 'supported' },          // pure redirect to /transit — renders no data
   '/messages': { level: 'supported' },
   '/dine-in': { level: 'supported' },
   '/groups': { level: 'supported' },
@@ -63,12 +65,17 @@ export const ADMIN_ROUTE_CONTRACT = {
     level: 'mixed',
     ownerOnly: ['payout destinations'],
   },
+  '/finance/pnl': { level: 'mixed', ownerOnly: ['payout destinations'] },
+  '/finance/expenses': { level: 'mixed', ownerOnly: ['payout destinations'] },
+  '/finance/payouts': { level: 'mixed', ownerOnly: ['payout destinations'] },
+  '/finance/disputes': { level: 'mixed', ownerOnly: ['payout destinations'] },
   '/transit-fleet': { level: 'mixed', ownerOnly: ['legacy trip list'] },
   '/transit-drivers': { level: 'mixed', ownerOnly: ['legacy trip list'] },
   '/transit-manifests': { level: 'mixed', ownerOnly: ['legacy trip list'] },
   '/transit-cargo': { level: 'mixed', ownerOnly: ['legacy trips', 'seat maps'] },
   '/transit': { level: 'mixed', ownerOnly: ['legacy trips', 'seat maps'] },
   '/restaurant-kitchen': { level: 'mixed', ownerOnly: ['menu catalog'] },
+  '/restaurant-inventory': { level: 'mixed', ownerOnly: ['menu catalog', 'product catalog'] },
   '/restaurant-tables': { level: 'mixed', ownerOnly: ['locations', 'tables'] },
   '/retail-inventory': { level: 'mixed', ownerOnly: ['product catalog'] },
   '/pos': { level: 'mixed', ownerOnly: ['product catalog'] },
@@ -96,11 +103,18 @@ export const ADMIN_ROUTE_CONTRACT = {
   '/settings/developer': { level: 'mock-only' },
 };
 
+// Explicit 'unverified' state: a route NOT in the map has never been checked
+// against the actual backend admin contract. It FAILS CLOSED in admin view —
+// never silently treated as 'supported' — with an explanation that the route
+// is not yet certified for cross-business viewing.
+export const UNVERIFIED_ROUTE_CONTRACT = Object.freeze({ level: 'unverified' });
+
 /** Resolve the admin contract for a pathname against the map (supports
- *  '/orders/:id'-style params). Unknown routes default to 'supported' so a
- *  new Business OS page is not accidentally refused; the map is the record. */
+ *  '/orders/:id'-style params). Unknown/missing pathnames resolve to the
+ *  explicit unverified state — the map is the record, and anything outside
+ *  it must be certified before it renders in admin view. */
 export function adminContractFor(pathname) {
-  if (!pathname) return { level: 'supported' };
+  if (!pathname) return UNVERIFIED_ROUTE_CONTRACT;
   const exact = ADMIN_ROUTE_CONTRACT[pathname];
   if (exact) return exact;
   const segments = pathname.split('/').filter(Boolean);
@@ -110,7 +124,7 @@ export function adminContractFor(pathname) {
     const match = patSegs.every((s, i) => s.startsWith(':') || s === segments[i]);
     if (match) return contract;
   }
-  return { level: 'supported' };
+  return UNVERIFIED_ROUTE_CONTRACT;
 }
 
 /** True when the route can render ANY admin-capable business data. */

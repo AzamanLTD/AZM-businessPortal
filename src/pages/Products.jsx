@@ -40,6 +40,8 @@ import {
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
 import { uploadImageToCloudinary, isCloudinaryConfigured, validateImageFile } from '@/lib/cloudinary';
+import { useAuth } from '@/lib/AuthContext';
+import OwnerOnlyRefusal from '@/components/OwnerOnlyRefusal';
 
 // Pre-defined food tags for quick chips
 const DIETARY_TAGS = [
@@ -131,6 +133,7 @@ export default function Products() {
   const { data: locationsData } = useQuery({
     queryKey: ['locations'],
     queryFn: () => locationsApi.list(),
+    enabled: !isAdminView, // locations are owner-only — refused in admin view
   });
   const locationsList = locationsData?.locations || [];
 
@@ -141,9 +144,12 @@ export default function Products() {
     }
   });
 
+  const { isAdminView } = useAuth();
+
   const { data: sectionsData, isLoading: isSectionsLoading } = useQuery({
     queryKey: ['catalog-sections', selectedLocationId],
     queryFn: () => request(`/api/business/catalog/sections${selectedLocationId ? `?locationId=${selectedLocationId}` : ''}`),
+    enabled: !isAdminView, // product catalog is owner-only — refused in admin view
   });
   const sectionsList = sectionsData || [];
 
@@ -155,6 +161,7 @@ export default function Products() {
       if (selectedSectionId) params.category = selectedSectionId; // We can query by section or local filters
       return productsApi.list(params);
     },
+    enabled: !isAdminView, // product catalog is owner-only — refused in admin view
   });
   const productsList = productsData?.products || [];
 
@@ -778,6 +785,8 @@ export default function Products() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[1, 2, 4].map(i => <Skel key={i} className="h-44" />)}
             </div>
+          ) : isAdminView ? (
+            <OwnerOnlyRefusal label="The product catalog" testId="products-owner-only" />
           ) : productsList.length === 0 ? (
             <Empty
               icon={Package}

@@ -41,6 +41,8 @@ import {
   ShieldAlert,
   ArrowRight
 } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
+import OwnerOnlyRefusal from '@/components/OwnerOnlyRefusal';
 
 const RESERVATION_STATUS = {
   PENDING: { label: 'Pending', color: 'var(--hold)' },
@@ -80,10 +82,13 @@ export default function Reservations() {
   // Overbooking mode state
   const [overbookingAllowed, setOverbookingAllowed] = useState(false);
 
+  const { isAdminView } = useAuth();
+
   // Fetch Locations
   const { data: locationsData } = useQuery({
     queryKey: ['locations'],
     queryFn: () => locations.list(),
+    enabled: !isAdminView, // owner-only on the server — refused in admin view
   });
   const locationList = locationsData?.locations || [];
 
@@ -116,6 +121,7 @@ export default function Reservations() {
       endDate: dateRange.end || undefined,
       search: searchQuery || undefined,
     }),
+      enabled: !isAdminView, // owner-only on the server — refused in admin view
   });
   const reservationList = resData?.reservations || [];
 
@@ -478,6 +484,8 @@ export default function Reservations() {
                 Retry Query
               </Button>
             </Card>
+          ) : isAdminView ? (
+            <OwnerOnlyRefusal label="The reservations feed" testId="reservations-owner-only" />
           ) : filteredReservations.length === 0 ? (
             <Card className="p-0">
               <Empty

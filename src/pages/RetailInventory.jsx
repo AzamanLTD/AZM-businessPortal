@@ -38,6 +38,8 @@ import {
   ScanLine,
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
+import { useAuth } from '@/lib/AuthContext';
+import OwnerOnlyRefusal from '@/components/OwnerOnlyRefusal';
 
 const TABS = [
   { key: 'overview', label: 'Overview', icon: Package },
@@ -182,10 +184,12 @@ function OverviewTab({ lowStockItems, loading }) {
     onError: (e) => toast.stop(e.message || 'Failed to update barcode'),
   });
 
+  const { isAdminView } = useAuth();
   const { data: productsData } = useQuery({
     queryKey: ['products', 'retail-list'],
     queryFn: () => productsListApi.list({ limit: 100 }),
     staleTime: 30000,
+    enabled: !isAdminView, // product catalog is owner-only — refused in admin view
   });
 
   const products = productsData?.products || productsData || [];
@@ -252,7 +256,9 @@ function OverviewTab({ lowStockItems, loading }) {
         <h2 className="text-sm font-semibold text-[var(--info)] uppercase tracking-wide mb-3 flex items-center gap-2">
           <Barcode className="w-4 h-4" /> Barcode & SKU Management
         </h2>
-        {products.length === 0 ? (
+        {isAdminView ? (
+          <OwnerOnlyRefusal label="The product catalog" testId="retail-owner-only-products" />
+        ) : products.length === 0 ? (
           <Empty icon={Barcode} title="No products yet" subtitle="Create products to assign barcodes and SKUs." />
         ) : (
           <div className="overflow-x-auto">

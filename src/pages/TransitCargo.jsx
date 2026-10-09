@@ -4,6 +4,7 @@ import { Card, Button, Tag, Skel, Empty, Dialog, Input, Select } from '@/compone
 import { fmtUSDC, cn } from '@/lib/utils';
 import { Package, Plus, Clock, MapPin, AlertCircle, CheckCircle2, Truck, Link, Filter } from 'lucide-react';
 import { toast } from '@/lib/toast';
+import { useAuth } from '@/lib/AuthContext';
 
 const STATUS_COLUMNS = [
   { key: 'PENDING', label: 'Pending', color: 'var(--text-3)' },
@@ -47,7 +48,9 @@ export default function TransitCargo() {
     } catch { toast.stop('Failed to load cargo'); setCargo([]); }
   };
 
+  const { isAdminView } = useAuth();
   const loadTrips = async () => {
+    if (isAdminView) return; // legacy trip feed is owner-only — refused in admin view
     try {
       const res = await transitApi.list();
       setTrips(res.data || res || []);

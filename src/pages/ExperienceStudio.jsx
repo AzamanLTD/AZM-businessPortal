@@ -5,6 +5,8 @@ import { hotelOpsApi, transit } from '@/lib/marketplaceApi';
 import { storefrontApi } from '@/services/storefrontApi';
 import ExperienceLivePreview from '@/components/ExperienceLivePreview';
 import { experiencePolicyForCategory } from '@/lib/experiencePolicy';
+import { useAuth } from '@/lib/AuthContext';
+import OwnerOnlyRefusal from '@/components/OwnerOnlyRefusal';
 
 const PRESET_META = {
   DINING_JOURNEY: { title: 'Dining journey', description: 'Customers browse like a menu, open dishes into a focused order view, and add choices into a living tray.' },
@@ -48,9 +50,12 @@ export default function ExperienceStudio() {
   const category = experienceQuery.data?.category?.trim().toUpperCase() || '';
   const policy = experiencePolicyForCategory(category);
 
+  const { isAdminView } = useAuth();
   const previewQuery = useQuery({
     queryKey: ['experience-studio', 'preview', category],
-    enabled: Boolean(category),
+    // The preview pulls the product catalog / legacy trip list, both owner-only
+    // on the server. Never fire it in admin view.
+    enabled: Boolean(category) && !isAdminView,
     queryFn: async () => {
       if (category === 'FOOD_BEVERAGE' || category === 'RESTAURANT' || category === 'RETAIL' || category === 'SERVICE' || category === 'OTHER') {
         const response = await products.list();
@@ -133,6 +138,7 @@ export default function ExperienceStudio() {
       </div>
       <div className="space-y-6">
         <ExperienceLivePreview blueprint={draft} category={category} products={preview.products} rooms={preview.rooms} trips={preview.trips} />
+        {isAdminView && <OwnerOnlyRefusal label="The live content preview (product catalog and trip list)" testId="experience-owner-only" />}
         {previewQuery.isFetching && <p className="text-xs" style={{ color: 'var(--text-3)' }}>Refreshing the live preview from your current business content…</p>}
         {previewQuery.error?.message && <div className="rounded-xl border px-4 py-3 text-xs" style={{ borderColor: 'var(--line)', color: 'var(--text-3)', background: 'var(--surface)' }}>Your live content could not be refreshed: {previewQuery.error.message}</div>}
         <div className="rounded-2xl border p-5" style={{ borderColor: 'var(--line)', background: 'var(--surface)' }}><p className="text-[11px] font-semibold uppercase tracking-[0.16em]" style={{ color: 'var(--accent)' }}>Experience guardrails</p><p className="mt-2 text-sm leading-6" style={{ color: 'var(--text-2)' }}>AZM keeps the experience category-native. Your settings tune pacing, detail and context while the preview stays grounded in your actual storefront records.</p></div>

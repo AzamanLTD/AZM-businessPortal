@@ -11,6 +11,8 @@ import {
 import { useState, useEffect } from 'react';
 import { toast } from '@/lib/toast';
 import { usePermission } from '@/hooks/usePermission';
+import { useAuth } from '@/lib/AuthContext';
+import OwnerOnlyRefusal from '@/components/OwnerOnlyRefusal';
 
 const STEPS = ['AWAITING_PAYMENT', 'PAID', 'DELIVERED', 'COMPLETED'];
 
@@ -71,9 +73,13 @@ export default function OrderDetail() {
   const [isEditingNotes, setIsEditingNotes] = useState(false);
 
   // Get order detail
+  const { isAdminView } = useAuth();
+  // Legacy order feed — owner-only on the server. In admin view never fire it;
+  // render an honest refusal instead of "Order Not Found".
   const { data: order, isLoading, isError, refetch } = useQuery({
     queryKey: ['order', id],
     queryFn: () => ordersApi.get(id),
+    enabled: !isAdminView,
   });
 
   // Sync delivery notes from order data
@@ -125,6 +131,14 @@ export default function OrderDetail() {
           <Skel className="h-96 md:col-span-2" />
           <Skel className="h-96" />
         </div>
+      </div>
+    );
+  }
+
+  if (isAdminView) {
+    return (
+      <div className="p-6 max-w-4xl mx-auto">
+        <OwnerOnlyRefusal label="This order record" testId="order-detail-owner-only" />
       </div>
     );
   }

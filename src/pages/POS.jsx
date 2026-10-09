@@ -187,11 +187,14 @@ export default function POS() {
   // Backend POS charge routes (pos/order, pos/cash-sale, pos/cash-close-tab)
   // all require orders.manage — the canonical key the server enforces.
   const canRing = hasPermission('orders.manage');
+  const { isAdminView } = useAuth();
+
   const refreshOutbox = useCallback(() => setOutboxCount(readOutbox().length), []);
 
   const { data: productsData = [], isLoading: loadingProducts } = useQuery({
     queryKey: ['pos-products'],
     queryFn: () => productsApi.list({ limit: 200 }),
+    enabled: !isAdminView, // product catalog is owner-only — refused in admin view
     select: d => Array.isArray(d) ? d : (d?.products || d?.data || []),
     staleTime: 5 * 60_000,
   });
@@ -375,6 +378,8 @@ export default function POS() {
                 <div key={i} className="aspect-[3/4] rounded-2xl animate-pulse" style={{ background: 'var(--f-line)' }} />
               ))}
             </div>
+          ) : isAdminView ? (
+            <OwnerOnlyRefusal label="The product catalog (POS can only run for the business owner)" testId="pos-owner-only-products" />
           ) : visibleProducts.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full gap-3" style={{ color: 'var(--f-text-3)' }}>
               <Package className="w-12 h-12 opacity-30" /><p className="text-sm">No items found</p>

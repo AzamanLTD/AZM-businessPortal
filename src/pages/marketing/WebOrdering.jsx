@@ -15,6 +15,7 @@ import {
   Copy, Check, Zap, Info, Image as ImageIcon, RefreshCw
 } from 'lucide-react';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
+import OwnerOnlyRefusal from '@/components/OwnerOnlyRefusal';
 
 const PUBLIC_ORDER_BASE = 'https://order.azaman.app';
 
@@ -30,7 +31,7 @@ function CopyBtn({ text }) {
 }
 
 export default function WebOrdering() {
-  const { bizProfile } = useAuth();
+  const { bizProfile, isAdminView } = useAuth();
   const bizId = bizProfile?.id || bizProfile?._id || 'demo';
   const [enabled, setEnabled] = useState(false);
   const [accentColor, setAccentColor] = useState(bizProfile?.adAccentColor || '#6C4FD1');
@@ -103,6 +104,7 @@ export default function WebOrdering() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
+      {isAdminView && <OwnerOnlyRefusal label="Your business profile (the public web-ordering page renders from the owner's profile)" testId="webordering-owner-only" />}
       <div>
         <h1 className="text-2xl font-bold" style={{ color: 'var(--f-text)' }}>Web Ordering</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--f-text-3)' }}>

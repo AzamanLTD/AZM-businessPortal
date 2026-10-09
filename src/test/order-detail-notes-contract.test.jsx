@@ -46,6 +46,7 @@ vi.mock('@/components/instrument', async () => {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createElement } from 'react';
 import OrderDetail from '@/pages/OrderDetail';
+import { AuthContext } from '@/lib/AuthContext';
 
 const baseOrder = {
   id: 'ord_test',
@@ -64,7 +65,9 @@ const baseOrder = {
 function renderPage() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   render(
-    createElement(QueryClientProvider, { client }, createElement(OrderDetail)),
+    createElement(QueryClientProvider, { client },
+      createElement(AuthContext.Provider, { value: { isAdminView: false, bizProfile: { id: 'biz-1' } } },
+        createElement(OrderDetail))),
   );
 }
 

@@ -33,6 +33,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
+import OwnerOnlyRefusal from '@/components/OwnerOnlyRefusal';
 
 export default function Marketing() {
   const { hasPermission } = usePermission();
@@ -68,6 +69,7 @@ export default function Marketing() {
   });
 
   // 2. Ads Tab States
+  const { isAdminView } = useAuth();
   const [ads, setAds] = useState([]);
   const [adForm, setAdForm] = useState({
     template: 'PROMO',
@@ -130,6 +132,7 @@ export default function Marketing() {
   };
 
   const fetchAds = async () => {
+    if (isAdminView) return; // ads are owner-only on the server — refused in admin view
     try {
       const data = await request('/api/business/ads');
       setAds(data?.ads || data || []);
@@ -139,6 +142,7 @@ export default function Marketing() {
   };
 
   const fetchFollowerStats = async () => {
+    if (isAdminView) return; // follower stats are owner-only — refused in admin view
     try {
       const data = await request('/api/business-os/marketing/followers');
       setFollowerStats({
@@ -616,7 +620,9 @@ export default function Marketing() {
                 {/* Ad Performance Table */}
                 <Card>
                   <h4 className="text-base font-bold mb-4">Active & Historic Campaigns</h4>
-                  {ads.length === 0 ? (
+                  {isAdminView ? (
+                    <OwnerOnlyRefusal label="Ad campaigns" testId="marketing-owner-only-ads" />
+                  ) : ads.length === 0 ? (
                     <Empty title="No active ad campaigns" description="Create an ad with the composer above to begin tracking impressions and clicks." icon={Megaphone} />
                   ) : (
                     <div className="space-y-3">

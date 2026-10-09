@@ -23,7 +23,7 @@
 // =============================================================================
 
 import { useAuth } from '@/lib/AuthContext';
-import { adminContractFor } from '@/lib/adminContract';
+import { adminContractFor, adminRouteRenderable } from '@/lib/adminContract';
 import { Card, Button } from '@/components/instrument';
 import { Link, useLocation } from 'react-router-dom';
 import { ShieldAlert, ArrowLeft, Info } from 'lucide-react';
@@ -37,10 +37,19 @@ function RefusalCard({ route, contract }) {
             <ShieldAlert size={20} color="var(--stop)" />
           </div>
           <h2 style={{ fontSize: 17, fontWeight: 650, color: 'var(--text)', textAlign: 'center' }}>
-            {contract.level === 'mock-only' ? 'Developer Tools are a preview only' : 'Not available in admin view'}
+            {contract.level === 'unverified' && 'Not yet certified for cross-business viewing'}
+            {contract.level === 'mock-only' && 'Developer Tools are a preview only'}
+            {(contract.level === 'owner-only') && 'Not available in admin view'}
           </h2>
           <p style={{ fontSize: 13, color: 'var(--text-2)', textAlign: 'center', marginTop: 10, lineHeight: 1.6 }}>
-            {contract.level === 'mock-only' ? (
+            {contract.level === 'unverified' ? (
+              <>
+                This route has not been verified against the backend admin contract yet. Until a
+                route is certified (in <code>src/lib/adminContract.js</code>), admin view fails
+                closed: it is never rendered as if it were supported. Certify the route against
+                the actual server behavior, then add it to the contract map.
+              </>
+            ) : contract.level === 'mock-only' ? (
               <>
                 The Developer page has no live backend in the current server contract — API keys and
                 webhooks are client-side previews only. Wiring it to the developer endpoints is a
@@ -80,8 +89,8 @@ function LimitationBanner({ route, contract }) {
             <strong style={{ color: 'var(--text)' }}>Admin view limitation.</strong> Parts of this page
             resolve data from the business owner's identity and are refused by the server in admin
             scope: <strong>{(contract.ownerOnly || []).join(', ')}</strong>. Those parts surface the
-            server's refusals or empty data below — they are not this business being empty, and no
-            admin-capable section is affected.
+            server's refusals below — the server stays the authority — and they are never presented
+            as this business being empty. No admin-capable section is affected.
           </div>
         </div>
       </Card>
@@ -95,16 +104,20 @@ export default function AdminContractGate({ route, children }) {
   if (!isAdminView) return children;
 
   const contract = adminContractFor(route || location.pathname);
-  if (contract.level === 'owner-only' || contract.level === 'mock-only') {
-    return <RefusalCard route={route || location.pathname} contract={contract} />;
+  const path = route || location.pathname;
+  // Fail closed: only the two EXPLICIT renderable levels render the page.
+  // owner-only, mock-only and the default 'unverified' all refuse — an
+  // unclassified route can never render as if it were supported.
+  if (adminRouteRenderable(contract)) {
+    if (contract.level === 'mixed') {
+      return (
+        <>
+          <LimitationBanner route={path} contract={contract} />
+          {children}
+        </>
+      );
+    }
+    return children; // level === 'supported'
   }
-  if (contract.level === 'mixed') {
-    return (
-      <>
-        <LimitationBanner route={route || location.pathname} contract={contract} />
-        {children}
-      </>
-    );
-  }
-  return children;
+  return <RefusalCard route={path} contract={contract} />;
 }

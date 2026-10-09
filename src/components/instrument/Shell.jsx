@@ -7,7 +7,7 @@ import {
   LogOut, Smartphone,
 } from 'lucide-react';
 import { resolveNav, DOMAINS } from '@/lib/nav';
-import { adminContractFor } from '@/lib/adminContract';
+import { adminContractFor, adminRouteRenderable } from '@/lib/adminContract';
 import { useTheme } from '@/lib/theme';
 import { useCommandPalette } from '@/lib/command';
 import { useSequence } from '@/lib/keys';
@@ -72,9 +72,17 @@ export function Shell({ children, navProps, brandName = 'Azaman', brandShort = '
   // hidden, so the portal does not silently pretend they don't exist.
   const navItemDisabledInAdminView = useCallback((to) => {
     if (!navProps.isAdminView) return false;
-    const contract = adminContractFor(to);
-    return contract.level === 'owner-only' || contract.level === 'mock-only';
+    // Fail closed: anything that is not explicitly 'supported' or 'mixed'
+    // (owner-only, mock-only, or an UNVERIFIED unclassified route) is
+    // disabled in admin view — never silently treated as enabled.
+    return !adminRouteRenderable(adminContractFor(to));
   }, [navProps.isAdminView]);
+  const navItemDisabledReason = useCallback((to) => {
+    const level = adminContractFor(to).level;
+    if (level === 'unverified') return 'Not yet certified for cross-business viewing (admin view fails closed for unverified routes).';
+    if (level === 'mock-only') return 'Preview only — this surface has no live backend yet.';
+    return 'Not available in admin view — the server only authorizes the business owner for this surface.';
+  }, []);
   const qc = useQueryClient();
 
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
@@ -247,7 +255,7 @@ export function Shell({ children, navProps, brandName = 'Azaman', brandShort = '
                         end={item.to === '/'}
                         onClick={adminDisabled ? (e) => e.preventDefault() : undefined}
                         className={cn('i-nav-item', isItemActive(item.to) && 'is-active', adminDisabled && 'is-disabled')}
-                        title={adminDisabled ? 'Not available in admin view — the server only authorizes the business owner for this surface.' : undefined}
+                        title={adminDisabled ? navItemDisabledReason(item.to) : undefined}
                         onMouseEnter={() => handleNavHover(item.to)}
                       >
                         <Icon style={{ width: 15, height: 15, flexShrink: 0 }} />
@@ -444,13 +452,15 @@ function MobileNav({ nav, brandName, brandShort, onNavigate, isAdminView }) {
               <div key={group.label}>
                 {group.items.map(item => {
                   const Icon = item.icon;
-                  const adminDisabled = isAdminView && ['owner-only', 'mock-only'].includes(adminContractFor(item.to)?.level);
+                  const adminDisabled = isAdminView && !adminRouteRenderable(adminContractFor(item.to));
                   return (
                     <NavLink key={item.to} to={item.to}
                       className={({isActive}) => cn('i-nav-item', isActive && 'is-active', adminDisabled && 'is-disabled')}
                       end={item.to === '/'}
                       onClick={adminDisabled ? (e) => e.preventDefault() : undefined}
-                      title={adminDisabled ? 'Not available in admin view — the server only authorizes the business owner for this surface.' : undefined}
+                      title={adminDisabled ? (adminContractFor(item.to)?.level === 'unverified'
+                        ? 'Not yet certified for cross-business viewing (admin view fails closed for unverified routes).'
+                        : 'Not available in admin view — the server only authorizes the business owner for this surface.') : undefined}
                     >
                       <Icon style={{ width: 15, height: 15, flexShrink: 0 }} />
                       <span>{item.label}</span>
