@@ -82,6 +82,17 @@ export const escrow = {
 export const analytics = {
   summary: () => request('/api/business/orders/stats'),
   predictive: () => request('/api/business-os/analytics/predictive'),
+  // Trailing-30-day customer aggregates. This businessOS endpoint is what the
+  // backend authorizes for analytics.view — for owners AND employees (same
+  // requirePermission, employment-aware business resolution). Employee-facing
+  // KPIs read these server-computed totals; the legacy owner-only orders feed
+  // must never be called for an employee account.
+  customer30d: () => {
+    const start = new Date(); start.setDate(start.getDate() - 30);
+    const end = new Date();
+    const day = d => d.toISOString().split('T')[0];
+    return request(`/api/business-os/analytics/customer?startDate=${day(start)}&endDate=${day(end)}`);
+  },
 };
 
 export const locations = {
