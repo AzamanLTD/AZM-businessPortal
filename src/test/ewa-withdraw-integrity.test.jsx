@@ -51,7 +51,7 @@ vi.mock('@/lib/marketplaceApi', () => ({
   },
 }));
 
-vi.mock('@/lib/toast', () => ({ toast: { go: vi.fn(), stop: vi.fn() } }));
+vi.mock('@/lib/toast', () => ({ toast: { go: vi.fn(), stop: vi.fn(), neutral: vi.fn() } }));
 
 // Honest passthrough instrument mocks: the contract under test is the
 // withdrawal handler's wire behavior, not the component library.
@@ -121,6 +121,7 @@ function lastPayload() { return apiState.withdrawCalls[apiState.withdrawCalls.le
 
 beforeEach(() => {
   vi.clearAllMocks();
+  localStorage.clear();
   apiState.withdrawCalls = [];
   apiState.withdrawImpl = null;
   apiState.eligibilityMax = 100;

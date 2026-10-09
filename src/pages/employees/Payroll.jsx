@@ -35,6 +35,9 @@ import {
   withdrawIntentFingerprint,
   describeWithdrawResult,
   isUnknownOutcome,
+  loadUnresolvedWithdrawIntent,
+  saveUnresolvedWithdrawIntent,
+  clearUnresolvedWithdrawIntent,
 } from '@/lib/ewaWithdraw';
 
 export default function Payroll() {
@@ -263,7 +266,15 @@ export default function Payroll() {
   const handleSelectEmployeeEwa = async (emp) => {
     setSelectedEmployee(emp);
     setLoadingEmployeeEwa(true);
-    setWithdrawAmount('');
+    // Recover any unresolved withdrawal identity for THIS employee first: a
+    // request that got no server answer may have committed, and its key is
+    // the only thing that makes a later retry safe. The recovery is made
+    // explicit (banner + prefilled retry below) — never silent.
+    const stored = loadUnresolvedWithdrawIntent(emp.id);
+    setWithdrawIntent(stored
+      ? { key: stored.key, fingerprint: stored.fingerprint, amount: stored.amount, unresolved: true }
+      : null);
+    setWithdrawAmount(stored ? stored.amount : '');
     setIsEwaModalOpen(true);
     try {
       const [eligRes, histRes] = await Promise.all([
@@ -293,7 +304,7 @@ export default function Payroll() {
   //    UNKNOWN outcome (no HTTP answer) is never called a failure, and the
   //    intent key is kept so the retry cannot double-pay.
   const handleWithdrawEwaSubmit = async (e) => {
-    e.preventDefault();
+    e?.preventDefault?.();
     if (!canProcess) {
       toast.stop('You do not have permission to process withdrawals');
       return;
@@ -303,51 +314,110 @@ export default function Payroll() {
       toast.stop('Enter an exact amount in USDC (plain decimal, up to 8 places), e.g. 25.50');
       return;
     }
-    if (exceedsCapHint(amount, employeeEwaEligibility?.maxWithdrawal)) {
-      toast.stop(`Amount exceeds the maximum withdrawal limit of ${employeeEwaEligibility.maxWithdrawal} USDC`);
+
+    const intentInput = { employeeId: selectedEmployee.id, amount };
+    const fingerprint = withdrawIntentFingerprint(intentInput);
+
+    // The durable unresolved record is authoritative. While a withdrawal
+    // for THIS employee is unresolved, a DIFFERENT amount must not be
+    // submitted: that would silently abandon an in-flight identity which
+    // may have committed, and minting a fresh key in its place is exactly
+    // the second-payout risk. Recovery of the unresolved request is
+    // explicit (retry it, or discard it with a clear warning) — never a
+    // silent bypass via a changed amount.
+    const storedUnresolved = loadUnresolvedWithdrawIntent(selectedEmployee.id);
+    if (storedUnresolved && storedUnresolved.fingerprint !== fingerprint) {
+      toast.stop(`An earlier withdrawal of ${storedUnresolved.amount} USDC is still unresolved`, {
+        description: 'That request may have gone through — retry the same amount (its original request ID is preserved and the backend cannot pay twice), or explicitly discard it first. A different amount cannot be submitted until the earlier request is resolved.',
+      });
       return;
     }
 
-    const intentInput = { employeeId: selectedEmployee.id, amount };
-    let key = resolveWithdrawIntentKey(withdrawIntent, intentInput);
+    // Same intent → reuse the identity (state copy, or the durable record
+    // after a reopen/reload). A retry must reach the server's replay path.
+    let key = resolveWithdrawIntentKey(withdrawIntent, intentInput)
+      || (storedUnresolved && storedUnresolved.fingerprint === fingerprint ? storedUnresolved.key : null);
     if (!key) {
+      // A genuinely new economic intent: cap-check it (advisory only; the
+      // server re-validates with exact-decimal math) and mint a fresh key.
+      if (exceedsCapHint(amount, employeeEwaEligibility?.maxWithdrawal)) {
+        toast.stop(`Amount exceeds the maximum withdrawal limit of ${employeeEwaEligibility.maxWithdrawal} USDC`);
+        return;
+      }
       key = (typeof crypto !== 'undefined' && crypto.randomUUID)
         ? crypto.randomUUID()
         : `ewa_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-      setWithdrawIntent({ key, fingerprint: withdrawIntentFingerprint(intentInput) });
+      setWithdrawIntent({ key, fingerprint });
     }
+    // Durable from the moment the attempt leaves: a crash, reload or lost
+    // response must not lose the identity that makes the retry safe.
+    saveUnresolvedWithdrawIntent({ employeeId: selectedEmployee.id, key, amount, fingerprint });
 
     setProcessingWithdrawal(true);
+    let res;
     try {
-      const res = await ewaApi.withdraw({ ...intentInput, idempotencyKey: key });
-      // The server committed (or replayed) the withdrawal: the intent is
-      // settled. A genuinely new withdrawal mints a fresh identity.
-      setWithdrawIntent(null);
-      toast.go(describeWithdrawResult(res));
+      res = await ewaApi.withdraw({ ...intentInput, idempotencyKey: key });
+    } catch (err) {
+      if (isUnknownOutcome(err)) {
+        // No HTTP answer — the request may have committed. The intent is
+        // UNRESOLVED: its identity is kept in state AND the durable store,
+        // so closing the modal or reloading cannot silently erase it and a
+        // later retry reuses the same key (backend replays, cannot pay twice).
+        setWithdrawIntent(prev => (prev && prev.key === key)
+          ? { ...prev, unresolved: true, amount }
+          : { key, fingerprint, amount, unresolved: true });
+        toast.stop('Connection lost — this withdrawal may have gone through', {
+          description: 'The original request ID is preserved. Reopen this employee to retry the same request — the backend replays the committed withdrawal and cannot pay twice. Check the EWA history first, or explicitly discard the unresolved request.',
+        });
+      } else {
+        // A definitive server refusal — an authoritative resolution proving
+        // no operation committed. The durable record goes; the in-session
+        // key is kept so an identical retry still reuses it.
+        clearUnresolvedWithdrawIntent(selectedEmployee.id);
+        toast.stop(err.message || 'Withdrawal refused by the server');
+      }
+      setProcessingWithdrawal(false);
+      return;
+    }
 
-      // Refresh modal values and background data from the server
+    // The server committed (or replayed): the intent is authoritatively
+    // settled. Durable record removed — a genuinely new withdrawal mints a
+    // fresh identity.
+    clearUnresolvedWithdrawIntent(selectedEmployee.id);
+    setWithdrawIntent(null);
+    toast.go(describeWithdrawResult(res));
+    setWithdrawAmount('');
+    setProcessingWithdrawal(false);
+
+    // Post-success refreshes are a SEPARATE concern from the withdrawal
+    // outcome. A failed eligibility/history refresh must never misreport an
+    // already-confirmed payout as unknown or refused.
+    try {
       const [eligRes, histRes] = await Promise.all([
         ewaApi.eligibility(selectedEmployee.id),
         ewaApi.history(selectedEmployee.id)
       ]);
       setEmployeeEwaEligibility(eligRes?.data || null);
       setEmployeeEwaHistory(histRes?.data?.withdrawals || histRes?.withdrawals || []);
-      setWithdrawAmount('');
       fetchEwaData();
-    } catch (err) {
-      if (isUnknownOutcome(err)) {
-        toast.stop('Connection lost — this withdrawal may have gone through', {
-          description: 'Check the EWA history before trying again. Retrying the same amount reuses the same request ID, so the backend blocks a duplicate payout.',
-        });
-      } else {
-        // A definitive server refusal — surface the server's own typed
-        // message (cap exceeded, idempotency conflict, eligibility, 403 …)
-        // instead of a generic blanket failure.
-        toast.stop(err.message || 'Withdrawal refused by the server');
-      }
-    } finally {
-      setProcessingWithdrawal(false);
+    } catch (refreshErr) {
+      console.error(refreshErr);
+      toast.neutral('Withdrawal confirmed by the server — EWA details failed to refresh', {
+        description: 'The payout succeeded; only the on-screen balance/history failed to reload. Reopen the EWA portal to see the updated figures.',
+      });
     }
+  };
+
+  // Explicit operator resolution of an unresolved request. Discarding is an
+  // informed choice, not a silent default: the honest warning states the
+  // risk that a future withdrawal would carry a fresh request ID.
+  const handleDiscardUnresolvedWithdrawal = () => {
+    if (!selectedEmployee) return;
+    clearUnresolvedWithdrawIntent(selectedEmployee.id);
+    setWithdrawIntent(null);
+    toast.neutral('Unresolved withdrawal request discarded', {
+      description: 'Future withdrawals will use a fresh request ID. If the discarded request had actually gone through, a new withdrawal could pay twice — verify the EWA history first.',
+    });
   };
 
   // Render standard badge statuses
@@ -878,8 +948,11 @@ export default function Payroll() {
           setSelectedEmployee(null);
           setEmployeeEwaEligibility(null);
           setEmployeeEwaHistory([]);
-          // The operator abandoned the withdrawal — its intent identity
-          // must not leak into the next attempt.
+          // The in-memory intent copy can go. An UNRESOLVED intent (no
+          // server answer) is NOT abandoned here: its identity lives in the
+          // durable store and is explicitly recovered — banner + prefilled
+          // retry — when this employee's EWA portal is reopened, so closing
+          // the modal never silently erases a request that may have committed.
           setWithdrawIntent(null);
         }}
         title="Earned Wage Access (EWA) Portal"
@@ -952,6 +1025,43 @@ export default function Payroll() {
                     <Tag color="var(--f-bad)">Locked / Ineligible</Tag>
                   )}
                 </div>
+
+                {/* Unresolved withdrawal recovery — the only path that can
+                    retire an unknown-outcome request is an explicit operator
+                    action: retry the preserved request, or discard it. */}
+                {withdrawIntent?.unresolved && (
+                  <div
+                    data-testid="unresolved-withdrawal-banner"
+                    className="rounded-md border border-[var(--f-warn)] p-3"
+                    style={{ background: 'rgba(234,179,8,0.08)' }}
+                  >
+                    <p className="text-sm font-semibold text-[var(--f-warn)]">
+                      Unresolved withdrawal — {withdrawIntent.amount} USDC may have gone through
+                    </p>
+                    <p className="text-xs text-[var(--f-text-3)] mt-1">
+                      An earlier request for this employee received no server answer. Its original request ID is preserved: retrying the same amount reuses it, so the backend replays the committed withdrawal and cannot pay twice.
+                    </p>
+                    <div className="flex gap-2 mt-2">
+                      <Button
+                        type="button"
+                        variant="primary"
+                        size="sm"
+                        onClick={handleWithdrawEwaSubmit}
+                        className="bg-[var(--f-warn)] text-black"
+                      >
+                        Retry same request
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={handleDiscardUnresolvedWithdrawal}
+                      >
+                        Discard unresolved request
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Withdrawal Form */}
                 {employeeEwaEligibility?.eligible && employeeEwaEligibility?.maxWithdrawal > 0 && (

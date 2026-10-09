@@ -98,6 +98,7 @@ function stopTexts() { return toast.stop.mock.calls.map(c => String(c[0])); }
 
 beforeEach(() => {
   vi.clearAllMocks();
+  localStorage.clear();
   apiState.disburseCalls = [];
   apiState.disburseImpl = null;
   render(createElement(Payroll));

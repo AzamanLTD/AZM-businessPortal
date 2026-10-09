@@ -99,3 +99,67 @@ export function describeWithdrawResult(res) {
 export function isUnknownOutcome(err) {
   return !err || err.statusCode == null;
 }
+
+/* ─── Durable unresolved-intent store ──────────────────────────────────────
+ * A withdrawal attempt whose outcome is UNKNOWN (no HTTP answer) may already
+ * have committed. Its idempotency key is the ONLY thing that makes a later
+ * retry safe (the backend replays the committed withdrawal for the same key).
+ * That identity must therefore survive modal close, component unmount and a
+ * full page reload — it is persisted per employee, carrying the exact
+ * economic intent (amount + fingerprint), and is cleared ONLY by an
+ * authoritative resolution: the server's 2xx commit/replay, a definitive
+ * refusal that proves nothing committed, or an explicit operator discard.
+ * Storage is a best-effort localStorage record; if storage is unavailable
+ * the lifecycle degrades to the live-component scope and never throws.
+ */
+const UNRESOLVED_KEY_PREFIX = 'azm:ewa:unresolved:';
+
+function durableStore() {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+  } catch { /* storage unavailable (private mode, sandbox …) */ }
+  return null;
+}
+
+/** Persist the identity of an in-flight/unknown withdrawal attempt, scoped
+ * to one employee and carrying the exact economic intent. */
+export function saveUnresolvedWithdrawIntent({ employeeId, key, amount, fingerprint } = {}) {
+  const store = durableStore();
+  if (!store || !employeeId || !key || !fingerprint) return null;
+  try {
+    store.setItem(
+      UNRESOLVED_KEY_PREFIX + String(employeeId),
+      JSON.stringify({ employeeId, key, amount: String(amount ?? ''), fingerprint, savedAt: new Date().toISOString() }),
+    );
+    return key;
+  } catch { return null; }
+}
+
+/** The unresolved withdrawal identity for this employee, or null. A corrupt
+ * or foreign record is discarded rather than trusted. */
+export function loadUnresolvedWithdrawIntent(employeeId) {
+  const store = durableStore();
+  if (!store || !employeeId) return null;
+  let raw = null;
+  try { raw = store.getItem(UNRESOLVED_KEY_PREFIX + String(employeeId)); } catch { return null; }
+  if (!raw) return null;
+  try {
+    const rec = JSON.parse(raw);
+    if (!rec || rec.employeeId !== employeeId || !rec.key || !rec.fingerprint || !rec.amount) {
+      store.removeItem(UNRESOLVED_KEY_PREFIX + String(employeeId));
+      return null;
+    }
+    return { employeeId: rec.employeeId, key: rec.key, amount: String(rec.amount), fingerprint: rec.fingerprint };
+  } catch {
+    try { store.removeItem(UNRESOLVED_KEY_PREFIX + String(employeeId)); } catch { /* ignore */ }
+    return null;
+  }
+}
+
+/** Remove the durable record — only for an authoritative resolution
+ * (server commit/replay, definitive refusal, explicit operator discard). */
+export function clearUnresolvedWithdrawIntent(employeeId) {
+  const store = durableStore();
+  if (!store || !employeeId) return;
+  try { store.removeItem(UNRESOLVED_KEY_PREFIX + String(employeeId)); } catch { /* ignore */ }
+}
