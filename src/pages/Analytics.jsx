@@ -138,13 +138,22 @@ export default function Analytics() {
     enabled: !!bizProfile,
   });
 
+  // Orders feed. The backend clamps `limit` to 50 and pages by `nextCursor`
+  // — a single oversized `limit: 200` silently truncated every metric on this
+  // page to the 50 most recent orders (the PR #110 defect class). `listAll`
+  // walks the cursor (bounded) and reports honest truncation instead.
   const { data: ordersData, isLoading: ordersLoading } = useQuery({
     queryKey: ['analytics-orders'],
-    queryFn: () => ordersApi.list({ limit: 200 }),
+    queryFn: () => ordersApi.listAll(),
     enabled: !!bizProfile,
   });
 
   const allOrders = useMemo(() => Array.isArray(ordersData) ? ordersData : (ordersData?.orders || []), [ordersData]);
+  // Honest partial-coverage state: when the page-bound walk stops early, the
+  // metrics below are computed from the most recent N orders only — say so
+  // instead of presenting them as the complete order surface.
+  const ordersTruncated = !!ordersData?.truncated;
+  const ordersTotal = typeof ordersData?.total === 'number' ? ordersData.total : null;
 
   const forecast  = predictiveData?.forecast || [];
   const dowProfile = useMemo(() => buildDayOfWeekProfile(allOrders), [allOrders]);
@@ -188,6 +197,21 @@ export default function Analytics() {
             </div>
           </div>
         </m.div>
+
+        {/* Truncation notice — metrics are partial, never silently so */}
+        {ordersTruncated && (
+          <m.div variants={item}
+            className="flex items-center gap-2 text-xs text-[var(--text-2)] bg-[var(--surface-sunk)] border border-[var(--accent)]/30 rounded-lg px-3 py-2"
+            data-testid="orders-truncated-notice"
+          >
+            <Info className="w-4 h-4 shrink-0 text-[var(--accent)]" />
+            <span>
+              Metrics are computed from the most recent {fmt(allOrders.length, 0)} orders
+              {ordersTotal != null && <> of about {fmt(ordersTotal, 0)} on file</>} — older
+              orders are outside this analytics window.
+            </span>
+          </m.div>
+        )}
 
         {/* KPI row */}
         <m.div variants={item} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
