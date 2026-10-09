@@ -699,10 +699,15 @@ export default function HotelFrontDesk() {
 
       {/* Page Navigation Tabs */}
       <Tabs
-        tabs={tabConfig}
-        defaultIndex={activeTab}
-        onChange={setActiveTab}
+        value={activeTab}
+        onValueChange={setActiveTab}
+        options={tabConfig.map((t, i) => ({ label: t.label, value: i }))}
       />
+      {/* The instrument Tabs renders only the tab bar — the active tab's
+          content is rendered here. */}
+      <div className="mt-6">
+        {tabConfig[activeTab]?.content}
+      </div>
 
       {/* MODAL 1: Walk-In Booking Form */}
       <Dialog

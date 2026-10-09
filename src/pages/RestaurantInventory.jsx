@@ -26,6 +26,7 @@ import {
   Edit2,
   ChevronRight,
   TrendingUp,
+  TrendingDown,
   DollarSign,
   Layers,
   ArrowRight,

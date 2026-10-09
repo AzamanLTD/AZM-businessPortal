@@ -63,6 +63,17 @@ export function AuthProvider({ children }) {
   const [switching, setSwitching] = useState(null);
   // { message, targetName, fromName, kind: 'switch' | 'restore' } on failure.
   const [switchError, setSwitchError] = useState(null);
+  // PENDING DASHBOARD ENTRY — the business id whose dashboard the operator
+  // asked to enter by selecting it on the marketplace overview. It lives HERE,
+  // in the auth transition contract, not in the marketplace page: the
+  // switching gate unmounts every business page, so any in-page intent would
+  // be lost the moment a switch starts. AppRoutes consumes it AFTER the
+  // switch commits (selected id set AND switching cleared) — navigation is a
+  // consequence of the switch SUCCEEDING, never of it starting or being
+  // requested. Cleared on failure, supersede-safe (only the losing request's
+  // failure path clears, and only when it is not superseded), and cleared by
+  // clearPendingEntry() right after AppRoutes navigates.
+  const [pendingEntry, setPendingEntry] = useState(null);
 
   const switchSeq = useRef(0);
   const isAdminRef = useRef(false);
@@ -137,6 +148,7 @@ export function AuthProvider({ children }) {
     } catch (e) {
       if (switchSeq.current !== seq) return { ok: false, superseded: true };
       setSwitching(null);
+      setPendingEntry(null);
       // Nothing was committed: the header, persisted id, selected id and
       // displayed profile all still describe the OLD context consistently.
       // Only when there was no prior context (fresh restore) do we drop the
@@ -155,6 +167,7 @@ export function AuthProvider({ children }) {
   const selectBusiness = useCallback((bizId, opts = {}) => {
     if (bizId == null) {
       // Return to the marketplace overview: clear the context atomically.
+      setPendingEntry(null);
       switchSeq.current++;
       pendingSwitch.current = null;
       if (mutationWatcher.current) { mutationWatcher.current(); mutationWatcher.current = null; }
@@ -169,6 +182,7 @@ export function AuthProvider({ children }) {
       queryClient.cancelQueries().then(() => queryClient.removeQueries());
       return Promise.resolve({ ok: true, cleared: true });
     }
+    if (opts.enterAfterSwitch) setPendingEntry(bizId);
     return runBusinessSwitch(bizId, opts);
   }, [runBusinessSwitch]);
 
@@ -290,6 +304,7 @@ export function AuthProvider({ children }) {
     setSelectedBusinessId(null);
     setSwitching(null);
     setSwitchError(null);
+    setPendingEntry(null);
     queryClient.cancelQueries().then(() => queryClient.removeQueries());
   }, []);
 
@@ -308,7 +323,8 @@ export function AuthProvider({ children }) {
       user, bizProfile, loading, authed, login, logout, refreshProfile,
       isAdmin, isAdminView, isOwner,
       adminBusinesses, selectedBusinessId, selectBusiness,
-      switching, switchError,
+      switching, switchError, pendingEntry,
+      clearPendingEntry: useCallback(() => setPendingEntry(null), []),
       clearSwitchError: () => setSwitchError(null),
     }}>
       {children}

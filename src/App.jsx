@@ -1,6 +1,6 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { PermissionGate } from '@/components/PermissionGate';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 
 // Route-level access mirrors of the backend contract (current AZM-backend
 // main). Keys are exactly what requirePermission() enforces on each surface;
@@ -121,7 +121,23 @@ import { AppBackground } from '@/components/AppBackground';
 import { TypeGuardedRoute } from './components/TypeGuardedRoute';
 
 export function AppRoutes() {
-  const { authed, loading, bizProfile, isAdmin, selectedBusinessId, switching } = useAuth();
+  const { authed, loading, bizProfile, isAdmin, selectedBusinessId, switching, pendingEntry, clearPendingEntry } = useAuth();
+  const navigate = useNavigate();
+
+  // ── Dashboard entry across the switching gate ───────────────────────────
+  // The marketplace page is unmounted by the switching gate while a context
+  // switch runs, so the "enter this business's dashboard" intent is held by
+  // the auth contract (pendingEntry) instead of page state. It is honoured
+  // only when the switch has fully COMMITTED — selected id set, no
+  // transition running — never merely because a switch started or a target
+  // was requested. Failures clear the intent, so the operator stays on the
+  // marketplace overview with the previous context intact.
+  useEffect(() => {
+    if (isAdmin && pendingEntry && !switching && selectedBusinessId === pendingEntry) {
+      clearPendingEntry();
+      navigate('/', { replace: true });
+    }
+  }, [isAdmin, pendingEntry, switching, selectedBusinessId, clearPendingEntry, navigate]);
 
   if (loading) {
     return (

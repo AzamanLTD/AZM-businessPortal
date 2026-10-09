@@ -30,7 +30,8 @@ import {
   Eye,
   Info,
   Clock,
-  Sparkles
+  Sparkles,
+  Image as ImageIcon
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
 import OwnerOnlyRefusal from '@/components/OwnerOnlyRefusal';
@@ -123,6 +124,7 @@ export default function Marketing() {
 
   // --- API HELPER CALLS ---
   const fetchPromotions = async () => {
+    if (isAdminView) return; // promotions are owner-only on the server — refused in admin view
     try {
       const data = await request('/api/business-os/marketing/promotions');
       setPromotions(data?.promotions || data || []);
@@ -163,6 +165,7 @@ export default function Marketing() {
   };
 
   const fetchBroadcastHistory = async () => {
+    if (isAdminView) return; // broadcast history is owner-only — refused in admin view
     try {
       const data = await request('/api/business-os/marketing/broadcast/history');
       setBroadcastHistory(data?.broadcasts || []);
@@ -423,12 +426,13 @@ export default function Marketing() {
 
       {/* Main Tab Controller */}
       <Tabs
-        onChange={(idx) => setActiveTab(idx)}
-        tabs={[
-          { label: 'Promotions', icon: Tag },
-          { label: 'Ads Campaigns', icon: Megaphone },
-          { label: 'Follower Broadcasts', icon: Radio },
-          { label: 'Store Branding', icon: Palette }
+        value={activeTab}
+        onValueChange={setActiveTab}
+        options={[
+          { label: 'Promotions', value: 0 },
+          { label: 'Ads Campaigns', value: 1 },
+          { label: 'Follower Broadcasts', value: 2 },
+          { label: 'Store Branding', value: 3 }
         ]}
       />
 

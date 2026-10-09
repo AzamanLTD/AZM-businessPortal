@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { AnimatePresence, m } from 'motion/react';
@@ -156,14 +156,19 @@ export function Shell({ children, navProps, brandName = 'Azaman', brandShort = '
                       {domain.groups.map(group =>
                         group.items.map(item => {
                           const ItemIcon = item.icon;
+                          // Same admin-view contract as the expanded pane:
+                          // refused routes stay visible but are disabled with
+                          // an explanation in the collapsed rail flyout too.
+                          const flyoutAdminDisabled = navItemDisabledInAdminView(item.to);
                           return (
                             <NavLink
                               key={item.to}
                               to={item.to}
                               end={item.to === '/'}
-                              onClick={() => setFlyout(null)}
-                              className={cn('i-nav-item', isItemActive(item.to) && 'is-active')}
+                              onClick={flyoutAdminDisabled ? (e) => e.preventDefault() : () => setFlyout(null)}
+                              className={cn('i-nav-item', isItemActive(item.to) && 'is-active', flyoutAdminDisabled && 'is-disabled')}
                               style={{ borderRadius: 'var(--r3)', padding: '6px 10px' }}
+                              title={flyoutAdminDisabled ? navItemDisabledReason(item.to) : undefined}
                             >
                               <ItemIcon style={{ width: 14, height: 14, flexShrink: 0 }} />
                               <span>{item.label}</span>

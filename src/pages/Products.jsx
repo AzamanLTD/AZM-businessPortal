@@ -116,18 +116,23 @@ export default function Products() {
   const [selectedSectionId, setSelectedSectionId] = useState('');
 
   // Modals & Forms State
-  const [productDialog, setProductModal] = useState(null); // null | 'create' | product_obj
+  const [productModal, setProductModal] = useState(null); // null | 'create' | product_obj
   const [productForm, setProductForm] = useState(BLANK_PRODUCT);
   
-  const [sectionDialog, setSectionModal] = useState(null); // null | 'create' | section_obj
+  const [sectionModal, setSectionModal] = useState(null); // null | 'create' | section_obj
   const [sectionForm, setSectionForm] = useState(BLANK_SECTION);
   
-  const [bulkDialog, setBulkModal] = useState(null); // null | 'price'
+  const [bulkModal, setBulkModal] = useState(null); // null | 'price'
   const [bulkPricePercent, setBulkPricePercent] = useState('');
   const [bulkTargetSectionId, setBulkTargetSectionId] = useState('');
 
   const [formError, setFormError] = useState('');
   const [uploading, setUploading] = useState(false);
+
+  // Declared BEFORE the guarded queries below — the admin-view query guards
+  // read it at mount. (Previously declared after, crashing the page with a
+  // temporal-dead-zone ReferenceError for every user.)
+  const { isAdminView } = useAuth();
 
   // Core API Queries
   const { data: locationsData } = useQuery({
@@ -143,8 +148,6 @@ export default function Products() {
       setSelectedLocationId(locationsList[0].id);
     }
   });
-
-  const { isAdminView } = useAuth();
 
   const { data: sectionsData, isLoading: isSectionsLoading } = useQuery({
     queryKey: ['catalog-sections', selectedLocationId],

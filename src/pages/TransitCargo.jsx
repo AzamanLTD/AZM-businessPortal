@@ -5,6 +5,7 @@ import { fmtUSDC, cn } from '@/lib/utils';
 import { Package, Plus, Clock, MapPin, AlertCircle, CheckCircle2, Truck, Link, Filter } from 'lucide-react';
 import { toast } from '@/lib/toast';
 import { useAuth } from '@/lib/AuthContext';
+import OwnerOnlyRefusal from '@/components/OwnerOnlyRefusal';
 
 const STATUS_COLUMNS = [
   { key: 'PENDING', label: 'Pending', color: 'var(--text-3)' },
@@ -110,6 +111,13 @@ export default function TransitCargo() {
         </div>
         <Button onClick={() => setAddOpen(true)}><Plus className="w-4 h-4" /> New Parcel</Button>
       </div>
+
+      {/* In admin view the legacy trip feed (used by the trip filters and the
+          parcel form) is owner-only on the server — refused honestly, never
+          shown as an empty trip list. */}
+      {isAdminView && (
+        <OwnerOnlyRefusal label="The legacy trip feed (trip filters)" testId="transit-cargo-owner-only" />
+      )}
 
       {/* Filters */}
       <div className="flex items-center gap-3">

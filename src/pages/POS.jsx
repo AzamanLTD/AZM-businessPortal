@@ -16,6 +16,7 @@ import {
 import { cn } from '@/lib/utils';
 import { toast } from '@/lib/toast';
 import { Card, Button, Tag, Dialog, Empty, Skel, Input } from '@/components/instrument';
+import OwnerOnlyRefusal from '@/components/OwnerOnlyRefusal';
 import {
   ShoppingCart, Plus, Minus, X, Trash2, CreditCard, Banknote,
   SplitSquareHorizontal, CheckCircle2, Printer, Search,

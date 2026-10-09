@@ -1087,3 +1087,30 @@ export default function Reservations() {
     </div>
   );
 }
+
+// ── Local KPI widgets ─────────────────────────────────────────────────────────
+// Small stat cards for the reservations console. Defined locally (with the
+// title/icon/iconColor + KpiCardStat children API the stats bar uses) so the
+// page never references undefined symbols — the previous code rendered
+// <KpiCard>/<KpiCardStat> without defining or importing them, which crashed
+// the whole page at runtime.
+function KpiCard({ title, icon: Icon, iconColor, children }) {
+  return (
+    <Card className="p-4">
+      <div className="flex items-center gap-2 mb-2">
+        {Icon && <Icon className="w-4 h-4" style={{ color: iconColor }} />}
+        <span className="text-xs font-bold text-[var(--text-3)] uppercase tracking-wide">{title}</span>
+      </div>
+      <div className="space-y-1">{children}</div>
+    </Card>
+  );
+}
+
+function KpiCardStat({ value, label, color }) {
+  return (
+    <div>
+      <span className="text-2xl font-bold text-[var(--text)]" style={color ? { color } : undefined}>{value}</span>
+      {label && <p className="text-xs text-[var(--text-3)]">{label}</p>}
+    </div>
+  );
+}

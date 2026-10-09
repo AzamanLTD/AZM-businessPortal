@@ -40,6 +40,7 @@ export default function WebOrdering() {
   // Fetch storefront theme for accent color
   useEffect(() => {
     if (!bizProfile?.id) return;
+    if (isAdminView) return; // owner's published layout is owner-only — never fetched in admin view
     storefrontApi.getPublishedLayout(bizProfile.id).then(data => {
       if (data?.theme?.tokenSet?.accent) {
         setAccentColor(data.theme.tokenSet.accent);
@@ -112,7 +113,7 @@ export default function WebOrdering() {
         </p>
       </div>
 
-      <GlassPanel className="p-4 flex items-center gap-3">
+      <Card className="p-4 flex items-center gap-3">
         <Globe className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--f-tint-color)' }} />
         <div className="flex-1 min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wide mb-0.5" style={{ color: 'var(--f-text-3)' }}>Public URL</p>
@@ -122,7 +123,7 @@ export default function WebOrdering() {
         <a href={publicUrl} target="_blank" rel="noopener noreferrer" className="p-1.5 rounded-lg" style={{ color: 'var(--f-text-3)' }}>
           <ExternalLink className="w-4 h-4" />
         </a>
-      </GlassPanel>
+      </Card>
 
       <div className="flex gap-1 p-1 rounded-xl w-fit" style={{ background: 'var(--f-bg)' }}>
         {TABS.map(t => (
@@ -137,7 +138,7 @@ export default function WebOrdering() {
       <AnimatePresence mode="wait">
         {activeTab === 'setup' && (
           <m.div key="setup" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-5">
-            <GlassPanel className="p-5">
+            <Card className="p-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: enabled ? 'var(--f-ok-bg)' : 'var(--f-bg)' }}>
@@ -155,9 +156,9 @@ export default function WebOrdering() {
                     style={{ transform: enabled ? 'translateX(24px)' : 'translateX(0)' }} />
                 </button>
               </div>
-            </GlassPanel>
+            </Card>
 
-            <GlassPanel className="p-5 space-y-4">
+            <Card className="p-5 space-y-4">
               <h3 className="font-bold" style={{ color: 'var(--f-text)' }}>Page Branding</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-2">
@@ -184,7 +185,7 @@ export default function WebOrdering() {
                   </div>
                 </div>
               </div>
-            </GlassPanel>
+            </Card>
 
             <button onClick={handleSave} disabled={saving}
               className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
@@ -197,7 +198,7 @@ export default function WebOrdering() {
 
         {activeTab === 'qr' && (
           <m.div key="qr" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-5">
-            <GlassPanel className="p-5 space-y-4">
+            <Card className="p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-bold" style={{ color: 'var(--f-text)' }}>QR Codes</h3>
@@ -225,7 +226,7 @@ export default function WebOrdering() {
                   </div>
                 ))}
               </div>
-            </GlassPanel>
+            </Card>
 
             <div className="flex items-start gap-3 p-4 rounded-xl border" style={{ background: 'rgba(61,116,219,0.06)', borderColor: 'rgba(61,116,219,0.2)' }}>
               <Info className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: 'var(--f-info)' }} />
@@ -239,7 +240,7 @@ export default function WebOrdering() {
 
         {activeTab === 'preview' && (
           <m.div key="preview" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-            <GlassPanel className="p-5 space-y-4">
+            <Card className="p-5 space-y-4">
               <h3 className="font-bold" style={{ color: 'var(--f-text)' }}>Mobile Preview</h3>
               <div className="flex justify-center">
                 <div className="rounded-[36px] border-8 overflow-hidden shadow-2xl" style={{ borderColor: '#111', width: 280 }}>
@@ -274,7 +275,7 @@ export default function WebOrdering() {
               <p className="text-xs text-center" style={{ color: 'var(--f-text-3)' }}>
                 Accent color updates live above. Save your settings to publish changes.
               </p>
-            </GlassPanel>
+            </Card>
           </m.div>
         )}
       </AnimatePresence>

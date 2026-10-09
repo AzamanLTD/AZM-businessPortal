@@ -38,8 +38,13 @@ export default function ExperienceStudio() {
   const [draft, setDraft] = useState(null);
   const [message, setMessage] = useState('');
 
+  // Declared BEFORE the queries — both guards read it at mount.
+  const { isAdminView } = useAuth();
+
   const experienceQuery = useQuery({
     queryKey: ['experience-studio', 'experience'],
+    // The experience contract is owner-only data; never fetched in admin view.
+    enabled: !isAdminView,
     queryFn: () => storefrontApi.getExperience(),
   });
 
@@ -50,7 +55,6 @@ export default function ExperienceStudio() {
   const category = experienceQuery.data?.category?.trim().toUpperCase() || '';
   const policy = experiencePolicyForCategory(category);
 
-  const { isAdminView } = useAuth();
   const previewQuery = useQuery({
     queryKey: ['experience-studio', 'preview', category],
     // The preview pulls the product catalog / legacy trip list, both owner-only
@@ -114,6 +118,11 @@ export default function ExperienceStudio() {
 
   const loadError = experienceQuery.error?.message || saveMutation.error?.message || '';
   if (!draft) {
+    // Admin view: the experience contract is owner-only data. Refuse honestly
+    // instead of rendering an indefinite loading / unavailable shell.
+    if (isAdminView) {
+      return <div className="p-6"><OwnerOnlyRefusal label="The experience configuration and live content preview (product catalog and trip list)" testId="experience-owner-only" /></div>;
+    }
     const loading = experienceQuery.isPending || experienceQuery.isFetching;
     return <div className="p-6"><div className="rounded-2xl border p-6" style={{ borderColor: 'var(--line)', background: 'var(--surface)' }}><p className="text-sm" style={{ color: loadError ? 'var(--danger)' : 'var(--text-3)' }}>{loadError || (loading ? 'Loading Experience Studio…' : 'Experience configuration is unavailable.')}</p></div></div>;
   }

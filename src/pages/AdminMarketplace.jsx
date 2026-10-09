@@ -64,30 +64,18 @@ export default function AdminMarketplace() {
     return byCat;
   }, [adminBusinesses]);
 
-  // The business the operator asked to ENTER (selection → dashboard entry).
-  // Kept across the whole controlled transition — including a switch that is
-  // deferred while business mutations settle — so the dashboard entry is a
-  // direct consequence of the switch SUCCEEDING, never of it merely starting.
-  const [enterTarget, setEnterTarget] = useState(null);
-
   const handleSelect = (b) => {
     if (switching) return; // a controlled transition is already in progress
     clearSwitchError();
-    setEnterTarget(b.id);
-    selectBusiness(b.id, { targetName: b.businessName });
+    // enterAfterSwitch records the dashboard-entry intent in the AUTH
+    // contract (AuthContext.pendingEntry). This page does not hold the
+    // intent itself: the switching gate unmounts this component while a
+    // switch is in flight (including one deferred behind running
+    // mutations), and AppRoutes honours the intent only after the switch
+    // commits — so the entry survives the unmount and can never fire on a
+    // failed, superseded or merely-started switch.
+    selectBusiness(b.id, { targetName: b.businessName, enterAfterSwitch: true });
   };
-
-  // Enter the selected business's dashboard ONLY when its context has fully
-  // committed (selected id set AND no transition running). A failed switch
-  // never lands here: the old context stays active, the error card explains
-  // what happened, and the operator is never navigated into a partial or
-  // failed context.
-  useEffect(() => {
-    if (enterTarget && selectedBusinessId === enterTarget && !switching) {
-      setEnterTarget(null);
-      navigate('/');
-    }
-  }, [enterTarget, selectedBusinessId, switching, navigate]);
 
   return (
     <div data-testid="admin-marketplace">

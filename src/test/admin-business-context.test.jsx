@@ -487,7 +487,9 @@ describe('marketplace overview', () => {
 
     // Selection is an explicit action through the controlled transition.
     fireEvent.click(screen.getByTestId('select-business-biz-a'));
-    expect(selectBusiness).toHaveBeenCalledWith('biz-a', { targetName: 'Zoey Restaurant' });
+    // The enter intent is now part of the AUTH contract: selection passes
+    // enterAfterSwitch so AuthContext records the pending dashboard entry.
+    expect(selectBusiness).toHaveBeenCalledWith('biz-a', { targetName: 'Zoey Restaurant', enterAfterSwitch: true });
   });
 
   it('disables selection while a transition is running and shows the error card after a failed switch', () => {
