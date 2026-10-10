@@ -269,7 +269,6 @@ export const feedbackApi = {
 
 export const financeApi = {
   getLedger: () => request('/api/business-os/ledger'),
-  payOut: (amount, destination) => request('/api/business-os/finance/payout', { method: 'POST', body: JSON.stringify({ amount, destination }) }),
   getDashboard: (params) => {
     const qs = params ? `?${new URLSearchParams(params).toString()}` : '';
     return request(`/api/business-os/finance/dashboard${qs}`);

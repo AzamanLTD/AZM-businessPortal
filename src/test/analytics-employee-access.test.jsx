@@ -109,7 +109,7 @@ describe('Analytics — employee with analytics.view and no BusinessProfile', ()
     expect(orderFeedCalls()).toHaveLength(0);
 
     // The backend-authorized aggregate WAS requested.
-    expect(customerAggCalls()).toHaveLength(1);
+    await waitFor(() => expect(customerAggCalls()).toHaveLength(1));
 
     // Employee data-contract notice is shown.
     expect(screen.getByTestId('employee-analytics-notice').textContent)
@@ -166,7 +166,7 @@ describe('Analytics — employee with analytics.view and no BusinessProfile', ()
     expect(kpiRow.textContent).toContain('—');
 
     // No employee-aggregate numbers are fabricated from the refusal.
-    expect(customerAggCalls()).toHaveLength(1);
+    await waitFor(() => expect(customerAggCalls()).toHaveLength(1));
   });
 });
 
