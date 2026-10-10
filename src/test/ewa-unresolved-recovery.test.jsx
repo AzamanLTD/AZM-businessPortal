@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, act, cleanup } from '@testing-library/react';
 import { createElement } from 'react';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -77,11 +77,11 @@ vi.mock('@/components/instrument', async () => {
         onClick, disabled: !!disabled || !!loading, type: type || 'button',
       }, children),
     Tag: passthrough('span'),
-    Input: ({ label, value, onChange, placeholder, type }) =>
+    Input: ({ label, value, onChange, placeholder, type, inputMode, pattern, step }) =>
       React.createElement('div', null,
         label ? React.createElement('label', null, label) : null,
         React.createElement('input', {
-          value, placeholder, type: type || 'text',
+          value, placeholder, type: type || 'text', inputMode, pattern, step,
           onChange: (e) => onChange && onChange(e),
           'data-testid': 'withdraw-amount-input',
         })),
@@ -128,6 +128,12 @@ async function closeAndReopen() {
   await act(async () => { fireEvent.click(screen.getByText('Manage EWA')); });
   await waitFor(() => screen.getByTestId('withdraw-amount-input'));
 }
+
+afterEach(() => {
+  // Unmount every rendered tree: pending async flows from a previous test
+  // must never leak toasts or requests into the next one.
+  cleanup();
+});
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -232,7 +238,7 @@ describe('unresolved intent cannot be silently bypassed', () => {
     expect(loadUnresolvedWithdrawIntent('emp-1').key).toBe(firstKey);
   });
 
-  it('an explicit discard retires the identity — and the warning states the double-pay risk', async () => {
+  it('NO operator acknowledgment retires the identity — retry or manual reconciliation only', async () => {
     apiState.withdrawImpl = async () => { throw new TypeError('fetch aborted'); };
     render(createElement(Payroll));
     await openWithdrawForm();
@@ -240,19 +246,21 @@ describe('unresolved intent cannot be silently bypassed', () => {
     const firstKey = apiState.withdrawCalls[0].idempotencyKey;
 
     await closeAndReopen();
-    await act(async () => { fireEvent.click(screen.getByText('Discard unresolved request')); });
+    expect(screen.getByTestId('unresolved-withdrawal-banner')).toBeTruthy();
+    // There is no discard/acknowledge action at all — the only offered
+    // recovery is retrying the preserved request.
+    expect(screen.queryByText('Discard unresolved request')).toBeNull();
+    expect(screen.getByText('Retry same request')).toBeTruthy();
+    // The banner directs unresolved operators to manual reconciliation.
+    expect(screen.getByTestId('unresolved-withdrawal-banner').textContent).toMatch(/reconciliation|support/i);
+    // The identity is untouched.
+    expect(loadUnresolvedWithdrawIntent('emp-1').key).toBe(firstKey);
 
-    expect(loadUnresolvedWithdrawIntent('emp-1')).toBeNull();
-    expect(screen.queryByTestId('unresolved-withdrawal-banner')).toBeNull();
-    const discardToast = toast.neutral.mock.calls.map(c => String(c[0])).join(' ');
-    expect(discardToast).toMatch(/discarded/);
-    expect((toast.neutral.mock.calls[0][1] || {}).description).toMatch(/pay twice/);
-
-    // After the explicit resolution-by-choice, a new withdrawal mints a fresh identity
-    apiState.withdrawImpl = async () => serverSuccess;
-    await submitAmount('25.50');
-    await waitFor(() => expect(apiState.withdrawCalls).toHaveLength(2));
-    expect(apiState.withdrawCalls[1].idempotencyKey).not.toBe(firstKey);
+    // A changed amount is still refused — no fresh key, nothing sent.
+    await submitAmount('40');
+    await waitFor(() => expect(toast.stop.mock.calls.at(-1)[0]).toMatch(/still unresolved/));
+    expect(apiState.withdrawCalls).toHaveLength(1);
+    expect(loadUnresolvedWithdrawIntent('emp-1').key).toBe(firstKey);
   });
 });
 
@@ -303,5 +311,91 @@ describe('post-success refresh failures never misreport the confirmed withdrawal
     expect(allStop).not.toMatch(/refused/i);
     // The intent is fully settled despite the refresh failure
     expect(loadUnresolvedWithdrawIntent('emp-1')).toBeNull();
+  });
+});
+
+describe('ambiguous 5xx outcomes are UNRESOLVED — never treated as definitive refusals', () => {
+  it.each([500, 502, 503, 504])('HTTP %i keeps the identity and never mints a fresh key', async (status) => {
+    apiState.withdrawImpl = async () => {
+      throw Object.assign(new Error(`gateway error ${status}`), { statusCode: status });
+    };
+    render(createElement(Payroll));
+    await openWithdrawForm();
+    await submitAmount('25.50');
+    const firstKey = apiState.withdrawCalls[0].idempotencyKey;
+
+    // Reported as may-have-committed, never as a refusal.
+    await waitFor(() => expect(toast.stop).toHaveBeenCalled());
+    expect(toast.stop.mock.calls.at(-1)[0]).toMatch(/may have gone through/i);
+    expect(toast.stop.mock.calls.map(c => String(c[0])).join(' ')).not.toMatch(/refused/i);
+
+    // The durable identity is PRESERVED (not cleared like a 4xx proof).
+    expect(loadUnresolvedWithdrawIntent('emp-1').key).toBe(firstKey);
+
+    // Reopen → banner → the same key is reused on retry.
+    await closeAndReopen();
+    expect(screen.getByTestId('unresolved-withdrawal-banner')).toBeTruthy();
+    await act(async () => { fireEvent.click(screen.getByText('Retry same request')); });
+    await waitFor(() => expect(apiState.withdrawCalls).toHaveLength(2));
+    expect(apiState.withdrawCalls[1].idempotencyKey).toBe(firstKey);
+  });
+});
+
+describe('fail closed when the identity cannot be durably persisted and verified', () => {
+  it('a storage write failure blocks the withdrawal BEFORE any request is sent', async () => {
+    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('QuotaExceededError');
+    });
+    apiState.withdrawImpl = async () => serverSuccess; // would succeed — must never be called
+    render(createElement(Payroll));
+    await openWithdrawForm();
+    await submitAmount('25.50');
+
+    await waitFor(() => expect(toast.stop).toHaveBeenCalled());
+    expect(toast.stop.mock.calls.at(-1)[0]).toMatch(/blocked.*identity could not be saved/i);
+    // NOTHING was sent — there is no request without a recoverable identity.
+    expect(apiState.withdrawCalls).toHaveLength(0);
+    setItemSpy.mockRestore();
+  });
+
+  it('a record that cannot be read back verified also blocks the send', async () => {
+    // The write "succeeds" but verification cannot read a matching record
+    // back — the identity is not provably recoverable, so fail closed.
+    const getItemSpy = vi.spyOn(Storage.prototype, 'getItem').mockReturnValue('corrupt-not-json');
+    apiState.withdrawImpl = async () => serverSuccess;
+    render(createElement(Payroll));
+    await openWithdrawForm();
+    await submitAmount('25.50');
+
+    await waitFor(() => expect(toast.stop).toHaveBeenCalled());
+    expect(toast.stop.mock.calls.at(-1)[0]).toMatch(/blocked.*identity could not be saved/i);
+    expect(apiState.withdrawCalls).toHaveLength(0);
+    getItemSpy.mockRestore();
+  });
+});
+
+describe('the amount input honors the documented 8dp exact-string contract', () => {
+  it('is a decimal text input with an 8dp pattern — no native 0.01 step blocking the contract', async () => {
+    render(createElement(Payroll));
+    await openWithdrawForm();
+    const input = screen.getByTestId('withdraw-amount-input');
+    // Not a native number input: step=0.01 would reject 25.5050 in the browser.
+    expect(input.getAttribute('type')).toBe('text');
+    expect(input.getAttribute('inputmode')).toBe('decimal');
+    expect(input.getAttribute('step')).toBeNull();
+    // Native validation pattern matches the documented contract exactly:
+    // plain decimal, up to 8 fractional digits.
+    expect(input.getAttribute('pattern')).toBe('\\d+(\\.\\d{1,8})?');
+    // The value stays an exact string: 25.5050 travels byte-exact.
+    await act(async () => {
+      fireEvent.change(input, { target: { value: '25.5050' } });
+    });
+    expect(input.value).toBe('25.5050');
+    apiState.withdrawImpl = async () => serverSuccess;
+    await act(async () => {
+      fireEvent.click(screen.getByText('Disburse Early Wage Advance'));
+    });
+    await waitFor(() => expect(apiState.withdrawCalls).toHaveLength(1));
+    expect(apiState.withdrawCalls[0].amount).toBe('25.5050');
   });
 });

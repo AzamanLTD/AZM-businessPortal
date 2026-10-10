@@ -97,7 +97,18 @@ export function describeWithdrawResult(res) {
  * instead of minting a second payout. Same definition as the POS surface.
  */
 export function isUnknownOutcome(err) {
-  return !err || err.statusCode == null;
+  const sc = err && typeof err === 'object' ? err.statusCode : undefined;
+  // No HTTP answer (network loss, timeout, abort) — the request may have
+  // committed. UNRESOLVED.
+  if (typeof sc !== 'number') return true;
+  // A definitive 4xx refusal. Per the backend contract these are pre-commit
+  // typed refusals (cap exceeded, 8dp contract, eligibility, 403 permission,
+  // EWA_IDEMPOTENCY_CONFLICT fail-closed) — proof that nothing committed.
+  if (sc >= 400 && sc < 500) return false;
+  // 5xx / gateway ambiguity: a server error can occur AFTER the mutation
+  // committed (e.g. a failure during post-commit work). Not proof of a
+  // refusal — UNRESOLVED.
+  return true;
 }
 
 /* ─── Durable unresolved-intent store ──────────────────────────────────────
@@ -107,10 +118,13 @@ export function isUnknownOutcome(err) {
  * That identity must therefore survive modal close, component unmount and a
  * full page reload — it is persisted per employee, carrying the exact
  * economic intent (amount + fingerprint), and is cleared ONLY by an
- * authoritative resolution: the server's 2xx commit/replay, a definitive
- * refusal that proves nothing committed, or an explicit operator discard.
- * Storage is a best-effort localStorage record; if storage is unavailable
- * the lifecycle degrades to the live-component scope and never throws.
+ * authoritative resolution: the server's 2xx commit/replay, or a definitive
+ * 4xx refusal that proves nothing committed. There is NO operator-
+ * acknowledgment escape hatch: an unresolved intent cannot be discarded to
+ * mint a fresh key — it can only be retried with the original key, or
+ * escalated to manual reconciliation (support).
+ * Persistence is fail-closed, not best-effort: an attempt whose identity
+ * cannot be durably saved AND verified must not be sent at all.
  */
 const UNRESOLVED_KEY_PREFIX = 'azm:ewa:unresolved:';
 
@@ -157,9 +171,19 @@ export function loadUnresolvedWithdrawIntent(employeeId) {
 }
 
 /** Remove the durable record — only for an authoritative resolution
- * (server commit/replay, definitive refusal, explicit operator discard). */
+ * (server commit/replay, or a definitive 4xx refusal). */
 export function clearUnresolvedWithdrawIntent(employeeId) {
   const store = durableStore();
   if (!store || !employeeId) return;
   try { store.removeItem(UNRESOLVED_KEY_PREFIX + String(employeeId)); } catch { /* ignore */ }
+}
+
+/** Fail-closed persistence gate for an attempt: persist the identity and
+ * verify it reads back identically. Returns true ONLY when the attempt's
+ * identity is durably saved and recoverable — a withdrawal must never leave
+ * the browser without a retry-safe identity that survives reload. */
+export function ensureDurableWithdrawIntent({ employeeId, key, amount, fingerprint } = {}) {
+  if (saveUnresolvedWithdrawIntent({ employeeId, key, amount, fingerprint }) !== key) return false;
+  const back = loadUnresolvedWithdrawIntent(employeeId);
+  return !!(back && back.key === key && back.amount === String(amount) && back.fingerprint === fingerprint);
 }

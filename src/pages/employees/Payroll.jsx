@@ -36,8 +36,8 @@ import {
   describeWithdrawResult,
   isUnknownOutcome,
   loadUnresolvedWithdrawIntent,
-  saveUnresolvedWithdrawIntent,
   clearUnresolvedWithdrawIntent,
+  ensureDurableWithdrawIntent,
 } from '@/lib/ewaWithdraw';
 
 export default function Payroll() {
@@ -328,7 +328,7 @@ export default function Payroll() {
     const storedUnresolved = loadUnresolvedWithdrawIntent(selectedEmployee.id);
     if (storedUnresolved && storedUnresolved.fingerprint !== fingerprint) {
       toast.stop(`An earlier withdrawal of ${storedUnresolved.amount} USDC is still unresolved`, {
-        description: 'That request may have gone through — retry the same amount (its original request ID is preserved and the backend cannot pay twice), or explicitly discard it first. A different amount cannot be submitted until the earlier request is resolved.',
+        description: 'That request may have gone through — retry the same amount (its original request ID is preserved and the backend cannot pay twice). A different amount cannot be submitted until the earlier request is authoritatively resolved; if the retry cannot complete, check this employee\'s EWA history and contact support for reconciliation.',
       });
       return;
     }
@@ -349,9 +349,15 @@ export default function Payroll() {
         : `ewa_${Date.now()}_${Math.random().toString(36).slice(2)}`;
       setWithdrawIntent({ key, fingerprint });
     }
-    // Durable from the moment the attempt leaves: a crash, reload or lost
-    // response must not lose the identity that makes the retry safe.
-    saveUnresolvedWithdrawIntent({ employeeId: selectedEmployee.id, key, amount, fingerprint });
+    // FAIL CLOSED: no withdrawal leaves the browser without an identity that
+    // is durably saved AND verified to read back. An unverifiable attempt
+    // cannot be made safe to retry, so it is not sent at all.
+    if (!ensureDurableWithdrawIntent({ employeeId: selectedEmployee.id, key, amount, fingerprint })) {
+      toast.stop('Withdrawal blocked — the request identity could not be saved on this device', {
+        description: 'An early wage withdrawal must keep a durable request ID so a retry can never pay twice. Resolve the browser storage issue (or try another device) and try again. If an earlier request may already have gone through, check the EWA history before proceeding.',
+      });
+      return;
+    }
 
     setProcessingWithdrawal(true);
     let res;
@@ -367,11 +373,12 @@ export default function Payroll() {
           ? { ...prev, unresolved: true, amount }
           : { key, fingerprint, amount, unresolved: true });
         toast.stop('Connection lost — this withdrawal may have gone through', {
-          description: 'The original request ID is preserved. Reopen this employee to retry the same request — the backend replays the committed withdrawal and cannot pay twice. Check the EWA history first, or explicitly discard the unresolved request.',
+          description: 'The original request ID is preserved. Reopen this employee to retry the same request — the backend replays the committed withdrawal and cannot pay twice. If the retry cannot reach the server, check the EWA history and contact support for reconciliation.',
         });
       } else {
-        // A definitive server refusal — an authoritative resolution proving
-        // no operation committed. The durable record goes; the in-session
+        // A definitive 4xx refusal — an authoritative resolution proving
+        // no operation committed (5xx and network losses are UNRESOLVED and
+        // keep their identity). The durable record goes; the in-session
         // key is kept so an identical retry still reuses it.
         clearUnresolvedWithdrawIntent(selectedEmployee.id);
         toast.stop(err.message || 'Withdrawal refused by the server');
@@ -406,18 +413,6 @@ export default function Payroll() {
         description: 'The payout succeeded; only the on-screen balance/history failed to reload. Reopen the EWA portal to see the updated figures.',
       });
     }
-  };
-
-  // Explicit operator resolution of an unresolved request. Discarding is an
-  // informed choice, not a silent default: the honest warning states the
-  // risk that a future withdrawal would carry a fresh request ID.
-  const handleDiscardUnresolvedWithdrawal = () => {
-    if (!selectedEmployee) return;
-    clearUnresolvedWithdrawIntent(selectedEmployee.id);
-    setWithdrawIntent(null);
-    toast.neutral('Unresolved withdrawal request discarded', {
-      description: 'Future withdrawals will use a fresh request ID. If the discarded request had actually gone through, a new withdrawal could pay twice — verify the EWA history first.',
-    });
   };
 
   // Render standard badge statuses
@@ -1039,7 +1034,10 @@ export default function Payroll() {
                       Unresolved withdrawal — {withdrawIntent.amount} USDC may have gone through
                     </p>
                     <p className="text-xs text-[var(--f-text-3)] mt-1">
-                      An earlier request for this employee received no server answer. Its original request ID is preserved: retrying the same amount reuses it, so the backend replays the committed withdrawal and cannot pay twice.
+                      An earlier request for this employee received no server answer. Its original request ID is preserved: retrying the same amount reuses it, so the backend replays the committed withdrawal and cannot pay twice. The request cannot be discarded — it stays preserved until the server gives an authoritative answer.
+                    </p>
+                    <p className="text-xs text-[var(--f-text-3)] mt-1">
+                      If the retry cannot reach the server, check this employee&rsquo;s EWA history for the committed withdrawal and contact support for manual reconciliation.
                     </p>
                     <div className="flex gap-2 mt-2">
                       <Button
@@ -1050,14 +1048,6 @@ export default function Payroll() {
                         className="bg-[var(--f-warn)] text-black"
                       >
                         Retry same request
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={handleDiscardUnresolvedWithdrawal}
-                      >
-                        Discard unresolved request
                       </Button>
                     </div>
                   </div>
@@ -1070,10 +1060,17 @@ export default function Payroll() {
                       <Input
                         label="Withdraw Amount"
                         placeholder="0.00"
-                        type="number"
-                        step="0.01"
-                        min="1"
-                        max={employeeEwaEligibility?.maxWithdrawal}
+                        // The documented contract is an exact decimal string
+                        // with up to 8 decimal places. A native number input
+                        // (step 0.01) rejects that precision in the browser,
+                        // so the input is text + inputMode with a pattern
+                        // matching the contract exactly — the value stays a
+                        // byte-exact string and normalizeAmountInput()
+                        // re-validates it before submit. The cap remains a
+                        // UI-side hint; the server re-validates authoritatively.
+                        type="text"
+                        inputMode="decimal"
+                        pattern="\d+(\.\d{1,8})?"
                         value={withdrawAmount}
                         onChange={(e) => setWithdrawAmount(e.target.value)}
                         required
