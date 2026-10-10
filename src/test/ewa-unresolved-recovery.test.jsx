@@ -25,7 +25,9 @@ const apiState = {
 };
 
 const serverSuccess = { success: true, result: {
-  replayed: false, grossAmount: 25.5, fee: 0.255, netToEmployee: 25.245,
+  // Real backend envelope (route wraps the service result): the service
+  // result itself carries success:true and the authoritative amounts.
+  success: true, replayed: false, grossAmount: 25.5, fee: 0.255, netToEmployee: 25.245,
   remainingWithdrawable: 74.5,
 }};
 

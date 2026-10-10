@@ -38,6 +38,8 @@ import {
   loadUnresolvedWithdrawIntent,
   clearUnresolvedWithdrawIntent,
   ensureDurableWithdrawIntent,
+  isDefinitiveEwaRefusal,
+  isAuthoritativeWithdrawSuccess,
 } from '@/lib/ewaWithdraw';
 
 export default function Payroll() {
@@ -364,32 +366,51 @@ export default function Payroll() {
     try {
       res = await ewaApi.withdraw({ ...intentInput, idempotencyKey: key });
     } catch (err) {
-      if (isUnknownOutcome(err)) {
-        // No HTTP answer — the request may have committed. The intent is
-        // UNRESOLVED: its identity is kept in state AND the durable store,
-        // so closing the modal or reloading cannot silently erase it and a
-        // later retry reuses the same key (backend replays, cannot pay twice).
+      if (isDefinitiveEwaRefusal(err)) {
+        // The ONLY authoritative proof of a pre-commit refusal: HTTP 400 with
+        // a message from the backend's documented refusal catalog (every
+        // catalog entry throws inside the rolled-back Serializable
+        // transaction). The durable record goes; the in-session key is kept
+        // so an identical retry still reuses it.
+        clearUnresolvedWithdrawIntent(selectedEmployee.id);
+        toast.stop(err.message || 'Withdrawal refused by the server');
+      } else {
+        // UNRESOLVED — everything else keeps the identity: missing answers,
+        // 408/409, the idempotency conflict (reconciliation state), ANY
+        // non-catalog status or message (401/403/404/5xx, gateway errors,
+        // unexpected 400s), and malformed 2xx envelopes. The intent's
+        // identity is kept in state AND the durable store, so closing the
+        // modal or reloading cannot silently erase it and a later retry
+        // reuses the same key (backend replays, cannot pay twice).
         setWithdrawIntent(prev => (prev && prev.key === key)
           ? { ...prev, unresolved: true, amount }
           : { key, fingerprint, amount, unresolved: true });
         toast.stop('Connection lost — this withdrawal may have gone through', {
           description: 'The original request ID is preserved. Reopen this employee to retry the same request — the backend replays the committed withdrawal and cannot pay twice. If the retry cannot reach the server, check the EWA history and contact support for reconciliation.',
         });
-      } else {
-        // A definitive 4xx refusal — an authoritative resolution proving
-        // no operation committed (5xx and network losses are UNRESOLVED and
-        // keep their identity). The durable record goes; the in-session
-        // key is kept so an identical retry still reuses it.
-        clearUnresolvedWithdrawIntent(selectedEmployee.id);
-        toast.stop(err.message || 'Withdrawal refused by the server');
       }
       setProcessingWithdrawal(false);
       return;
     }
 
-    // The server committed (or replayed): the intent is authoritatively
-    // settled. Durable record removed — a genuinely new withdrawal mints a
-    // fresh identity.
+    // A 2xx alone is NOT proof of the outcome: the envelope must carry the
+    // authoritative financial result (success flags, finite economically
+    // consistent gross/fee/net). A malformed 2xx is UNRESOLVED — the durable
+    // identity is kept and the operator is directed to reconciliation.
+    if (!isAuthoritativeWithdrawSuccess(res)) {
+      setWithdrawIntent(prev => (prev && prev.key === key)
+        ? { ...prev, unresolved: true, amount }
+        : { key, fingerprint, amount, unresolved: true });
+      toast.stop('Withdrawal outcome could not be confirmed — the server response was malformed', {
+        description: 'The original request ID is preserved. Reopen this employee to retry the same request — the backend replays the committed withdrawal and cannot pay twice. If the retry cannot reach the server, check the EWA history and contact support for reconciliation.',
+      });
+      setProcessingWithdrawal(false);
+      return;
+    }
+
+    // Validated authoritative success (or replay): the intent is settled.
+    // Durable record removed — a genuinely new withdrawal mints a fresh
+    // identity.
     clearUnresolvedWithdrawIntent(selectedEmployee.id);
     setWithdrawIntent(null);
     toast.go(describeWithdrawResult(res));

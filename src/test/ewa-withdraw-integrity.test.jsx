@@ -94,7 +94,9 @@ import { toast } from '@/lib/toast';
 import Payroll from '@/pages/employees/Payroll';
 
 const serverSuccess = { success: true, result: {
-  replayed: false, grossAmount: 25.5, fee: 0.255, netToEmployee: 25.245,
+  // Real backend envelope (route wraps the service result): the service
+  // result itself carries success:true and the authoritative amounts.
+  success: true, replayed: false, grossAmount: 25.5, fee: 0.255, netToEmployee: 25.245,
   remainingWithdrawable: 74.5,
 }};
 
@@ -145,7 +147,7 @@ describe('Payroll EWA withdrawal — idempotency identity on the wire', () => {
 
   it('a retry after a definitive server failure REUSES the same key — a retry never mints a second withdrawal', async () => {
     apiState.withdrawImpl = async () => {
-      const err = new Error('Amount exceeds the remaining withdrawable cap.');
+      const err = new Error('Amount exceeds available EWA balance. Max: 5.00 AZM');
       err.statusCode = 400;
       throw err;
     };
@@ -162,7 +164,7 @@ describe('Payroll EWA withdrawal — idempotency identity on the wire', () => {
 
   it('an economic change (different amount) mints a NEW key — the old identity is never reused for different parameters', async () => {
     apiState.withdrawImpl = async () => {
-      throw Object.assign(new Error('Server refused'), { statusCode: 400 });
+      throw Object.assign(new Error('EWA is not available for this employee.'), { statusCode: 400 });
     };
     await openWithdrawForm();
     await submitAmount('25.50');

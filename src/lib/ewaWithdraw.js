@@ -90,11 +90,81 @@ export function describeWithdrawResult(res) {
   return `Withdrawal processed per the server. Gross ${gross}, fee ${fee}, net to employee ${net} USDC.`;
 }
 
+/* ── Authoritative-resolution contract for EWA withdrawals ─────────────────
+ * Derived read-only from AZM-backend services/businessOS/ewaService.js
+ * (requestWithdrawal + _assertWithdrawalAuthorization) and the route's
+ * wrap() error mapper. Contract facts that shape this allowlist:
+ *   • wrap() maps EVERY service error to HTTP 400 { success:false, message }
+ *     and DROPS the typed settlement code — the catalog is therefore
+ *     message-based, pinned to the backend's exact refusal strings.
+ *   • every catalog entry throws before or inside the Serializable
+ *     $transaction, which rolls back the whole withdrawal — proof that
+ *     nothing committed.
+ *   • EWA_IDEMPOTENCY_CONFLICT is deliberately NOT in the catalog: it means
+ *     this key was already used with materially different parameters — a
+ *     contradictory state requiring reconciliation, not a clean refusal.
+ *   • everything else (401/403/404/408/409, 5xx, missing answers, any 400
+ *     message outside the catalog, e.g. an exhausted serialization-retry
+ *     error) is UNRESOLVED: the identity is kept.
+ */
+const PRE_COMMIT_REFUSAL_PATTERNS = [
+    /^EWA destination .+ has no authoritative payout path/,            // EWA_EXTERNAL_DESTINATION_UNSUPPORTED
+    /^Amount must be a valid number\.$/,                              // exact-decimal parse/validation
+    /^Amount supports at most 8 decimal places\.$/,
+    /^Minimum withdrawal is 1 AZM\.$/,
+    /^idempotencyKey must be a string of 1-140 characters\.$/,
+    /^Employee not found\.$/,
+    /^Business scope mismatch\.$/,                                    // _assertWithdrawalAuthorization
+    /^You do not have permission to manage EWA for this employee\.$/, // _assertWithdrawalAuthorization
+    /^EWA is not available for this employee\.$/,
+    /^Only active employees can request EWA\.$/,
+    /^Amount exceeds available EWA balance\. Max: /,                  // exact cap math
+    /^Business profile not found\.$/,
+    /^EWA withdrawal failed — insufficient available balance/,         // atomic claim lost the race
+    /insufficient spendable balance for this EWA withdrawal/,          // EWA_INSUFFICIENT_BUSINESS_FUNDS
+];
+const EWA_IDEMPOTENCY_CONFLICT = /Idempotency key was already used with different parameters/;
+
+/** TRUE only for the endpoint's DOCUMENTED pre-commit refusals: HTTP 400
+ * whose message matches the catalog above (minus the idempotency conflict,
+ * which stays unresolved pending reconciliation). This is the ONLY response
+ * class that proves a withdrawal was refused before commit — no broader
+ * status-code rule is authoritative. */
+export function isDefinitiveEwaRefusal(err) {
+    const sc = err && typeof err === 'object' ? err.statusCode : undefined;
+    if (sc !== 400) return false;
+    const msg = String((err && err.message) || '');
+    if (EWA_IDEMPOTENCY_CONFLICT.test(msg)) return false;
+    return PRE_COMMIT_REFUSAL_PATTERNS.some(p => p.test(msg));
+}
+
+/** Validates the authoritative success envelope BEFORE any record is
+ * cleared: route shape { success:true, result:{ success:true, grossAmount,
+ * fee, netToEmployee, [replayed:true] } } with finite, economically
+ * consistent amounts (gross = fee + net). The fresh-commit envelope carries
+ * no `replayed` field; only replays do. A resolved 2xx that fails this
+ * check is NOT proof of the outcome and must be treated as unresolved. */
+export function isAuthoritativeWithdrawSuccess(res) {
+    const result = res && typeof res === 'object' ? res.result : null;
+    if (!res || typeof res !== 'object' || res.success !== true) return false;
+    if (!result || typeof result !== 'object' || result.success !== true) return false;
+    if (result.replayed !== undefined && typeof result.replayed !== 'boolean') return false;
+    const { grossAmount, fee, netToEmployee } = result;
+    for (const v of [grossAmount, fee, netToEmployee]) {
+        if (typeof v !== 'number' || !Number.isFinite(v)) return false;
+    }
+    if (grossAmount <= 0 || fee < 0 || netToEmployee < 0) return false;
+    if (Math.abs(grossAmount - (fee + netToEmployee)) > 1e-8) return false;
+    return true;
+}
+
 /**
  * A request with no HTTP answer is not a failure: the withdrawal may have
  * committed. Reusing (not clearing) the intent key after such an outcome is
  * what makes the retry safe — the backend replays the committed withdrawal
  * instead of minting a second payout. Same definition as the POS surface.
+ * NOTE: the EWA surface itself must use the STRICTER isDefinitiveEwaRefusal
+ * above — a bare status-code rule is not proof of a pre-commit refusal.
  */
 export function isUnknownOutcome(err) {
   const sc = err && typeof err === 'object' ? err.statusCode : undefined;
