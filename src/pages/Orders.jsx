@@ -29,10 +29,15 @@ const STATUSES = [
   { value: 'PAID',             label: 'Paid' },
   { value: 'DELIVERED',        label: 'Delivered' },
   { value: 'COMPLETED',        label: 'Completed' },
+  { value: 'DISPUTED',         label: 'Disputed' },
+  { value: 'REFUNDED',         label: 'Refunded' },
   { value: 'CANCELLED',        label: 'Cancelled' },
 ];
 
-const KANBAN_COLUMNS = ['AWAITING_PAYMENT', 'PAID', 'DELIVERED', 'COMPLETED', 'CANCELLED'];
+// Every BusinessOrderStatus the backend can emit has a column. DISPUTED and
+// REFUNDED used to be missing, so a disputed or refunded retail order vanished
+// from the board entirely.
+const KANBAN_COLUMNS = ['AWAITING_PAYMENT', 'PAID', 'DELIVERED', 'COMPLETED', 'DISPUTED', 'REFUNDED', 'CANCELLED'];
 
 // Map tag variants to Instrument tones
 const STATUS_TONE = {
@@ -42,6 +47,7 @@ const STATUS_TONE = {
   COMPLETED: 'go',
   CANCELLED: 'stop',
   DISPUTED: 'stop',
+  REFUNDED: 'accent',
 };
 
 // Column dot colors
@@ -50,6 +56,8 @@ const COL_DOT = {
   PAID: 'var(--info)',
   DELIVERED: 'var(--accent)',
   COMPLETED: 'var(--go)',
+  DISPUTED: 'var(--stop)',
+  REFUNDED: 'var(--accent)',
   CANCELLED: 'var(--stop)',
 };
 
