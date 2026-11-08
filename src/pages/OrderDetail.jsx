@@ -80,6 +80,10 @@ export default function OrderDetail() {
     queryKey: ['order', id],
     queryFn: () => ordersApi.get(id),
     enabled: !isAdminView,
+    // Same cadence as the Orders board: the merchant should see a funding or
+    // dispute transition without reloading the page.
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
   });
 
   // Sync delivery notes from order data
@@ -108,7 +112,9 @@ export default function OrderDetail() {
     }
   });
 
-  // Refund mutation
+  // Refund mutation. Despite the module name, bookingOpsApi.refundOrder posts
+  // to POST /api/business-os/orders/:id/refund (marketplaceApi.js:558) — the
+  // business-OS retail order refund, not a booking-only endpoint.
   const refundMutation = useMutation({
     mutationFn: (reason) => bookingOpsApi.refundOrder(id, reason),
     onSuccess: () => {
