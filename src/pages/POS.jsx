@@ -26,9 +26,19 @@ import {
 
 const fmt = (n) => `GHS ${Number(n || 0).toFixed(2)}`;
 const CAT_ICONS = { food: Utensils, drink: Coffee, beverage: Coffee, retail: ShoppingBag, product: Package };
+import { shouldIssueReceipt, isSettlementRefused, classifySyncFailure, itemsNeedingAttention } from '@/lib/posSaleOutcome';
+
 const OUTBOX_KEY = 'az_pos_outbox';
 const readOutbox = () => { try { return JSON.parse(localStorage.getItem(OUTBOX_KEY) || '[]'); } catch { return []; } };
 const writeOutbox = (items) => localStorage.setItem(OUTBOX_KEY, JSON.stringify(items));
+// WP-K — a sale that cannot reach Azaman must never be recorded as one.
+class OfflineSaleBlockedError extends Error {
+  constructor() {
+    super('Azaman POS settlement is unavailable. No sale was recorded.');
+    this.name = 'OfflineSaleBlockedError';
+  }
+}
+const SETTLEMENT_DISABLED = 'POS_SETTLEMENT_NOT_ENABLED';
 const enqueue = (action) => { const b = readOutbox(); b.push({ ...action, id: crypto.randomUUID(), ts: Date.now(), status: 'PENDING' }); writeOutbox(b); };
 
 function useOnlineStatus() {
@@ -39,6 +49,37 @@ function useOnlineStatus() {
     return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); };
   }, []);
   return online;
+}
+
+// WP-K — unresolved queued sales stay visible and are resolved explicitly.
+// Nothing here is ever auto-deleted: a queued sale is a financial record.
+function PendingSalesPanel({ items, onResolve }) {
+  if (!items || items.length === 0) return null;
+  const stuck = items.filter((i) => i.status === 'NEEDS_ATTENTION');
+  return (
+    <div className="fixed bottom-4 left-4 right-4 z-40 rounded-xl border border-amber-400/40 bg-[var(--f-surface)] p-3 shadow-lg">
+      <div className="flex items-start gap-3">
+        <div className="text-amber-500 text-lg leading-none">!</div>
+        <div className="flex-1 text-sm">
+          <div className="font-semibold">{stuck.length} queued sale(s) Azaman did not record</div>
+          <div className="text-xs text-[var(--f-text-muted,#888)] mt-0.5">
+            These were captured before settlement was disabled. They are kept until you resolve each one.
+          </div>
+          <ul className="mt-2 space-y-1">
+            {stuck.map((i) => (
+              <li key={i.id} className="flex items-center justify-between gap-2 text-xs">
+                <span>
+                  {new Date(i.ts).toLocaleString('en-GH')} · {i.payload?.items?.length || 0} item(s) ·{' '}
+                  {i.lastError || 'not synced'}
+                </span>
+                <button className="underline" onClick={() => onResolve(i.id)}>Mark resolved</button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function ReceiptModal({ order, bizName, onClose }) {
@@ -272,9 +313,11 @@ export default function POS() {
         idempotencyKey: checkoutIntentRef.current.key, source: 'POS',
       };
       if (!online) {
-        enqueue({ type: 'CREATE_ORDER', payload });
-        refreshOutbox();
-        return { offline: true };
+        // WP-K — the backend refuses every new POS sale (422
+        // POS_SETTLEMENT_NOT_ENABLED). Queuing it offline would print a
+        // receipt and take cash for an order Azaman will never create, so
+        // this fails closed instead.
+        throw new OfflineSaleBlockedError();
       }
       return request('/api/business-os/pos/order', { method: 'POST', body: JSON.stringify(payload) });
     },
@@ -285,10 +328,18 @@ export default function POS() {
       const amounts = receiptAmounts(data?.offline ? null : data, {
         subtotal, tax: taxEstimate ?? 0, total, cashGiven: vars.cashGiven,
       });
-      setCompletedOrder({ items: cart, amounts, paymentMethod: vars.method, cashGiven: vars.cashGiven, offline: data?.offline || false });
+      // WP-K — a receipt is authoritative only for a committed order. No
+      // order id from the server means no Azaman receipt.
+      if (!shouldIssueReceipt(data)) {
+        toast.stop('No Azaman receipt issued', {
+          description: 'The backend did not confirm an order, so nothing was recorded or charged.',
+        });
+        return;
+      }
+      setCompletedOrder({ items: cart, amounts, paymentMethod: vars.method, cashGiven: vars.cashGiven, offline: false });
       clearCart(); setShowPayment(false);
       qc.invalidateQueries({ queryKey: ['orders'] });
-      if (!data?.offline) toast.go('Order placed!');
+      toast.go('Order placed!');
     },
     onError: (err) => {
       // A definitive server answer means the order did NOT go through. No
@@ -296,6 +347,18 @@ export default function POS() {
       // the order may exist. Telling the operator it "failed" invites a
       // double charge; the intent key is kept so a re-charge of the same
       // cart replays the original order instead of duplicating it.
+      if (err?.name === 'OfflineSaleBlockedError') {
+        toast.stop('No sale recorded — Azaman POS is offline', {
+          description: 'Azaman POS settlement is not enabled yet, so an offline sale cannot be completed. Take payment outside Azaman or record it as a manual sale.',
+        });
+        return;
+      }
+      if (isSettlementRefused(err)) {
+        toast.stop('Azaman POS settlement is not enabled', {
+          description: 'No order was created and no payment was taken. Cash and other sales are refused consistently until settlement is enabled.',
+        });
+        return;
+      }
       if (isUnknownOutcome(err)) {
         toast.stop('Connection lost — this order may have gone through', {
           description: 'Check Orders before charging the customer again. Retrying the same cart reuses the same checkout ID, so the backend blocks a duplicate charge.',
@@ -318,15 +381,24 @@ export default function POS() {
             await request('/api/business-os/pos/order', { method: 'POST', body: JSON.stringify(item.payload) });
             synced++;
           } catch (e) {
-            const retries = (item.retryCount || 0) + 1;
-            if (retries < 3) remaining.push({ ...item, status: 'FAILED', retryCount: retries });
-            // After 3 retries, drop the item to avoid infinite loop
+            // WP-K — a queued sale is an unresolved financial record. It is
+            // NEVER dropped: after repeated failures it is parked as
+            // NEEDS_ATTENTION and stays visible until a cashier resolves it
+            // explicitly.
+            remaining.push({ ...classifySyncFailure(item), lastError: e?.message || 'sync failed' });
           }
         }
       }
       writeOutbox(remaining); refreshOutbox(); setSyncing(false);
       if (synced > 0) { toast.go(`${synced} offline order(s) synced!`); qc.invalidateQueries({ queryKey: ['orders'] }); }
-      if (remaining.length > 0) toast.stop(`${remaining.length} order(s) failed to sync — will retry.`);
+      if (remaining.length > 0) {
+        const stuck = remaining.filter((i) => i.status === 'NEEDS_ATTENTION').length;
+        toast.stop(
+          stuck > 0
+            ? `${stuck} queued sale(s) need attention — Azaman did not record them. They are kept below until resolved.`
+            : `${remaining.length} order(s) failed to sync — will retry.`,
+        );
+      }
     };
     syncOutbox();
   }, [online, outboxCount]);
@@ -520,6 +592,10 @@ export default function POS() {
           <ReceiptModal order={completedOrder} bizName={bizProfile?.businessName} onClose={() => setCompletedOrder(null)} />
         )}
       </AnimatePresence>
+      <PendingSalesPanel
+        items={itemsNeedingAttention(readOutbox())}
+        onResolve={(id) => { writeOutbox(readOutbox().filter((i) => i.id !== id)); refreshOutbox(); }}
+      />
     </div>
   );
 }
