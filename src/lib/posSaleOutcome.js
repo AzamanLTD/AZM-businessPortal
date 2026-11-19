@@ -43,3 +43,49 @@ export function classifySyncFailure(item) {
 export function itemsNeedingAttention(items) {
   return (items || []).filter((i) => i.status === 'NEEDS_ATTENTION');
 }
+
+// -----------------------------------------------------------------------------
+// WP-K closure — payment-rail authority and merchant-cash separation.
+// -----------------------------------------------------------------------------
+
+/**
+ * The Azaman POS payment rail stays DISABLED until the backend supports a
+ * complete GHS-native settlement AND refund/reconciliation path. The backend
+ * refuses every new POS sale with 422 POS_SETTLEMENT_NOT_ENABLED, so offering
+ * "AZM Balance" or "Split" as live choices would invite a payment the platform
+ * cannot settle or refund. Cash is NOT an Azaman rail: it is the merchant's own
+ * money, received in the merchant's hand.
+ */
+export const POS_AZAMAN_RAIL_ENABLED = false;
+
+/** Only cash can be taken while the Azaman rail is disabled. */
+export function isMethodAvailable(method, railEnabled = POS_AZAMAN_RAIL_ENABLED) {
+    const m = String(method || '').toUpperCase();
+    if (m === 'CASH') return true;
+    if (m === 'AZM' || m === 'SPLIT') return railEnabled;
+    return false;
+}
+
+/** Why a method cannot be chosen, in operator words. Null when it can. */
+export function unavailableMethodReason(method, railEnabled = POS_AZAMAN_RAIL_ENABLED) {
+    if (isMethodAvailable(method, railEnabled)) return null;
+    return 'Azaman POS settlement is not enabled yet, so Azaman balance and split payments cannot be taken. '
+        + 'Take cash, or record the sale outside Azaman.';
+}
+
+/**
+ * Merchant-cash separation. A cash sale is money the MERCHANT received; Azaman
+ * never held it, so no surface may describe it as Azaman-custodied, held,
+ * settled by Azaman, or part of an Azaman balance.
+ */
+export function cashDisclosure(paymentMethod) {
+    const m = String(paymentMethod || '').toUpperCase();
+    if (m !== 'CASH') return null;
+    return 'Cash received directly by the merchant. Azaman does not hold or settle this cash.';
+}
+
+/** True when a sentence wrongly attributes merchant cash to Azaman custody. */
+export function claimsAzamanHoldsCash(text) {
+    const s = String(text || '');
+    return /(azaman (holds|is holding|settles|settled|custod\w*)|held by azaman|custodied by azaman)/i.test(s);
+}

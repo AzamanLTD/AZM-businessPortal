@@ -26,9 +26,9 @@ import {
 
 const fmt = (n) => `GHS ${Number(n || 0).toFixed(2)}`;
 const CAT_ICONS = { food: Utensils, drink: Coffee, beverage: Coffee, retail: ShoppingBag, product: Package };
-import { shouldIssueReceipt, isSettlementRefused, classifySyncFailure, itemsNeedingAttention } from '@/lib/posSaleOutcome';
+import { shouldIssueReceipt, isSettlementRefused, classifySyncFailure, itemsNeedingAttention, isMethodAvailable, unavailableMethodReason, cashDisclosure, POS_AZAMAN_RAIL_ENABLED } from '@/lib/posSaleOutcome';
 
-const OUTBOX_KEY = 'az_pos_outbox';
+export const OUTBOX_KEY = 'az_pos_outbox';
 const readOutbox = () => { try { return JSON.parse(localStorage.getItem(OUTBOX_KEY) || '[]'); } catch { return []; } };
 const writeOutbox = (items) => localStorage.setItem(OUTBOX_KEY, JSON.stringify(items));
 // WP-K — a sale that cannot reach Azaman must never be recorded as one.
@@ -53,7 +53,7 @@ function useOnlineStatus() {
 
 // WP-K — unresolved queued sales stay visible and are resolved explicitly.
 // Nothing here is ever auto-deleted: a queued sale is a financial record.
-function PendingSalesPanel({ items, onResolve }) {
+export function PendingSalesPanel({ items, onResolve }) {
   if (!items || items.length === 0) return null;
   const stuck = items.filter((i) => i.status === 'NEEDS_ATTENTION');
   return (
@@ -117,6 +117,11 @@ function ReceiptModal({ order, bizName, onClose }) {
           <div className="flex justify-between text-sm text-[var(--text-3)]">
             <span>Payment</span><span className="font-medium capitalize">{order.paymentMethod || 'cash'}</span>
           </div>
+          {cashDisclosure(order.paymentMethod) && (
+            <p data-testid="pos-cash-disclosure" className="text-xs text-[var(--text-3)]">
+              {cashDisclosure(order.paymentMethod)}
+            </p>
+          )}
           {!order.amounts?.authoritative && (
             <div className="flex justify-between text-xs text-[var(--text-3)] pt-1">
               <span>Offline sale</span><span>Totals are a local estimate, confirmed when the order syncs</span>
@@ -154,12 +159,13 @@ function PaymentModal({ total, onClose, onConfirm, isLoading }) {
   const azmAmt = method === 'SPLIT' ? (parseFloat(azmInput) || 0) : (method === 'AZM' ? total : 0);
   const cashRequired = method === 'SPLIT' ? Math.max(0, total - azmAmt) : total;
   const change = (method === 'CASH' || method === 'SPLIT') ? Math.max(0, cashAmt - cashRequired) : 0;
-  const canConfirm = method === 'AZM' || (method === 'CASH' && cashAmt >= total) || (method === 'SPLIT' && (cashAmt + azmAmt) >= total);
+  const canConfirm = isMethodAvailable(method) && ((method === 'CASH' && cashAmt >= total) || (method === 'SPLIT' && (cashAmt + azmAmt) >= total));
   const METHODS = [
     { id: 'CASH', label: 'Cash', icon: Banknote },
     { id: 'AZM', label: 'AZM Balance', icon: CreditCard },
     { id: 'SPLIT', label: 'Split', icon: SplitSquareHorizontal },
   ];
+  const railReason = unavailableMethodReason(method);
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <m.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }}
@@ -175,14 +181,25 @@ function PaymentModal({ total, onClose, onConfirm, isLoading }) {
             <div className="text-4xl font-bold tabular-nums" style={{ color: 'var(--f-text)' }}>{fmt(total)}</div>
           </div>
           <div className="grid grid-cols-3 gap-2">
-            {METHODS.map(m => (
-              <button key={m.id} onClick={() => setMethod(m.id)}
-                className={cn('flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-xs font-semibold transition-all', method === m.id ? 'border-current' : 'border-gray-200 text-[var(--text-3)]:border-gray-300')}
-                style={method === m.id ? { borderColor: 'var(--f-tint-color)', color: 'var(--f-tint-color)', background: 'var(--f-surface-sunken)' } : {}}>
-                <m.icon className="w-5 h-5" />{m.label}
-              </button>
-            ))}
+            {METHODS.map(m => {
+              const available = isMethodAvailable(m.id);
+              return (
+                <button key={m.id} onClick={() => available && setMethod(m.id)} disabled={!available}
+                  title={available ? undefined : unavailableMethodReason(m.id)}
+                  aria-disabled={!available}
+                  className={cn('flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-xs font-semibold transition-all', method === m.id ? 'border-current' : 'border-gray-200 text-[var(--text-3)]:border-gray-300', !available && 'opacity-40 cursor-not-allowed')}
+                  style={method === m.id ? { borderColor: 'var(--f-tint-color)', color: 'var(--f-tint-color)', background: 'var(--f-surface-sunken)' } : {}}>
+                  <m.icon className="w-5 h-5" />{m.label}
+                </button>
+              );
+            })}
           </div>
+          {railReason && (
+            <div data-testid="pos-rail-disabled" className="rounded-lg border border-warn bg-warn-bg px-3 py-2 text-xs text-warn">
+              {railReason}
+            </div>
+          )}
+          {!POS_AZAMAN_RAIL_ENABLED && method !== 'CASH' && null}
           {(method === 'CASH' || method === 'SPLIT') && (
             <div className="space-y-2">
               <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--f-text-3)' }}>{method === 'SPLIT' ? 'Cash Amount' : 'Cash Given'}</label>
