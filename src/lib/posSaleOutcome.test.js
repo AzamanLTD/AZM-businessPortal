@@ -86,3 +86,52 @@ describe('merchant cash is never described as Azaman-custodied money', () => {
         expect(claimsAzamanHoldsCash('Cash received directly by the merchant.')).toBe(false);
     });
 });
+
+// ── WP-K closure: resolution archives, never deletes ─────────────────────────
+import {
+    isOpenOutboxItem,
+    openOutboxItems,
+    resolveOutboxItem,
+    resolvedOutboxHistory,
+} from './posSaleOutcome';
+
+describe('queued-sale resolution is a recorded action', () => {
+    const legacy = {
+        id: 'q1',
+        ts: 1760000000000,
+        status: 'NEEDS_ATTENTION',
+        payload: { items: [{ id: 'a', qty: 2 }] },
+        retryCount: 3,
+    };
+
+    it('keeps the record, payload and identity when resolved', () => {
+        const next = resolveOutboxItem([legacy], 'q1', { note: 'cash at counter', now: 1760000009999 });
+        expect(next).toHaveLength(1);
+        expect(next[0].id).toBe('q1');
+        expect(next[0].ts).toBe(legacy.ts);
+        expect(next[0].payload).toEqual(legacy.payload);
+        expect(next[0].retryCount).toBe(3);
+        expect(next[0].status).toBe('RESOLVED');
+        expect(next[0].resolvedAt).toBe(1760000009999);
+        expect(next[0].resolvedNote).toBe('cash at counter');
+        expect(next[0].resolution).toBe('CASHIER_RESOLVED_NO_AZAMAN_ORDER');
+    });
+
+    it('refuses to close a financial record with no reason', () => {
+        expect(() => resolveOutboxItem([legacy], 'q1', { note: '   ' })).toThrow(/note is required/i);
+        expect(() => resolveOutboxItem([legacy], 'q1', {})).toThrow(/note is required/i);
+    });
+
+    it('resolved records leave the attention list but stay in history', () => {
+        const next = resolveOutboxItem([legacy, { ...legacy, id: 'q2' }], 'q1', { note: 'done', now: 5 });
+        expect(openOutboxItems(next).map((i) => i.id)).toEqual(['q2']);
+        expect(resolvedOutboxHistory(next).map((i) => i.id)).toEqual(['q1']);
+        expect(isOpenOutboxItem(next[0])).toBe(false);
+    });
+
+    it('does not mutate the input array', () => {
+        const input = [legacy];
+        resolveOutboxItem(input, 'q1', { note: 'x', now: 1 });
+        expect(input[0].status).toBe('NEEDS_ATTENTION');
+    });
+});

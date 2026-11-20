@@ -10,6 +10,7 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { PendingSalesPanel, OUTBOX_KEY } from '../src/pages/POS.jsx';
+import { resolveOutboxItem, resolvedOutboxHistory } from '../src/lib/posSaleOutcome.js';
 import { classifySyncFailure } from '../src/lib/posSaleOutcome.js';
 
 const readOutbox = () => {
@@ -27,8 +28,10 @@ function Harness() {
         return () => window.removeEventListener('storage', onStorage);
     }, []);
 
-    const resolve = (id) => {
-        const next = readOutbox().filter((i) => i.id !== id);
+    // Resolution goes through the production helper: the record is archived
+    // with its reason, never spliced out of storage.
+    const resolve = (id, note) => {
+        const next = resolveOutboxItem(readOutbox(), id, { note });
         writeOutbox(next);
         setItems(next);
     };
@@ -60,7 +63,11 @@ function Harness() {
                 <button data-testid="seed-sale" onClick={seed}>Seed queued sale</button>
                 <button data-testid="fail-sync" onClick={failOnce}>Simulate failed sync</button>
             </div>
-            <PendingSalesPanel items={items.filter((i) => i.status === 'NEEDS_ATTENTION')} onResolve={resolve} />
+            <PendingSalesPanel
+                items={items.filter((i) => i.status === 'NEEDS_ATTENTION')}
+                history={resolvedOutboxHistory(items)}
+                onResolve={resolve}
+            />
         </div>
     );
 }

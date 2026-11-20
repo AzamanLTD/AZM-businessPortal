@@ -26,7 +26,11 @@ import {
 
 const fmt = (n) => `GHS ${Number(n || 0).toFixed(2)}`;
 const CAT_ICONS = { food: Utensils, drink: Coffee, beverage: Coffee, retail: ShoppingBag, product: Package };
-import { shouldIssueReceipt, isSettlementRefused, classifySyncFailure, itemsNeedingAttention, isMethodAvailable, unavailableMethodReason, cashDisclosure, POS_AZAMAN_RAIL_ENABLED } from '@/lib/posSaleOutcome';
+import {
+  shouldIssueReceipt, isSettlementRefused, classifySyncFailure, itemsNeedingAttention,
+  isMethodAvailable, unavailableMethodReason, cashDisclosure, POS_AZAMAN_RAIL_ENABLED,
+  openOutboxItems, resolvedOutboxHistory, resolveOutboxItem,
+} from '@/lib/posSaleOutcome';
 
 export const OUTBOX_KEY = 'az_pos_outbox';
 const readOutbox = () => { try { return JSON.parse(localStorage.getItem(OUTBOX_KEY) || '[]'); } catch { return []; } };
@@ -53,8 +57,8 @@ function useOnlineStatus() {
 
 // WP-K — unresolved queued sales stay visible and are resolved explicitly.
 // Nothing here is ever auto-deleted: a queued sale is a financial record.
-export function PendingSalesPanel({ items, onResolve }) {
-  if (!items || items.length === 0) return null;
+export function PendingSalesPanel({ items, onResolve, history }) {
+  if ((!items || items.length === 0) && (!history || history.length === 0)) return null;
   const stuck = items.filter((i) => i.status === 'NEEDS_ATTENTION');
   return (
     <div className="fixed bottom-4 left-4 right-4 z-40 rounded-xl border border-amber-400/40 bg-[var(--f-surface)] p-3 shadow-lg">
@@ -72,12 +76,38 @@ export function PendingSalesPanel({ items, onResolve }) {
                   {new Date(i.ts).toLocaleString('en-GH')} · {i.payload?.items?.length || 0} item(s) ·{' '}
                   {i.lastError || 'not synced'}
                 </span>
-                <button className="underline" onClick={() => onResolve(i.id)}>Mark resolved</button>
+                <button
+                  className="underline"
+                  onClick={() => {
+                    const note = window.prompt(
+                      'Record why this queued sale is being closed. The sale and this note are kept.',
+                      'Not an Azaman order — cash handled at the counter.',
+                    );
+                    if (note && note.trim()) onResolve(i.id, note.trim());
+                  }}
+                >
+                  Resolve…
+                </button>
               </li>
             ))}
           </ul>
         </div>
       </div>
+      {history && history.length > 0 && (
+        <details className="mt-2 border-t pt-2" style={{ borderColor: 'var(--f-line)' }}>
+          <summary className="cursor-pointer text-xs font-semibold">
+            Resolved history ({history.length}) — kept, never deleted
+          </summary>
+          <ul className="mt-1 space-y-1">
+            {history.map((i) => (
+              <li key={i.id} className="text-xs opacity-80">
+                {new Date(i.ts).toLocaleString('en-GH')} · {i.payload?.items?.length || 0} item(s) · resolved{' '}
+                {new Date(i.resolvedAt).toLocaleString('en-GH')} — {i.resolvedNote}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
     </div>
   );
 }
@@ -593,7 +623,7 @@ export default function POS() {
             </button>
             {!online && (
               <p className="text-xs text-center flex items-center justify-center gap-1 text-warn">
-                <WifiOff className="w-3 h-3" /> Order will be queued offline
+                <WifiOff className="w-3 h-3" /> Offline — new sales are blocked. Nothing is queued.
               </p>
             )}
           </div>
@@ -610,8 +640,14 @@ export default function POS() {
         )}
       </AnimatePresence>
       <PendingSalesPanel
-        items={itemsNeedingAttention(readOutbox())}
-        onResolve={(id) => { writeOutbox(readOutbox().filter((i) => i.id !== id)); refreshOutbox(); }}
+        items={itemsNeedingAttention(openOutboxItems(readOutbox()))}
+        history={resolvedOutboxHistory(readOutbox())}
+        onResolve={(id, note) => {
+          // WP-K: a resolved queued sale is archived with its reason, never
+          // spliced out of storage. The record stays inspectable.
+          writeOutbox(resolveOutboxItem(readOutbox(), id, { note }));
+          refreshOutbox();
+        }}
       />
     </div>
   );

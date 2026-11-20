@@ -22,7 +22,7 @@ test('a queued sale survives a page reload and stays resolvable', async ({ page 
     await page.goto(HARNESS);
     await page.getByTestId('seed-sale').click();
     await expect(page.locator(PANEL)).toBeVisible();
-    await expect(page.locator('text=Mark resolved')).toBeVisible();
+    await expect(page.locator('text=Resolve…')).toBeVisible();
 
     // Reload: a new document reading the same durable store.
     await page.reload();
@@ -62,18 +62,33 @@ test('repeated sync failure parks the sale for attention, never drops it', async
     expect(stored[0].retryCount).toBeGreaterThanOrEqual(3);
 });
 
-test('resolution is explicit and removes only the resolved sale', async ({ page }) => {
+test('resolution archives the sale with its reason and keeps both records', async ({ page }) => {
     await page.goto(HARNESS);
     await page.evaluate((k) => {
         localStorage.setItem(k, JSON.stringify([
-            { type: 'CREATE_ORDER', id: 'sale-a', ts: Date.now(), status: 'NEEDS_ATTENTION', retryCount: 3, payload: { items: [] } },
+            { type: 'CREATE_ORDER', id: 'sale-a', ts: Date.now(), status: 'NEEDS_ATTENTION', retryCount: 3, payload: { items: [{ id: 'x', qty: 1 }] } },
             { type: 'CREATE_ORDER', id: 'sale-b', ts: Date.now(), status: 'NEEDS_ATTENTION', retryCount: 3, payload: { items: [] } },
         ]));
     }, OUTBOX_KEY);
     await page.reload();
-    await expect(page.locator('text=Mark resolved').first()).toBeVisible();
-    await page.locator('text=Mark resolved').first().click();
+
+    // Resolution is a recorded decision: the panel asks for a reason.
+    page.once('dialog', (d) => d.accept('cash taken at the counter'));
+    await expect(page.locator('text=Resolve…').first()).toBeVisible();
+    await page.locator('text=Resolve…').first().click();
+
     const stored = await page.evaluate((k) => JSON.parse(localStorage.getItem(k) || '[]'), OUTBOX_KEY);
-    expect(stored).toHaveLength(1);
-    expect(['sale-a', 'sale-b']).toContain(stored[0].id);
+    // NOTHING is deleted: both financial records survive.
+    expect(stored).toHaveLength(2);
+    const resolved = stored.find((i) => i.status === 'RESOLVED');
+    const open = stored.find((i) => i.status === 'NEEDS_ATTENTION');
+    expect(resolved).toBeTruthy();
+    expect(open).toBeTruthy();
+    expect(resolved.resolvedNote).toBe('cash taken at the counter');
+    expect(resolved.resolution).toBe('CASHIER_RESOLVED_NO_AZAMAN_ORDER');
+    expect(resolved.payload).toEqual({ items: [{ id: 'x', qty: 1 }] });
+    expect(resolved.ts).toBeGreaterThan(0);
+
+    // The resolved record stays inspectable in the history section.
+    await expect(page.locator('text=/Resolved history \\(1\\)/')).toBeVisible();
 });

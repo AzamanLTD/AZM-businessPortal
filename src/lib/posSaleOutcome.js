@@ -89,3 +89,67 @@ export function claimsAzamanHoldsCash(text) {
     const s = String(text || '');
     return /(azaman (holds|is holding|settles|settled|custod\w*)|held by azaman|custodied by azaman)/i.test(s);
 }
+
+// -----------------------------------------------------------------------------
+// WP-K closure — resolution is a RECORDED ACTION, not a deletion.
+//
+// A queued sale is a financial record. "Mark resolved" used to splice it out of
+// localStorage, which destroyed the only evidence it ever existed. Resolution
+// now appends the decision to the record and keeps the payload, the identity
+// and the original timestamp forever; the panel separates open items from
+// resolved history, and a resolved item can never be mistaken for a
+// server-confirmed Azaman order.
+// -----------------------------------------------------------------------------
+
+/** Statuses a cashier can no longer act on. */
+export const RESOLVED_STATUSES = Object.freeze(['RESOLVED', 'ARCHIVED']);
+
+/** Is this record still awaiting a cashier decision? */
+export function isOpenOutboxItem(item) {
+  return !RESOLVED_STATUSES.includes(item?.status);
+}
+
+/** Open items only, for the attention panel. */
+export function openOutboxItems(items) {
+  return (items || []).filter(isOpenOutboxItem);
+}
+
+/**
+ * Resolve one queued sale WITHOUT deleting it.
+ *
+ * Returns a new array. The item keeps its id, ts, payload and retry history and
+ * gains { status: 'RESOLVED', resolvedAt, resolvedNote }. The note is required:
+ * a financial record cannot be closed with no reason on it.
+ *
+ * @param {Array<object>} items
+ * @param {string} id
+ * @param {{ note: string, now?: number }} options
+ */
+export function resolveOutboxItem(items, id, { note, now } = {}) {
+  const trimmed = String(note == null ? '' : note).trim();
+  if (!trimmed) {
+    throw new Error('A resolution note is required before a queued sale is closed.');
+  }
+  const at = typeof now === 'number' ? now : Date.now();
+  return (items || []).map((item) =>
+    item && item.id === id
+      ? {
+          ...item,
+          status: 'RESOLVED',
+          resolvedAt: at,
+          resolvedNote: trimmed,
+          // Provenance stays explicit: this was resolved by a person, not by
+          // Azaman, and no server order exists for it.
+          resolution: 'CASHIER_RESOLVED_NO_AZAMAN_ORDER',
+        }
+      : item,
+  );
+}
+
+/** Resolved records, newest first, for the read-only history view. */
+export function resolvedOutboxHistory(items) {
+  return (items || [])
+    .filter((i) => RESOLVED_STATUSES.includes(i?.status))
+    .slice()
+    .sort((a, b) => (b.resolvedAt || 0) - (a.resolvedAt || 0));
+}
