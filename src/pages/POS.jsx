@@ -30,6 +30,7 @@ import {
   shouldIssueReceipt, isSettlementRefused, classifySyncFailure, itemsNeedingAttention,
   isMethodAvailable, unavailableMethodReason, cashDisclosure, POS_AZAMAN_RAIL_ENABLED,
   openOutboxItems, resolvedOutboxHistory, resolveOutboxItem,
+  POS_NEW_SALE_COMMITTABLE, newSaleUnavailableReason,
 } from '@/lib/posSaleOutcome';
 
 export const OUTBOX_KEY = 'az_pos_outbox';
@@ -616,11 +617,18 @@ export default function POS() {
                 <span>Total</span><span className="tabular-nums" style={{ color: 'var(--f-tint-color)' }}>{fmt(total)}</span>
               </div>
             </div>
-            <button onClick={() => setShowPayment(true)} disabled={!canRing}
+            <button onClick={() => setShowPayment(true)} disabled={!canRing || !POS_NEW_SALE_COMMITTABLE}
+              title={POS_NEW_SALE_COMMITTABLE ? undefined : newSaleUnavailableReason()}
+              aria-disabled={!canRing || !POS_NEW_SALE_COMMITTABLE}
               className="w-full py-4 text-[var(--f-text)] font-bold rounded-xl text-base transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm disabled:opacity-40"
               style={{ background: 'var(--f-tint-color)' }}>
               <Zap className="w-5 h-5" /> Charge {fmt(total)}
             </button>
+            {!POS_NEW_SALE_COMMITTABLE && (
+              <div data-testid="pos-new-sale-unavailable" className="rounded-lg border border-warn bg-warn-bg px-3 py-2 text-xs text-warn">
+                {newSaleUnavailableReason()}
+              </div>
+            )}
             {!online && (
               <p className="text-xs text-center flex items-center justify-center gap-1 text-warn">
                 <WifiOff className="w-3 h-3" /> Offline — new sales are blocked. Nothing is queued.

@@ -135,3 +135,23 @@ describe('queued-sale resolution is a recorded action', () => {
         expect(input[0].status).toBe('NEEDS_ATTENTION');
     });
 });
+
+// ── Audit: the surface must not offer a sale the backend refuses ─────────────
+import { POS_NEW_SALE_COMMITTABLE, newSaleUnavailableReason } from './posSaleOutcome';
+
+describe('new POS sale capability mirrors the backend contract', () => {
+    it('is unavailable while POS_SETTLEMENT_CONTRACT.enabled is false', () => {
+        expect(POS_NEW_SALE_COMMITTABLE).toBe(false);
+    });
+
+    it('the reason names the backend refusal and never promises a queue', () => {
+        const text = newSaleUnavailableReason();
+        expect(text).toMatch(/cannot be recorded/i);
+        expect(text).toMatch(/not enabled/i);
+        expect(text).not.toMatch(/queued|will sync|offline order/i);
+    });
+
+    it('the reason disappears only when the backend can commit', () => {
+        expect(newSaleUnavailableReason(true)).toBeNull();
+    });
+});

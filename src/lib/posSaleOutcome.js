@@ -153,3 +153,31 @@ export function resolvedOutboxHistory(items) {
     .slice()
     .sort((a, b) => (b.resolvedAt || 0) - (a.resolvedAt || 0));
 }
+
+// -----------------------------------------------------------------------------
+// WP-K audit — new-sale capability, reconciled with the backend.
+//
+// Backend source (services/businessOS/posOrderService.js on the candidate
+// branch) declares:
+//     POS_SETTLEMENT_CONTRACT = { enabled: false, orderCurrency: null }
+// and refuses EVERY new POS order — cash included — with
+// `POS_SETTLEMENT_NOT_ENABLED` / 422 BEFORE any economic write. A previously
+// committed order may still be replayed by its idempotency key, but nothing new
+// can be created.
+//
+// A UI that lets a cashier ring up a sale and press Charge would therefore
+// promise a capability the server refuses. This flag is the single place that
+// decision lives: while it is false the surface states the sale cannot be
+// recorded, and no order is submitted.
+// -----------------------------------------------------------------------------
+
+/** True only when the backend can commit a NEW POS order. */
+export const POS_NEW_SALE_COMMITTABLE = false;
+
+/** Operator copy for the unavailable state. Never implies a queued sale. */
+export function newSaleUnavailableReason(committable = POS_NEW_SALE_COMMITTABLE) {
+    if (committable) return null;
+    return 'New POS sales cannot be recorded yet: Azaman POS settlement is not enabled, '
+        + 'so no order, receipt or ledger entry can be created. Take payment outside Azaman '
+        + 'or record the sale in your own books.';
+}
