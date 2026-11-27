@@ -10,6 +10,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
 import { request } from '@/lib/apiCore';
 import { bookingOpsApi } from '@/lib/marketplaceApi';
+import { fetchAllProducts, toPosProduct, formatPesewas, subtotalPesewas } from '@/lib/posCatalog';
 import {
   checkoutIntentFingerprint, resolveIntentKey, estimateTax, taxRowLabel, receiptAmounts, isUnknownOutcome,
 } from '@/lib/posCheckout';
@@ -26,9 +27,24 @@ import {
 
 const fmt = (n) => `GHS ${Number(n || 0).toFixed(2)}`;
 const CAT_ICONS = { food: Utensils, drink: Coffee, beverage: Coffee, retail: ShoppingBag, product: Package };
-const OUTBOX_KEY = 'az_pos_outbox';
+import {
+  shouldIssueReceipt, isSettlementRefused, classifySyncFailure, itemsNeedingAttention,
+  isMethodAvailable, unavailableMethodReason, cashDisclosure, POS_AZAMAN_RAIL_ENABLED,
+  openOutboxItems, resolvedOutboxHistory, resolveOutboxItem,
+  POS_NEW_SALE_COMMITTABLE, newSaleUnavailableReason,
+} from '@/lib/posSaleOutcome';
+
+export const OUTBOX_KEY = 'az_pos_outbox';
 const readOutbox = () => { try { return JSON.parse(localStorage.getItem(OUTBOX_KEY) || '[]'); } catch { return []; } };
 const writeOutbox = (items) => localStorage.setItem(OUTBOX_KEY, JSON.stringify(items));
+// WP-K — a sale that cannot reach Azaman must never be recorded as one.
+class OfflineSaleBlockedError extends Error {
+  constructor() {
+    super('Azaman POS settlement is unavailable. No sale was recorded.');
+    this.name = 'OfflineSaleBlockedError';
+  }
+}
+const SETTLEMENT_DISABLED = 'POS_SETTLEMENT_NOT_ENABLED';
 const enqueue = (action) => { const b = readOutbox(); b.push({ ...action, id: crypto.randomUUID(), ts: Date.now(), status: 'PENDING' }); writeOutbox(b); };
 
 function useOnlineStatus() {
@@ -39,6 +55,63 @@ function useOnlineStatus() {
     return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); };
   }, []);
   return online;
+}
+
+// WP-K — unresolved queued sales stay visible and are resolved explicitly.
+// Nothing here is ever auto-deleted: a queued sale is a financial record.
+export function PendingSalesPanel({ items, onResolve, history }) {
+  if ((!items || items.length === 0) && (!history || history.length === 0)) return null;
+  const stuck = items.filter((i) => i.status === 'NEEDS_ATTENTION');
+  return (
+    <div className="fixed bottom-4 left-4 right-4 z-40 rounded-xl border border-amber-400/40 bg-[var(--f-surface)] p-3 shadow-lg">
+      <div className="flex items-start gap-3">
+        <div className="text-amber-500 text-lg leading-none">!</div>
+        <div className="flex-1 text-sm">
+          <div className="font-semibold">{stuck.length} queued sale(s) Azaman did not record</div>
+          <div className="text-xs text-[var(--f-text-muted,#888)] mt-0.5">
+            These were captured before settlement was disabled. They are kept until you resolve each one.
+          </div>
+          <ul className="mt-2 space-y-1">
+            {stuck.map((i) => (
+              <li key={i.id} className="flex items-center justify-between gap-2 text-xs">
+                <span>
+                  {new Date(i.ts).toLocaleString('en-GH')} · {i.payload?.items?.length || 0} item(s) ·{' '}
+                  {i.lastError || 'not synced'}
+                </span>
+                <button
+                  className="underline"
+                  onClick={() => {
+                    const note = window.prompt(
+                      'Record why this queued sale is being closed. The sale and this note are kept.',
+                      'Not an Azaman order — cash handled at the counter.',
+                    );
+                    if (note && note.trim()) onResolve(i.id, note.trim());
+                  }}
+                >
+                  Resolve…
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      {history && history.length > 0 && (
+        <details className="mt-2 border-t pt-2" style={{ borderColor: 'var(--f-line)' }}>
+          <summary className="cursor-pointer text-xs font-semibold">
+            Resolved history ({history.length}) — kept, never deleted
+          </summary>
+          <ul className="mt-1 space-y-1">
+            {history.map((i) => (
+              <li key={i.id} className="text-xs opacity-80">
+                {new Date(i.ts).toLocaleString('en-GH')} · {i.payload?.items?.length || 0} item(s) · resolved{' '}
+                {new Date(i.resolvedAt).toLocaleString('en-GH')} — {i.resolvedNote}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+    </div>
+  );
 }
 
 function ReceiptModal({ order, bizName, onClose }) {
@@ -76,6 +149,11 @@ function ReceiptModal({ order, bizName, onClose }) {
           <div className="flex justify-between text-sm text-[var(--text-3)]">
             <span>Payment</span><span className="font-medium capitalize">{order.paymentMethod || 'cash'}</span>
           </div>
+          {cashDisclosure(order.paymentMethod) && (
+            <p data-testid="pos-cash-disclosure" className="text-xs text-[var(--text-3)]">
+              {cashDisclosure(order.paymentMethod)}
+            </p>
+          )}
           {!order.amounts?.authoritative && (
             <div className="flex justify-between text-xs text-[var(--text-3)] pt-1">
               <span>Offline sale</span><span>Totals are a local estimate, confirmed when the order syncs</span>
@@ -113,12 +191,13 @@ function PaymentModal({ total, onClose, onConfirm, isLoading }) {
   const azmAmt = method === 'SPLIT' ? (parseFloat(azmInput) || 0) : (method === 'AZM' ? total : 0);
   const cashRequired = method === 'SPLIT' ? Math.max(0, total - azmAmt) : total;
   const change = (method === 'CASH' || method === 'SPLIT') ? Math.max(0, cashAmt - cashRequired) : 0;
-  const canConfirm = method === 'AZM' || (method === 'CASH' && cashAmt >= total) || (method === 'SPLIT' && (cashAmt + azmAmt) >= total);
+  const canConfirm = isMethodAvailable(method) && ((method === 'CASH' && cashAmt >= total) || (method === 'SPLIT' && (cashAmt + azmAmt) >= total));
   const METHODS = [
     { id: 'CASH', label: 'Cash', icon: Banknote },
     { id: 'AZM', label: 'AZM Balance', icon: CreditCard },
     { id: 'SPLIT', label: 'Split', icon: SplitSquareHorizontal },
   ];
+  const railReason = unavailableMethodReason(method);
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <m.div initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }}
@@ -134,14 +213,25 @@ function PaymentModal({ total, onClose, onConfirm, isLoading }) {
             <div className="text-4xl font-bold tabular-nums" style={{ color: 'var(--f-text)' }}>{fmt(total)}</div>
           </div>
           <div className="grid grid-cols-3 gap-2">
-            {METHODS.map(m => (
-              <button key={m.id} onClick={() => setMethod(m.id)}
-                className={cn('flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-xs font-semibold transition-all', method === m.id ? 'border-current' : 'border-gray-200 text-[var(--text-3)]:border-gray-300')}
-                style={method === m.id ? { borderColor: 'var(--f-tint-color)', color: 'var(--f-tint-color)', background: 'var(--f-surface-sunken)' } : {}}>
-                <m.icon className="w-5 h-5" />{m.label}
-              </button>
-            ))}
+            {METHODS.map(m => {
+              const available = isMethodAvailable(m.id);
+              return (
+                <button key={m.id} onClick={() => available && setMethod(m.id)} disabled={!available}
+                  title={available ? undefined : unavailableMethodReason(m.id)}
+                  aria-disabled={!available}
+                  className={cn('flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-xs font-semibold transition-all', method === m.id ? 'border-current' : 'border-gray-200 text-[var(--text-3)]:border-gray-300', !available && 'opacity-40 cursor-not-allowed')}
+                  style={method === m.id ? { borderColor: 'var(--f-tint-color)', color: 'var(--f-tint-color)', background: 'var(--f-surface-sunken)' } : {}}>
+                  <m.icon className="w-5 h-5" />{m.label}
+                </button>
+              );
+            })}
           </div>
+          {railReason && (
+            <div data-testid="pos-rail-disabled" className="rounded-lg border border-warn bg-warn-bg px-3 py-2 text-xs text-warn">
+              {railReason}
+            </div>
+          )}
+          {!POS_AZAMAN_RAIL_ENABLED && method !== 'CASH' && null}
           {(method === 'CASH' || method === 'SPLIT') && (
             <div className="space-y-2">
               <label className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--f-text-3)' }}>{method === 'SPLIT' ? 'Cash Amount' : 'Cash Given'}</label>
@@ -192,13 +282,16 @@ export default function POS() {
 
   const refreshOutbox = useCallback(() => setOutboxCount(readOutbox().length), []);
 
-  const { data: productsData = [], isLoading: loadingProducts } = useQuery({
+  // The backend caps a product page at 50 and returns a cursor; read the whole
+  // catalogue, and price each product ONLY from its confirmed GHS price.
+  const { data: productsData = [], isLoading: loadingProducts, error: productsError } = useQuery({
     queryKey: ['pos-products'],
-    queryFn: () => productsApi.list({ limit: 200 }),
+    queryFn: () => fetchAllProducts((params) => productsApi.list(params)),
     enabled: !isAdminView, // product catalog is owner-only — refused in admin view
-    select: d => Array.isArray(d) ? d : (d?.products || d?.data || []),
+    select: d => (Array.isArray(d) ? d : []).map(toPosProduct),
     staleTime: 5 * 60_000,
   });
+  const catalogueRefused = (productsError?.statusCode ?? productsError?.status) === 403;
 
   const categories = ['all', ...Array.from(new Set(productsData.map(p => (p.category || 'Other').toLowerCase())))];
 
@@ -208,11 +301,16 @@ export default function POS() {
     return inCat && inSearch && p.isAvailable !== false;
   });
 
-  const addToCart = (product) => setCart(prev => {
-    const existing = prev.find(i => i.id === product.id);
-    if (existing) return prev.map(i => i.id === product.id ? { ...i, qty: i.qty + 1 } : i);
-    return [...prev, { id: product.id, name: product.name, price: Number(product.price || 0), qty: 1, imageUrl: product.imageUrl }];
-  });
+  // A product with no confirmed GHS price cannot be sold at this counter:
+  // there is no fallback to a converted or relabelled USDC price.
+  const addToCart = (product) => {
+    if (!product.priceAvailable) return;
+    setCart(prev => {
+      const existing = prev.find(i => i.id === product.id);
+      if (existing) return prev.map(i => i.id === product.id ? { ...i, qty: i.qty + 1 } : i);
+      return [...prev, { id: product.id, name: product.name, price: product.price, pricePesewas: product.pricePesewas, qty: 1, imageUrl: product.imageUrl }];
+    });
+  };
 
   const updateQty = (id, delta) => setCart(prev => prev.map(i => i.id === id ? { ...i, qty: Math.max(0, i.qty + delta) } : i).filter(i => i.qty > 0));
   const clearCart = () => setCart([]);
@@ -230,7 +328,8 @@ export default function POS() {
     throwOnError: false,
   });
   const defaultTaxPreset = taxPresets?.presets?.find(p => p.isDefault) || null;
-  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  // Exact: summed in integer pesewas, converted once for the tax estimate.
+  const subtotal = subtotalPesewas(cart) / 100;
   const taxEstimate = estimateTax(subtotal, defaultTaxPreset);
   const taxRow = taxRowLabel(defaultTaxPreset);
   const total = subtotal + (taxEstimate ?? 0);
@@ -272,9 +371,11 @@ export default function POS() {
         idempotencyKey: checkoutIntentRef.current.key, source: 'POS',
       };
       if (!online) {
-        enqueue({ type: 'CREATE_ORDER', payload });
-        refreshOutbox();
-        return { offline: true };
+        // WP-K — the backend refuses every new POS sale (422
+        // POS_SETTLEMENT_NOT_ENABLED). Queuing it offline would print a
+        // receipt and take cash for an order Azaman will never create, so
+        // this fails closed instead.
+        throw new OfflineSaleBlockedError();
       }
       return request('/api/business-os/pos/order', { method: 'POST', body: JSON.stringify(payload) });
     },
@@ -285,10 +386,18 @@ export default function POS() {
       const amounts = receiptAmounts(data?.offline ? null : data, {
         subtotal, tax: taxEstimate ?? 0, total, cashGiven: vars.cashGiven,
       });
-      setCompletedOrder({ items: cart, amounts, paymentMethod: vars.method, cashGiven: vars.cashGiven, offline: data?.offline || false });
+      // WP-K — a receipt is authoritative only for a committed order. No
+      // order id from the server means no Azaman receipt.
+      if (!shouldIssueReceipt(data)) {
+        toast.stop('No Azaman receipt issued', {
+          description: 'The backend did not confirm an order, so nothing was recorded or charged.',
+        });
+        return;
+      }
+      setCompletedOrder({ items: cart, amounts, paymentMethod: vars.method, cashGiven: vars.cashGiven, offline: false });
       clearCart(); setShowPayment(false);
       qc.invalidateQueries({ queryKey: ['orders'] });
-      if (!data?.offline) toast.go('Order placed!');
+      toast.go('Order placed!');
     },
     onError: (err) => {
       // A definitive server answer means the order did NOT go through. No
@@ -296,6 +405,18 @@ export default function POS() {
       // the order may exist. Telling the operator it "failed" invites a
       // double charge; the intent key is kept so a re-charge of the same
       // cart replays the original order instead of duplicating it.
+      if (err?.name === 'OfflineSaleBlockedError') {
+        toast.stop('No sale recorded — Azaman POS is offline', {
+          description: 'Azaman POS settlement is not enabled yet, so an offline sale cannot be completed. Take payment outside Azaman or record it as a manual sale.',
+        });
+        return;
+      }
+      if (isSettlementRefused(err)) {
+        toast.stop('Azaman POS settlement is not enabled', {
+          description: 'No order was created and no payment was taken. Cash and other sales are refused consistently until settlement is enabled.',
+        });
+        return;
+      }
       if (isUnknownOutcome(err)) {
         toast.stop('Connection lost — this order may have gone through', {
           description: 'Check Orders before charging the customer again. Retrying the same cart reuses the same checkout ID, so the backend blocks a duplicate charge.',
@@ -318,15 +439,24 @@ export default function POS() {
             await request('/api/business-os/pos/order', { method: 'POST', body: JSON.stringify(item.payload) });
             synced++;
           } catch (e) {
-            const retries = (item.retryCount || 0) + 1;
-            if (retries < 3) remaining.push({ ...item, status: 'FAILED', retryCount: retries });
-            // After 3 retries, drop the item to avoid infinite loop
+            // WP-K — a queued sale is an unresolved financial record. It is
+            // NEVER dropped: after repeated failures it is parked as
+            // NEEDS_ATTENTION and stays visible until a cashier resolves it
+            // explicitly.
+            remaining.push({ ...classifySyncFailure(item), lastError: e?.message || 'sync failed' });
           }
         }
       }
       writeOutbox(remaining); refreshOutbox(); setSyncing(false);
       if (synced > 0) { toast.go(`${synced} offline order(s) synced!`); qc.invalidateQueries({ queryKey: ['orders'] }); }
-      if (remaining.length > 0) toast.stop(`${remaining.length} order(s) failed to sync — will retry.`);
+      if (remaining.length > 0) {
+        const stuck = remaining.filter((i) => i.status === 'NEEDS_ATTENTION').length;
+        toast.stop(
+          stuck > 0
+            ? `${stuck} queued sale(s) need attention — Azaman did not record them. They are kept below until resolved.`
+            : `${remaining.length} order(s) failed to sync — will retry.`,
+        );
+      }
     };
     syncOutbox();
   }, [online, outboxCount]);
@@ -379,7 +509,9 @@ export default function POS() {
                 <div key={i} className="aspect-[3/4] rounded-2xl animate-pulse" style={{ background: 'var(--f-line)' }} />
               ))}
             </div>
-          ) : isAdminView ? (
+          ) : isAdminView || catalogueRefused ? (
+            // The catalogue endpoint is owner-only today; staff see an honest
+            // refusal instead of an empty grid that looks like "no products".
             <OwnerOnlyRefusal label="The product catalog (POS can only run for the business owner)" testId="pos-owner-only-products" />
           ) : visibleProducts.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full gap-3" style={{ color: 'var(--f-text-3)' }}>
@@ -394,7 +526,10 @@ export default function POS() {
                   <m.button key={product.id}
                     variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
                     onClick={() => addToCart(product)}
-                    className="group relative flex flex-col bg-[var(--f-surface)] border rounded-2xl overflow-hidden shadow-sm:shadow-md transition-all active:scale-[0.97] text-left"
+                    disabled={!product.priceAvailable}
+                    aria-disabled={!product.priceAvailable}
+                    title={product.priceAvailable ? undefined : 'Set a GHS price for this item before selling it'}
+                    className={`group relative flex flex-col bg-[var(--f-surface)] border rounded-2xl overflow-hidden shadow-sm:shadow-md transition-all text-left ${product.priceAvailable ? 'active:scale-[0.97]' : 'opacity-60 cursor-not-allowed'}`}
                     style={{ borderColor: 'var(--f-line)' }}>
                     <div className="aspect-square relative overflow-hidden" style={{ background: 'var(--f-bg)' }}>
                       {product.imageUrl
@@ -413,7 +548,9 @@ export default function POS() {
                     <div className="p-3 flex-1 flex flex-col">
                       <span className="text-sm font-semibold line-clamp-2" style={{ color: 'var(--f-text)' }}>{product.name}</span>
                       <div className="mt-auto pt-2 flex items-center justify-between">
-                        <span className="text-sm font-bold tabular-nums" style={{ color: 'var(--f-tint-color)' }}>{fmt(product.price)}</span>
+                        {product.priceAvailable
+                          ? <span className="text-sm font-bold tabular-nums" style={{ color: 'var(--f-tint-color)' }}>{formatPesewas(product.pricePesewas)}</span>
+                          : <span className="text-xs font-medium" style={{ color: 'var(--f-text-3)' }}>Price not set</span>}
                         {product.stockQuantity != null && product.stockQuantity < 5 && (
                           <span className="text-xs font-medium" style={{ color: 'var(--f-bad)' }}>{product.stockQuantity} left</span>
                         )}
@@ -497,14 +634,21 @@ export default function POS() {
                 <span>Total</span><span className="tabular-nums" style={{ color: 'var(--f-tint-color)' }}>{fmt(total)}</span>
               </div>
             </div>
-            <button onClick={() => setShowPayment(true)} disabled={!canRing}
+            <button onClick={() => setShowPayment(true)} disabled={!canRing || !POS_NEW_SALE_COMMITTABLE}
+              title={POS_NEW_SALE_COMMITTABLE ? undefined : newSaleUnavailableReason()}
+              aria-disabled={!canRing || !POS_NEW_SALE_COMMITTABLE}
               className="w-full py-4 text-[var(--f-text)] font-bold rounded-xl text-base transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm disabled:opacity-40"
               style={{ background: 'var(--f-tint-color)' }}>
               <Zap className="w-5 h-5" /> Charge {fmt(total)}
             </button>
+            {!POS_NEW_SALE_COMMITTABLE && (
+              <div data-testid="pos-new-sale-unavailable" className="rounded-lg border border-warn bg-warn-bg px-3 py-2 text-xs text-warn">
+                {newSaleUnavailableReason()}
+              </div>
+            )}
             {!online && (
               <p className="text-xs text-center flex items-center justify-center gap-1 text-warn">
-                <WifiOff className="w-3 h-3" /> Order will be queued offline
+                <WifiOff className="w-3 h-3" /> Offline — new sales are blocked. Nothing is queued.
               </p>
             )}
           </div>
@@ -520,6 +664,16 @@ export default function POS() {
           <ReceiptModal order={completedOrder} bizName={bizProfile?.businessName} onClose={() => setCompletedOrder(null)} />
         )}
       </AnimatePresence>
+      <PendingSalesPanel
+        items={itemsNeedingAttention(openOutboxItems(readOutbox()))}
+        history={resolvedOutboxHistory(readOutbox())}
+        onResolve={(id, note) => {
+          // WP-K: a resolved queued sale is archived with its reason, never
+          // spliced out of storage. The record stays inspectable.
+          writeOutbox(resolveOutboxItem(readOutbox(), id, { note }));
+          refreshOutbox();
+        }}
+      />
     </div>
   );
 }
