@@ -10,6 +10,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
 import { request } from '@/lib/apiCore';
 import { bookingOpsApi } from '@/lib/marketplaceApi';
+import { fetchAllProducts, toPosProduct, formatPesewas, subtotalPesewas } from '@/lib/posCatalog';
 import {
   checkoutIntentFingerprint, resolveIntentKey, estimateTax, taxRowLabel, receiptAmounts, isUnknownOutcome,
 } from '@/lib/posCheckout';
@@ -281,13 +282,16 @@ export default function POS() {
 
   const refreshOutbox = useCallback(() => setOutboxCount(readOutbox().length), []);
 
-  const { data: productsData = [], isLoading: loadingProducts } = useQuery({
+  // The backend caps a product page at 50 and returns a cursor; read the whole
+  // catalogue, and price each product ONLY from its confirmed GHS price.
+  const { data: productsData = [], isLoading: loadingProducts, error: productsError } = useQuery({
     queryKey: ['pos-products'],
-    queryFn: () => productsApi.list({ limit: 200 }),
+    queryFn: () => fetchAllProducts((params) => productsApi.list(params)),
     enabled: !isAdminView, // product catalog is owner-only — refused in admin view
-    select: d => Array.isArray(d) ? d : (d?.products || d?.data || []),
+    select: d => (Array.isArray(d) ? d : []).map(toPosProduct),
     staleTime: 5 * 60_000,
   });
+  const catalogueRefused = (productsError?.statusCode ?? productsError?.status) === 403;
 
   const categories = ['all', ...Array.from(new Set(productsData.map(p => (p.category || 'Other').toLowerCase())))];
 
@@ -297,11 +301,16 @@ export default function POS() {
     return inCat && inSearch && p.isAvailable !== false;
   });
 
-  const addToCart = (product) => setCart(prev => {
-    const existing = prev.find(i => i.id === product.id);
-    if (existing) return prev.map(i => i.id === product.id ? { ...i, qty: i.qty + 1 } : i);
-    return [...prev, { id: product.id, name: product.name, price: Number(product.price || 0), qty: 1, imageUrl: product.imageUrl }];
-  });
+  // A product with no confirmed GHS price cannot be sold at this counter:
+  // there is no fallback to a converted or relabelled USDC price.
+  const addToCart = (product) => {
+    if (!product.priceAvailable) return;
+    setCart(prev => {
+      const existing = prev.find(i => i.id === product.id);
+      if (existing) return prev.map(i => i.id === product.id ? { ...i, qty: i.qty + 1 } : i);
+      return [...prev, { id: product.id, name: product.name, price: product.price, pricePesewas: product.pricePesewas, qty: 1, imageUrl: product.imageUrl }];
+    });
+  };
 
   const updateQty = (id, delta) => setCart(prev => prev.map(i => i.id === id ? { ...i, qty: Math.max(0, i.qty + delta) } : i).filter(i => i.qty > 0));
   const clearCart = () => setCart([]);
@@ -319,7 +328,8 @@ export default function POS() {
     throwOnError: false,
   });
   const defaultTaxPreset = taxPresets?.presets?.find(p => p.isDefault) || null;
-  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  // Exact: summed in integer pesewas, converted once for the tax estimate.
+  const subtotal = subtotalPesewas(cart) / 100;
   const taxEstimate = estimateTax(subtotal, defaultTaxPreset);
   const taxRow = taxRowLabel(defaultTaxPreset);
   const total = subtotal + (taxEstimate ?? 0);
@@ -499,7 +509,9 @@ export default function POS() {
                 <div key={i} className="aspect-[3/4] rounded-2xl animate-pulse" style={{ background: 'var(--f-line)' }} />
               ))}
             </div>
-          ) : isAdminView ? (
+          ) : isAdminView || catalogueRefused ? (
+            // The catalogue endpoint is owner-only today; staff see an honest
+            // refusal instead of an empty grid that looks like "no products".
             <OwnerOnlyRefusal label="The product catalog (POS can only run for the business owner)" testId="pos-owner-only-products" />
           ) : visibleProducts.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full gap-3" style={{ color: 'var(--f-text-3)' }}>
@@ -514,7 +526,10 @@ export default function POS() {
                   <m.button key={product.id}
                     variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0 } }}
                     onClick={() => addToCart(product)}
-                    className="group relative flex flex-col bg-[var(--f-surface)] border rounded-2xl overflow-hidden shadow-sm:shadow-md transition-all active:scale-[0.97] text-left"
+                    disabled={!product.priceAvailable}
+                    aria-disabled={!product.priceAvailable}
+                    title={product.priceAvailable ? undefined : 'Set a GHS price for this item before selling it'}
+                    className={`group relative flex flex-col bg-[var(--f-surface)] border rounded-2xl overflow-hidden shadow-sm:shadow-md transition-all text-left ${product.priceAvailable ? 'active:scale-[0.97]' : 'opacity-60 cursor-not-allowed'}`}
                     style={{ borderColor: 'var(--f-line)' }}>
                     <div className="aspect-square relative overflow-hidden" style={{ background: 'var(--f-bg)' }}>
                       {product.imageUrl
@@ -533,7 +548,9 @@ export default function POS() {
                     <div className="p-3 flex-1 flex flex-col">
                       <span className="text-sm font-semibold line-clamp-2" style={{ color: 'var(--f-text)' }}>{product.name}</span>
                       <div className="mt-auto pt-2 flex items-center justify-between">
-                        <span className="text-sm font-bold tabular-nums" style={{ color: 'var(--f-tint-color)' }}>{fmt(product.price)}</span>
+                        {product.priceAvailable
+                          ? <span className="text-sm font-bold tabular-nums" style={{ color: 'var(--f-tint-color)' }}>{formatPesewas(product.pricePesewas)}</span>
+                          : <span className="text-xs font-medium" style={{ color: 'var(--f-text-3)' }}>Price not set</span>}
                         {product.stockQuantity != null && product.stockQuantity < 5 && (
                           <span className="text-xs font-medium" style={{ color: 'var(--f-bad)' }}>{product.stockQuantity} left</span>
                         )}
