@@ -6,6 +6,7 @@ import { Tag } from '@/components/instrument';
 import { Trash2, Settings, Upload, Loader2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { storefrontApi } from '@/services/storefrontApi';
+import { toast } from '@/lib/toast';
 
 // Human-readable labels for known config keys
 const FIELD_LABELS = {
@@ -293,7 +294,7 @@ export default function TileConfigPanel({ tile, widget, onUpdate, onRemove }) {
         </div>
         <Tag variant="primary">{widget?.displayName || tile?.widgetType}</Tag>
       </div>
-      <GlassPanel className="p-4 space-y-3">
+      <Card className="p-4 space-y-3">
         {editableKeys.length === 0 ? (
           <p className="text-xs text-center" style={{ color: 'var(--f-text-3)' }}>
             No configurable properties for this widget.
@@ -309,7 +310,7 @@ export default function TileConfigPanel({ tile, widget, onUpdate, onRemove }) {
             />
           ))
         )}
-      </GlassPanel>
+      </Card>
       <button onClick={onRemove}
         className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
         style={{ background: 'var(--f-bad-bg)', color: 'var(--f-bad)', border: '1px solid rgba(225,83,97,0.2)' }}>

@@ -11,6 +11,7 @@ import {
   StatCard,
   Avatar,
   Switch,
+  StatusCard,
 } from '@/components/instrument';
 
 import {

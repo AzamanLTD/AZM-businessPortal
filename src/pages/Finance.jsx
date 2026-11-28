@@ -453,8 +453,8 @@ function ExpensesTab({ canManage }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('ALL');
-  const [showEntryDialog, setShowEntryModal] = useState(false);
-  const [showRecurringDialog, setShowRecurringModal] = useState(false);
+  const [showEntryModal, setShowEntryModal] = useState(false);
+  const [showRecurringModal, setShowRecurringModal] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);

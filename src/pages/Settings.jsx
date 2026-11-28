@@ -201,7 +201,7 @@ export default function Settings() {
       {/* KYB status + BIZ ID */}
       <Card className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-2">
-          <TagCheck className="w-5 h-5" style={{ color: KYB_STATUS_META[bizProfile?.kybStatus || 'UNVERIFIED']?.color }} />
+          <BadgeCheck className="w-5 h-5" style={{ color: KYB_STATUS_META[bizProfile?.kybStatus || 'UNVERIFIED']?.color }} />
           <div>
             <span className="text-xs text-[var(--text-3)]">KYB Status</span>
             <p className="text-sm font-semibold text-[var(--text)]">{KYB_STATUS_META[bizProfile?.kybStatus || 'UNVERIFIED']?.label || bizProfile?.kybStatus}</p>

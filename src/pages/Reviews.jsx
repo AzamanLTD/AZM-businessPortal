@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
 import { request } from '@/lib/api';
-import { Card, Button, Tag, Skel, Empty, Tabs } from '@/components/instrument';
+import { Card, Button, Tag, Skel, Empty, Tabs, Dialog } from '@/components/instrument';
 import { DonutChartCard, AreaChartCard } from '@/components/charts';
 import {
   Star,

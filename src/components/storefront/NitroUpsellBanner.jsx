@@ -1,6 +1,7 @@
 // src/components/storefront/NitroUpsellBanner.jsx
 import { Card } from '@/components/instrument';
 import { Zap, TrendingUp } from 'lucide-react';
+import { toast } from '@/lib/toast';
 
 export default function NitroUpsellBanner({ eligibility, onStakeClick }) {
   
@@ -24,7 +25,7 @@ export default function NitroUpsellBanner({ eligibility, onStakeClick }) {
   };
 
   return (
-    <GlassPanel className="p-4 mt-4">
+    <Card className="p-4 mt-4">
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
           style={{ background: 'var(--f-surface-sunken)' }}>
@@ -41,6 +42,6 @@ export default function NitroUpsellBanner({ eligibility, onStakeClick }) {
           </button>
         </div>
       </div>
-    </GlassPanel>
+    </Card>
   );
 }

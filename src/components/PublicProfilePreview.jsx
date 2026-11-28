@@ -47,7 +47,7 @@ export default function PublicProfilePreview({ open, onClose, bizId }) {
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
                 <h3 className="text-base font-bold text-[var(--f-text)] truncate">{biz.businessName}</h3>
-                {biz.isVerified && <TagCheck className="w-4 h-4 text-[var(--f-tint-color)] flex-shrink-0" />}
+                {biz.isVerified && <BadgeCheck className="w-4 h-4 text-[var(--f-tint-color)] flex-shrink-0" />}
               </div>
               {biz.category && (
                 <Tag color="var(--f-tint-color)" bg="var(--f-surface-sunken)" className="mt-1">{biz.category.replace(/_/g, ' ')}</Tag>

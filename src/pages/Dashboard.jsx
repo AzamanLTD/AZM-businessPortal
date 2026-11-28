@@ -7,6 +7,7 @@
  */
 import { m } from 'motion/react';
 import { useMemo } from 'react';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import {
@@ -523,9 +524,8 @@ export default function Dashboard() {
   );
 }
 
-// ── Inline revenue chart (lightweight, no recharts dependency for this) ──────
+// ── Inline revenue chart ─────────────────────────────────────────────────────
 function ResponsiveRevenueChart({ data }) {
-  const { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } = require('recharts');
   return (
     <ResponsiveContainer width="100%" height="100%">
       <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>

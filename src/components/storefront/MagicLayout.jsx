@@ -5,6 +5,7 @@ import { Card } from '@/components/instrument';
 import { Sparkles, Wand2, Check, X } from 'lucide-react';
 import { useState } from 'react';
 import { getWidgetDefaults } from '@/lib/businessTypes';
+import { toast } from '@/lib/toast';
 
 // ── Magic Layout Presets ──────────────────────────────────────────────
 // Each preset defines the optimal widget set, order, and theme for a business type.
@@ -244,7 +245,7 @@ export default function MagicLayout({ businessType, widgets, themes, draft, onAp
       {showConfirm && generated && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.5)' }}
           onClick={() => setShowConfirm(false)}>
-          <GlassPanel className="max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
+          <Card className="max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center"
                 style={{ background: 'var(--f-surface-sunken)' }}>
@@ -280,7 +281,7 @@ export default function MagicLayout({ businessType, widgets, themes, draft, onAp
                 Apply Layout
               </button>
             </div>
-          </GlassPanel>
+          </Card>
         </div>
       )}
     </>

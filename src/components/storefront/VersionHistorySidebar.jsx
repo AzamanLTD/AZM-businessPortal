@@ -38,13 +38,13 @@ export default function VersionHistorySidebar({ businessId, onRevert, onClose })
             <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: 'var(--f-tint-color)', borderTopColor: 'transparent' }} />
           </div>
         ) : versions.length === 0 ? (
-          <GlassPanel className="p-6 text-center">
+          <Card className="p-6 text-center">
             <p className="text-sm" style={{ color: 'var(--f-text-3)' }}>No published versions yet.</p>
-          </GlassPanel>
+          </Card>
         ) : (
           <div className="space-y-3">
             {versions.map(v => (
-              <GlassPanel key={v.id} className="p-4">
+              <Card key={v.id} className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <Tag variant="primary">v{v.version}</Tag>
                   <span className="text-xs" style={{ color: 'var(--f-text-3)' }}>
@@ -56,7 +56,7 @@ export default function VersionHistorySidebar({ businessId, onRevert, onClose })
                   style={{ color: 'var(--f-text)', borderColor: 'var(--f-line)' }}>
                   <RotateCcw className="w-3.5 h-3.5" />Revert to this version
                 </button>
-              </GlassPanel>
+              </Card>
             ))}
           </div>
         )}

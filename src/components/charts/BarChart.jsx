@@ -1,6 +1,6 @@
 import { ResponsiveContainer, BarChart as RBarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
-export function BarChartCard({ title, data, xKey, bars = [{ key, label, color }], height = 240, formatY, layout = 'horizontal' }) {
+export function BarChartCard({ title, data, xKey, bars = [], height = 240, formatY, layout = 'horizontal' }) {
   const gridColor = 'var(--f-line)';
   const axisColor = 'var(--f-text-3)';
 

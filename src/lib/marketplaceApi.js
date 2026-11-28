@@ -316,7 +316,6 @@ export const hotelOpsApi = {
   rooms: (params = {}) => hotelOpsApi.getRooms(params),  // alias
   createRoom: (data) => request('/api/business-os/hotel/rooms', { method: 'POST', body: JSON.stringify(data) }),
   updateRoomStatus: (id, status) => request(`/api/business-os/hotel/rooms/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
-  getRoomRack: (params = {}) => request(`/api/business-os/hotel/room-rack?days=${days}`),
   getRoomRack: (params = {}) => {
     const qs = new URLSearchParams(params).toString();
     return request(`/api/business-os/hotel/room-rack${qs ? `?${qs}` : ''}`);
