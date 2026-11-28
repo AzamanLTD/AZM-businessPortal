@@ -36,7 +36,9 @@ export default function StorefrontEditor() {
   const { pushSnapshot, undo, redo, canUndo, canRedo, clear: clearHistory } = useUndoRedo();
 
   const [selectedTileId, setSelectedTileId]       = useState(null);
-  const [showPublishDialog, setShowPublishModal]     = useState(false);
+  // Read below as showPublishModal; it was declared as showPublishDialog, so
+  // the editor threw a ReferenceError as soon as it rendered.
+  const [showPublishModal, setShowPublishModal]     = useState(false);
   const [showHistory, setShowHistory]               = useState(false);
   const navigate = useNavigate();
   const [showPreview, setShowPreview]               = useState(true);
@@ -94,6 +96,31 @@ export default function StorefrontEditor() {
     return widget && widget.minAzmStake > (eligibility.stakedBalance ?? 0);
   }, [eligibility, widgets]);
 
+  // Undo/redo restore a snapshot by saving it as the draft.
+  const applySnapshot = useCallback((snapshot) => {
+    if (!snapshot?.layoutJson) return;
+    saveDraft(snapshot.layoutJson, snapshot.themeId ?? draft?.themeId).catch(() => {});
+  }, [saveDraft, draft?.themeId]);
+  const handleUndo = useCallback(() => { if (draft) applySnapshot(undo(draft)); }, [draft, undo, applySnapshot]);
+  const handleRedo = useCallback(() => { if (draft) applySnapshot(redo(draft)); }, [draft, redo, applySnapshot]);
+
+  // Keyboard shortcuts: Ctrl+Z (undo), Ctrl+Shift+Z / Ctrl+Y (redo). Declared
+  // before the early returns below, so the hook order never changes when the
+  // business profile arrives.
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        if (canUndo) handleUndo();
+      } else if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        if (canRedo) handleRedo();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [canUndo, canRedo, handleUndo, handleRedo]);
+
   if (!businessId) return (
     <div className="flex items-center justify-center min-h-[60vh]">
       <Card className="p-8 text-center">
@@ -103,21 +130,6 @@ export default function StorefrontEditor() {
       </Card>
     </div>
   );
-
-  // Keyboard shortcuts: Ctrl+Z (undo), Ctrl+Shift+Z (redo)
-  useEffect(() => {
-    const handler = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
-        e.preventDefault();
-        if (canUndo) undo();
-      } else if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
-        e.preventDefault();
-        if (canRedo) redo();
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [canUndo, canRedo, undo, redo]);
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-[60vh]">
@@ -166,14 +178,14 @@ export default function StorefrontEditor() {
             style={{ color: 'var(--text)', borderColor: 'var(--line)' }}>
             <LayoutTemplate className="w-4 h-4" />Templates
           </button>
-          <button onClick={() => { if (canUndo) undo(); }}
+          <button onClick={() => { if (canUndo) handleUndo(); }}
             disabled={!canUndo}
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-medium border transition-all disabled:opacity-30"
             style={{ color: 'var(--text)', borderColor: 'var(--line)' }}
             title="Undo (Ctrl+Z)">
             <Undo2 className="w-4 h-4" />
           </button>
-          <button onClick={() => { if (canRedo) redo(); }}
+          <button onClick={() => { if (canRedo) handleRedo(); }}
             disabled={!canRedo}
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-sm font-medium border transition-all disabled:opacity-30"
             style={{ color: 'var(--text)', borderColor: 'var(--line)' }}
@@ -250,7 +262,7 @@ export default function StorefrontEditor() {
           <div className="p-3 border-b" style={{ borderColor: 'var(--line)' }}>
             <MagicLayout businessType={bizType} widgets={widgets} themes={themes} draft={draft} onApply={handleMagicLayout} disabled={loading} />
           </div>
-          <KpiCardPalette widgets={widgets} eligibility={eligibility} businessType={bizType} onAdd={(widgetType, defaultProps) => {
+          <WidgetPalette widgets={widgets} eligibility={eligibility} businessType={bizType} onAdd={(widgetType, defaultProps) => {
               const typeDefaults = getWidgetDefaults(widgetType, bizType);
               handleAddTile(widgetType, { ...defaultProps, ...typeDefaults });
             }} isLocked={isTileLocked} />
@@ -272,9 +284,9 @@ export default function StorefrontEditor() {
               theme={theme}
               selectedTileId={selectedTileId}
               onSelectTile={setSelectedTileId}
-              onUpdateTile={updateTile}
-              onRemoveTile={removeTile}
-              onReorderTiles={reorderTiles}
+              onUpdateTile={handleUpdateTile}
+              onRemoveTile={handleRemoveTile}
+              onReorderTiles={handleReorderTiles}
             />
           </KeyboardTileManager>
         </div>
@@ -285,8 +297,11 @@ export default function StorefrontEditor() {
             <TileConfigPanel
               tile={selectedTile}
               widget={selectedWidget}
-              onUpdate={(props) => updateTile(selectedTileId, props)}
-              onRemove={() => { removeTile(selectedTileId); setSelectedTileId(null); }}
+              // The panel sends changed fields ({ title: '…' }); they belong
+              // in the tile's props (updateTile patches the tile itself, so
+              // they used to land beside props and be dropped on save).
+              onUpdate={(changed) => handleUpdateTile(selectedTileId, { props: changed })}
+              onRemove={() => { handleRemoveTile(selectedTileId); setSelectedTileId(null); }}
             />
           ) : (
             <div className="p-4 space-y-4">
