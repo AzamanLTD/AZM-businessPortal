@@ -415,6 +415,10 @@ export const transitOpsApi = {
   fleet: () => transitOpsApi.getVehicles(),  // alias
   updateVehicleStatus: (id, status) => request(`/api/business-os/transit/vehicles/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   createVehicle: (data) => request('/api/business-os/transit/fleet', { method: 'POST', body: JSON.stringify(data) }),
+  // A vehicle's seat grid: { layout, rows, cols } (transit.fleet.manage).
+  saveSeatMap: (vehicleId, data) => request(`/api/business-os/transit/vehicles/${vehicleId}/seat-map`, { method: 'PUT', body: JSON.stringify(data) }),
+  // The business's trips (an array, newest first; transit.trips.view).
+  trips: () => request('/api/business-os/transit/trips'),
 
   // Maintenance
   maintenance: (params = {}) => {
@@ -443,6 +447,7 @@ export const transitOpsApi = {
     return request(`/api/business-os/transit/manifests${qs ? `?${qs}` : ''}`);
   },
   liveManifest: (tripId) => request(`/api/business-os/transit/manifests/${tripId}`),
+  // Board by ID check: { bookingId, azamanId } (transit.manifests.manage).
   boardPassenger: (data) => request('/api/business-os/transit/manifests/board', { method: 'POST', body: JSON.stringify(data) }),
 
   // Routes — use transit trips endpoint

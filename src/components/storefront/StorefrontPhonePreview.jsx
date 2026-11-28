@@ -5,6 +5,7 @@
 import { Card } from '@/components/instrument';
 import RetailCollectionBoxPreview from './RetailCollectionBoxPreview';
 import { useState } from 'react';
+import { sanitizeStorefrontPreviewHtml } from '@/lib/storefrontPreviewSanitizer';
 import { Smartphone, Star, MapPin, Phone, MessageCircle, ShoppingBag, Image, Users, Clock, ChevronRight, Play, ExternalLink, Globe, BarChart, Hash, Code, Sparkles, Instagram, TrendingUp } from "lucide-react";
 import { STOREFRONT_STUDIO_TOKENS, toPreviewPx } from '@/lib/storefrontStudioTokens';
 
@@ -303,12 +304,13 @@ function AnimatedCounter({ props, tokens }) {
 // ── NITRO GOLD renderers ──
 
 function CustomHtml({ props, tokens }) {
-  // Preview the raw HTML in a constrained box (sanitization happens on render in Flutter)
+  // Draft HTML is untrusted: only a safe subset is rendered here (no scripts,
+  // event handlers, styles or unsafe links). The app sanitizes again on render.
   return (
     <div style={{ marginRight: customHtmlPx('marginHorizontalDp'), marginBottom: customHtmlPx('marginBottomDp'), marginLeft: customHtmlPx('marginHorizontalDp'), borderRadius: customHtmlPx('radiusDp'), borderWidth: customHtmlPx('borderWidthDp'), borderStyle: 'solid', borderColor: tokens.border || '#eee', padding: customHtmlPx('paddingDp'), overflow: 'hidden' }}>
       {props.html ? (
         <div style={{ fontSize: customHtmlPx('contentFontSizeDp'), color: tokens.textPrimary || '#111', lineHeight: previewTokens.customHtml.contentLineHeight, maxHeight: customHtmlPx('contentMaxHeightDp'), overflow: 'hidden' }}
-          dangerouslySetInnerHTML={{ __html: props.html.substring(0, 500) }} />
+          dangerouslySetInnerHTML={{ __html: sanitizeStorefrontPreviewHtml(props.html, 500) }} />
       ) : (
         <div style={{ display: 'flex', alignItems: 'center', gap: customHtmlPx('emptyGapDp'), opacity: 0.5 }}>
           <Code size={typePx('body')} color={tokens.textSecondary || '#888'} />
