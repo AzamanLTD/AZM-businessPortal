@@ -28,7 +28,7 @@ const BACKEND_CATALOG = [
   'employees.terminate', 'employees.update', 'employees.view', 'ewa.approve',
   'ewa.manage', 'feedback.give', 'feedback.view', 'finance.export',
   'finance.ledger.manage', 'finance.payouts.manage', 'finance.view',
-  'followers.broadcast', 'hotel.front_desk.manage', 'hotel.guests.view',
+  'followers.broadcast', 'customers.messages', 'hotel.front_desk.manage', 'hotel.guests.view',
   'hotel.housekeeping.inspect', 'hotel.housekeeping.manage', 'hotel.rates.manage',
   'hotel.rooms.manage', 'hotel.rooms.view', 'invoices.manage', 'invoices.view',
   'invoices.void', 'locations.manage', 'marketing.promotions.manage',
@@ -124,7 +124,8 @@ describe('route gates mirror the backend permission catalog', () => {
     expect(gateFor('/')).toBeNull();
     expect(gateFor('/settings')).toBeNull();
     expect(gateFor('/notifications')).toBeNull();
-    expect(gateFor('/messages')).toBeNull();
+    // Customer chats are private (backend customers.messages).
+    expect(gateFor('/messages').permission).toBe('customers.messages');
   });
 
   it('gates the settings messaging and developer surfaces on settings.manage', () => {

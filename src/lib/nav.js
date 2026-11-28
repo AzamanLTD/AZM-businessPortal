@@ -22,7 +22,7 @@ export const DOMAINS = [
       { label:'Overview', items:[
         { to:'/',              label:'Command Center', icon:LayoutDashboard },
         { to:'/notifications', label:'Notifications',  icon:Bell, count:'notifications' },
-        { to:'/messages',      label:'Messages',       icon:MessageSquare, count:'unreadMessages' },
+        { to:'/messages',      label:'Messages',       icon:MessageSquare, count:'unreadMessages', perm:'customers.messages' },
       ]},
       { label:'Front line', vertical:['HOTEL'], items:[
         { to:'/hotel-front-desk',   label:'Front Desk',    icon:ConciergeBell, count:'arrivalsToday', perm:['hotel.front_desk.manage', 'hotel.guests.view'] },

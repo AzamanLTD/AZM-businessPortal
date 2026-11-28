@@ -46,6 +46,8 @@ export const ROUTE_GATES = [
   // Reviews: the list, replies and disputes are on /api/business-os (staff with
   // a review right); sharing a review as a story stays with the owner.
   { path: '/reviews', permission: ['marketing.view', 'reviews.view', 'reviews.respond'] },
+  // Customer chats are private: staff need "Read and answer customer messages".
+  { path: '/messages', permission: 'customers.messages' },
   { path: '/analytics',          permission: 'analytics.view' },
   { path: '/storefront',          permission: 'storefront.manage' },
   // Settings surfaces: messaging-config mutations require settings.manage
