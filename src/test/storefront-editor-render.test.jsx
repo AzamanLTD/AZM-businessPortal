@@ -30,7 +30,6 @@ vi.mock('@/components/storefront/PublishConfirmModal', () => mocks.stub('publish
 vi.mock('@/components/storefront/VersionHistorySidebar', () => mocks.stub('history'));
 vi.mock('@/components/storefront/KeyboardTileManager', () => ({ default: ({ children }) => <div>{children}</div> }));
 vi.mock('@/components/storefront/MagicLayout', () => mocks.stub('magic'));
-vi.mock('@/components/storefront/StorefrontStudioV2', () => mocks.stub('studio-v2'));
 vi.mock('@/components/storefront/StorefrontHealthScore', () => mocks.stub('health'));
 vi.mock('@/components/storefront/TemplateGallery', () => mocks.stub('templates'));
 vi.mock('@/components/QrCodePanel', () => mocks.stub('qr'));
@@ -65,6 +64,12 @@ describe('Storefront Editor', () => {
   it('renders with a loaded draft', () => {
     renderEditor();
     expect(screen.getByTitle('Undo (Ctrl+Z)')).toBeDisabled();
+  });
+
+  it('offers Experience Studio, not the parked Studio V2', () => {
+    renderEditor();
+    expect(screen.queryByText('Studio V2')).toBeNull();
+    expect(screen.getByRole('button', { name: /Experience/ })).toBeInTheDocument();
   });
 
   it('Undo restores the draft before the last edit', () => {
