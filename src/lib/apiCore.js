@@ -58,6 +58,20 @@ export async function logoutBusinessSession() {
 
 import { invalidatePermissionCache } from './permissionCache';
 
+// A 401 that asks for a second factor is not an expired session: the backend
+// answers 401 for an action-bound step-up challenge (STEP_UP_REQUIRED), a
+// missing or wrong authenticator code or password, and from the step-up grant
+// route itself. Signing the person out there would lose their work (a payroll
+// run, a refund) for a typo. Those reach the caller as a typed error instead.
+const SECOND_FACTOR_CODES = new Set([
+  'STEP_UP_REQUIRED', '2FA_REQUIRED', 'PASSWORD_REQUIRED', 'TOTP_INVALID', 'TOTP_REPLAYED',
+]);
+export function asksSecondFactor(path, status, data) {
+  if (status !== 401) return false;
+  if (String(path || '').startsWith('/api/step-up/')) return true;
+  return Boolean(data && SECOND_FACTOR_CODES.has(data.code));
+}
+
 export async function request(path, options = {}) {
   const isLoginCall = path.startsWith('/api/auth/login');
   const isSessionCall = path.startsWith('/api/auth/business-session');
@@ -89,14 +103,32 @@ export async function request(path, options = {}) {
   }
 
   let res = await send(accessToken);
-  if (res.status === 401 && !isLoginCall && !isSessionCall && accessToken) {
-    try { await refreshSession(); res = await send(accessToken); }
+  let data = await res.json().catch(() => ({ message: res.statusText }));
+  const secondFactor = asksSecondFactor(path, res.status, data);
+  if (res.status === 401 && !isLoginCall && !isSessionCall && accessToken && !secondFactor) {
+    try {
+      await refreshSession();
+      res = await send(accessToken);
+      data = await res.json().catch(() => ({ message: res.statusText }));
+    }
     catch { clearAccessToken(); }
   }
 
-  const data = await res.json().catch(() => ({ message: res.statusText }));
   if (!res.ok) {
     const msg = data.message || data.error || 'Request failed';
+    if (asksSecondFactor(path, res.status, data)) {
+      const err = new Error(msg);
+      err.statusCode = 401;
+      if (data.code) err.code = data.code;
+      err.secondFactor = true;
+      // A step-up challenge carries what to earn a grant for; the caller
+      // echoes it to POST /api/step-up/grant, then retries with the grant in
+      // the x-step-up-grant header.
+      if (data.code === 'STEP_UP_REQUIRED') {
+        err.stepUp = { actionType: data.actionType, actionDigest: data.actionDigest, action: data.action };
+      }
+      throw err;
+    }
     if (res.status === 401 && !isLoginCall && !isSessionCall) {
       clearAccessToken();
       localStorage.removeItem('biz_user');

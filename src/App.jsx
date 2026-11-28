@@ -12,10 +12,12 @@ export const ROUTE_GATES = [
   { path: '/finance',             permission: 'finance.view' },
   { path: '/orders',              ownerOnly: true },
   { path: '/products',            ownerOnly: true },
-  { path: '/reservations',        ownerOnly: true },
+  // Staff with reservation or front-desk rights act for the business
+  // (backend services/businessActor); the list needs reservations.view.
+  { path: '/reservations',        permission: 'reservations.view' },
   { path: '/invoices',           ownerOnly: true },
   { path: '/locations',          ownerOnly: true },
-  { path: '/checkin',            ownerOnly: true },
+  { path: '/checkin',            permission: 'reservations.manage' },
   { path: '/kyb',                ownerOnly: true },
   { path: '/employees',          permission: 'employees.view' },
   { path: '/scheduling',        permission: 'shifts.view' },
@@ -30,21 +32,31 @@ export const ROUTE_GATES = [
   { path: '/retail-inventory',    permission: 'retail.view' },
   { path: '/hotel-rooms',         permission: 'hotel.rooms.view' },
   { path: '/hotel-housekeeping',  permission: 'hotel.housekeeping.manage' },
-  { path: '/hotel-front-desk',    permission: 'hotel.front_desk.manage' },
+  { path: '/hotel-front-desk', permission: ['hotel.front_desk.manage', 'hotel.guests.view'] },
   { path: '/transit',             permission: 'transit.trips.view' },
   { path: '/transit-fleet',       permission: 'transit.fleet.view' },
   { path: '/transit-drivers',     permission: 'transit.drivers.manage' },
   { path: '/transit-manifests',   permission: 'transit.manifests.view' },
   { path: '/transit-cargo',       permission: 'transit.cargo.view' },
-  { path: '/marketing',           permission: 'marketing.view' },
-  { path: '/showcase',           permission: 'marketing.view' },
-  { path: '/reviews',            ownerOnly: true },
+  // Before /marketing: gateFor takes the first match, and web ordering reads
+  // marketing.view only.
+  { path: '/marketing/web-ordering', permission: 'marketing.view' },
+  { path: '/marketing', permission: ['marketing.view', 'marketing.promotions.manage', 'followers.broadcast'] },
+  { path: '/showcase', permission: ['marketing.view', 'marketing.publish', 'showcase.manage', 'storefront.manage'] },
+  // Reviews: the list, replies and disputes are on /api/business-os (staff with
+  // a review right); sharing a review as a story stays with the owner.
+  { path: '/reviews', permission: ['marketing.view', 'reviews.view', 'reviews.respond'] },
+  // Customer chats are private: staff need "Read and answer customer messages".
+  { path: '/messages', permission: 'customers.messages' },
   { path: '/analytics',          permission: 'analytics.view' },
-  { path: '/storefront',          ownerOnly: true },
+  { path: '/storefront',          permission: 'storefront.manage' },
   // Settings surfaces: messaging-config mutations require settings.manage
   // (businessOSRoutes); the developer screen is mock-only until the backend
   // security fix lands, so it mirrors the same settings contract as UX.
   { path: '/settings/messaging',  permission: 'settings.manage' },
+  // A hotel's stay terms: anyone acting for the business reads them; the
+  // page lets only settings.manage save (as the backend does).
+  { path: '/settings/stays',      permission: 'settings.manage' },
   { path: '/settings/developer',  permission: 'settings.manage' },
 ];
 
@@ -104,6 +116,7 @@ const Analytics = lazy(() => import('@/pages/Analytics'));
 const Developer = lazy(() => import('@/pages/settings/Developer'));
 const BusinessGroups = lazy(() => import('@/pages/BusinessGroups'));
 const MessagingChannels = lazy(() => import('@/pages/settings/MessagingChannels'));
+const StayTerms = lazy(() => import('@/pages/settings/StayTerms'));
 const WebOrdering = lazy(() => import('@/pages/marketing/WebOrdering'));
 const StorefrontEditor = lazy(() => import('@/pages/StorefrontEditor'));
 const StorefrontAnalytics = lazy(() => import('@/pages/StorefrontAnalytics'));
@@ -260,6 +273,7 @@ export function AppRoutes() {
         <Route path="/settings/developer" element={<GatedRoute route="/settings/developer" gate={gateFor("/settings/developer")}>{<Developer />}</GatedRoute>} />
         <Route path="/groups" element={<GatedRoute route="/groups" gate={gateFor("/groups")}>{<BusinessGroups />}</GatedRoute>} />
         <Route path="/settings/messaging" element={<GatedRoute route="/settings/messaging" gate={gateFor("/settings/messaging")}>{<MessagingChannels />}</GatedRoute>} />
+        <Route path="/settings/stays" element={<GatedRoute route="/settings/stays" gate={gateFor("/settings/stays")}>{<StayTerms />}</GatedRoute>} />
         <Route path="/marketing/web-ordering" element={<GatedRoute route="/marketing/web-ordering" gate={gateFor("/marketing/web-ordering")}>{<WebOrdering />}</GatedRoute>} />
         <Route path="/storefront" element={<GatedRoute route="/storefront" gate={gateFor("/storefront")}>{<StorefrontEditor />}</GatedRoute>} />
         <Route path="/storefront/experience" element={<GatedRoute route="/storefront/experience" gate={gateFor("/storefront/experience")}>{<ExperienceStudio />}</GatedRoute>} />

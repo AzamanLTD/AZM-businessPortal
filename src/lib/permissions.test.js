@@ -28,7 +28,7 @@ const BACKEND_CATALOG = [
   'employees.terminate', 'employees.update', 'employees.view', 'ewa.approve',
   'ewa.manage', 'feedback.give', 'feedback.view', 'finance.export',
   'finance.ledger.manage', 'finance.payouts.manage', 'finance.view',
-  'followers.broadcast', 'hotel.front_desk.manage', 'hotel.guests.view',
+  'followers.broadcast', 'customers.messages', 'hotel.front_desk.manage', 'hotel.guests.view',
   'hotel.housekeeping.inspect', 'hotel.housekeeping.manage', 'hotel.rates.manage',
   'hotel.rooms.manage', 'hotel.rooms.view', 'invoices.manage', 'invoices.view',
   'invoices.void', 'locations.manage', 'marketing.promotions.manage',
@@ -42,7 +42,7 @@ const BACKEND_CATALOG = [
   'reviews.view', 'settings.manage', 'shifts.approve_swap',
   'shifts.approve_timeoff', 'shifts.create', 'shifts.delete', 'shifts.publish',
   'shifts.update', 'shifts.view', 'showcase.manage', 'storefront.manage',
-  'team_access.manage', 'transit.cargo.manage', 'transit.cargo.view',
+  'transit.cargo.manage', 'transit.cargo.view',
   'transit.drivers.manage', 'transit.fleet.manage', 'transit.fleet.view',
   'transit.maintenance.manage', 'transit.manifests.manage',
   'transit.manifests.view', 'transit.trips.manage', 'transit.trips.view',
@@ -73,10 +73,13 @@ import {
 
 describe('route gates mirror the backend permission catalog', () => {
   it('every gated permission key is a real backend key', () => {
+    // A gate's permission is a key, or a list meaning any of the keys.
     const unknown = ROUTE_GATES
       .filter(g => g.permission)
-      .filter(g => !BACKEND_CATALOG.includes(g.permission));
+      .flatMap(g => [].concat(g.permission))
+      .filter(k => !BACKEND_CATALOG.includes(k));
     expect(unknown).toEqual([]);
+    expect(ROUTE_GATES.some(g => Array.isArray(g.permission))).toBe(true);
   });
 
   it('covers every nav route that the nav gates by permission', () => {
@@ -95,14 +98,14 @@ describe('route gates mirror the backend permission catalog', () => {
       const gate = gateFor(item.to);
       expect(gate, `no route gate for gated nav item ${item.to}`).not.toBeNull();
       if (item.ownerOnly) expect(gate.ownerOnly, `${item.to} nav says ownerOnly but route does not`).toBe(true);
-      if (item.perm) expect(gate.permission, `${item.to} nav perm must match route gate`).toBe(item.perm);
+      if (item.perm) expect(gate.permission, `${item.to} nav perm must match route gate`).toEqual(item.perm);
     }
   });
 
   it('every nav perm key is a real backend key', () => {
     const perms = [];
     DOMAINS.forEach(d => (d.groups || []).forEach(g =>
-      (g.items || []).forEach(i => { if (i.perm) perms.push(i.perm); })));
+      (g.items || []).forEach(i => { if (i.perm) perms.push(...[].concat(i.perm)); })));
     const unknown = perms.filter(p => !BACKEND_CATALOG.includes(p));
     expect(unknown).toEqual([]);
   });
@@ -111,13 +114,18 @@ describe('route gates mirror the backend permission catalog', () => {
     expect(gateFor('/finance').permission).toBe('finance.view');
     expect(gateFor('/finance/payouts').permission).toBe('finance.view');
     expect(gateFor('/orders/:id').ownerOnly).toBe(true);
-    expect(gateFor('/storefront/experience').ownerOnly).toBe(true);
+    // The storefront routes are gated by storefront.manage on the backend.
+    expect(gateFor('/storefront/experience').permission).toBe('storefront.manage');
+    // Front-desk staff act for the business (backend businessActor).
+    expect(gateFor('/reservations').permission).toBe('reservations.view');
+    expect(gateFor('/checkin').permission).toBe('reservations.manage');
     expect(gateFor('/restaurant-inventory').permission).toBe('restaurant.inventory.view');
     // Ungated surfaces stay ungated — we mirror the backend, nothing else.
     expect(gateFor('/')).toBeNull();
     expect(gateFor('/settings')).toBeNull();
     expect(gateFor('/notifications')).toBeNull();
-    expect(gateFor('/messages')).toBeNull();
+    // Customer chats are private (backend customers.messages).
+    expect(gateFor('/messages').permission).toBe('customers.messages');
   });
 
   it('gates the settings messaging and developer surfaces on settings.manage', () => {

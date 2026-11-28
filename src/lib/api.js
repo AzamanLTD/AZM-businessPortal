@@ -143,4 +143,7 @@ export const businessOSEmployees = {
   update: (id, data) => request(`/api/business-os/employees/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   remove: (id) => request(`/api/business-os/employees/${id}`, { method: 'DELETE' }),
   setPermissions: (id, permissions) => request(`/api/business-os/employees/${id}/permissions`, { method: 'POST', body: JSON.stringify({ permissions }) }),
+  // A role change reseeds the permission set, so it has its own authority
+  // (employees.permissions); the generic PATCH refuses `role`.
+  updateRole: (id, role) => request(`/api/business-os/employees/${id}/role`, { method: 'PATCH', body: JSON.stringify({ role }) }),
 };

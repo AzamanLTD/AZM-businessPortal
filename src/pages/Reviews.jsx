@@ -10,7 +10,6 @@ import {
   ThumbsUp,
   AlertTriangle,
   Flag,
-  Share2,
   ChevronLeft,
   ChevronRight,
   Sparkles,
@@ -26,8 +25,13 @@ export default function Reviews() {
   const businessId = bizProfile?.id;
 
   // Permissions Gating
-  const canView = hasPermission('marketing.view');
-  const canPublish = hasPermission('marketing.publish');
+  // Mirrors the backend: reading needs marketing.view, reviews.view or
+  // reviews.respond; replying and disputing need marketing.publish or
+  // reviews.respond. (Sharing a review as a story is the reviewer's own
+  // choice: the backend lets only the customer who wrote it share it, so the
+  // business has no such button.)
+  const canView = hasPermission(['marketing.view', 'reviews.view', 'reviews.respond']);
+  const canPublish = hasPermission(['marketing.publish', 'reviews.respond']);
 
   // Review states
   const [reviews, setReviews] = useState([]);
@@ -64,7 +68,7 @@ export default function Reviews() {
     setLoading(true);
     try {
       // 1. Fetch live Reviews list
-      let queryPath = `/api/business/reviews`;
+      let queryPath = `/api/business-os/marketing/reviews`;
       const queryParams = new URLSearchParams();
       if (activeTab !== 'all') {
         queryParams.append('rating', activeTab);
@@ -171,18 +175,6 @@ export default function Reviews() {
       toast.stop(err.message || 'Failed to flag review');
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const handlePromoteToStory = async (review) => {
-    if (!canPublish) return;
-    try {
-      await request(`/api/marketplace/reviews/${review.id}/share-story`, {
-        method: 'POST'
-      });
-      toast.go('Review successfully shared to Marketplace Stories!');
-    } catch (err) {
-      toast.stop('Shared successfully as a customer showcase highlight');
     }
   };
 
@@ -412,9 +404,6 @@ export default function Reviews() {
                   <div className="flex items-center gap-2 self-end md:self-start">
                     <Button variant="secondary" size="sm" onClick={() => handleOpenResponse(review)} className="gap-1">
                       <MessageSquare className="w-3.5 h-3.5" /> Respond
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handlePromoteToStory(review)} className="text-[var(--accent)] gap-1">
-                      <Share2 className="w-3.5 h-3.5" /> Highlight Story
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => handleOpenFlag(review)} className="text-[var(--stop)] gap-1">
                       <Flag className="w-3.5 h-3.5" /> Dispute

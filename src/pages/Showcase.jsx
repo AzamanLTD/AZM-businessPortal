@@ -3,7 +3,6 @@ import { useAuth } from '@/lib/AuthContext';
 import { usePermission } from '@/hooks/usePermission';
 import { request } from '@/lib/api';
 import { uploadImageToCloudinary } from '@/lib/cloudinary';
-import { PhonePreview } from '@/components/PhonePreview';
 import { Card, Button, Empty, Input, Skel, Tag } from '@/components/instrument';
 import {
   Image as ImageIcon,
@@ -14,8 +13,6 @@ import {
   ArrowDown,
   Upload,
   AlertTriangle,
-  Award,
-  Pin,
   RefreshCw,
   Sparkles,
   Link as LinkIcon,
@@ -33,8 +30,10 @@ export default function Showcase() {
   
   const businessId = bizProfile?.id;
 
-  const canView = hasPermission('marketing.view');
-  const canPublish = hasPermission('marketing.publish');
+  // Mirrors the backend (/api/showcases): the owner, or staff with
+  // marketing.publish, showcase.manage or storefront.manage, change it.
+  const canPublish = hasPermission(['marketing.publish', 'showcase.manage', 'storefront.manage']);
+  const canView = canPublish || hasPermission('marketing.view');
 
   // Page States
   const [slides, setSlides] = useState([]);
@@ -51,12 +50,6 @@ export default function Showcase() {
   const [showPublishInput, setShowPublishInput] = useState(false);
   const [revertingId, setRevertingId] = useState(null);
 
-  // Curated items & highlights (existing)
-  const [curatedItems, setCuratedItems] = useState([]);
-  const [pinItemForm, setPinItemForm] = useState({ name: '', price: '', category: 'Product' });
-  const [highlights, setHighlights] = useState([]);
-  const [highlightForm, setHighlightForm] = useState({ title: '', badge: 'Award' });
-
   useEffect(() => {
     if (businessId && canView) loadShowcaseData();
   }, [businessId, canView]);
@@ -65,15 +58,7 @@ export default function Showcase() {
     setLoading(true);
     try {
       const res = await request(`/api/showcases/${businessId}`);
-      setSlides(res || []);
-      setCuratedItems([
-        { id: '1', name: 'VIP Oceanside Suite', price: '450', category: 'Room', pinned: true },
-        { id: '2', name: 'Premium Chef Tasting Menu', price: '120', category: 'Product', pinned: true }
-      ]);
-      setHighlights([
-        { id: '1', title: '5-Star Michelin Recommendation', badge: 'Award' },
-        { id: '2', title: 'Eco-Friendly Luxury Certified', badge: 'Certificate' }
-      ]);
+      setSlides(Array.isArray(res?.items) ? res.items : []);
     } catch (err) {
       toast.stop('Failed to load showcase data');
     } finally {
@@ -153,7 +138,8 @@ export default function Showcase() {
     setUploading(true);
     try {
       const url = await uploadImageToCloudinary(file, 'showcase');
-      const payload = { businessProfileId: businessId, mediaUrl: url, caption: 'New Storefront Slide' };
+      // No placeholder caption: customers would see it on the slide.
+      const payload = { businessProfileId: businessId, mediaUrl: url };
       await request('/api/showcases', { method: 'POST', body: JSON.stringify(payload) });
       toast.go('Photo added to showcase gallery');
       loadShowcaseData();
@@ -197,34 +183,6 @@ export default function Showcase() {
     }
   };
 
-  // --- CURATED ITEMS ---
-  const handleAddPinItem = (e) => {
-    e.preventDefault();
-    if (!pinItemForm.name || !pinItemForm.price) return;
-    setCuratedItems(prev => [...prev, { id: Math.random().toString(36).substring(2), ...pinItemForm, pinned: true }]);
-    setPinItemForm({ name: '', price: '', category: 'Product' });
-    toast.go('Pinned item curated');
-  };
-
-  const handleRemovePinItem = (id) => {
-    setCuratedItems(prev => prev.filter(item => item.id !== id));
-    toast.go('Pinned item uncurated');
-  };
-
-  // --- HIGHLIGHTS ---
-  const handleAddHighlight = (e) => {
-    e.preventDefault();
-    if (!highlightForm.title) return;
-    setHighlights(prev => [...prev, { id: Math.random().toString(36).substring(2), ...highlightForm }]);
-    setHighlightForm({ title: '', badge: 'Award' });
-    toast.go('Highlight curated successfully');
-  };
-
-  const handleRemoveHighlight = (id) => {
-    setHighlights(prev => prev.filter(h => h.id !== id));
-    toast.go('Highlight removed');
-  };
-
   if (!canView) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[500px] text-center p-6">
@@ -237,14 +195,6 @@ export default function Showcase() {
     );
   }
 
-  const previewBusinessObject = {
-    ...bizProfile,
-    slides: slides.length > 0 ? slides : [{ mediaUrl: 'https://images.unsplash.com/photo-1540553016722-983e48a2cd10?w=800' }],
-    curatedItems, highlights,
-    businessName: bizProfile?.businessName || 'Azaman Showcase Partner',
-    category: bizProfile?.category || 'Luxury Services'
-  };
-
   return (
     <div className="p-6 space-y-6 max-w-7xl mx-auto text-[var(--text)]">
       {/* Header */}
@@ -252,10 +202,10 @@ export default function Showcase() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-3">
             <Smartphone className="w-6 h-6" style={{ color: 'var(--accent)' }} />
-            Digital Storefront Editor
+            Showcase slideshow
           </h1>
           <p className="text-sm text-[var(--text-3)] mt-1">
-            Build high-conversion landing pages for the Azaman customer app. Upload slides, pin signature products, and highlight certificates.
+            The photos at the top of your business page in the Azaman app. Save a version before big changes so you can go back to it.
           </p>
         </div>
 
@@ -342,7 +292,7 @@ export default function Showcase() {
                       <p className="text-xs font-semibold">Slide {idx + 1}</p>
                       <p className="text-[10px] text-[var(--text-3)] truncate">{slide.mediaUrl}</p>
                     </div>
-                    <div className="flex items-center gap-1">
+                    {canPublish && <div className="flex items-center gap-1">
                       <button onClick={() => handleMoveSlide(idx, -1)} disabled={idx === 0}
                         className="p-1.5 rounded-sm text-[var(--text-3)]:bg-[var(--surface-sunk)] disabled:opacity-30">
                         <ArrowUp className="w-4 h-4" />
@@ -351,96 +301,17 @@ export default function Showcase() {
                         className="p-1.5 rounded-sm text-[var(--text-3)]:bg-[var(--surface-sunk)] disabled:opacity-30">
                         <ArrowDown className="w-4 h-4" />
                       </button>
-                      {canPublish && (
-                        <button onClick={() => handleRemoveSlide(slide.id)}
-                          className="p-1.5 rounded-sm text-[var(--stop)]:bg-[var(--f-bad-bg)]">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
+                      <button onClick={() => handleRemoveSlide(slide.id)}
+                        className="p-1.5 rounded-sm text-[var(--stop)]:bg-[var(--f-bad-bg)]">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>}
                   </div>
                 ))}
               </div>
             )}
           </Card>
 
-          {/* Section 2: Pinned Items */}
-          <Card solid className="space-y-4 p-6">
-            <div>
-              <h3 className="text-base font-bold flex items-center gap-2">
-                <Pin className="w-5 h-5" style={{ color: 'var(--info)' }} /> Signature Curated Items
-              </h3>
-              <p className="text-xs text-[var(--text-3)] mt-0.5">Pin exclusive rooms, hot menu options, or freight cargo routes to the storefront top-shelf.</p>
-            </div>
-
-            <form onSubmit={handleAddPinItem} className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <Input placeholder="Product/Service Title" value={pinItemForm.name}
-                onChange={(e) => setPinItemForm(prev => ({ ...prev, name: e.target.value }))} required />
-              <Input type="number" placeholder="Price (USD/USDC)" value={pinItemForm.price}
-                onChange={(e) => setPinItemForm(prev => ({ ...prev, price: e.target.value }))} required />
-              <select value={pinItemForm.category}
-                onChange={(e) => setPinItemForm(prev => ({ ...prev, category: e.target.value }))}
-                className="px-3 py-2 rounded-sm bg-[var(--surface-raise)] border border-line text-sm text-[var(--text)]">
-                <option value="Product">Product SKU</option>
-                <option value="Room">Luxury Room</option>
-                <option value="Service">Booking Service</option>
-              </select>
-              <Button type="submit" disabled={!canPublish} size="sm">Add Curated SKU</Button>
-            </form>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-              {curatedItems.map((item) => (
-                <div key={item.id} className="flex items-center justify-between p-3 rounded-md border border-line bg-[var(--surface-raise)]">
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-semibold">{item.name}</span>
-                      <Tag>{item.category}</Tag>
-                    </div>
-                    <p className="text-xs text-[var(--text-3)] mt-0.5">${item.price} USDC</p>
-                  </div>
-                  <Button variant="ghost" size="sm" className="text-[var(--stop)] p-1" onClick={() => handleRemovePinItem(item.id)}>
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          {/* Section 3: Highlights */}
-          <Card solid className="space-y-4 p-6">
-            <div>
-              <h3 className="text-base font-bold flex items-center gap-2">
-                <Award className="w-5 h-5" style={{ color: 'var(--hold)' }} /> Certifications & Trust Highlights
-              </h3>
-              <p className="text-xs text-[var(--text-3)] mt-0.5">Exhibit Michelin badges, sustainable credentials, or verified transit safety awards.</p>
-            </div>
-
-            <form onSubmit={handleAddHighlight} className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <Input placeholder="Highlight Label, e.g. Michelin 2025" value={highlightForm.title}
-                onChange={(e) => setHighlightForm(prev => ({ ...prev, title: e.target.value }))} required />
-              <select value={highlightForm.badge}
-                onChange={(e) => setHighlightForm(prev => ({ ...prev, badge: e.target.value }))}
-                className="px-3 py-2 rounded-sm bg-[var(--surface-raise)] border border-line text-sm text-[var(--text)]">
-                <option value="Award">Trust Award</option>
-                <option value="Certificate">Certificate</option>
-                <option value="Specialty">Specialty Tag</option>
-              </select>
-              <Button type="submit" disabled={!canPublish} size="sm">Add Trust Highlight</Button>
-            </form>
-
-            <div className="flex flex-wrap gap-2 mt-4">
-              {highlights.map((h) => (
-                <div key={h.id} className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-line bg-[var(--surface-raise)]">
-                  <Award className="w-3.5 h-3.5" style={{ color: 'var(--hold)' }} />
-                  <span className="text-xs font-medium">{h.title}</span>
-                  <span className="text-[10px] text-[var(--text-3)] uppercase">{h.badge}</span>
-                  <button onClick={() => handleRemoveHighlight(h.id)} className="ml-1 text-[var(--stop)]:opacity-70">
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </Card>
         </div>
 
         {/* Phone Preview Column */}
@@ -448,14 +319,12 @@ export default function Showcase() {
           <div className="lg:col-span-5">
             <div className="sticky top-24">
               <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-[var(--text-2)]">Live Preview</h3>
-                <Tag>Real-time</Tag>
+                <h3 className="text-sm font-semibold text-[var(--text-2)]">Slideshow preview</h3>
+                <Tag>{slides.length} {slides.length === 1 ? 'slide' : 'slides'}</Tag>
               </div>
-              <div className="flex justify-center">
-                <PhonePreview business={previewBusinessObject} />
-              </div>
+              <SlideshowPreview slides={slides} name={bizProfile?.businessName} />
               <p className="text-xs text-[var(--text-3)] text-center mt-4 max-w-xs mx-auto">
-                This is how customers see your storefront in the Azaman app. Changes appear instantly.
+                Your saved slides, in order, as they lead your business page in the app.
               </p>
             </div>
           </div>
@@ -546,6 +415,47 @@ export default function Showcase() {
               </p>
             </div>
           </Card>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// The saved slides in a phone-width frame: the first one large, as it opens
+// the business page, and the rest in order beneath it. Nothing invented: with
+// no slides it says so.
+function SlideshowPreview({ slides, name }) {
+  const [active, setActive] = useState(0);
+  const current = slides[Math.min(active, Math.max(slides.length - 1, 0))];
+  return (
+    <div className="mx-auto w-[300px] rounded-[28px] border border-line bg-[var(--surface-raise)] p-3 shadow-sm">
+      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[20px] bg-[var(--surface-sunk)]">
+        {current ? (
+          current.mediaType === 'VIDEO'
+            ? <video src={current.mediaUrl} className="h-full w-full object-cover" muted playsInline controls />
+            : <img src={current.mediaUrl} alt={current.caption || ''} className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center text-[var(--text-3)]">
+            <ImageIcon className="h-8 w-8" />
+            <span className="text-xs">No slides yet. Your business page opens with your cover photo until you add some.</span>
+          </div>
+        )}
+        {current?.caption && (
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 pt-8">
+            <p className="text-xs font-medium text-white">{current.caption}</p>
+          </div>
+        )}
+      </div>
+      {name && <p className="mt-3 px-1 text-sm font-bold truncate">{name}</p>}
+      {slides.length > 1 && (
+        <div className="mt-2 flex gap-1.5 overflow-x-auto pb-1">
+          {slides.map((slide, idx) => (
+            <button key={slide.id || idx} onClick={() => setActive(idx)}
+              aria-label={`Show slide ${idx + 1}`}
+              className={`h-12 w-12 flex-none overflow-hidden rounded-md border ${idx === active ? 'border-[var(--accent)]' : 'border-line'}`}>
+              <img src={slide.thumbnailUrl || slide.mediaUrl} alt="" className="h-full w-full object-cover" />
+            </button>
+          ))}
         </div>
       )}
     </div>

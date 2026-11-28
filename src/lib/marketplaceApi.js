@@ -45,6 +45,9 @@ export const checkIn = {
   verifyToken: (token) => request('/api/marketplace/checkin/verify', { method: 'POST', body: JSON.stringify({ token }) }),
   searchByAzamanId: (azamanId) => request(`/api/marketplace/checkin/search?azamanId=${encodeURIComponent(azamanId)}`),
   directCheckIn: (reservationId) => request('/api/marketplace/checkin/direct', { method: 'POST', body: JSON.stringify({ reservationId }) }),
+  // A stay paid in the app, checked in by the guest's photo ID and AZM-ID.
+  // The payment stays held until the guest confirms in the app, or 24 hours.
+  byIdCheck: (reservationId, azamanId) => request(`/api/reservations/${encodeURIComponent(reservationId)}/checkin-by-id`, { method: 'POST', body: JSON.stringify({ azamanId }) }),
   todayStats: () => request('/api/business/checkin/stats'),
   recentCheckIns: (params = {}) => {
     const qs = new URLSearchParams(params).toString();

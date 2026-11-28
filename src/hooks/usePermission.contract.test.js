@@ -11,6 +11,7 @@ describe('permission contract compatibility', () => {
 
     expect(source).toContain("'dinein.manage': 'restaurant.dinein.manage'");
     expect(source).toContain("'dinein.view': 'restaurant.dinein.manage'");
-    expect(source).toContain('const canonicalKey = PERMISSION_ALIASES[key] || key;');
+    // Every key, alone or in a list, is looked up through the aliases.
+    expect(source).toContain('permissions.includes(PERMISSION_ALIASES[k] || k)');
   });
 });

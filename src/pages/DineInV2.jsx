@@ -20,6 +20,22 @@ const money = (value) => {
   return usdc;
 };
 
+// GET /api/dine-in/tabs answers { success, tabs }. The page kept the whole
+// object as its list, so with any open tab .map threw.
+export function openTabsFrom(response) {
+  if (Array.isArray(response?.tabs)) return response.tabs;
+  if (Array.isArray(response?.data)) return response.data;
+  if (Array.isArray(response)) return response;
+  return [];
+}
+
+// Tables that asked for the bill first (longest waiting first), then the rest.
+export function byBillRequest(tabs) {
+  const asked = tabs.filter((t) => t.billRequestedAt)
+    .sort((a, b) => new Date(a.billRequestedAt) - new Date(b.billRequestedAt));
+  return [...asked, ...tabs.filter((t) => !t.billRequestedAt)];
+}
+
 export default function DineInV2() {
   const queryClient = useQueryClient();
   const { bizProfile } = useAuth();
@@ -79,11 +95,10 @@ export default function DineInV2() {
 
   const { data: openTabs, isLoading: tabsLoading } = useQuery({
     queryKey: ['openTabs'],
-    queryFn: async () => {
-      const response = await marketplaceApi.getOpenTabs();
-      return response?.data || response || [];
-    },
+    queryFn: async () => openTabsFrom(await marketplaceApi.getOpenTabs()),
     enabled: canView,
+    // A table asking for the bill shows within seconds on the floor screen.
+    refetchInterval: 20_000,
   });
 
   const selectedTabSummary = useMemo(
@@ -277,11 +292,11 @@ export default function DineInV2() {
           {tabsLoading && !openTabs ? <Skel className="h-24 w-full" /> : (openTabs || []).length === 0 ? (
             <Empty icon={Receipt} title="No open tabs" description="Open a branch-aware tab to start serving." />
           ) : (
-            (openTabs || []).map((tab) => (
+            byBillRequest(openTabs || []).map((tab) => (
               <Card key={tab.id} onClick={() => { setSelectedTabId(tab.id); setSelectedTabLocationId(tab.locationId || ''); }} className={`cursor-pointer border p-4 ${selectedTabId === tab.id ? 'border-[var(--accent)]' : 'border-[var(--line)]'}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="flex items-center gap-2 font-bold">{tab.tableId ? `Table ${tab.tableId}` : 'Bar'} <Tag tone="neutral">{tab.status}</Tag></div>
+                    <div className="flex items-center gap-2 font-bold">{tab.tableId ? `Table ${tab.table?.label || tab.tableId}` : 'Bar'} <Tag tone="neutral">{tab.status}</Tag>{tab.billRequestedAt && <Tag tone="hold">Asked for the bill</Tag>}</div>
                     <p className="mt-1 flex items-center gap-1 text-xs text-[var(--text-3)]"><UserCheck className="h-3 w-3" /> {tab.customerName || tab.customerId || 'Guest'}</p>
                     {tab.locationId && <p className="mt-1 flex items-center gap-1 text-[10px] text-[var(--text-3)]"><MapPin className="h-3 w-3" /> Branch bound</p>}
                   </div>
