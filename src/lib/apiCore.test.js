@@ -29,6 +29,47 @@ describe('apiCore session token lifecycle', () => {
     expect(disconnectSocket).toHaveBeenCalledTimes(1);
   });
 
+  it('a step-up challenge is a typed error, not a sign-out', async () => {
+    const { setAccessToken, request, getAccessToken } = await import('./apiCore');
+    setAccessToken('live-token');
+    localStorage.setItem('biz_user', '{"id":1}');
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      statusText: 'Unauthorized',
+      json: async () => ({
+        code: 'STEP_UP_REQUIRED',
+        message: 'This action needs a fresh verification bound to it.',
+        actionType: 'PAYROLL_DISBURSE',
+        actionDigest: 'abc123',
+        action: { actionType: 'PAYROLL_DISBURSE', amount: '1200.00' },
+      }),
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(request('/api/business-os/payroll/run-1/disburse', { method: 'POST' })).rejects.toMatchObject({
+      statusCode: 401,
+      code: 'STEP_UP_REQUIRED',
+      secondFactor: true,
+      stepUp: { actionType: 'PAYROLL_DISBURSE', actionDigest: 'abc123', action: { amount: '1200.00' } },
+    });
+    // No refresh attempt, no sign-out: one call, the session is untouched.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(getAccessToken()).toBe('live-token');
+    expect(localStorage.getItem('biz_user')).toBe('{"id":1}');
+  });
+
+  it('a wrong code at the step-up grant is not a sign-out either', async () => {
+    const { setAccessToken, request, getAccessToken } = await import('./apiCore');
+    setAccessToken('live-token');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: false, status: 401, statusText: 'Unauthorized',
+      json: async () => ({ success: false, message: 'Invalid 2FA token.' }),
+    }));
+    await expect(request('/api/step-up/grant', { method: 'POST' })).rejects.toMatchObject({ statusCode: 401, secondFactor: true });
+    expect(getAccessToken()).toBe('live-token');
+  });
+
   it('preserves HTTP status and backend error code on typed failures', async () => {
     const { clearAccessToken, request } = await import('./apiCore');
     clearAccessToken();
