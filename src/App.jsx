@@ -32,15 +32,20 @@ export const ROUTE_GATES = [
   { path: '/retail-inventory',    permission: 'retail.view' },
   { path: '/hotel-rooms',         permission: 'hotel.rooms.view' },
   { path: '/hotel-housekeeping',  permission: 'hotel.housekeeping.manage' },
-  { path: '/hotel-front-desk',    permission: 'hotel.front_desk.manage' },
+  { path: '/hotel-front-desk', permission: ['hotel.front_desk.manage', 'hotel.guests.view'] },
   { path: '/transit',             permission: 'transit.trips.view' },
   { path: '/transit-fleet',       permission: 'transit.fleet.view' },
   { path: '/transit-drivers',     permission: 'transit.drivers.manage' },
   { path: '/transit-manifests',   permission: 'transit.manifests.view' },
   { path: '/transit-cargo',       permission: 'transit.cargo.view' },
-  { path: '/marketing',           permission: 'marketing.view' },
-  { path: '/showcase',           permission: 'marketing.view' },
-  { path: '/reviews',            ownerOnly: true },
+  // Before /marketing: gateFor takes the first match, and web ordering reads
+  // marketing.view only.
+  { path: '/marketing/web-ordering', permission: 'marketing.view' },
+  { path: '/marketing', permission: ['marketing.view', 'marketing.promotions.manage', 'followers.broadcast'] },
+  { path: '/showcase', permission: ['marketing.view', 'marketing.publish', 'showcase.manage', 'storefront.manage'] },
+  // Reviews: the list, replies and disputes are on /api/business-os (staff with
+  // a review right); sharing a review as a story stays with the owner.
+  { path: '/reviews', permission: ['marketing.view', 'reviews.view', 'reviews.respond'] },
   { path: '/analytics',          permission: 'analytics.view' },
   { path: '/storefront',          permission: 'storefront.manage' },
   // Settings surfaces: messaging-config mutations require settings.manage

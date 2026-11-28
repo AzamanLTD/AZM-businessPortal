@@ -33,7 +33,7 @@ export function AccessRefused({ area, required }) {
         No access to {area}
       </h2>
       <p className="text-sm mt-2 max-w-md" style={{ color: 'var(--f-text-3, inherit)' }}>
-        Your account does not have the <strong>{required}</strong> permission the
+        Your account does not have the <strong>{Array.isArray(required) ? required.join(' or ') : required}</strong> permission the
         server requires for this area. Ask the business owner to grant it, or
         use the surfaces assigned to your role.
       </p>

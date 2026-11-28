@@ -73,10 +73,13 @@ import {
 
 describe('route gates mirror the backend permission catalog', () => {
   it('every gated permission key is a real backend key', () => {
+    // A gate's permission is a key, or a list meaning any of the keys.
     const unknown = ROUTE_GATES
       .filter(g => g.permission)
-      .filter(g => !BACKEND_CATALOG.includes(g.permission));
+      .flatMap(g => [].concat(g.permission))
+      .filter(k => !BACKEND_CATALOG.includes(k));
     expect(unknown).toEqual([]);
+    expect(ROUTE_GATES.some(g => Array.isArray(g.permission))).toBe(true);
   });
 
   it('covers every nav route that the nav gates by permission', () => {
@@ -95,14 +98,14 @@ describe('route gates mirror the backend permission catalog', () => {
       const gate = gateFor(item.to);
       expect(gate, `no route gate for gated nav item ${item.to}`).not.toBeNull();
       if (item.ownerOnly) expect(gate.ownerOnly, `${item.to} nav says ownerOnly but route does not`).toBe(true);
-      if (item.perm) expect(gate.permission, `${item.to} nav perm must match route gate`).toBe(item.perm);
+      if (item.perm) expect(gate.permission, `${item.to} nav perm must match route gate`).toEqual(item.perm);
     }
   });
 
   it('every nav perm key is a real backend key', () => {
     const perms = [];
     DOMAINS.forEach(d => (d.groups || []).forEach(g =>
-      (g.items || []).forEach(i => { if (i.perm) perms.push(i.perm); })));
+      (g.items || []).forEach(i => { if (i.perm) perms.push(...[].concat(i.perm)); })));
     const unknown = perms.filter(p => !BACKEND_CATALOG.includes(p));
     expect(unknown).toEqual([]);
   });

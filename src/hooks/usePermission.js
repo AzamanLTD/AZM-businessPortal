@@ -134,11 +134,13 @@ export function usePermission() {
     return () => window.removeEventListener('focus', onFocus);
   }, []);
 
+  // A list means any of the keys, as the backend's requirePermission([...]):
+  // a broad key and the precise key for one job open the same surface.
   const hasPermission = useCallback((key) => {
     if (!key) return true;
     if (permissions.includes('*')) return true;
-    const canonicalKey = PERMISSION_ALIASES[key] || key;
-    return permissions.includes(canonicalKey);
+    const keys = Array.isArray(key) ? key : [key];
+    return keys.some((k) => permissions.includes(PERMISSION_ALIASES[k] || k));
   }, [permissions]);
 
   return { hasPermission, permissions, status, isOwner: ownerLike };

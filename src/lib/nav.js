@@ -25,7 +25,7 @@ export const DOMAINS = [
         { to:'/messages',      label:'Messages',       icon:MessageSquare, count:'unreadMessages' },
       ]},
       { label:'Front line', vertical:['HOTEL'], items:[
-        { to:'/hotel-front-desk',   label:'Front Desk',    icon:ConciergeBell, count:'arrivalsToday', perm:'hotel.front_desk.manage' },
+        { to:'/hotel-front-desk',   label:'Front Desk',    icon:ConciergeBell, count:'arrivalsToday', perm:['hotel.front_desk.manage', 'hotel.guests.view'] },
         { to:'/checkin',            label:'Check-in',      icon:ClipboardList, perm:'reservations.manage' },
         { to:'/hotel-housekeeping', label:'Housekeeping',  icon:Sparkles, count:'roomsDirty', perm:'hotel.housekeeping.manage' },
       ]},
@@ -58,7 +58,7 @@ export const DOMAINS = [
       ]},
       { label:'Guests', items:[
         { to:'/guests',  label:'Guest book', icon:Users, perm:'restaurant.dinein.manage' },
-        { to:'/reviews', label:'Reviews',    icon:Star, ownerOnly:true },
+        { to:'/reviews', label:'Reviews',    icon:Star, perm:['marketing.view', 'reviews.view', 'reviews.respond'] },
       ]},
     ],
   },
@@ -97,9 +97,9 @@ export const DOMAINS = [
         { to:'/marketing/web-ordering', label:'Web ordering', icon:Store, perm:'marketing.view' },
       ]},
       { label:'Reach', items:[
-        { to:'/marketing', label:'Campaigns', icon:Megaphone, perm:'marketing.view' },
+        { to:'/marketing', label:'Campaigns', icon:Megaphone, perm:['marketing.view', 'marketing.promotions.manage', 'followers.broadcast'] },
         { to:'/analytics', label:'Analytics', icon:LineChart, perm:'analytics.view' },
-        { to:'/showcase',  label:'Showcase',  icon:Star, perm:'marketing.view' },
+        { to:'/showcase',  label:'Showcase',  icon:Star, perm:['marketing.view', 'marketing.publish', 'showcase.manage', 'storefront.manage'] },
       ]},
     ],
   },
