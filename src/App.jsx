@@ -54,6 +54,9 @@ export const ROUTE_GATES = [
   // (businessOSRoutes); the developer screen is mock-only until the backend
   // security fix lands, so it mirrors the same settings contract as UX.
   { path: '/settings/messaging',  permission: 'settings.manage' },
+  // A hotel's stay terms: anyone acting for the business reads them; the
+  // page lets only settings.manage save (as the backend does).
+  { path: '/settings/stays',      permission: 'settings.manage' },
   { path: '/settings/developer',  permission: 'settings.manage' },
 ];
 
@@ -113,6 +116,7 @@ const Analytics = lazy(() => import('@/pages/Analytics'));
 const Developer = lazy(() => import('@/pages/settings/Developer'));
 const BusinessGroups = lazy(() => import('@/pages/BusinessGroups'));
 const MessagingChannels = lazy(() => import('@/pages/settings/MessagingChannels'));
+const StayTerms = lazy(() => import('@/pages/settings/StayTerms'));
 const WebOrdering = lazy(() => import('@/pages/marketing/WebOrdering'));
 const StorefrontEditor = lazy(() => import('@/pages/StorefrontEditor'));
 const StorefrontAnalytics = lazy(() => import('@/pages/StorefrontAnalytics'));
@@ -269,6 +273,7 @@ export function AppRoutes() {
         <Route path="/settings/developer" element={<GatedRoute route="/settings/developer" gate={gateFor("/settings/developer")}>{<Developer />}</GatedRoute>} />
         <Route path="/groups" element={<GatedRoute route="/groups" gate={gateFor("/groups")}>{<BusinessGroups />}</GatedRoute>} />
         <Route path="/settings/messaging" element={<GatedRoute route="/settings/messaging" gate={gateFor("/settings/messaging")}>{<MessagingChannels />}</GatedRoute>} />
+        <Route path="/settings/stays" element={<GatedRoute route="/settings/stays" gate={gateFor("/settings/stays")}>{<StayTerms />}</GatedRoute>} />
         <Route path="/marketing/web-ordering" element={<GatedRoute route="/marketing/web-ordering" gate={gateFor("/marketing/web-ordering")}>{<WebOrdering />}</GatedRoute>} />
         <Route path="/storefront" element={<GatedRoute route="/storefront" gate={gateFor("/storefront")}>{<StorefrontEditor />}</GatedRoute>} />
         <Route path="/storefront/experience" element={<GatedRoute route="/storefront/experience" gate={gateFor("/storefront/experience")}>{<ExperienceStudio />}</GatedRoute>} />

@@ -112,6 +112,7 @@ export const DOMAINS = [
         { to:'/groups',             label:'Business groups', icon:Building2 },
       ]},
       { label:'Platform', items:[
+        { to:'/settings/stays',     label:'Stays & check-in', icon:BedDouble, vertical:['HOTEL'], perm:'settings.manage' },
         { to:'/settings/messaging', label:'Messaging',  icon:MessageSquare, perm:'settings.manage' },
         { to:'/settings/developer', label:'Developer',  icon:Settings, perm:'settings.manage' },
         { to:'/kyb',                label:'Verification', icon:ClipboardList, count:'kybAction', ownerOnly:true },
