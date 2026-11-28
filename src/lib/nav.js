@@ -26,7 +26,7 @@ export const DOMAINS = [
       ]},
       { label:'Front line', vertical:['HOTEL'], items:[
         { to:'/hotel-front-desk',   label:'Front Desk',    icon:ConciergeBell, count:'arrivalsToday', perm:'hotel.front_desk.manage' },
-        { to:'/checkin',            label:'Check-in',      icon:ClipboardList, ownerOnly:true },
+        { to:'/checkin',            label:'Check-in',      icon:ClipboardList, perm:'reservations.manage' },
         { to:'/hotel-housekeeping', label:'Housekeeping',  icon:Sparkles, count:'roomsDirty', perm:'hotel.housekeeping.manage' },
       ]},
       { label:'Front line', vertical:['RESTAURANT'], items:[
@@ -46,7 +46,7 @@ export const DOMAINS = [
     id:'bookings', label:'Bookings', icon:CalendarCheck, verticals:null,
     groups:[
       { label:'Demand', items:[
-        { to:'/reservations', label:'Reservations', icon:CalendarCheck, count:'reservationsPending', ownerOnly:true },
+        { to:'/reservations', label:'Reservations', icon:CalendarCheck, count:'reservationsPending', perm:'reservations.view' },
         { to:'/orders',       label:'Orders',       icon:Receipt, count:'ordersOpen', ownerOnly:true },
         { to:'/invoices',     label:'Invoices',     icon:Receipt, ownerOnly:true },
       ]},
@@ -91,9 +91,9 @@ export const DOMAINS = [
     id:'growth', label:'Growth', icon:Megaphone, verticals:null,
     groups:[
       { label:'Storefront', items:[
-        { to:'/storefront',           label:'Editor',    icon:Store, ownerOnly:true },
-        { to:'/storefront/experience', label:'Experience Studio', icon:WandSparkles, ownerOnly:true },
-        { to:'/storefront/analytics', label:'Traffic',   icon:LineChart, ownerOnly:true },
+        { to:'/storefront',           label:'Editor',    icon:Store, perm:'storefront.manage' },
+        { to:'/storefront/experience', label:'Experience Studio', icon:WandSparkles, perm:'storefront.manage' },
+        { to:'/storefront/analytics', label:'Traffic',   icon:LineChart, perm:'storefront.manage' },
         { to:'/marketing/web-ordering', label:'Web ordering', icon:Store, perm:'marketing.view' },
       ]},
       { label:'Reach', items:[

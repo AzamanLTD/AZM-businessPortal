@@ -111,7 +111,11 @@ describe('route gates mirror the backend permission catalog', () => {
     expect(gateFor('/finance').permission).toBe('finance.view');
     expect(gateFor('/finance/payouts').permission).toBe('finance.view');
     expect(gateFor('/orders/:id').ownerOnly).toBe(true);
-    expect(gateFor('/storefront/experience').ownerOnly).toBe(true);
+    // The storefront routes are gated by storefront.manage on the backend.
+    expect(gateFor('/storefront/experience').permission).toBe('storefront.manage');
+    // Front-desk staff act for the business (backend businessActor).
+    expect(gateFor('/reservations').permission).toBe('reservations.view');
+    expect(gateFor('/checkin').permission).toBe('reservations.manage');
     expect(gateFor('/restaurant-inventory').permission).toBe('restaurant.inventory.view');
     // Ungated surfaces stay ungated — we mirror the backend, nothing else.
     expect(gateFor('/')).toBeNull();

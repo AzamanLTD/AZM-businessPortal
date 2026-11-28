@@ -12,10 +12,12 @@ export const ROUTE_GATES = [
   { path: '/finance',             permission: 'finance.view' },
   { path: '/orders',              ownerOnly: true },
   { path: '/products',            ownerOnly: true },
-  { path: '/reservations',        ownerOnly: true },
+  // Staff with reservation or front-desk rights act for the business
+  // (backend services/businessActor); the list needs reservations.view.
+  { path: '/reservations',        permission: 'reservations.view' },
   { path: '/invoices',           ownerOnly: true },
   { path: '/locations',          ownerOnly: true },
-  { path: '/checkin',            ownerOnly: true },
+  { path: '/checkin',            permission: 'reservations.manage' },
   { path: '/kyb',                ownerOnly: true },
   { path: '/employees',          permission: 'employees.view' },
   { path: '/scheduling',        permission: 'shifts.view' },
@@ -40,7 +42,7 @@ export const ROUTE_GATES = [
   { path: '/showcase',           permission: 'marketing.view' },
   { path: '/reviews',            ownerOnly: true },
   { path: '/analytics',          permission: 'analytics.view' },
-  { path: '/storefront',          ownerOnly: true },
+  { path: '/storefront',          permission: 'storefront.manage' },
   // Settings surfaces: messaging-config mutations require settings.manage
   // (businessOSRoutes); the developer screen is mock-only until the backend
   // security fix lands, so it mirrors the same settings contract as UX.
