@@ -37,6 +37,7 @@ vi.mock('@/lib/api', () => ({
     remove: (id) => requestMock(`/api/business-os/employees/${id}`, { method: 'DELETE' }),
     setPermissions: (id, permissions) =>
       requestMock(`/api/business-os/employees/${id}/permissions`, { method: 'POST', body: { permissions } }),
+    updateRole: (id, role) => requestMock(`/api/business-os/employees/${id}/role`, { method: 'PATCH', body: { role } }),
   },
   businessOS: {
     getPermissionTemplates: () => requestMock('/api/business-os/permission-templates'),
@@ -201,5 +202,29 @@ describe('TeamAccess — employee without a BusinessProfile (Finding 4)', () => 
     expect(urls.some(u => u.includes('/api/business-os/permission-templates'))).toBe(true);
     expect(screen.getByText('Ama Mensah')).toBeTruthy();
     expect(screen.getByText('Kofi Boateng')).toBeTruthy();
+  });
+});
+
+describe('TeamAccess — adding people and changing roles (the backend contract)', () => {
+  it("adds a member by Azaman username or email, with an employee role and its default rights", async () => {
+    await renderTeamAccess({ perms: ['employees.view', 'employees.create'] });
+    fireEvent.click(screen.getByText('Add Member'));
+    fireEvent.change(screen.getByPlaceholderText(/ama.owusu or ama@example.com/i), { target: { value: 'kwesi' } });
+    fireEvent.change(screen.getByDisplayValue('Employee'), { target: { value: 'KITCHEN' } });
+    fireEvent.click(screen.getByText('Send Invite'));
+    await waitFor(() => {
+      expect(requestMock).toHaveBeenCalledWith('/api/business-os/employees', {
+        method: 'POST', body: { azmId: 'kwesi', role: 'KITCHEN', permissions: ['restaurant.kitchen.view'] },
+      });
+    });
+  });
+
+  it('a role change goes to the role route (the generic update refuses role)', async () => {
+    await renderTeamAccess({ perms: ['employees.view', 'employees.update', 'employees.permissions'] });
+    const select = screen.getAllByDisplayValue('Employee')[0];
+    fireEvent.change(select, { target: { value: 'KITCHEN' } });
+    await waitFor(() => {
+      expect(requestMock).toHaveBeenCalledWith('/api/business-os/employees/emp-1/role', { method: 'PATCH', body: { role: 'KITCHEN' } });
+    });
   });
 });

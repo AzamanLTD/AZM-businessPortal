@@ -24,6 +24,14 @@ const ROLE_INFO = {
   EMPLOYEE:       { label: 'Employee',        icon: Users,  color: 'var(--f-text-3)' },
 };
 
+// Employee roles as the backend names them (MANAGER, WAITER, ...): shown
+// in words.
+export const roleLabel = (role) => String(role || '')
+  .toLowerCase()
+  .split('_')
+  .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w))
+  .join(' ');
+
 export default function TeamAccess() {
   const { bizProfile, user } = useAuth();
   const { hasPermission, status: permStatus } = usePermission();
@@ -35,7 +43,9 @@ export default function TeamAccess() {
   const canSetPerms = hasPermission('employees.permissions');
 
   const [showInvite, setShowInvite] = useState(false);
-  const [inviteForm, setInviteForm] = useState({ email: '', role: 'EMPLOYEE', permissions: [] });
+  // handle: the person's Azaman username or email (the backend resolves it,
+  // azmId). role: an assignable employee role (employeeTemplates keys).
+  const [inviteForm, setInviteForm] = useState({ handle: '', role: 'STAFF', permissions: [] });
   const [expandedPerms, setExpandedPerms] = useState({}); // per-employee
 
   // Fetch employees. The backend resolves the actor's business context itself
@@ -70,14 +80,17 @@ export default function TeamAccess() {
       toast.go('Team member added');
       qc.invalidateQueries(['business-employees']);
       setShowInvite(false);
-      setInviteForm({ email: '', role: 'EMPLOYEE', permissions: [] });
+      setInviteForm({ handle: '', role: 'STAFF', permissions: employeeTemplates.STAFF || [] });
     },
     onError: (e) => toast.stop('Failed to add: ' + e.message),
   });
 
-  // Update role mutation
+  // Update role mutation: the dedicated role authority (the generic PATCH
+  // refuses `role`, so this used to fail every time).
   const updateMut = useMutation({
-    mutationFn: ({ id, data }) => businessOSEmployees.update(id, data),
+    mutationFn: ({ id, data }) => (data && data.role
+      ? businessOSEmployees.updateRole(id, data.role)
+      : businessOSEmployees.update(id, data)),
     onSuccess: () => {
       toast.go('Role updated');
       qc.invalidateQueries(['business-employees']);
@@ -214,13 +227,13 @@ export default function TeamAccess() {
       <Dialog open={showInvite} onClose={() => setShowInvite(false)} title="Add Team Member">
         <div className="space-y-4">
           <p className="text-sm text-[var(--f-text-3)]">
-            Add someone to your business portal. They'll need a AZM account with the same email.
+            Add someone to your team. They need an Azaman account: enter their Azaman username or the email on it.
           </p>
           <Input
-            label="Email Address"
-            placeholder="colleague@example.com"
-            value={inviteForm.email}
-            onChange={e => setInviteForm({ ...inviteForm, email: e.target.value })}
+            label="Azaman username or email"
+            placeholder="ama.owusu or ama@example.com"
+            value={inviteForm.handle}
+            onChange={e => setInviteForm({ ...inviteForm, handle: e.target.value })}
           />
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-[var(--f-text-3)] uppercase tracking-wider">Role</label>
@@ -230,14 +243,14 @@ export default function TeamAccess() {
               onChange={e => {
                 const role = e.target.value;
                 // Auto-fill permissions from template
-                const tpl = templates[role];
-                const perms = tpl?.permissions || [];
+                // The role's default rights, from the backend.
+                const perms = employeeTemplates[role] || [];
                 setInviteForm({ ...inviteForm, role, permissions: perms });
               }}
             >
-              {Object.entries(templates).map(([key, tpl]) => (
+              {Object.keys(employeeTemplates).map((key) => (
                 <option key={key} value={key} style={{ background: 'var(--f-surface)' }}>
-                  {tpl.label}
+                  {roleLabel(key)}
                 </option>
               ))}
             </select>
@@ -260,9 +273,9 @@ export default function TeamAccess() {
           )}
           <Button
             onClick={() => {
-              if (!inviteForm.email.trim()) { toast.stop('Email is required'); return; }
+              if (!inviteForm.handle.trim()) { toast.stop('Enter their Azaman username or email'); return; }
               inviteMut.mutate({
-                email: inviteForm.email.trim(),
+                azmId: inviteForm.handle.trim(),
                 role: inviteForm.role,
                 permissions: inviteForm.permissions,
               });
@@ -360,8 +373,8 @@ function TeamMemberRow({ emp, canUpdate, canTerminate, canSetPerms, onUpdateRole
                 value={emp.role}
                 onChange={e => onUpdateRole(e.target.value)}
               >
-                {Object.entries(templates).map(([key, tpl]) => (
-                  <option key={key} value={key} style={{ background: 'var(--f-surface)' }}>{tpl.label}</option>
+                {Object.keys(employeeTemplates).map((key) => (
+                  <option key={key} value={key} style={{ background: 'var(--f-surface)' }}>{roleLabel(key)}</option>
                 ))}
               </select>
               )}
