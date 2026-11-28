@@ -42,7 +42,7 @@ const BACKEND_CATALOG = [
   'reviews.view', 'settings.manage', 'shifts.approve_swap',
   'shifts.approve_timeoff', 'shifts.create', 'shifts.delete', 'shifts.publish',
   'shifts.update', 'shifts.view', 'showcase.manage', 'storefront.manage',
-  'team_access.manage', 'transit.cargo.manage', 'transit.cargo.view',
+  'transit.cargo.manage', 'transit.cargo.view',
   'transit.drivers.manage', 'transit.fleet.manage', 'transit.fleet.view',
   'transit.maintenance.manage', 'transit.manifests.manage',
   'transit.manifests.view', 'transit.trips.manage', 'transit.trips.view',
