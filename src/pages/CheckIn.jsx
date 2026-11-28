@@ -15,8 +15,28 @@ import { fmt, formatDateTime, relativeTime, cn } from '@/lib/utils';
 import { toast } from '@/lib/toast';
 import {
   QrCode, Search, CheckCircle2, Users, Clock,
-  UserCheck, ArrowRight, X, AlertCircle, Zap,
+  UserCheck, ArrowRight, X, AlertCircle, Zap, IdCard,
 } from 'lucide-react';
+
+// The search answers { customer: { username, azamanId, profilePictureUrl },
+// reservations: [{ id, reservationRef, startDatetime, status, paid }],
+// idCheckAllowed } (backend qrCheckInService.searchByAzamanId).
+export function searchView(data) {
+  const customer = (data && data.customer) || {};
+  return {
+    name: customer.username || null,
+    azamanId: customer.azamanId || null,
+    photoUrl: customer.profilePictureUrl || null,
+    idCheckAllowed: !!(data && data.idCheckAllowed),
+    reservations: ((data && data.reservations) || []).map((r) => ({
+      id: r.id,
+      ref: r.reservationRef || 'Reservation',
+      at: r.startDatetime || r.createdAt || null,
+      status: r.status,
+      paid: !!r.paid,
+    })),
+  };
+}
 
 export default function CheckIn() {
   const qc = useQueryClient();
@@ -25,7 +45,10 @@ export default function CheckIn() {
   const [azamanId, setAzamanId] = useState('');
   const [searchResults, setSearchResults] = useState(null);
   const [checkInResult, setCheckInResult] = useState(null);
-  const [verifying, setVerifying] = useState(false);
+  // The paid stay being checked in by ID, and the staff member's confirmation
+  // that they matched the guest's face and photo ID.
+  const [idCheck, setIdCheck] = useState(null);
+  const [idMatched, setIdMatched] = useState(false);
 
   const { data: statsData, isLoading: statsLoading } = useQuery({
     queryKey: ['checkin-stats'],
@@ -44,7 +67,12 @@ export default function CheckIn() {
   const verifyMut = useMutation({
     mutationFn: (t) => checkInApi.verifyToken(t),
     onSuccess: (data) => {
-      setCheckInResult(data);
+      setCheckInResult({
+        name: null,
+        azamanId: data?.customerAzamanId,
+        ref: data?.reservation?.reservationRef,
+        held: false,
+      });
       toast.go('Check-in successful!');
       qc.invalidateQueries(['checkin-stats']);
       qc.invalidateQueries(['checkin-recent']);
@@ -59,10 +87,37 @@ export default function CheckIn() {
     onError: (e) => toast.stop(e.message),
   });
 
+  const view = searchResults ? searchView(searchResults) : null;
+
+  const idCheckMut = useMutation({
+    mutationFn: ({ reservationId, azamanId: id }) => checkInApi.byIdCheck(reservationId, id),
+    onSuccess: (data) => {
+      setCheckInResult({
+        name: view?.name,
+        azamanId: view?.azamanId,
+        ref: data?.reservation?.reservationRef,
+        held: !!data?.paymentHeld,
+      });
+      toast.go('Checked in by ID check');
+      qc.invalidateQueries(['checkin-stats']);
+      qc.invalidateQueries(['checkin-recent']);
+      setIdCheck(null);
+      setIdMatched(false);
+      setSearchResults(null);
+      setAzamanId('');
+    },
+    onError: (e) => toast.stop(e.message),
+  });
+
   const directCheckInMut = useMutation({
     mutationFn: (reservationId) => checkInApi.directCheckIn(reservationId),
     onSuccess: (data) => {
-      setCheckInResult(data);
+      setCheckInResult({
+        name: view?.name,
+        azamanId: view?.azamanId,
+        ref: data?.reservation?.reservationRef,
+        held: false,
+      });
       toast.go('Check-in successful!');
       qc.invalidateQueries(['checkin-stats']);
       qc.invalidateQueries(['checkin-recent']);
@@ -202,51 +257,108 @@ export default function CheckIn() {
       </div>
 
       {/* Search results modal */}
-      <Dialog open={searchResults !== null} onClose={() => setSearchResults(null)} title="Customer Found" className="max-w-lg">
-        {searchResults && (
+      <Dialog open={view !== null && idCheck === null} onClose={() => setSearchResults(null)} title="Guest found" className="max-w-lg">
+        {view && (
           <div className="space-y-4">
-            {/* Customer info */}
+            {/* Guest */}
             <div className="flex items-center gap-3 p-4 rounded-xl bg-[var(--f-ink-900)] border border-[var(--line)]">
-              <div className="w-12 h-12 rounded-full bg-[var(--info)] border border-[var(--info)] flex items-center justify-center">
-                <span className="text-sm font-bold text-[var(--info)]">
-                  {(searchResults.customerName || searchResults.azamanId || '?').charAt(0).toUpperCase()}
-                </span>
-              </div>
+              {view.photoUrl ? (
+                <img src={view.photoUrl} alt="" className="w-12 h-12 rounded-full object-cover border border-[var(--line)]" />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-[var(--info)] border border-[var(--info)] flex items-center justify-center">
+                  <span className="text-sm font-bold text-[var(--info)]">
+                    {(view.name || view.azamanId || '?').charAt(0).toUpperCase()}
+                  </span>
+                </div>
+              )}
               <div>
-                <p className="text-sm font-bold text-[var(--text)]">{searchResults.customerName || 'Unknown'}</p>
-                <p className="text-xs text-[var(--text-3)]">{searchResults.azamanId} · {searchResults.email || ''}</p>
+                <p className="text-sm font-bold text-[var(--text)]">{view.name || 'Guest'}</p>
+                <p className="text-xs text-[var(--text-3)] f-mono">{view.azamanId}</p>
               </div>
             </div>
 
-            {/* Active reservations */}
+            {/* Reservations here */}
             <div>
-              <p className="text-xs font-bold text-[var(--text-3)] uppercase tracking-wider mb-2">Active Reservations</p>
-              {(searchResults.reservations || []).length === 0 ? (
-                <p className="text-sm text-[var(--text-3)] py-4 text-center">No active reservations found.</p>
+              <p className="text-xs font-bold text-[var(--text-3)] uppercase tracking-wider mb-2">Reservations here</p>
+              {view.reservations.length === 0 ? (
+                <p className="text-sm text-[var(--text-3)] py-4 text-center">No reservations waiting to check in.</p>
               ) : (
                 <div className="space-y-2">
-                  {searchResults.reservations.map((r) => (
-                    <div key={r.id} className="flex items-center justify-between p-3 rounded-xl bg-[var(--f-ink-900)] border border-[var(--line)]">
+                  {view.reservations.map((r) => (
+                    <div key={r.id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-[var(--f-ink-900)] border border-[var(--line)]">
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-[var(--text)] truncate">{r.reference || r.tripRoute || 'Reservation'}</p>
-                        <p className="text-[11px] text-[var(--text-3)]">{formatDateTime(r.scheduledFor || r.createdAt)}</p>
+                        <p className="text-sm font-semibold text-[var(--text)] truncate">{r.ref}</p>
+                        <p className="text-[11px] text-[var(--text-3)]">
+                          {r.at ? formatDateTime(r.at) : ''}{r.paid ? ' · Paid in Azaman' : ''}
+                        </p>
                       </div>
-                      {r.status === 'CONFIRMED' ? (
-                        <Button
-                          size="sm"
-                          onClick={() => directCheckInMut.mutate(r.id)}
-                        >
-                          Check In <ArrowRight className="w-3 h-3" />
+                      {r.status !== 'CONFIRMED' ? (
+                        <Tag color={r.status === 'CHECKED_IN' ? 'var(--accent)' : 'var(--stop)'}>
+                          {r.status === 'CHECKED_IN' ? 'Checked in' : r.status}
+                        </Tag>
+                      ) : !r.paid ? (
+                        <Button size="sm" onClick={() => directCheckInMut.mutate(r.id)} disabled={directCheckInMut.isPending}>
+                          Check in <ArrowRight className="w-3 h-3" />
+                        </Button>
+                      ) : view.idCheckAllowed ? (
+                        <Button size="sm" variant="secondary" onClick={() => { setIdCheck(r); setIdMatched(false); }}>
+                          <IdCard className="w-3.5 h-3.5" /> Check in by ID
                         </Button>
                       ) : (
-                        <Tag color={r.status === 'CHECKED_IN' ? 'var(--accent)' : 'var(--stop)'}>
-                          {r.status === 'CHECKED_IN' ? 'Checked In' : r.status}
-                        </Tag>
+                        <span className="text-[11px] text-[var(--text-3)] text-right max-w-[11rem]">Scan the guest's QR in their app to check in.</span>
                       )}
                     </div>
                   ))}
                 </div>
               )}
+              {view.reservations.some((r) => r.paid && r.status === 'CONFIRMED') && (
+                <p className="text-[11px] text-[var(--text-3)] mt-3">
+                  A stay paid in Azaman checks in by the guest's QR{view.idCheckAllowed ? ', or by an ID check' : ''}.
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+      </Dialog>
+
+      {/* ID check: staff match the guest to their photo and ID card */}
+      <Dialog open={idCheck !== null} onClose={() => { setIdCheck(null); setIdMatched(false); }} title="Check in by ID" className="max-w-md">
+        {idCheck && view && (
+          <div className="space-y-4">
+            <div className="flex flex-col items-center text-center gap-2">
+              {view.photoUrl ? (
+                <img src={view.photoUrl} alt="The guest's Azaman photo" className="w-28 h-28 rounded-2xl object-cover border border-[var(--line)]" />
+              ) : (
+                <div className="w-28 h-28 rounded-2xl bg-[var(--surface-sunk)] border border-[var(--line)] flex items-center justify-center text-xs text-[var(--text-3)] px-3">
+                  No photo on this account. Rely on the ID card.
+                </div>
+              )}
+              <p className="text-sm font-bold text-[var(--text)]">{view.name || 'Guest'}</p>
+              <p className="text-xs text-[var(--text-3)] f-mono">{view.azamanId} · {idCheck.ref}</p>
+            </div>
+            <ol className="text-xs text-[var(--text-2)] space-y-1 list-decimal pl-5">
+              <li>Ask for a photo ID card (Ghana Card, passport or driving licence).</li>
+              <li>Check the face matches the guest and this photo.</li>
+              <li>Check the name matches the booking.</li>
+            </ol>
+            <label className="flex items-start gap-2 text-sm text-[var(--text)] cursor-pointer">
+              <input type="checkbox" className="mt-0.5" checked={idMatched} onChange={(e) => setIdMatched(e.target.checked)} />
+              <span>I checked the guest's photo ID and it matches.</span>
+            </label>
+            <p className="text-[11px] text-[var(--text-3)]">
+              The payment stays held until the guest confirms in their app that it was them, or for 24 hours. If they say it wasn't them, the payment is held for review.
+            </p>
+            <div className="flex gap-2">
+              <Button variant="ghost" className="flex-1" onClick={() => { setIdCheck(null); setIdMatched(false); }}>
+                <X className="w-4 h-4" /> Back
+              </Button>
+              <Button
+                className="flex-1"
+                disabled={!idMatched || idCheckMut.isPending}
+                onClick={() => idCheckMut.mutate({ reservationId: idCheck.id, azamanId: view.azamanId })}
+              >
+                <CheckCircle2 className="w-4 h-4" /> {idCheckMut.isPending ? 'Checking in...' : 'Check in'}
+              </Button>
             </div>
           </div>
         )}
@@ -259,12 +371,19 @@ export default function CheckIn() {
             <div className="w-16 h-16 rounded-2xl bg-[var(--surface-sunk)] border border-[var(--accent)] flex items-center justify-center mb-4">
               <CheckCircle2 className="w-8 h-8 text-[var(--accent)]" />
             </div>
-            <p className="text-lg font-bold text-[var(--text)]">{checkInResult.customerName || checkInResult.azamanId}</p>
-            <p className="text-sm text-[var(--text-3)] mt-1">{checkInResult.azamanId}</p>
-            <div className="mt-4 px-4 py-2 rounded-xl bg-[var(--f-ink-900)] border border-[var(--line)]">
-              <p className="text-xs text-[var(--text-3)]">Reservation</p>
-              <p className="text-sm font-bold text-[var(--text)] f-mono">{checkInResult.reservationRef || checkInResult.reference}</p>
-            </div>
+            <p className="text-lg font-bold text-[var(--text)]">{checkInResult.name || checkInResult.azamanId || 'Guest'}</p>
+            {checkInResult.name && <p className="text-sm text-[var(--text-3)] mt-1">{checkInResult.azamanId}</p>}
+            {checkInResult.ref && (
+              <div className="mt-4 px-4 py-2 rounded-xl bg-[var(--f-ink-900)] border border-[var(--line)]">
+                <p className="text-xs text-[var(--text-3)]">Reservation</p>
+                <p className="text-sm font-bold text-[var(--text)] f-mono">{checkInResult.ref}</p>
+              </div>
+            )}
+            {checkInResult.held && (
+              <p className="text-xs text-[var(--text-3)] mt-3 max-w-xs">
+                The payment is held until the guest confirms in their app, or for 24 hours.
+              </p>
+            )}
             <Button onClick={() => setCheckInResult(null)} className="mt-6 w-full">
               Done
             </Button>
