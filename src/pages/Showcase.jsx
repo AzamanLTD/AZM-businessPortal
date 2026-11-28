@@ -4,7 +4,7 @@ import { usePermission } from '@/hooks/usePermission';
 import { request } from '@/lib/api';
 import { uploadImageToCloudinary } from '@/lib/cloudinary';
 import { PhonePreview } from '@/components/PhonePreview';
-import { Card } from '@/components/instrument';
+import { Card, Button, Empty, Input, Skel, Tag } from '@/components/instrument';
 import {
   Image as ImageIcon,
   Smartphone,
@@ -43,7 +43,7 @@ export default function Showcase() {
   const [showPhonePreview, setShowPhonePreview] = useState(true);
 
   // Version History
-  const [showVersionDialog, setShowVersionModal] = useState(false);
+  const [showVersionModal, setShowVersionModal] = useState(false);
   const [versions, setVersions] = useState([]);
   const [versionsLoading, setVersionsLoading] = useState(false);
   const [publishing, setPublishing] = useState(false);

@@ -180,14 +180,22 @@ export default function TransitFleet() {
     }));
   };
 
+  // Saved for real (PUT /api/business-os/transit/vehicles/:id/seat-map); it
+  // used to only show a toast. The server refuses a grid that would remove,
+  // blank or block a seat someone has booked, and says which seats.
+  const [savingSeatMap, setSavingSeatMap] = useState(false);
   const handleSaveSeatMap = async () => {
-    if (!selectedVehicleForSeatMap) return;
+    if (!selectedVehicleForSeatMap || savingSeatMap) return;
+    setSavingSeatMap(true);
     try {
-      toast.go('Vehicle seat map layout updated and saved');
+      await transitOpsApi.saveSeatMap(selectedVehicleForSeatMap.id, { layout: seatGrid, rows: seatRows, cols: seatCols });
+      toast.go('Seat map saved');
       setSeatMapOpen(false);
+      load();
     } catch (e) {
-      toast.stop('Failed to save seat map');
+      toast.stop(e?.message || 'Failed to save seat map');
     }
+    setSavingSeatMap(false);
   };
 
   // Filter logic
@@ -578,7 +586,7 @@ export default function TransitFleet() {
 
           <div className="flex justify-end gap-3 pt-3 border-t border-[var(--line)]">
             <Button variant="secondary" onClick={() => setSeatMapOpen(false)}>Cancel</Button>
-            <Button onClick={handleSaveSeatMap}>Save Grid Template</Button>
+            <Button onClick={handleSaveSeatMap} disabled={savingSeatMap}>{savingSeatMap ? 'Saving…' : 'Save Grid Template'}</Button>
           </div>
         </div>
       </Dialog>

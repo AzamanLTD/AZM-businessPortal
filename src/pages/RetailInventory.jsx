@@ -329,7 +329,7 @@ function OverviewTab({ lowStockItems, loading }) {
 
 function SuppliersTab() {
   const qc = useQueryClient();
-  const [showDialog, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [editSupplier, setEditSupplier] = useState(null);
   const [form, setForm] = useState({ name: '', contactName: '', email: '', phone: '', address: '', notes: '' });
 
@@ -436,7 +436,7 @@ function SuppliersTab() {
 
 function PurchaseOrdersTab({ suppliers }) {
   const qc = useQueryClient();
-  const [showDialog, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [selectedPO, setSelectedPO] = useState(null);
   const [poForm, setPoForm] = useState({ supplierId: '', notes: '', expectedDate: '', items: [{ productName: '', sku: '', quantity: 1, unitCost: 0 }] });
 

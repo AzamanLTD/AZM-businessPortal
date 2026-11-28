@@ -3,13 +3,14 @@
  */
 import { useState, useEffect } from 'react';
 import { transitOpsApi, cargoApi } from '@/lib/marketplaceApi';
-import { Card, Button, Tag, Empty, Avatar, Sheet, Select } from '@/components/instrument';
+import { Card, Button, Tag, Empty, Avatar, Sheet, Select, Input } from '@/components/instrument';
 import { Progress } from '@/components/instrument';
 import {
-  Ticket, Users, DollarSign, QrCode, MapPin, Package, AlertTriangle,
+  Ticket, Users, DollarSign, QrCode, MapPin, Package, AlertTriangle, Shield,
   CheckCircle2, Clock, Plus, Truck, Scale, Phone, ArrowRight, RefreshCw,
 } from 'lucide-react';
 import { toast } from '@/lib/toast';
+import { manifestSummary, passengerName, bookingStatusLabel, manifestTrips, cargoTotals, toNumber } from '@/lib/transitManifestModel';
 
 const CARGO_STATUS_META = {
   PENDING:     { label: 'Pending',     color: 'var(--hold)',  dot: 'bg-amber-400' },
@@ -47,7 +48,11 @@ export default function TransitManifests() {
   const [manifest, setManifest] = useState(null);
   const [cargo, setCargo] = useState([]);
   const [activeTab, setActiveTab] = useState('passengers');
-  const [showCargoDialog, setShowCargoModal] = useState(false);
+  const [showCargoModal, setShowCargoModal] = useState(false);
+  // Boarding by ID check: the booking being boarded and the AZM-ID typed.
+  const [boardTarget, setBoardTarget] = useState(null);
+  const [boardAzamanId, setBoardAzamanId] = useState('');
+  const [boarding, setBoarding] = useState(false);
   const [showIrops, setShowIrops] = useState(false);
   const [vehicles, setVehicles] = useState([]);
   const [iropsVehicle, setIropsVehicle] = useState('');
@@ -59,8 +64,8 @@ export default function TransitManifests() {
 
   const loadTrips = async () => {
     try {
-      const res = await transitOpsApi.routes();
-      setTrips(res.data?.trips || []);
+      const res = await transitOpsApi.trips();
+      setTrips(manifestTrips(Array.isArray(res) ? res : (res?.trips || [])));
     } catch { toast.stop('Failed to load trips'); }
   };
 
@@ -71,15 +76,32 @@ export default function TransitManifests() {
         transitOpsApi.liveManifest(tripId),
         cargoApi.list({ tripId }),
       ]);
-      setManifest(manifestRes.data);
-      setCargo(cargoRes.data?.parcels || []);
-    } catch { toast.stop('Failed to load manifest'); }
+      setManifest(manifestRes?.manifest || null);
+      setCargo(cargoRes?.parcels || []);
+    } catch (e) { toast.stop(e?.message || 'Failed to load manifest'); }
+  };
+
+  const handleBoard = async () => {
+    if (!boardTarget || !boardAzamanId.trim()) { toast.stop("Enter the passenger's AZM-ID"); return; }
+    setBoarding(true);
+    try {
+      await transitOpsApi.boardPassenger({ bookingId: boardTarget.id, azamanId: boardAzamanId.trim() });
+      toast.go(`${passengerName(boardTarget)} boarded`);
+      setBoardTarget(null);
+      setBoardAzamanId('');
+      loadManifest(selectedTrip);
+    } catch (e) {
+      // The server's own words: wrong AZM-ID, outside the boarding window,
+      // ID check turned off, already boarded.
+      toast.stop(e?.message || 'Could not board this passenger');
+    }
+    setBoarding(false);
   };
 
   const loadVehicles = async () => {
     try {
       const res = await transitOpsApi.fleet();
-      setVehicles(res.data?.fleet || []);
+      setVehicles(res?.fleet || []);
     } catch { /* silent */ }
   };
 
@@ -115,20 +137,20 @@ export default function TransitManifests() {
     setIropsLoading(true);
     try {
       const res = await cargoApi.reassign({ sourceTripId: selectedTrip, targetVehicleId: iropsVehicle });
-      toast.go(res.data?.message || 'Reassignment complete');
+      toast.go(res?.message || 'Reassignment complete');
       setShowIrops(false);
       setIropsVehicle('');
       loadTrips();
       setSelectedTrip(null);
       setManifest(null);
-    } catch { toast.stop('Reassignment failed'); }
+    } catch (e) { toast.stop(e?.message || 'Reassignment failed'); }
     setIropsLoading(false);
   };
 
-  const countdown = useDepartureCountdown(manifest?.departureAt || trips.find(t => t.id === selectedTrip)?.departureAt || trips.find(t => t.id === selectedTrip)?.departureTime);
+  const countdown = useDepartureCountdown(manifest?.trip?.departureAt || trips.find(t => t.id === selectedTrip)?.departureAt);
 
-  const totalWeight = cargo.reduce((s, p) => s + (p.weightKg || 0), 0);
-  const cargoRevenue = cargo.reduce((s, p) => s + (p.priceUsdc || 0), 0);
+  const summary = manifestSummary(manifest);
+  const { weightKg: totalWeight, revenueUsdc: cargoRevenue } = cargoTotals(cargo);
 
   return (
     <div className="space-y-6">
@@ -152,7 +174,7 @@ export default function TransitManifests() {
       {/* Trip selector */}
       <div className="flex gap-3 flex-wrap">
         {trips.length === 0 && (
-          <p className="text-sm text-[var(--text-3)]">No trips scheduled. Create trips in Transit Trips first.</p>
+          <p className="text-sm text-[var(--text-3)]">No trips from today on. Create trips in Transit Trips first.</p>
         )}
         {trips.map(trip => (
           <button
@@ -163,7 +185,7 @@ export default function TransitManifests() {
             <MapPin className="w-3.5 h-3.5 inline mr-1.5" />
             {trip.origin} → {trip.destination}
             <span className="ml-2 text-xs text-[var(--text-3)]">
-              {new Date(trip.departureAt || trip.departureTime).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' })}
+              {new Date(trip.departureAt).toLocaleString('en', { weekday: 'short', hour: '2-digit', minute: '2-digit' })}
             </span>
           </button>
         ))}
@@ -204,33 +226,59 @@ export default function TransitManifests() {
             <div className="grid grid-cols-3 gap-4">
               <Card>
                 <div className="flex items-center gap-2 mb-2"><Users className="w-4 h-4 text-[var(--info)]" /><span className="text-xs text-[var(--text-3)] uppercase">Passengers</span></div>
-                <p className="text-3xl font-bold text-[var(--text)]">{manifest.boardedCount}/{manifest.totalBooked}</p>
-                <p className="text-xs text-[var(--text-3)] mt-1">{manifest.totalBooked - manifest.boardedCount} not yet boarded</p>
+                <p className="text-3xl font-bold text-[var(--text)]">{summary.boarded}/{summary.booked}</p>
+                <p className="text-xs text-[var(--text-3)] mt-1">
+                  {summary.waiting} not yet boarded{summary.noShow > 0 ? `, ${summary.noShow} no-show` : ''}
+                </p>
               </Card>
               <Card>
-                <div className="flex items-center gap-2 mb-2"><DollarSign className="w-4 h-4 text-[var(--accent)]" /><span className="text-xs text-[var(--text-3)] uppercase">Revenue (Escrow)</span></div>
-                <p className="text-3xl font-bold text-[var(--text)]">{manifest.totalRevenueUsdc?.toFixed(2)}</p>
-                <p className="text-xs text-[var(--text-3)] mt-1">USDC held in Smart Escrow</p>
+                <div className="flex items-center gap-2 mb-2"><DollarSign className="w-4 h-4 text-[var(--accent)]" /><span className="text-xs text-[var(--text-3)] uppercase">Fares held</span></div>
+                <p className="text-3xl font-bold text-[var(--text)]">{summary.heldUsdc.toFixed(2)}</p>
+                <p className="text-xs text-[var(--text-3)] mt-1">USDC paid in Azaman, released after the trip</p>
               </Card>
               <Card>
                 <div className="flex items-center gap-2 mb-2"><QrCode className="w-4 h-4 text-[var(--accent)]" /><span className="text-xs text-[var(--text-3)] uppercase">Boarding</span></div>
-                <p className="text-3xl font-bold text-[var(--text)]">{manifest.boardingProgress}%</p>
-                <div className="mt-2"><Progress value={manifest.boardingProgress || 0} /></div>
+                <p className="text-3xl font-bold text-[var(--text)]">{summary.progressPct}%</p>
+                <div className="mt-2"><Progress value={summary.progressPct} /></div>
+                {manifest.boardingWindow && (
+                  <p className="text-xs text-[var(--text-3)] mt-2">
+                    Opens {new Date(manifest.boardingWindow.opensAt).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' })},
+                    closes {new Date(manifest.boardingWindow.closesAt).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                )}
               </Card>
 
               <Card className="col-span-3">
-                <h3 className="text-sm font-bold text-[var(--text)] mb-4">Passenger Manifest</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-bold text-[var(--text)]">Passenger Manifest</h3>
+                  <p className="text-xs text-[var(--text-3)]">
+                    {manifest.policy?.allowIdCheck ? 'Board by QR scan in the app, or by ID check here.' : 'This business boards by QR scan only.'}
+                  </p>
+                </div>
                 <div className="space-y-1">
-                  {manifest.passengers?.map(p => (
+                  {(manifest.passengers || []).map(p => (
                     <div key={p.id} className="flex items-center gap-3 py-2 border-b border-[var(--line)] last:border-0">
-                      <Avatar name={p.user?.fullName || p.name} size="sm" />
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-[var(--text)]">{p.user?.fullName || p.name}</p>
-                        <p className="text-xs text-[var(--text-3)]">Seat {p.seatNumber} - {p.ticketRef}</p>
+                      <Avatar name={passengerName(p)} src={p.passenger?.profilePictureUrl || undefined} size={32} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-[var(--text)]">
+                          {passengerName(p)}
+                          {p.passenger?.idVerified && <Shield className="w-3 h-3 inline ml-1 text-[var(--accent)]" aria-label="ID verified" />}
+                        </p>
+                        <p className="text-xs text-[var(--text-3)]">
+                          Seat {(p.seats || []).map(s => s.seatId).join(', ') || '—'} · {p.bookingRef}
+                          {p.passenger?.azamanId ? ` · ${p.passenger.azamanId}` : ''}
+                          {p.passenger?.legalName ? ` · ID name: ${p.passenger.legalName}` : ''}
+                        </p>
                       </div>
-                      <Tag color={p.boarded ? 'var(--accent)' : 'var(--text-3)'}>
-                        {p.boarded ? <><CheckCircle2 className="w-3 h-3 inline mr-1" />Boarded</> : 'Waiting'}
+                      <Tag color={p.status === 'IN_PROGRESS' || p.status === 'COMPLETED' ? 'var(--accent)' : p.status === 'NO_SHOW' ? 'var(--stop)' : 'var(--text-3)'}>
+                        {p.status === 'IN_PROGRESS' && <CheckCircle2 className="w-3 h-3 inline mr-1" />}
+                        {bookingStatusLabel(p.status)}
                       </Tag>
+                      {p.canBoardById && (
+                        <Button size="sm" variant="secondary" onClick={() => { setBoardTarget(p); setBoardAzamanId(''); }}>
+                          Board by ID
+                        </Button>
+                      )}
                     </div>
                   ))}
                   {(!manifest.passengers || manifest.passengers.length === 0) && (
@@ -285,7 +333,7 @@ export default function TransitManifests() {
                             <p className="text-xs text-[var(--text-3)] mt-0.5">
                               {parcel.weightKg}kg - {parcel.receiverName}
                               {parcel.receiverPhone && <><Phone className="w-3 h-3 inline mx-1" />{parcel.receiverPhone}</>}
-                              {parcel.priceUsdc > 0 && <span className="ml-2 font-medium text-[var(--accent)]">${parcel.priceUsdc.toFixed(2)}</span>}
+                              {toNumber(parcel.priceUsdc) > 0 && <span className="ml-2 font-medium text-[var(--accent)]">{toNumber(parcel.priceUsdc).toFixed(2)} USDC</span>}
                             </p>
                           </div>
                           <Tag color={meta.color}>{meta.label}</Tag>
@@ -307,6 +355,36 @@ export default function TransitManifests() {
             </div>
           )}
         </>
+      )}
+
+      {/* Board by ID check */}
+      {boardTarget && (
+        <Sheet open={!!boardTarget} onClose={() => setBoardTarget(null)} title="Board by ID check">
+          <div className="space-y-4 px-1">
+            <div className="flex items-center gap-3">
+              <Avatar name={passengerName(boardTarget)} src={boardTarget.passenger?.profilePictureUrl || undefined} size={56} />
+              <div>
+                <p className="text-sm font-bold text-[var(--text)]">{passengerName(boardTarget)}</p>
+                {boardTarget.passenger?.legalName && <p className="text-xs text-[var(--text-3)]">Name on ID: {boardTarget.passenger.legalName}</p>}
+                <p className="text-xs text-[var(--text-3)]">Seat {(boardTarget.seats || []).map(s => s.seatId).join(', ')} · {boardTarget.bookingRef}</p>
+              </div>
+            </div>
+            <p className="text-xs text-[var(--text-3)]">
+              Check the photo and the passenger's ID against this booking, then enter the AZM-ID they show you.
+              The passenger is told at once and can report a boarding that was not them.
+            </p>
+            <div>
+              <label className="text-xs font-semibold text-[var(--text-3)] uppercase">Passenger AZM-ID</label>
+              <Input className="w-full mt-1" placeholder="AZM-…" value={boardAzamanId} onChange={e => setBoardAzamanId(e.target.value)} />
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button variant="ghost" onClick={() => setBoardTarget(null)} className="flex-1">Cancel</Button>
+              <Button onClick={handleBoard} disabled={boarding || !boardAzamanId.trim()} className="flex-1">
+                {boarding ? 'Boarding…' : 'Board passenger'}
+              </Button>
+            </div>
+          </div>
+        </Sheet>
       )}
 
       {/* Add Cargo Modal */}

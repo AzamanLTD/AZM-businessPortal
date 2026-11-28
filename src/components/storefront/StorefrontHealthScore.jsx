@@ -160,7 +160,7 @@ export default function StorefrontHealthScore({ draft, businessType, onAddWidget
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
   return (
-    <GlassPanel className="p-4 space-y-4">
+    <Card className="p-4 space-y-4">
       {/* Score Header */}
       <div className="flex items-center gap-4">
         <div className="relative flex-shrink-0" style={{ width: 70, height: 70 }}>
@@ -262,6 +262,6 @@ export default function StorefrontHealthScore({ draft, businessType, onAddWidget
           ))}
         </div>
       )}
-    </GlassPanel>
+    </Card>
   );
 }

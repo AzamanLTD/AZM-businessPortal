@@ -92,25 +92,28 @@ export const storefrontApi = {
 
   // ── EXPERIENCE STUDIO ─────────────────────────────────────────────────────
   /**
-   * Save the constrained experience blueprint through the versioned draft
-   * contract. The latest draft snapshot is fetched immediately before the
-   * write, and its expectedUpdatedAt protects the full layout from concurrent
-   * edits elsewhere in Storefront Editor or another Studio session.
+   * The business's effective experience settings:
+   * { category, blueprint, defaults, presets, navigationModes, ... }.
+   * (Removed by mistake in 0885c0b0; the Studio page could not load without it.)
+   */
+  getExperience: () => sfRequest(`${BASE}/me/experience`),
+
+  /**
+   * Save the blueprint through PUT /me/experience: the server normalizes it
+   * for the business's category and writes it into the draft's layout in a
+   * locked transaction, keeping the tiles. The draft's updatedAt, read just
+   * before, makes a save on top of another editor's newer draft a 409.
+   * (It used to PUT the whole layout to /me/draft, whose schema drops
+   * `experience`, so a Studio save was silently lost.)
    */
   saveExperience: async (blueprint) => {
     const draft = await sfRequest(`${BASE}/me/draft`);
-    const layoutJson = {
-      ...(draft?.layoutJson && typeof draft.layoutJson === 'object' ? draft.layoutJson : {}),
-      experience: blueprint,
-    };
-    const saved = await sfRequest(`${BASE}/me/draft`, {
+    return sfRequest(`${BASE}/me/experience`, {
       method: 'PUT',
       body: JSON.stringify({
-        layoutJson,
-        themeId: draft?.themeId,
+        ...(blueprint && typeof blueprint === 'object' ? blueprint : {}),
         ...(draft?.updatedAt ? { expectedUpdatedAt: draft.updatedAt } : {}),
       }),
     });
-    return saved?.layoutJson?.experience || blueprint;
   },
 };

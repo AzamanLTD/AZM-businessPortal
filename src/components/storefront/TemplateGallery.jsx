@@ -5,6 +5,7 @@ import { Card } from '@/components/instrument';
 import { LayoutTemplate, Check, Sparkles, Star, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { getWidgetDefaults } from '@/lib/businessTypes';
+import { toast } from '@/lib/toast';
 
 // ── Template Definitions ─────────────────────────────────────────────
 // Each template is a curated widget set with a specific theme and tier.
@@ -351,7 +352,7 @@ export default function TemplateGallery({ businessType, widgets, themes, eligibi
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.5)' }}
       onClick={onClose}>
-      <GlassPanel className="max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+      <Card className="max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: 'var(--f-line)' }}>
           <div className="flex items-center gap-2">
@@ -399,7 +400,7 @@ export default function TemplateGallery({ businessType, widgets, themes, eligibi
             ))}
           </div>
         </div>
-      </GlassPanel>
+      </Card>
     </div>
   );
 }

@@ -89,14 +89,14 @@ export default function Invoices() {
     mutationFn: (id) => invoicesApi.send(id),
     onSuccess: () => {
       toast.go('The invoice has been locked and sent to the customer.');
+      invalidate();
+    },
+    onError: (e) => toast.stop(`Error Sending: ${e.message}`),
+  });
   const emailMut = useMutation({
     mutationFn: ({ id, email }) => invoicesApi.email(id, email),
     onSuccess: (data) => toast.go(data.message || 'Invoice sent successfully.'),
     onError: (e) => toast.stop(`Error Emailing: ${e.message}`),
-  });
-      invalidate();
-    },
-    onError: (e) => toast.stop(`Error Sending: ${e.message}`),
   });
 
   const voidMut = useMutation({

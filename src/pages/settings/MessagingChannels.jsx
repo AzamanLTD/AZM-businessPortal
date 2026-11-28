@@ -205,7 +205,7 @@ export default function MessagingChannels() {
       </div>
 
       {/* ── WhatsApp ── */}
-      <GlassPanel className="overflow-hidden p-0">
+      <Card className="overflow-hidden p-0">
         <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--f-line)' }}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: '#25D36620' }}>
@@ -257,10 +257,10 @@ export default function MessagingChannels() {
             {waConnected ? 'Disconnect' : waConnecting ? 'Connecting…' : 'Connect WhatsApp'}
           </button>
         </div>
-      </GlassPanel>
+      </Card>
 
       {/* ── SMS ── */}
-      <GlassPanel className="overflow-hidden p-0">
+      <Card className="overflow-hidden p-0">
         <div className="px-6 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--f-line)' }}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--f-info)', opacity: 0.9 }}>
@@ -300,11 +300,11 @@ export default function MessagingChannels() {
             {smsConnected ? 'Disconnect' : smsConnecting ? 'Connecting…' : 'Connect SMS'}
           </button>
         </div>
-      </GlassPanel>
+      </Card>
 
       {/* ── Test send ── */}
       {(waConnected || smsConnected) && (
-        <GlassPanel className="p-5 space-y-4">
+        <Card className="p-5 space-y-4">
           <h3 className="font-bold" style={{ color: 'var(--f-text)' }}>Test Message</h3>
           <div className="flex gap-3">
             <input value={testNumber} onChange={e => setTestNumber(e.target.value)} placeholder="+233 20 000 0000"
@@ -317,12 +317,12 @@ export default function MessagingChannels() {
             </button>
           </div>
           <p className="text-xs" style={{ color: 'var(--f-text-3)' }}>Sends a test "Hello from {bizProfile?.businessName || 'Azaman Business'}" message to verify your connection.</p>
-        </GlassPanel>
+        </Card>
       )}
 
       {/* ── Monthly cost ── */}
       {(waConnected || smsConnected) && (
-        <GlassPanel className="p-5">
+        <Card className="p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold" style={{ color: 'var(--f-text)' }}>This Month's Messaging Cost</h3>
             <span className="text-xs px-2 py-1 rounded-md" style={{ background: 'var(--f-bg)', color: 'var(--f-text-3)', border: '1px solid var(--f-line)' }}>
@@ -352,11 +352,11 @@ export default function MessagingChannels() {
               <p className="text-xs mt-1" style={{ color: 'var(--f-text-3)' }}>Stats will appear once you start sending messages.</p>
             </div>
           )}
-        </GlassPanel>
+        </Card>
       )}
 
       {/* ── Notification routing ── */}
-      <GlassPanel className="overflow-hidden p-0">
+      <Card className="overflow-hidden p-0">
         <div className="px-6 py-4 border-b" style={{ borderColor: 'var(--f-line)' }}>
           <h3 className="font-bold" style={{ color: 'var(--f-text)' }}>Notification Routing</h3>
           <p className="text-xs mt-0.5" style={{ color: 'var(--f-text-3)' }}>Choose which channel each notification type uses</p>
@@ -401,7 +401,7 @@ export default function MessagingChannels() {
             <CheckCircle2 className="w-4 h-4" /> Save Preferences
           </button>
         </div>
-      </GlassPanel>
+      </Card>
     </div>
   );
 }

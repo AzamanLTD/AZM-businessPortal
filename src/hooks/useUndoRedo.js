@@ -1,72 +1,68 @@
 // src/hooks/useUndoRedo.js
 // ─────────────────────────────────────────────────────────────────────────────
-// Undo/Redo system for the storefront editor.
+// Undo/Redo for the storefront editor: bounded stacks of draft snapshots.
 //
-// Maintains a bounded history stack of draft snapshots. Each mutation
-// (addTile, updateTile, removeTile, reorderTiles, changeTheme, applyTemplate)
-// pushes the previous state onto the undo stack and clears the redo stack.
+//   const { pushSnapshot, undo, redo, canUndo, canRedo, clear } = useUndoRedo();
+//   pushSnapshot(currentDraft);          // before a mutation
+//   const previous = undo(currentDraft); // the snapshot to restore, or null
+//   const next = redo(currentDraft);     // the snapshot to restore, or null
 //
-// Usage:
-//   const { past, future, undo, redo, canUndo, canRedo, clear } = useUndoRedo();
-//   // Before a mutation:
-//   pushSnapshot(currentDraft);
-//
-// Reference: Figma undo/redo, Linear history, VS Code undo stack
+// undo/redo return the snapshot to apply and move the current state onto the
+// other stack. (They used to only shuffle the stacks and return nothing, so
+// the editor's Undo and Redo buttons changed nothing.)
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useCallback, useRef } from 'react';
 
-const MAX_HISTORY = 50;
+export const MAX_HISTORY = 50;
 
 export function useUndoRedo() {
-  const [past, setPast] = useState([]);
-  const [future, setFuture] = useState([]);
+  const pastRef = useRef([]);
+  const futureRef = useRef([]);
+  const [, setVersion] = useState(0);
+  const changed = () => setVersion((v) => v + 1);
 
   const pushSnapshot = useCallback((snapshot) => {
     if (!snapshot) return;
-    setPast(prev => {
-      const next = [...prev, snapshot];
-      if (next.length > MAX_HISTORY) next.shift();
-      return next;
-    });
-    // Clear redo stack on new mutation
-    setFuture([]);
+    pastRef.current = [...pastRef.current, snapshot].slice(-MAX_HISTORY);
+    futureRef.current = []; // a new edit clears redo
+    changed();
   }, []);
 
-  const undo = useCallback(() => {
-    setPast(prev => {
-      if (prev.length === 0) return prev;
-      const previous = prev[prev.length - 1];
-      setFuture(f => [previous, ...f]);
-      return prev.slice(0, -1);
-    });
+  const undo = useCallback((current) => {
+    const past = pastRef.current;
+    if (past.length === 0) return null;
+    const previous = past[past.length - 1];
+    pastRef.current = past.slice(0, -1);
+    if (current) futureRef.current = [current, ...futureRef.current].slice(0, MAX_HISTORY);
+    changed();
+    return previous;
   }, []);
 
-  const redo = useCallback(() => {
-    setFuture(prev => {
-      if (prev.length === 0) return prev;
-      const next = prev[0];
-      setPast(p => [...p, next]);
-      return prev.slice(1);
-    });
+  const redo = useCallback((current) => {
+    const future = futureRef.current;
+    if (future.length === 0) return null;
+    const next = future[0];
+    futureRef.current = future.slice(1);
+    if (current) pastRef.current = [...pastRef.current, current].slice(-MAX_HISTORY);
+    changed();
+    return next;
   }, []);
 
   const clear = useCallback(() => {
-    setPast([]);
-    setFuture([]);
+    pastRef.current = [];
+    futureRef.current = [];
+    changed();
   }, []);
 
-  const canUndo = past.length > 0;
-  const canRedo = future.length > 0;
-
   return {
-    past,
-    future,
+    past: pastRef.current,
+    future: futureRef.current,
     pushSnapshot,
     undo,
     redo,
-    canUndo,
-    canRedo,
+    canUndo: pastRef.current.length > 0,
+    canRedo: futureRef.current.length > 0,
     clear,
   };
 }

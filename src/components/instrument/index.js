@@ -28,6 +28,7 @@ export { Spinner } from './Spinner';
 export { Textarea } from './Textarea';
 export { VirtualizedList } from './VirtualizedList';
 export { StatCard } from './StatCard';
+export { StatusCard } from './StatusCard';
 export { Tooltip } from './Tooltip';
 export { DropdownMenu, DropdownMenuItem } from './DropdownMenu';
 export { VirtualizedGrid } from './VirtualizedGrid';

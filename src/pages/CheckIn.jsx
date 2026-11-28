@@ -9,7 +9,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { checkIn as checkInApi } from '@/lib/marketplaceApi';
-// Widget replaced by KpiCard/Card
+import { KpiCard, KpiCardStat, KpiCardRow } from '@/components/StatPanels';
 import { Button, Tag, Input, Dialog, Skel } from '@/components/instrument';
 import { fmt, formatDateTime, relativeTime, cn } from '@/lib/utils';
 import { toast } from '@/lib/toast';
